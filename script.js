@@ -4207,3 +4207,73 @@ console.log(
   data
 );
 }
+
+async function updateShiftTypeInSupabase(
+  oldName,
+  shift
+) {
+
+  const { data: existing, error: findError } =
+    await supabaseClient
+      .from("shift_types")
+      .select("id")
+      .eq("name", oldName)
+      .limit(1);
+
+  if (findError) {
+
+    console.error(
+      "勤務形態検索エラー:",
+      findError
+    );
+
+    return;
+  }
+
+  if (
+    !existing ||
+    existing.length === 0
+  ) {
+
+    console.error(
+      "更新する勤務形態がSupabaseにありません:",
+      oldName
+    );
+
+    return;
+  }
+
+  const { error } =
+    await supabaseClient
+      .from("shift_types")
+      .update({
+        name: shift.name,
+        start_time: shift.start || "",
+        end_time: shift.end || "",
+        break_time: shift.break || ""
+      })
+      .eq(
+        "id",
+        existing[0].id
+      );
+
+  if (error) {
+
+    console.error(
+      "勤務形態更新エラー:",
+      error
+    );
+
+    alert(
+      "Supabase更新エラー\n" +
+      error.message
+    );
+
+    return;
+  }
+
+  console.log(
+    "Supabaseの勤務形態を更新しました:",
+    shift.name
+  );
+}
