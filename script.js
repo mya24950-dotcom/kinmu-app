@@ -1870,240 +1870,88 @@ function calculateFiscalTotal(
 
 async function addOrUpdateStaff() {
 
-  const input =
-    document.getElementById(
-      "staffNameInput"
-    );
+  const nameInput =
+    document.getElementById("staffNameInput");
 
-
-  if (!input) return;
-
+  if (!nameInput) return;
 
   const name =
-    input.value.trim();
-
+    nameInput.value.trim();
 
   if (!name) {
-
-    alert(
-      "職員名を入力してください"
-    );
-
+    alert("職員名を入力してください");
     return;
-
   }
-
 
   if (name === "明") {
-
-    alert(
-      "「明」は職員名に使用できません"
-    );
-
+    alert("「明」は登録できません");
     return;
-
   }
 
-
+  // 重複チェック
   if (
     appData.staff.some(
-      (s, i) =>
-        s === name &&
-        i !== editingStaffIndex
+      (staff, index) =>
+        staff.name === name &&
+        index !== editingStaffIndex
     )
   ) {
-
-    alert(
-      "同じ職員名は登録できません"
-    );
-
+    alert("同じ職員名は登録できません");
     return;
-
   }
 
-
-  /* ==================================================
-     編集
-  ================================================== */
-
-  if (
-    editingStaffIndex >= 0
-  ) {
+  // 編集
+  if (editingStaffIndex >= 0) {
 
     const oldName =
       appData.staff[
         editingStaffIndex
-      ];
-
-
-    /* Supabase更新 */
-
-    try {
-
-      const {
-        error
-      } =
-        await supabaseClient
-          .from("staff")
-          .update({
-            name: name
-          })
-          .eq(
-            "name",
-            oldName
-          );
-
-
-      if (error) {
-
-        console.error(
-          "Supabase更新エラー:",
-          error
-        );
-
-
-        alert(
-          "クラウドへの保存に失敗しました。\n\n" +
-          error.message
-        );
-
-        return;
-
-      }
-
-    } catch (error) {
-
-      console.error(
-        "Supabase接続エラー:",
-        error
-      );
-
-
-      alert(
-        "Supabaseに接続できませんでした。"
-      );
-
-      return;
-
-    }
-
-
-    /* ローカル更新 */
+      ].name;
 
     appData.staff[
       editingStaffIndex
-    ] = name;
+    ] = {
+      name
+    };
 
-
-    /* 勤務データの名前変更 */
-
+    // 職員名変更に合わせて勤務データも変更
     if (
+      oldName !== name &&
       appData.shifts[oldName]
     ) {
 
       appData.shifts[name] =
         appData.shifts[oldName];
 
-      delete appData.shifts[
-        oldName
-      ];
+      delete appData.shifts[oldName];
 
     }
 
-
-    editingStaffIndex =
-      -1;
-
-
-    input.value =
-      "";
-
-
-    const button =
-      document.getElementById(
-        "addStaffButton"
-      );
-
-
-    if (button) {
-
-      button.textContent =
-        "職員を追加";
-
-    }
-
-
-  } else {
-
-    /* ==================================================
-       新規追加
-    ================================================== */
-
-    try {
-
-      const {
-        error
-      } =
-        await supabaseClient
-          .from("staff")
-          .insert([
-            {
-              name: name
-            }
-          ]);
-
-
-      if (error) {
-
-        console.error(
-          "Supabase登録エラー:",
-          error
-        );
-
-
-        alert(
-          "クラウドへの保存に失敗しました。\n\n" +
-          error.message
-        );
-
-        return;
-
-      }
-
-    } catch (error) {
-
-      console.error(
-        "Supabase接続エラー:",
-        error
-      );
-
-
-      alert(
-        "Supabaseに接続できませんでした。"
-      );
-
-      return;
-
-    }
-
-
-    appData.staff.push(
-      name
-    );
-
-
-    input.value =
-      "";
+    editingStaffIndex = -1;
 
   }
 
+  // 新規追加
+  else {
 
-  /* ==================================================
-     ローカル保存・再描画
-  ================================================== */
+    appData.staff.push({
+      name
+    });
 
+    // 勤務データ用の場所を作成
+    if (!appData.shifts[name]) {
+      appData.shifts[name] = {};
+    }
+
+  }
+
+  // 入力欄をクリア
+  nameInput.value = "";
+
+  // ローカル保存
   saveData();
 
+  // 表示更新
   renderStaffList();
 
   renderSchedule();
