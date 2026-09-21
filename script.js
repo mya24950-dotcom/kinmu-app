@@ -4033,3 +4033,59 @@ async function loadStaffFromSupabase() {
   }
 }
 
+async function saveWorkShiftToSupabase(
+  staffName,
+  dateKey,
+  shiftName
+) {
+  const { data: existing, error: findError } =
+    await supabaseClient
+      .from("work_shifts")
+      .select("id")
+      .eq("staff_name", staffName)
+      .eq("work_date", dateKey)
+      .limit(1);
+
+  if (findError) {
+    console.error(
+      "勤務検索エラー:",
+      findError
+    );
+    return;
+  }
+
+  if (existing && existing.length > 0) {
+    const { error } =
+      await supabaseClient
+        .from("work_shifts")
+        .update({
+          shift_name: shiftName
+        })
+        .eq("id", existing[0].id);
+
+    if (error) {
+      console.error(
+        "勤務更新エラー:",
+        error
+      );
+    }
+  } else {
+    const { error } =
+      await supabaseClient
+        .from("work_shifts")
+        .insert([
+          {
+            staff_name: staffName,
+            work_date: dateKey,
+            shift_name: shiftName
+          }
+        ]);
+
+    if (error) {
+      console.error(
+        "勤務保存エラー:",
+        error
+      );
+    }
+  }
+}
