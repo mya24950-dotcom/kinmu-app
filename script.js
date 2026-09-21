@@ -50,14 +50,7 @@ function init() {
 
   loadPublicHolidays();
 
-    loadStaffFromSupabase();
-
-  loadWorkShiftsFromSupabase();
-
-loadShiftTypesFromSupabase();
-
 }
-
 
 /* ==================================================
    データ読み込み
