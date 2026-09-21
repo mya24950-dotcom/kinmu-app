@@ -1495,29 +1495,41 @@ function showShiftMenu(
 
 
   deleteButton.addEventListener(
-    "click",
-    e => {
+  "click",
+  async e => {
+    e.stopPropagation();
 
-      e.stopPropagation();
+    const { error } = await supabaseClient
+      .from("work_shifts")
+      .delete()
+      .eq("staff_name", staffName)
+      .eq("work_date", dateKey);
 
-
-      setStoredShift(
-        staffName,
-        dateKey,
-        ""
+    if (error) {
+      console.error(
+        "勤務削除エラー:",
+        error
       );
 
+      alert(
+        "勤務の削除に失敗しました。\n" +
+        error.message
+      );
 
-      saveData();
-
-
-      renderSchedule();
-
-
-      hideShiftMenu();
-
+      return;
     }
-  );
+
+    setStoredShift(
+      staffName,
+      dateKey,
+      ""
+    );
+
+    saveData();
+    renderSchedule();
+    hideShiftMenu();
+  }
+);
 
 
   buttons.appendChild(
