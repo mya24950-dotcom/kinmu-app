@@ -4126,3 +4126,26 @@ async function loadWorkShiftsFromSupabase() {
   saveData();
   renderSchedule();
 }
+async function saveShiftTypeToSupabase(shift) {
+  const { data, error } = await supabaseClient
+    .from("shift_types")
+    .insert([
+      {
+        name: shift.name
+      }
+    ])
+    .select();
+
+  if (error) {
+    console.error(
+      "勤務形態保存エラー:",
+      error
+    );
+    return;
+  }
+
+  console.log(
+    "Supabaseに勤務形態を保存:",
+    data
+  );
+}
