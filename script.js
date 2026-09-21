@@ -2120,29 +2120,20 @@ function renderStaffList() {
       "staffList"
     );
 
-
   if (!list) return;
-
-
-  /* 登録人数 */
 
   const count =
     document.getElementById(
       "staffCount"
     );
 
-
   if (count) {
-
     count.textContent =
       `${appData.staff.length}人`;
-
   }
-
 
   list.innerHTML =
     "";
-
 
   appData.staff.forEach(
     (name, index) => {
@@ -2152,22 +2143,17 @@ function renderStaffList() {
           "div"
         );
 
-
       item.className =
         "list-item";
 
-
       item.innerHTML = `
         <div class="list-item-main">
-
           <div class="list-item-title">
             ${escapeHtml(name)}
           </div>
-
         </div>
 
         <div class="list-item-buttons">
-
           <button
             type="button"
             class="list-button"
@@ -2183,20 +2169,18 @@ function renderStaffList() {
           >
             削除
           </button>
-
         </div>
       `;
 
 
-      /* ==================================================
+      /* =========================
          編集
-      ================================================== */
+      ========================= */
 
       const editButton =
         item.querySelector(
           "[data-edit]"
         );
-
 
       if (editButton) {
 
@@ -2209,7 +2193,6 @@ function renderStaffList() {
                 "staffNameInput"
               );
 
-
             if (input) {
 
               input.value =
@@ -2219,16 +2202,13 @@ function renderStaffList() {
 
             }
 
-
             editingStaffIndex =
               index;
-
 
             const button =
               document.getElementById(
                 "addStaffButton"
               );
-
 
             if (button) {
 
@@ -2243,21 +2223,20 @@ function renderStaffList() {
       }
 
 
-      /* ==================================================
+      /* =========================
          削除
-      ================================================== */
+      ========================= */
 
       const deleteButton =
         item.querySelector(
           "[data-delete]"
         );
 
-
       if (deleteButton) {
 
         deleteButton.addEventListener(
-  "click",
-  async () => {
+          "click",
+          async () => {
 
             if (
               !confirm(
@@ -2270,29 +2249,89 @@ function renderStaffList() {
             }
 
 
+            /* =========================
+               Supabaseの勤務データを削除
+            ========================= */
+
+            const {
+              error: workShiftError
+            } =
+              await supabaseClient
+                .from("work_shifts")
+                .delete()
+                .eq(
+                  "staff_name",
+                  name
+                );
+
+
+            if (workShiftError) {
+
+              console.error(
+                "Supabase勤務データ削除エラー:",
+                workShiftError
+              );
+
+              alert(
+                "勤務データの削除に失敗しました。\n\n" +
+                workShiftError.message
+              );
+
+              return;
+
+            }
+
+
+            /* =========================
+               Supabaseの職員データを削除
+            ========================= */
+
+            const {
+              error: staffError
+            } =
+              await supabaseClient
+                .from("staff")
+                .delete()
+                .eq(
+                  "name",
+                  name
+                );
+
+
+            if (staffError) {
+
+              console.error(
+                "Supabase職員削除エラー:",
+                staffError
+              );
+
+              alert(
+                "職員の削除に失敗しました。\n\n" +
+                staffError.message
+              );
+
+              return;
+
+            }
+
+
+            /* =========================
+               ローカルから削除
+            ========================= */
+
             delete appData.shifts[
               name
             ];
 
-
             appData.staff.splice(
-  index,
-  1
-);
-
-const { error } = await supabaseClient
-  .from("staff")
-  .delete()
-  .eq("name", name);
-
-if (error) {
-  console.error("Supabase職員削除エラー:", error);
-}
-
-    
+              index,
+              1
+            );
 
 
-            /* 編集中だった場合 */
+            /* =========================
+               編集中だった場合
+            ========================= */
 
             if (
               editingStaffIndex ===
@@ -2302,12 +2341,10 @@ if (error) {
               editingStaffIndex =
                 -1;
 
-
               const input =
                 document.getElementById(
                   "staffNameInput"
                 );
-
 
               if (input) {
 
@@ -2316,12 +2353,10 @@ if (error) {
 
               }
 
-
               const button =
                 document.getElementById(
                   "addStaffButton"
                 );
-
 
               if (button) {
 
@@ -2333,6 +2368,10 @@ if (error) {
             }
 
 
+            /* =========================
+               保存・再表示
+            ========================= */
+
             saveData();
 
             renderStaffList();
@@ -2343,6 +2382,16 @@ if (error) {
         );
 
       }
+
+
+      list.appendChild(
+        item
+      );
+
+    }
+  );
+
+}
 
 
       list.appendChild(
