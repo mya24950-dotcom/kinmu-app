@@ -1589,7 +1589,7 @@ function calculateFiscalTotal(
    職員
 ========================= */
 
-function addOrUpdateStaff() {
+async function addOrUpdateStaff() {
 
   const input =
     document.getElementById(
@@ -1634,6 +1634,10 @@ function addOrUpdateStaff() {
     return;
   }
 
+  /* =========================
+     編集
+  ========================= */
+
   if (
     editingStaffIndex >= 0
   ) {
@@ -1672,18 +1676,71 @@ function addOrUpdateStaff() {
       );
 
     if (button) {
+
       button.textContent =
         "職員を追加";
+
     }
 
   } else {
+
+    /* =========================
+       新規職員
+    ========================= */
 
     appData.staff.push(
       name
     );
 
     input.value = "";
+
+    /*
+      Supabaseにも保存
+    */
+
+    try {
+
+      const {
+        error
+      } =
+        await supabaseClient
+          .from("staff")
+          .insert([
+            {
+              name: name
+            }
+          ]);
+
+      if (error) {
+
+        console.error(
+          "Supabase登録エラー:",
+          error
+        );
+
+        alert(
+          "職員は登録されましたが、クラウドへの保存に失敗しました。"
+        );
+
+      }
+
+    } catch (error) {
+
+      console.error(
+        "Supabase接続エラー:",
+        error
+      );
+
+      alert(
+        "職員は登録されましたが、クラウドに接続できませんでした。"
+      );
+
+    }
   }
+
+  /* =========================
+     今まで通りローカル保存
+  ========================= */
 
   saveData();
 
