@@ -2521,16 +2521,23 @@ function addOrUpdateShift() {
 
     }
 
-  } else {
+ } else {
 
-    appData.shiftTypes.push({
-      name,
-      start,
-      end,
-      break: breakTime
-    });
+  appData.shiftTypes.push({
+    name,
+    start,
+    end,
+    break: breakTime
+  });
 
-  }
+  saveShiftTypeToSupabase({
+    name,
+    start,
+    end,
+    break: breakTime
+  });
+
+}
 
 
   nameInput.value =
