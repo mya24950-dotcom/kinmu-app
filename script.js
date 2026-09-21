@@ -2241,8 +2241,8 @@ function renderStaffList() {
       if (deleteButton) {
 
         deleteButton.addEventListener(
-          "click",
-          () => {
+  "click",
+  async () => {
 
             if (
               !confirm(
@@ -2261,9 +2261,20 @@ function renderStaffList() {
 
 
             appData.staff.splice(
-              index,
-              1
-            );
+  index,
+  1
+);
+
+const { error } = await supabaseClient
+  .from("staff")
+  .delete()
+  .eq("name", name);
+
+if (error) {
+  console.error("Supabase職員削除エラー:", error);
+}
+
+    
 
 
             /* 編集中だった場合 */
