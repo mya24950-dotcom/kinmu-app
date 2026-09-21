@@ -412,7 +412,9 @@ function setStoredShift(
   }
 }
 
-/* 自動「明」 */
+/* =========================
+   自動「明」
+========================= */
 
 function getDisplayShift(
   staffName,
@@ -511,15 +513,9 @@ function renderSchedule() {
   }
 
   /*
-    ★重要
-    職員列の幅をここで完全固定する。
-
-    スマホ：78px
-    PC：90px
-
-    勤務形態が0件でも、
-    勤務形態が何件あっても、
-    この幅は変わらない。
+    ==================================================
+    職員列・日付列・集計列の基本幅
+    ==================================================
   */
 
   const staffColumnWidth =
@@ -527,7 +523,107 @@ function renderSchedule() {
       ? 78
       : 90;
 
+  const dateColumnWidth =
+    window.innerWidth <= 600
+      ? 48
+      : 52;
+
+  const totalColumnWidth =
+    window.innerWidth <= 600
+      ? 52
+      : 58;
+
+  /*
+    ==================================================
+    テーブルHTML
+    ==================================================
+  */
+
   let html = "";
+
+  /*
+    ★重要
+
+    colgroupで列幅をテーブル構造として
+    先に確定させる。
+
+    これにより、
+
+    ・勤務形態0件
+    ・勤務形態1件
+    ・勤務形態が複数件
+
+    でも職員名部分の位置・幅が
+    テーブル計算に引っ張られにくくなる。
+  */
+
+  html += "<colgroup>";
+
+  /*
+    職員列
+  */
+
+  html += `
+    <col
+      class="staff-column"
+      style="
+        width:${staffColumnWidth}px;
+        min-width:${staffColumnWidth}px;
+        max-width:${staffColumnWidth}px;
+      "
+    >
+  `;
+
+  /*
+    日付列
+  */
+
+  for (
+    let day = 1;
+    day <= days;
+    day++
+  ) {
+
+    html += `
+      <col
+        class="date-column"
+        style="
+          width:${dateColumnWidth}px;
+          min-width:${dateColumnWidth}px;
+          max-width:${dateColumnWidth}px;
+        "
+      >
+    `;
+  }
+
+  /*
+    集計列
+  */
+
+  appData.shiftTypes.forEach(() => {
+
+    html += `
+      <col
+        class="total-column"
+        style="
+          width:${totalColumnWidth}px;
+          min-width:${totalColumnWidth}px;
+          max-width:${totalColumnWidth}px;
+        "
+      >
+
+      <col
+        class="total-column"
+        style="
+          width:${totalColumnWidth}px;
+          min-width:${totalColumnWidth}px;
+          max-width:${totalColumnWidth}px;
+        "
+      >
+    `;
+  });
+
+  html += "</colgroup>";
 
   /* =========================
      THEAD
@@ -536,6 +632,10 @@ function renderSchedule() {
   html += "<thead>";
 
   html += "<tr>";
+
+  /*
+    職員
+  */
 
   html += `
     <th
@@ -555,6 +655,10 @@ function renderSchedule() {
       職員
     </th>
   `;
+
+  /*
+    日付
+  */
 
   for (
     let day = 1;
@@ -604,28 +708,36 @@ function renderSchedule() {
       <th
         class="${cls}"
         rowspan="2"
+        style="
+          width:${dateColumnWidth}px;
+          min-width:${dateColumnWidth}px;
+          max-width:${dateColumnWidth}px;
+          box-sizing:border-box;
+        "
       >
         <span class="day-number">
           ${day}
         </span>
         <br>
         <span class="day-week">
-          ${[
-            "日",
-            "月",
-            "火",
-            "水",
-            "木",
-            "金",
-            "土"
-          ][week]}
+          ${
+            [
+              "日",
+              "月",
+              "火",
+              "水",
+              "木",
+              "金",
+              "土"
+            ][week]
+          }
         </span>
       </th>
     `;
   }
 
   /*
-    勤務形態ごとの集計列
+    勤務形態ごとの集計
   */
 
   appData.shiftTypes.forEach(
@@ -656,13 +768,29 @@ function renderSchedule() {
     () => {
 
       html += `
-        <th class="total-header">
+        <th
+          class="total-header"
+          style="
+            width:${totalColumnWidth}px;
+            min-width:${totalColumnWidth}px;
+            max-width:${totalColumnWidth}px;
+            box-sizing:border-box;
+          "
+        >
           合計
         </th>
       `;
 
       html += `
-        <th class="total-header">
+        <th
+          class="total-header"
+          style="
+            width:${totalColumnWidth}px;
+            min-width:${totalColumnWidth}px;
+            max-width:${totalColumnWidth}px;
+            box-sizing:border-box;
+          "
+        >
           累計
         </th>
       `;
@@ -682,18 +810,26 @@ function renderSchedule() {
   appData.staff.forEach(
     staffName => {
 
-      html += "<tr>";
+      /*
+        ★職員1人分の行
+      */
+
+      html += `
+        <tr
+          class="staff-row"
+          data-staff-row="${escapeHtml(
+            staffName
+          )}"
+          style="
+            width:100%;
+          "
+        >
+      `;
 
       /*
-        ★ここが重要
+        ★職員名セル
 
-        staff-cell も付ける。
-
-        CSS側の
-        .staff-cell
-        .staff-name-cell
-
-        どちらにも対応させる。
+        行の左端に固定する。
       */
 
       html += `
@@ -785,6 +921,12 @@ function renderSchedule() {
               staffName
             )}"
             data-date="${dateKey}"
+            style="
+              width:${dateColumnWidth}px;
+              min-width:${dateColumnWidth}px;
+              max-width:${dateColumnWidth}px;
+              box-sizing:border-box;
+            "
           >
             ${escapeHtml(
               display
@@ -817,13 +959,29 @@ function renderSchedule() {
             );
 
           html += `
-            <td class="total-cell">
+            <td
+              class="total-cell"
+              style="
+                width:${totalColumnWidth}px;
+                min-width:${totalColumnWidth}px;
+                max-width:${totalColumnWidth}px;
+                box-sizing:border-box;
+              "
+            >
               ${monthly}
             </td>
           `;
 
           html += `
-            <td class="total-cell">
+            <td
+              class="total-cell"
+              style="
+                width:${totalColumnWidth}px;
+                min-width:${totalColumnWidth}px;
+                max-width:${totalColumnWidth}px;
+                box-sizing:border-box;
+              "
+            >
               ${fiscal}
             </td>
           `;
@@ -837,7 +995,9 @@ function renderSchedule() {
   html += "</tbody>";
 
   /*
-    ★テーブル自体の設定
+    ==================================================
+    テーブル自体
+    ==================================================
   */
 
   table.style.borderCollapse =
@@ -846,16 +1006,65 @@ function renderSchedule() {
   table.style.borderSpacing =
     "0";
 
+  /*
+    ★重要
+
+    autoではなくfixedにする。
+
+    colgroupで指定した幅を
+    テーブルレイアウトに使わせる。
+  */
+
   table.style.tableLayout =
-    "auto";
-
-  table.style.minWidth =
-    "max-content";
-
-  table.innerHTML = html;
+    "fixed";
 
   /*
-    ★描画後にも職員列を強制固定
+    テーブルの必要幅
+
+    職員列
+    ＋ 日付列
+    ＋ 集計列
+  */
+
+  const requiredTableWidth =
+    staffColumnWidth +
+    (
+      days *
+      dateColumnWidth
+    ) +
+    (
+      appData.shiftTypes.length *
+      2 *
+      totalColumnWidth
+    );
+
+  /*
+    ★テーブルは必要幅を維持
+
+    画面より大きければ
+    table-wrapper側で横スクロールする。
+  */
+
+  table.style.width =
+    requiredTableWidth + "px";
+
+  table.style.minWidth =
+    requiredTableWidth + "px";
+
+  table.style.maxWidth =
+    "none";
+
+  /*
+    HTMLを反映
+  */
+
+  table.innerHTML =
+    html;
+
+  /*
+    ==================================================
+    描画後の職員列固定
+    ==================================================
   */
 
   const staffHeaders =
@@ -885,6 +1094,9 @@ function renderSchedule() {
 
     cell.style.background =
       "#f2f2f7";
+
+    cell.style.boxSizing =
+      "border-box";
   });
 
   const staffCells =
@@ -914,6 +1126,33 @@ function renderSchedule() {
 
     cell.style.background =
       "#ffffff";
+
+    cell.style.boxSizing =
+      "border-box";
+
+    cell.style.borderRight =
+      "1px solid #d1d1d6";
+  });
+
+  /*
+    ★職員行そのものも確認
+  */
+
+  const staffRows =
+    table.querySelectorAll(
+      ".staff-row"
+    );
+
+  staffRows.forEach(row => {
+
+    row.style.width =
+      requiredTableWidth + "px";
+
+    row.style.minWidth =
+      requiredTableWidth + "px";
+
+    row.style.maxWidth =
+      requiredTableWidth + "px";
   });
 
   bindScheduleCells();
