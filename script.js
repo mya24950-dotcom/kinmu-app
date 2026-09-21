@@ -4071,3 +4071,4 @@ async function testSupabaseWorkShift() {
     data
   );
 }
+testSupabaseWorkShift();
