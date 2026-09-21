@@ -2698,6 +2698,10 @@ function renderShiftList() {
       `;
 
 
+      /* ==================================================
+         編集
+      ================================================== */
+
       const editButton =
         item.querySelector(
           "[data-edit]"
@@ -2789,6 +2793,10 @@ function renderShiftList() {
       }
 
 
+      /* ==================================================
+         削除
+      ================================================== */
+
       const deleteButton =
         item.querySelector(
           "[data-delete]"
@@ -2799,7 +2807,7 @@ function renderShiftList() {
 
         deleteButton.addEventListener(
           "click",
-          () => {
+          async () => {
 
             if (
               !confirm(
@@ -2811,6 +2819,26 @@ function renderShiftList() {
 
             }
 
+
+            /* Supabaseから削除 */
+
+            const success =
+              await deleteShiftTypeFromSupabase(
+                shift.name
+              );
+
+
+            /* Supabase削除失敗なら
+               ローカルも削除しない */
+
+            if (!success) {
+
+              return;
+
+            }
+
+
+            /* ローカルから削除 */
 
             appData.shiftTypes.splice(
               index,
