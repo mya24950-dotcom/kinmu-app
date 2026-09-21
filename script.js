@@ -51,6 +51,9 @@ function init() {
   loadPublicHolidays();
 
     loadStaffFromSupabase();
+
+  loadWorkShiftsFromSupabase();
+
 }
 
 
