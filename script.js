@@ -1966,284 +1966,115 @@ async function addOrUpdateStaff() {
 function renderStaffList() {
 
   const list =
-    document.getElementById(
-      "staffList"
-    );
+    document.getElementById("staffList");
 
   if (!list) return;
 
-  const count =
-    document.getElementById(
-      "staffCount"
-    );
-
-  if (count) {
-    count.textContent =
-      `${appData.staff.length}人`;
-  }
-
-  list.innerHTML =
-    "";
+  list.innerHTML = "";
 
   appData.staff.forEach(
-    (name, index) => {
+    (staff, index) => {
+
+      const name =
+        typeof staff === "string"
+          ? staff
+          : staff.name;
 
       const item =
-        document.createElement(
-          "div"
-        );
+        document.createElement("div");
 
-      item.className =
-        "list-item";
+      item.className = "staff-item";
 
       item.innerHTML = `
-        <div class="list-item-main">
-          <div class="list-item-title">
-            ${escapeHtml(name)}
-          </div>
-        </div>
-
-        <div class="list-item-buttons">
+        <span>${name}</span>
+        <div>
           <button
             type="button"
-            class="list-button"
-            data-edit
+            class="edit-staff-button"
           >
             編集
           </button>
 
           <button
             type="button"
-            class="list-button delete"
-            data-delete
+            class="delete-staff-button"
           >
             削除
           </button>
         </div>
       `;
 
-
-      /* =========================
-         編集
-      ========================= */
-
       const editButton =
         item.querySelector(
-          "[data-edit]"
+          ".edit-staff-button"
         );
 
-      if (editButton) {
+      editButton.addEventListener(
+        "click",
+        () => {
 
-        editButton.addEventListener(
-          "click",
-          () => {
+          editingStaffIndex =
+            index;
 
-            const input =
-              document.getElementById(
-                "staffNameInput"
-              );
+          const input =
+            document.getElementById(
+              "staffNameInput"
+            );
 
-            if (input) {
-
-              input.value =
-                name;
-
-              input.focus();
-
-            }
-
-            editingStaffIndex =
-              index;
-
-            const button =
-              document.getElementById(
-                "addStaffButton"
-              );
-
-            if (button) {
-
-              button.textContent =
-                "職員を更新";
-
-            }
-
+          if (input) {
+            input.value = name;
           }
-        );
 
-      }
+          const button =
+            document.getElementById(
+              "addStaffButton"
+            );
 
-
-      /* =========================
-         削除
-      ========================= */
+          if (button) {
+            button.textContent =
+              "職員を更新";
+          }
+        }
+      );
 
       const deleteButton =
         item.querySelector(
-          "[data-delete]"
+          ".delete-staff-button"
         );
 
-      if (deleteButton) {
+      deleteButton.addEventListener(
+        "click",
+        () => {
 
-        deleteButton.addEventListener(
-          "click",
-          async () => {
-
-            if (
-              !confirm(
-                `${name}を削除しますか？`
-              )
-            ) {
-
-              return;
-
-            }
-
-
-            /* =========================
-               Supabaseの勤務データを削除
-            ========================= */
-
-            const {
-              error: workShiftError
-            } =
-              await supabaseClient
-                .from("work_shifts")
-                .delete()
-                .eq(
-                  "staff_name",
-                  name
-                );
-
-
-            if (workShiftError) {
-
-              console.error(
-                "Supabase勤務データ削除エラー:",
-                workShiftError
-              );
-
-              alert(
-                "勤務データの削除に失敗しました。\n\n" +
-                workShiftError.message
-              );
-
-              return;
-
-            }
-
-
-            /* =========================
-               Supabaseの職員データを削除
-            ========================= */
-
-            const {
-              error: staffError
-            } =
-              await supabaseClient
-                .from("staff")
-                .delete()
-                .eq(
-                  "name",
-                  name
-                );
-
-
-            if (staffError) {
-
-              console.error(
-                "Supabase職員削除エラー:",
-                staffError
-              );
-
-              alert(
-                "職員の削除に失敗しました。\n\n" +
-                staffError.message
-              );
-
-              return;
-
-            }
-
-
-            /* =========================
-               ローカルから削除
-            ========================= */
-
-            delete appData.shifts[
-              name
-            ];
-
-            appData.staff.splice(
-              index,
-              1
-            );
-
-
-            /* =========================
-               編集中だった場合
-            ========================= */
-
-            if (
-              editingStaffIndex ===
-              index
-            ) {
-
-              editingStaffIndex =
-                -1;
-
-              const input =
-                document.getElementById(
-                  "staffNameInput"
-                );
-
-              if (input) {
-
-                input.value =
-                  "";
-
-              }
-
-              const button =
-                document.getElementById(
-                  "addStaffButton"
-                );
-
-              if (button) {
-
-                button.textContent =
-                  "職員を追加";
-
-              }
-
-            }
-
-
-            /* =========================
-               保存・再表示
-            ========================= */
-
-            saveData();
-
-            renderStaffList();
-
-            renderSchedule();
-
+          if (
+            !confirm(
+              `${name}を削除しますか？`
+            )
+          ) {
+            return;
           }
-        );
 
-      }
+          appData.staff.splice(
+            index,
+            1
+          );
 
+          delete appData.shifts[name];
 
-      list.appendChild(
-        item
+          saveData();
+
+          renderStaffList();
+          renderSchedule();
+
+        }
       );
+
+      list.appendChild(item);
 
     }
   );
 
 }
-
-
       
 /* ==================================================
    勤務形態
