@@ -988,3 +988,28 @@ input:focus {
 #scheduleTable tbody tr.staff-row > td {
   box-sizing: border-box;
 }
+
+/* =========================
+   職員管理
+========================= */
+
+.staff-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 18px;
+  margin-bottom: 8px;
+  padding: 0 2px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+#staffCount {
+  color: #8e8e93;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.staff-list-header + .list {
+  margin-top: 0;
+}
