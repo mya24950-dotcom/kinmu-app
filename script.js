@@ -2443,6 +2443,23 @@ function addOrUpdateShift() {
         editingShiftIndex
       ].name;
 
+    const oldShift = {
+  name: oldName,
+  start:
+    appData.shiftTypes[
+      editingShiftIndex
+    ].start || "",
+  end:
+    updateShiftTypeInSupabase(
+  oldName,
+  {
+    name,
+    start,
+    end,
+    break: breakTime
+  }
+);
+
     appData.shiftTypes[
       editingShiftIndex
     ] = {
