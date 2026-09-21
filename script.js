@@ -1430,9 +1430,9 @@ function showShiftMenu(
         "shift-menu-button";
 
 
-      button.addEventListener(
+     button.addEventListener(
   "click",
-  async e => {
+  e => {
     e.stopPropagation();
 
     setStoredShift(
@@ -1444,12 +1444,6 @@ function showShiftMenu(
     saveData();
     renderSchedule();
     hideShiftMenu();
-
-    await saveWorkShiftToSupabase(
-      staffName,
-      dateKey,
-      shift.name
-    );
   }
 );
 
