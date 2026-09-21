@@ -4012,9 +4012,7 @@ async function loadStaffFromSupabase() {
       );
 
       if (!exists) {
-        appData.staff.push({
-          name: row.name
-        });
+        appData.staff.push(row.name);
       }
     });
 
