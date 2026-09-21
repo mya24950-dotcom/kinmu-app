@@ -4140,15 +4140,22 @@ async function saveShiftTypeToSupabase(shift) {
     .select();
 
   if (error) {
-    console.error(
-      "勤務形態保存エラー:",
-      error
-    );
-    return;
-  }
+  console.error(
+    "勤務形態保存エラー:",
+    error
+  );
+
+  alert(
+    "Supabase保存エラー\n" +
+    error.message
+  );
+
+  return;
+}
 
   console.log(
     "Supabaseに勤務形態を保存:",
     data
   );
+  alert("Supabaseに勤務形態を保存しました");
 }
