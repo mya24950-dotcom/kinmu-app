@@ -796,3 +796,38 @@ input:focus {
     justify-content: center;
   }
 }
+
+/* ========================================
+   勤務表：職員列の固定・幅調整
+======================================== */
+
+/* 職員列を常に一定幅にする */
+#scheduleTable .staff-header,
+#scheduleTable .staff-name-cell {
+  width: 110px;
+  min-width: 110px;
+  max-width: 110px;
+  box-sizing: border-box;
+}
+
+/* 職員見出し */
+#scheduleTable .staff-header {
+  position: sticky;
+  left: 0;
+  z-index: 30;
+  background: #f2f2f7;
+}
+
+/* 職員名も一緒に固定 */
+#scheduleTable .staff-name-cell {
+  position: sticky;
+  left: 0;
+  z-index: 20;
+  background: #ffffff;
+}
+
+/* 職員列の右境界を常に表示 */
+#scheduleTable .staff-header,
+#scheduleTable .staff-name-cell {
+  border-right: 1px solid #d1d1d6;
+}
