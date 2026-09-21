@@ -1,13 +1,4 @@
-const SUPABASE_URL = "https://pyfdhlqvnponaczmbuot.supabase.co";
-const SUPABASE_KEY = "sb_publishable_dROecn8WChOgOOipDaIX6w_3eIWK0co";
 
-
-
-const supabaseClient =
-  supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_KEY
-  );
 
 const STORAGE_KEY = "workScheduleAppData";
 
