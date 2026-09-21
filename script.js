@@ -4141,37 +4141,67 @@ async function loadWorkShiftsFromSupabase() {
   renderSchedule();
 }
 async function saveShiftTypeToSupabase(shift) {
-  const { data, error } = await supabaseClient
-    .from("shift_types")
-    .insert([
-      {
-  name: shift.name,
-  start_time: shift.start || "",
-  end_time: shift.end || "",
-  break_time: shift.break || ""
-}
-    ])
-    .select();
+
+  // 同じ名前がすでにあるか確認
+  const { data: existing, error: findError } =
+    await supabaseClient
+      .from("shift_types")
+      .select("id")
+      .eq("name", shift.name)
+      .limit(1);
+
+  if (findError) {
+    console.error(
+      "勤務形態検索エラー:",
+      findError
+    );
+
+    return;
+  }
+
+  // すでに存在する場合は保存しない
+  if (existing && existing.length > 0) {
+
+    console.log(
+      "同じ勤務形態がすでに存在するため保存しません:",
+      shift.name
+    );
+
+    return;
+  }
+
+  // 新規保存
+  const { data, error } =
+    await supabaseClient
+      .from("shift_types")
+      .insert([
+        {
+          name: shift.name,
+          start_time: shift.start || "",
+          end_time: shift.end || "",
+          break_time: shift.break || ""
+        }
+      ])
+      .select();
 
   if (error) {
-  console.error(
-    "勤務形態保存エラー:",
-    error
-  );
+    console.error(
+      "勤務形態保存エラー:",
+      error
+    );
 
-  alert(
-    "Supabase保存エラー\n" +
-    error.message
-  );
+    alert(
+      "Supabase保存エラー\n" +
+      error.message
+    );
 
-  return;
-}
+    return;
+  }
 
   console.log(
     "Supabaseに勤務形態を保存:",
     data
   );
-  
 }
 
 async function loadShiftTypesFromSupabase() {
