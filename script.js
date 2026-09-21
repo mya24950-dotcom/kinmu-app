@@ -4040,7 +4040,7 @@ async function testSupabaseWorkShift() {
       .from("work_shifts")
       .insert([
         {
-          staff_name: appData.staff[0],
+          staff_name: "テスト職員",
           work_date: "2026-09-21",
           shift_name: "テスト"
         }
