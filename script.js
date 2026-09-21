@@ -4202,8 +4202,10 @@ async function loadShiftTypesFromSupabase() {
   renderShiftList();
   renderSchedule();
 
-  console.log(
-    "Supabaseから勤務形態を読み込みました:",
-    data
-  );
+  console.log("勤務形態の取得件数:", data.length);
+
+console.log(
+  "Supabaseから勤務形態を読み込みました:",
+  data
+);
 }
