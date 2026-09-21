@@ -1602,20 +1602,12 @@ async function addOrUpdateStaff() {
     input.value.trim();
 
   if (!name) {
-
-    alert(
-      "職員名を入力してください"
-    );
-
+    alert("職員名を入力してください");
     return;
   }
 
   if (name === "明") {
-
-    alert(
-      "「明」は職員名に使用できません"
-    );
-
+    alert("「明」は職員名に使用できません");
     return;
   }
 
@@ -1626,11 +1618,7 @@ async function addOrUpdateStaff() {
         i !== editingStaffIndex
     )
   ) {
-
-    alert(
-      "同じ職員名は登録できません"
-    );
-
+    alert("同じ職員名は登録できません");
     return;
   }
 
@@ -1638,18 +1626,67 @@ async function addOrUpdateStaff() {
      編集
   ========================= */
 
-  if (
-    editingStaffIndex >= 0
-  ) {
+  if (editingStaffIndex >= 0) {
 
     const oldName =
       appData.staff[
         editingStaffIndex
       ];
 
+    /*
+      Supabaseの職員名を更新
+    */
+
+    try {
+
+      const { error } =
+        await supabaseClient
+          .from("staff")
+          .update({
+            name: name
+          })
+          .eq("name", oldName);
+
+      if (error) {
+
+        console.error(
+          "Supabase更新エラー:",
+          error
+        );
+
+        alert(
+          "Supabaseの職員名を更新できませんでした。\n\n" +
+          error.message
+        );
+
+        return;
+      }
+
+    } catch (error) {
+
+      console.error(
+        "Supabase接続エラー:",
+        error
+      );
+
+      alert(
+        "Supabaseに接続できませんでした。"
+      );
+
+      return;
+    }
+
+    /*
+      ローカルの職員名を更新
+    */
+
     appData.staff[
       editingStaffIndex
     ] = name;
+
+    /*
+      勤務データの職員名も変更
+    */
 
     if (
       appData.shifts[oldName]
@@ -1665,8 +1702,7 @@ async function addOrUpdateStaff() {
       ];
     }
 
-    editingStaffIndex =
-      -1;
+    editingStaffIndex = -1;
 
     input.value = "";
 
@@ -1676,33 +1712,19 @@ async function addOrUpdateStaff() {
       );
 
     if (button) {
-
       button.textContent =
         "職員を追加";
-
     }
 
   } else {
 
     /* =========================
-       新規職員
+       新規追加
     ========================= */
-
-    appData.staff.push(
-      name
-    );
-
-    input.value = "";
-
-    /*
-      Supabaseにも保存
-    */
 
     try {
 
-      const {
-        error
-      } =
+      const { error } =
         await supabaseClient
           .from("staff")
           .insert([
@@ -1713,19 +1735,18 @@ async function addOrUpdateStaff() {
 
       if (error) {
 
-  console.error(
-    "Supabase登録エラー:",
-    error
-  );
+        console.error(
+          "Supabase登録エラー:",
+          error
+        );
 
-  alert(
-    "Supabaseエラー\n\n" +
-    "code: " + error.code +
-    "\nmessage: " + error.message +
-    "\ndetails: " + error.details
-  );
+        alert(
+          "クラウドへの保存に失敗しました。\n\n" +
+          error.message
+        );
 
-}
+        return;
+      }
 
     } catch (error) {
 
@@ -1735,11 +1756,27 @@ async function addOrUpdateStaff() {
       );
 
       alert(
-        "職員は登録されましたが、クラウドに接続できませんでした。"
+        "Supabaseに接続できませんでした。"
       );
 
+      return;
     }
+
+    appData.staff.push(name);
+
+    input.value = "";
   }
+
+  /* =========================
+     ローカル保存
+  ========================= */
+
+  saveData();
+
+  renderStaffList();
+
+  renderSchedule();
+}
 
   /* =========================
      今まで通りローカル保存
