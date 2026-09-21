@@ -35,6 +35,30 @@ function init() {
 
   loadData();
 
+  // データが壊れていても必ず正常な形にする
+  if (!Array.isArray(appData.staff)) {
+    appData.staff = [];
+  }
+
+  if (!Array.isArray(appData.shiftTypes)) {
+    appData.shiftTypes = [];
+  }
+
+  if (!Array.isArray(appData.companyHolidays)) {
+    appData.companyHolidays = [];
+  }
+
+  if (!appData.shifts || typeof appData.shifts !== "object") {
+    appData.shifts = {};
+  }
+
+  if (!appData.akeTime) {
+    appData.akeTime = {
+      start: "05:30",
+      end: "11:15"
+    };
+  }
+
   bindEvents();
 
   renderAll();
