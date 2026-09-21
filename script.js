@@ -3991,3 +3991,16 @@ function escapeICS(
     );
 
 }
+async function loadStaffFromSupabase() {
+  const { data, error } = await supabaseClient
+    .from("staff")
+    .select("id, name, created_at")
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    console.error("職員読み込みエラー:", error);
+    return;
+  }
+
+  console.log("Supabase職員:", data);
+}
