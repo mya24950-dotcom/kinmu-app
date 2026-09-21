@@ -2572,8 +2572,6 @@ function addOrUpdateShift() {
 renderShiftList();
 renderSchedule();
 
-console.log("勤務形態追加処理を実行しました");
-
 saveShiftTypeToSupabase({
   name,
   start,
@@ -4171,5 +4169,39 @@ async function saveShiftTypeToSupabase(shift) {
     "Supabaseに勤務形態を保存:",
     data
   );
-  alert("Supabaseに勤務形態を保存しました");
+  
+}
+
+async function loadShiftTypesFromSupabase() {
+
+  const { data, error } = await supabaseClient
+    .from("shift_types")
+    .select("name, start_time, end_time, break_time")
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    console.error(
+      "勤務形態読み込みエラー:",
+      error
+    );
+    return;
+  }
+
+  if (!data) return;
+
+  appData.shiftTypes = data.map(row => ({
+    name: row.name,
+    start: row.start_time || "",
+    end: row.end_time || "",
+    break: row.break_time || ""
+  }));
+
+  saveData();
+  renderShiftList();
+  renderSchedule();
+
+  console.log(
+    "Supabaseから勤務形態を読み込みました:",
+    data
+  );
 }
