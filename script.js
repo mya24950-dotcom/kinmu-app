@@ -4019,8 +4019,8 @@ async function loadStaffFromSupabase() {
   if (data && data.length > 0) {
     data.forEach(row => {
       const exists = appData.staff.find(
-        staff => staff.name === row.name
-      );
+  staff => staff === row.name
+);
 
       if (!exists) {
         appData.staff.push(row.name);
