@@ -4002,7 +4002,8 @@ async function loadStaffFromSupabase() {
   if (error) {
     console.error("職員読み込みエラー:", error);
     return;
+
   }
 
-  console.log("Supabase職員:", data);
+  alert("Supabaseから " + data.length + "人読み込みました");
 }
