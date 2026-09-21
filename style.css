@@ -176,15 +176,7 @@ button {
    職員列
 ======================================== */
 
-#scheduleTable .staff-header,
-#scheduleTable .staff-cell {
-  position: sticky;
-  left: 0;
-  width: 90px;
-  min-width: 90px;
-  max-width: 90px;
-  box-sizing: border-box;
-}
+
 
 /* 職員見出し */
 #scheduleTable .staff-header {
