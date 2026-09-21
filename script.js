@@ -3049,7 +3049,160 @@ function deleteFiscalYear() {
 
   renderSchedule();
 }
+function renderStaffList() {
 
+  const list =
+    document.getElementById(
+      "staffList"
+    );
+
+  if (!list) return;
+
+  /* 登録人数を表示 */
+  const count =
+    document.getElementById(
+      "staffCount"
+    );
+
+  if (count) {
+
+    count.textContent =
+      `${appData.staff.length}人`;
+
+  }
+
+  list.innerHTML = "";
+
+  appData.staff.forEach(
+    (name, index) => {
+
+      const item =
+        document.createElement(
+          "div"
+        );
+
+      item.className =
+        "list-item";
+
+      item.innerHTML = `
+        <div class="list-item-main">
+
+          <div class="list-item-title">
+            ${escapeHtml(name)}
+          </div>
+
+        </div>
+
+        <div class="list-item-buttons">
+
+          <button
+            type="button"
+            class="list-button"
+            data-edit
+          >
+            編集
+          </button>
+
+          <button
+            type="button"
+            class="list-button delete"
+            data-delete
+          >
+            削除
+          </button>
+
+        </div>
+      `;
+
+      /* =========================
+         編集
+      ========================= */
+
+      item
+        .querySelector(
+          "[data-edit]"
+        )
+        .addEventListener(
+          "click",
+          () => {
+
+            const input =
+              document.getElementById(
+                "staffNameInput"
+              );
+
+            if (input) {
+
+              input.value =
+                name;
+
+              input.focus();
+
+            }
+
+            editingStaffIndex =
+              index;
+
+            const button =
+              document.getElementById(
+                "addStaffButton"
+              );
+
+            if (button) {
+
+              button.textContent =
+                "職員を更新";
+
+            }
+
+          }
+        );
+
+      /* =========================
+         削除
+      ========================= */
+
+      item
+        .querySelector(
+          "[data-delete]"
+        )
+        .addEventListener(
+          "click",
+          () => {
+
+            if (
+              !confirm(
+                `${name}を削除しますか？`
+              )
+            ) {
+              return;
+            }
+
+            delete appData.shifts[
+              name
+            ];
+
+            appData.staff.splice(
+              index,
+              1
+            );
+
+            saveData();
+
+            renderStaffList();
+
+            renderSchedule();
+
+          }
+        );
+
+      list.appendChild(
+        item
+      );
+
+    }
+  );
+}
 /* =========================
    公休日API
 ========================= */
