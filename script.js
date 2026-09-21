@@ -2359,7 +2359,7 @@ if (error) {
    勤務形態
 ================================================== */
 
-function addOrUpdateShift() {
+async function addOrUpdateShift() {
 
   const nameInput =
     document.getElementById(
@@ -2434,6 +2434,11 @@ function addOrUpdateShift() {
     return;
   }
 
+
+  /* ==================================================
+     編集
+  ================================================== */
+
   if (
     editingShiftIndex >= 0
   ) {
@@ -2443,22 +2448,21 @@ function addOrUpdateShift() {
         editingShiftIndex
       ].name;
 
-    const oldShift = {
-  name: oldName,
-  start:
-    appData.shiftTypes[
-      editingShiftIndex
-    ].start || "",
-  end:
-    updateShiftTypeInSupabase(
-  oldName,
-  {
-    name,
-    start,
-    end,
-    break: breakTime
-  }
-);
+
+    /* Supabase更新 */
+
+    await updateShiftTypeInSupabase(
+      oldName,
+      {
+        name,
+        start,
+        end,
+        break: breakTime
+      }
+    );
+
+
+    /* ローカル更新 */
 
     appData.shiftTypes[
       editingShiftIndex
@@ -2468,6 +2472,9 @@ function addOrUpdateShift() {
       end,
       break: breakTime
     };
+
+
+    /* 勤務表の勤務形態名も変更 */
 
     if (
       oldName !== name
@@ -2494,6 +2501,7 @@ function addOrUpdateShift() {
                   staff
                 ][date] =
                   name;
+
               }
 
             }
@@ -2504,8 +2512,10 @@ function addOrUpdateShift() {
 
     }
 
+
     editingShiftIndex =
       -1;
+
 
     const button =
       document.getElementById(
@@ -2519,7 +2529,13 @@ function addOrUpdateShift() {
 
     }
 
+
   } else {
+
+
+    /* ==================================================
+       新規追加
+    ================================================== */
 
     appData.shiftTypes.push({
       name,
@@ -2528,7 +2544,20 @@ function addOrUpdateShift() {
       break: breakTime
     });
 
+
+    await saveShiftTypeToSupabase({
+      name,
+      start,
+      end,
+      break: breakTime
+    });
+
   }
+
+
+  /* ==================================================
+     入力欄クリア
+  ================================================== */
 
   nameInput.value =
     "";
@@ -2554,18 +2583,16 @@ function addOrUpdateShift() {
 
   }
 
+
+  /* ==================================================
+     保存・再描画
+  ================================================== */
+
   saveData();
 
   renderShiftList();
 
   renderSchedule();
-
-  saveShiftTypeToSupabase({
-    name,
-    start,
-    end,
-    break: breakTime
-  });
 
 }
 
