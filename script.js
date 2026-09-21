@@ -1592,9 +1592,7 @@ function calculateFiscalTotal(
 async function addOrUpdateStaff() {
 
   const input =
-    document.getElementById(
-      "staffNameInput"
-    );
+    document.getElementById("staffNameInput");
 
   if (!input) return;
 
@@ -1629,13 +1627,7 @@ async function addOrUpdateStaff() {
   if (editingStaffIndex >= 0) {
 
     const oldName =
-      appData.staff[
-        editingStaffIndex
-      ];
-
-    /*
-      Supabaseの職員名を更新
-    */
+      appData.staff[editingStaffIndex];
 
     try {
 
@@ -1648,14 +1640,13 @@ async function addOrUpdateStaff() {
           .eq("name", oldName);
 
       if (error) {
-
         console.error(
           "Supabase更新エラー:",
           error
         );
 
         alert(
-          "Supabaseの職員名を更新できませんでした。\n\n" +
+          "クラウドへの保存に失敗しました。\n\n" +
           error.message
         );
 
@@ -1676,30 +1667,16 @@ async function addOrUpdateStaff() {
       return;
     }
 
-    /*
-      ローカルの職員名を更新
-    */
-
     appData.staff[
       editingStaffIndex
     ] = name;
 
-    /*
-      勤務データの職員名も変更
-    */
-
-    if (
-      appData.shifts[oldName]
-    ) {
+    if (appData.shifts[oldName]) {
 
       appData.shifts[name] =
-        appData.shifts[
-          oldName
-        ];
+        appData.shifts[oldName];
 
-      delete appData.shifts[
-        oldName
-      ];
+      delete appData.shifts[oldName];
     }
 
     editingStaffIndex = -1;
@@ -1767,197 +1744,8 @@ async function addOrUpdateStaff() {
     input.value = "";
   }
 
-  /* =========================
-     ローカル保存
-  ========================= */
 
-  saveData();
 
-  renderStaffList();
-
-  renderSchedule();
-}
-
-  /* =========================
-     今まで通りローカル保存
-  ========================= */
-
-  saveData();
-
-  renderStaffList();
-
-  renderSchedule();
-}
-
-function renderStaffList() {
-
-  const list =
-    document.getElementById(
-      "staffList"
-    );
-
-  if (!list) return;
-
-  list.innerHTML = "";
-
-  appData.staff.forEach(
-    (name, index) => {
-
-      const item =
-        document.createElement(
-          "div"
-        );
-
-      item.className =
-        "list-item";
-
-      item.innerHTML = `
-        <div class="list-item-main">
-
-          <div class="list-item-title">
-            ${escapeHtml(name)}
-          </div>
-
-        </div>
-
-        <div class="list-item-buttons">
-
-          <button
-            type="button"
-            class="list-button"
-            data-edit
-          >
-            編集
-          </button>
-
-          <button
-            type="button"
-            class="list-button delete"
-            data-delete
-          >
-            削除
-          </button>
-
-        </div>
-      `;
-
-      /* 編集 */
-
-      item
-        .querySelector(
-          "[data-edit]"
-        )
-        .addEventListener(
-          "click",
-          async () => {
-
-            const input =
-              document.getElementById(
-                "staffNameInput"
-              );
-
-            if (input) {
-
-              input.value =
-                name;
-
-              input.focus();
-            }
-
-            editingStaffIndex =
-              index;
-
-            const button =
-              document.getElementById(
-                "addStaffButton"
-              );
-
-            if (button) {
-
-              button.textContent =
-                "職員を更新";
-            }
-          }
-        );
-
-      /* 削除 */
-
-      item
-        .querySelector(
-          "[data-delete]"
-        )
-        .addEventListener(
-          "click",
-          () => {
-
-            if (
-              !confirm(
-                `${name}を削除しますか？`
-              )
-            ) {
-              return;
-            }
-
-            try {
-
-  const { error } =
-    await supabaseClient
-      .from("staff")
-      .delete()
-      .eq("name", name);
-
-  if (error) {
-
-    console.error(
-      "Supabase削除エラー:",
-      error
-    );
-
-    alert(
-      "クラウドから職員を削除できませんでした。\n\n" +
-      error.message
-    );
-
-    return;
-  }
-
-} catch (error) {
-
-  console.error(
-    "Supabase接続エラー:",
-    error
-  );
-
-  alert(
-    "Supabaseに接続できませんでした。"
-  );
-
-  return;
-}
-
-delete appData.shifts[
-  name
-];
-
-appData.staff.splice(
-  index,
-  1
-);
-
-            saveData();
-
-            renderStaffList();
-
-            renderSchedule();
-          }
-        );
-
-      list.appendChild(
-        item
-      );
-    }
-  );
-}
 
 /* =========================
    勤務形態
