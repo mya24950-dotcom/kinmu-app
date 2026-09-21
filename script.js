@@ -4002,9 +4002,24 @@ async function loadStaffFromSupabase() {
   if (error) {
     console.error("職員読み込みエラー:", error);
     return;
-
   }
 
-        }
+  // Supabaseから取得した職員をローカルデータへ反映
+  if (data && data.length > 0) {
+    data.forEach(row => {
+      const exists = appData.staff.find(
+        staff => staff.name === row.name
+      );
 
+      if (!exists) {
+        appData.staff.push({
+          name: row.name
+        });
+      }
+    });
 
+    saveData();
+    renderStaffList();
+    renderSchedule();
+  }
+}
