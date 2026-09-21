@@ -1898,14 +1898,51 @@ function renderStaffList() {
               return;
             }
 
-            delete appData.shifts[
-              name
-            ];
+            try {
 
-            appData.staff.splice(
-              index,
-              1
-            );
+  const { error } =
+    await supabaseClient
+      .from("staff")
+      .delete()
+      .eq("name", name);
+
+  if (error) {
+
+    console.error(
+      "Supabase削除エラー:",
+      error
+    );
+
+    alert(
+      "クラウドから職員を削除できませんでした。\n\n" +
+      error.message
+    );
+
+    return;
+  }
+
+} catch (error) {
+
+  console.error(
+    "Supabase接続エラー:",
+    error
+  );
+
+  alert(
+    "Supabaseに接続できませんでした。"
+  );
+
+  return;
+}
+
+delete appData.shifts[
+  name
+];
+
+appData.staff.splice(
+  index,
+  1
+);
 
             saveData();
 
