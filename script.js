@@ -4005,5 +4005,6 @@ async function loadStaffFromSupabase() {
 
   }
 
-  alert("Supabaseから " + data.length + "人読み込みました");
-}
+        }
+
+
