@@ -518,10 +518,7 @@ function renderSchedule() {
     ==================================================
   */
 
-  const staffColumnWidth =
-    window.innerWidth <= 600
-      ? 78
-      : 90;
+const staffColumnWidth = 90;
 
   const dateColumnWidth =
     window.innerWidth <= 600
