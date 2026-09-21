@@ -172,24 +172,33 @@ button {
   padding: 0;
 }
 
-.staff-header,
-.staff-cell {
+/* ========================================
+   職員列
+======================================== */
+
+#scheduleTable .staff-header,
+#scheduleTable .staff-cell {
   position: sticky;
   left: 0;
-  z-index: 10;
   width: 90px;
   min-width: 90px;
   max-width: 90px;
-  background: white;
+  box-sizing: border-box;
 }
 
-.staff-header {
+/* 職員見出し */
+#scheduleTable .staff-header {
+  z-index: 100;
   height: 70px;
+  background: #f2f2f7;
   font-weight: 700;
 }
 
-.staff-cell {
+/* 職員名 */
+#scheduleTable .staff-cell {
+  z-index: 90;
   height: 46px;
+  background: white;
   font-weight: 600;
   cursor: pointer;
   user-select: none;
@@ -198,9 +207,19 @@ button {
   text-overflow: ellipsis;
 }
 
-.staff-cell:active {
+#scheduleTable .staff-cell:active {
   background: #e5e5ea;
 }
+
+/* 職員列の右境界 */
+#scheduleTable .staff-header,
+#scheduleTable .staff-cell {
+  border-right: 1px solid #d1d1d6;
+}
+
+/* ========================================
+   日付
+======================================== */
 
 .date-header {
   width: 46px;
@@ -220,6 +239,10 @@ button {
   font-size: 11px;
 }
 
+/* ========================================
+   曜日・休日
+======================================== */
+
 .saturday {
   background: #eaf6ff !important;
 }
@@ -232,6 +255,10 @@ button {
 .company-holiday {
   background: #fff3cd !important;
 }
+
+/* ========================================
+   勤務セル
+======================================== */
 
 .shift-cell {
   width: 46px;
@@ -249,6 +276,10 @@ button {
   background: #e5e5ea;
 }
 
+/* ========================================
+   勤務形態ヘッダー
+======================================== */
+
 #scheduleTable thead tr:first-child th:not(.staff-header):not(.date-header) {
   width: 110px;
   min-width: 110px;
@@ -257,8 +288,12 @@ button {
   font-size: 12px;
   font-weight: 700;
   white-space: nowrap;
-  border-left: 1px solid #d1d1d6 !important;
+  border-left: 1px solid #d1d1d6;
 }
+
+/* ========================================
+   合計・累計
+======================================== */
 
 .total-header {
   width: 48px;
@@ -268,7 +303,7 @@ button {
   font-size: 11px;
   font-weight: 700;
   white-space: nowrap;
-  border-left: 1px solid #d1d1d6 !important;
+  border-left: 1px solid #d1d1d6;
 }
 
 .total-cell {
@@ -279,12 +314,16 @@ button {
   font-size: 13px;
   font-weight: 700;
   white-space: nowrap;
-  border-left: 1px solid #d1d1d6 !important;
+  border-left: 1px solid #d1d1d6;
 }
 
 .shift-group-start {
-  border-left: 1px solid #d1d1d6 !important;
+  border-left: 1px solid #d1d1d6;
 }
+
+/* ========================================
+   設定画面
+======================================== */
 
 .settings-card {
   background: white;
@@ -334,7 +373,10 @@ input:focus {
   gap: 8px;
 }
 
-/* 開始 ～ 終了 */
+/* ========================================
+   開始 ～ 終了
+======================================== */
+
 .time-row {
   width: 100%;
   height: 36px;
@@ -400,6 +442,10 @@ input:focus {
   margin-bottom: 10px;
 }
 
+/* ========================================
+   ボタン
+======================================== */
+
 .add-button {
   width: 100%;
   height: 42px;
@@ -417,6 +463,10 @@ input:focus {
 .add-button:active {
   transform: scale(0.98);
 }
+
+/* ========================================
+   リスト
+======================================== */
 
 .list {
   display: flex;
@@ -472,6 +522,10 @@ input:focus {
   color: #ff3b30;
 }
 
+/* ========================================
+   勤務形態レイアウト
+======================================== */
+
 .shift-layout {
   display: grid;
   grid-template-columns: minmax(320px, 1fr) minmax(320px, 1fr);
@@ -495,6 +549,10 @@ input:focus {
   font-size: 12px;
   line-height: 1.6;
 }
+
+/* ========================================
+   休業日
+======================================== */
 
 .holiday-form {
   display: flex;
@@ -523,6 +581,10 @@ input:focus {
   padding-bottom: 11px;
   color: #888;
 }
+
+/* ========================================
+   勤務選択メニュー
+======================================== */
 
 .shift-menu {
   position: fixed;
@@ -572,6 +634,10 @@ input:focus {
   color: #ff3b30;
   background: #fff0f0;
 }
+
+/* ========================================
+   確認ダイアログ
+======================================== */
 
 .modal-overlay {
   position: fixed;
@@ -634,11 +700,19 @@ input:focus {
   color: white;
 }
 
+/* ========================================
+   タブレット
+======================================== */
+
 @media (max-width: 900px) {
   .shift-layout {
     grid-template-columns: minmax(280px, 1fr) minmax(280px, 1fr);
   }
 }
+
+/* ========================================
+   スマートフォン
+======================================== */
 
 @media (max-width: 700px) {
   .page {
@@ -719,11 +793,24 @@ input:focus {
     font-size: 10px;
   }
 
-  .staff-header,
-  .staff-cell {
-    width: 78px;
-    min-width: 78px;
-    max-width: 78px;
+  /* スマホでも職員列は90px固定 */
+  #scheduleTable .staff-header,
+  #scheduleTable .staff-cell {
+    width: 90px !important;
+    min-width: 90px !important;
+    max-width: 90px !important;
+    position: sticky !important;
+    left: 0 !important;
+  }
+
+  #scheduleTable .staff-header {
+    z-index: 100 !important;
+    background: #f2f2f7 !important;
+  }
+
+  #scheduleTable .staff-cell {
+    z-index: 90 !important;
+    background: #ffffff !important;
   }
 
   .date-header {
@@ -795,79 +882,4 @@ input:focus {
     align-items: center;
     justify-content: center;
   }
-}
-
-/* ========================================
-   勤務表：職員列の固定・幅調整
-======================================== */
-
-/* 職員列を常に一定幅にする */
-#scheduleTable .staff-header,
-#scheduleTable .staff-name-cell {
-  width: 110px;
-  min-width: 110px;
-  max-width: 110px;
-  box-sizing: border-box;
-}
-
-/* 職員見出し */
-#scheduleTable .staff-header {
-  position: sticky;
-  left: 0;
-  z-index: 30;
-  background: #f2f2f7;
-}
-
-/* 職員名も一緒に固定 */
-#scheduleTable .staff-name-cell {
-  position: sticky;
-  left: 0;
-  z-index: 20;
-  background: #ffffff;
-}
-
-/* 職員列の右境界を常に表示 */
-#scheduleTable .staff-header,
-#scheduleTable .staff-name-cell {
-  border-right: 1px solid #d1d1d6;
-}
-
-/* ========================================
-   勤務表：職員列を完全固定
-======================================== */
-
-#scheduleTable {
-  border-collapse: separate !important;
-  border-spacing: 0 !important;
-}
-
-/* 職員列 */
-#scheduleTable th.staff-header,
-#scheduleTable th.staff-name-cell {
-  width: 140px !important;
-  min-width: 140px !important;
-  max-width: 140px !important;
-  box-sizing: border-box !important;
-}
-
-/* 職員見出し */
-#scheduleTable th.staff-header {
-  position: sticky !important;
-  left: 0 !important;
-  z-index: 100 !important;
-  background: #f2f2f7 !important;
-}
-
-/* 職員名 */
-#scheduleTable th.staff-name-cell {
-  position: sticky !important;
-  left: 0 !important;
-  z-index: 90 !important;
-  background: #ffffff !important;
-}
-
-/* 職員列の右側の境界 */
-#scheduleTable th.staff-header,
-#scheduleTable th.staff-name-cell {
-  border-right: 1px solid #d1d1d6 !important;
 }
