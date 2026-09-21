@@ -1442,29 +1442,27 @@ function showShiftMenu(
 
 
       button.addEventListener(
-        "click",
-        e => {
+  "click",
+  async e => {
+    e.stopPropagation();
 
-          e.stopPropagation();
+    setStoredShift(
+      staffName,
+      dateKey,
+      shift.name
+    );
 
+    saveData();
+    renderSchedule();
+    hideShiftMenu();
 
-          setStoredShift(
-            staffName,
-            dateKey,
-            shift.name
-          );
-
-
-          saveData();
-
-
-          renderSchedule();
-
-
-          hideShiftMenu();
-
-        }
-      );
+    await saveWorkShiftToSupabase(
+      staffName,
+      dateKey,
+      shift.name
+    );
+  }
+);
 
 
       buttons.appendChild(
