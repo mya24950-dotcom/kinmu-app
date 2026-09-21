@@ -1849,7 +1849,7 @@ function renderStaffList() {
         )
         .addEventListener(
           "click",
-          () => {
+          async () => {
 
             const input =
               document.getElementById(
