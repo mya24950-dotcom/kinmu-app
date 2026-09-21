@@ -4087,3 +4087,27 @@ async function saveWorkShiftToSupabase(
     }
   }
 }
+async function loadWorkShiftsFromSupabase() {
+  const { data, error } = await supabaseClient
+    .from("work_shifts")
+    .select("staff_name, work_date, shift_name");
+
+  if (error) {
+    console.error("勤務読み込みエラー:", error);
+    return;
+  }
+
+  if (!data) return;
+
+  data.forEach(row => {
+    if (!appData.shifts[row.staff_name]) {
+      appData.shifts[row.staff_name] = {};
+    }
+
+    appData.shifts[row.staff_name][row.work_date] =
+      row.shift_name;
+  });
+
+  saveData();
+  renderSchedule();
+}
