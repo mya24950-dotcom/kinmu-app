@@ -2596,6 +2596,36 @@ async function addOrUpdateShift() {
 
 }
 
+async function deleteShiftTypeFromSupabase(name) {
+
+  const { error } = await supabaseClient
+    .from("shift_types")
+    .delete()
+    .eq("name", name);
+
+  if (error) {
+
+    console.error(
+      "勤務形態削除エラー:",
+      error
+    );
+
+    alert(
+      "Supabase削除エラー\n" +
+      error.message
+    );
+
+    return false;
+  }
+
+  console.log(
+    "Supabaseから勤務形態を削除しました:",
+    name
+  );
+
+  return true;
+}
+
 /* ==================================================
    勤務形態一覧
 ================================================== */
