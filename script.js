@@ -4131,8 +4131,11 @@ async function saveShiftTypeToSupabase(shift) {
     .from("shift_types")
     .insert([
       {
-        name: shift.name
-      }
+  name: shift.name,
+  start_time: shift.start || "",
+  end_time: shift.end || "",
+  break_time: shift.break || ""
+}
     ])
     .select();
 
