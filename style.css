@@ -963,3 +963,28 @@ input:focus {
     justify-content: center;
   }
 }
+
+/* ========================================
+   勤務表の行幅をテーブル全体に固定
+======================================== */
+
+#scheduleTable {
+  table-layout: fixed !important;
+}
+
+#scheduleTable tbody {
+  width: 100%;
+}
+
+#scheduleTable tbody tr.staff-row {
+  width: 100% !important;
+  min-width: 100% !important;
+  max-width: none !important;
+
+  display: table-row !important;
+}
+
+#scheduleTable tbody tr.staff-row > th,
+#scheduleTable tbody tr.staff-row > td {
+  box-sizing: border-box;
+}
