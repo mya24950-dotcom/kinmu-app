@@ -1,1 +1,453 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
 
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover"
+  >
+
+  <meta name="theme-color" content="#f2f2f7">
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+
+  <!-- iPhone / iPad -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="勤務表">
+
+  <title>勤務表</title>
+</head>
+
+<body>
+
+  <div class="app">
+
+    <!-- =========================
+         ヘッダー
+    ========================== -->
+    <header class="header">
+
+      <div class="header-title">
+        🗓️ 勤務表
+      </div>
+
+      <div class="header-delete-buttons">
+
+        <button
+          type="button"
+          id="deleteMonthButton">
+          月消去
+        </button>
+
+        <button
+          type="button"
+          id="deleteFiscalYearButton">
+          年度消去
+        </button>
+
+      </div>
+
+    </header>
+
+
+    <!-- =========================
+         ナビゲーション
+    ========================== -->
+    <nav class="nav">
+
+      <button
+        class="nav-button active"
+        data-page="schedule">
+        🗓️ 勤務表
+      </button>
+
+      <button
+        class="nav-button"
+        data-page="staff">
+        👤 職員管理
+      </button>
+
+      <button
+        class="nav-button"
+        data-page="shift">
+        ⏰ 勤務形態
+      </button>
+
+      <button
+        class="nav-button"
+        data-page="holiday">
+        🏢 休業設定
+      </button>
+
+    </nav>
+
+
+    <!-- =========================
+         勤務表
+    ========================== -->
+    <main
+      id="schedulePage"
+      class="page">
+
+      <div class="month-bar">
+
+        <button
+          id="prevMonth"
+          class="month-button">
+          ‹
+        </button>
+
+        <div
+          id="currentMonth"
+          class="month-title">
+        </div>
+
+        <button
+          id="nextMonth"
+          class="month-button">
+          ›
+        </button>
+
+      </div>
+
+
+      <div class="calendar-hint">
+        💡 職員名をタップすると、その月の勤務をカレンダーに登録できます
+      </div>
+
+
+      <div class="table-wrapper">
+
+        <table id="scheduleTable"></table>
+
+      </div>
+
+    </main>
+
+
+    <!-- =========================
+         職員管理
+    ========================== -->
+    <section
+      id="staffPage"
+      class="page"
+      style="display:none;">
+
+      <div class="settings-card">
+
+        <h2>👤 職員管理</h2>
+
+        <div class="input-row">
+
+          <input
+            id="staffNameInput"
+            type="text"
+            placeholder="職員名">
+
+          <button
+            id="addStaffButton"
+            class="add-button">
+            追加
+          </button>
+
+        </div>
+
+
+        <div
+          id="staffList"
+          class="list">
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =========================
+         勤務形態
+    ========================== -->
+    <section
+      id="shiftPage"
+      class="page"
+      style="display:none;">
+
+      <div class="shift-layout">
+
+
+        <!-- =========================
+             左側
+        ========================== -->
+        <div>
+
+
+          <!-- 勤務形態登録 -->
+          <div class="settings-card">
+
+            <h2>⏰ 勤務形態</h2>
+
+            <div class="shift-form">
+
+              <input
+                id="shiftNameInput"
+                type="text"
+                placeholder="勤務形態名">
+
+
+              <!-- 開始 ～ 終了 -->
+              <div class="time-row">
+
+                <input
+                  id="shiftStartInput"
+                  type="time">
+
+                <span class="time-separator">～</span>
+
+                <input
+                  id="shiftEndInput"
+                  type="time">
+
+              </div>
+
+
+              <input
+                id="shiftBreakInput"
+                type="number"
+                min="0"
+                placeholder="休憩（分）">
+
+
+              <button
+                id="addShiftButton"
+                class="add-button">
+                勤務形態を追加
+              </button>
+
+            </div>
+
+
+            <p class="info">
+              ※「明」は自動表示されるため登録できません。
+            </p>
+
+          </div>
+
+
+          <!-- =========================
+               明け時間設定
+          ========================== -->
+          <div class="settings-card">
+
+            <h2>🌅 明け時間設定</h2>
+
+            <p class="info ake-info">
+              「明」と表示される勤務の時間を設定します。
+            </p>
+
+
+            <div class="time-row ake-time-row">
+
+              <input
+                id="akeStartInput"
+                type="time">
+
+              <span class="time-separator">～</span>
+
+              <input
+                id="akeEndInput"
+                type="time">
+
+            </div>
+
+
+            <button
+              id="saveAkeTimeButton"
+              class="add-button">
+              明け時間を保存
+            </button>
+
+          </div>
+
+        </div>
+
+
+        <!-- =========================
+             右側：勤務リスト
+        ========================== -->
+        <div class="settings-card shift-list-card">
+
+          <h2>📋 勤務リスト</h2>
+
+          <div
+            id="shiftList"
+            class="list">
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =========================
+         休業設定
+    ========================== -->
+    <section
+      id="holidayPage"
+      class="page"
+      style="display:none;">
+
+      <div class="settings-card">
+
+        <h2>🏢 休業設定</h2>
+
+        <p class="info">
+          会社全体の休業日を登録できます。<br>
+          終了日を入力しない場合は、開始日と同じ日になります。
+        </p>
+
+
+        <div class="holiday-form">
+
+          <input
+            id="companyHolidayName"
+            type="text"
+            placeholder="休業名（例：年末年始休業）">
+
+
+          <div class="date-row">
+
+            <div class="date-box">
+
+              <label>開始日</label>
+
+              <input
+                id="companyHolidayStart"
+                type="date">
+
+            </div>
+
+
+            <div class="date-arrow">
+              →
+            </div>
+
+
+            <div class="date-box">
+
+              <label>終了日（任意）</label>
+
+              <input
+                id="companyHolidayEnd"
+                type="date">
+
+            </div>
+
+          </div>
+
+
+          <button
+            id="addCompanyHolidayButton"
+            class="add-button">
+            休業を登録
+          </button>
+
+        </div>
+
+
+        <div
+          id="companyHolidayList"
+          class="list">
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =========================
+         勤務選択メニュー
+    ========================== -->
+    <div
+      id="shiftMenu"
+      class="shift-menu">
+
+      <div class="shift-menu-title">
+        勤務を選択
+      </div>
+
+      <div
+        id="shiftMenuButtons"
+        class="shift-menu-buttons">
+      </div>
+
+    </div>
+
+
+    <!-- =========================
+         カレンダー確認
+    ========================== -->
+    <div
+      id="calendarConfirm"
+      class="modal-overlay"
+      style="display:none;">
+
+      <div class="confirm-card">
+
+        <div
+          id="calendarConfirmTitle"
+          class="confirm-title">
+        </div>
+
+        <div
+          id="calendarConfirmText"
+          class="confirm-text">
+        </div>
+
+
+        <div class="confirm-buttons">
+
+          <button
+            id="calendarCancelButton"
+            class="confirm-cancel">
+            やめる
+          </button>
+
+          <button
+            id="calendarOKButton"
+            class="confirm-ok">
+            カレンダーへ
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- JavaScript -->
+  <script src="script.js"></script>
+
+  <!-- PWA -->
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js")
+          .then(() => {
+            console.log("Service Worker registered");
+          })
+          .catch(error => {
+            console.error("Service Worker registration failed:", error);
+          });
+      });
+    }
+  </script>
+
+</body>
+</html>
