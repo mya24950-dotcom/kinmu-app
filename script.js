@@ -2366,49 +2366,40 @@ function addOrUpdateShift() {
       "shiftNameInput"
     );
 
-
   const startInput =
     document.getElementById(
       "shiftStartInput"
     );
-
 
   const endInput =
     document.getElementById(
       "shiftEndInput"
     );
 
-
   const breakInput =
     document.getElementById(
       "shiftBreakInput"
     );
 
-
   if (!nameInput) return;
-
 
   const name =
     nameInput.value.trim();
-
 
   const start =
     startInput
       ? startInput.value
       : "";
 
-
   const end =
     endInput
       ? endInput.value
       : "";
 
-
   const breakTime =
     breakInput
       ? breakInput.value
       : "";
-
 
   if (!name) {
 
@@ -2417,9 +2408,7 @@ function addOrUpdateShift() {
     );
 
     return;
-
   }
-
 
   if (name === "明") {
 
@@ -2428,9 +2417,7 @@ function addOrUpdateShift() {
     );
 
     return;
-
   }
-
 
   if (
     appData.shiftTypes.some(
@@ -2445,9 +2432,7 @@ function addOrUpdateShift() {
     );
 
     return;
-
   }
-
 
   if (
     editingShiftIndex >= 0
@@ -2458,7 +2443,6 @@ function addOrUpdateShift() {
         editingShiftIndex
       ].name;
 
-
     appData.shiftTypes[
       editingShiftIndex
     ] = {
@@ -2467,7 +2451,6 @@ function addOrUpdateShift() {
       end,
       break: breakTime
     };
-
 
     if (
       oldName !== name
@@ -2494,7 +2477,6 @@ function addOrUpdateShift() {
                   staff
                 ][date] =
                   name;
-
               }
 
             }
@@ -2505,16 +2487,13 @@ function addOrUpdateShift() {
 
     }
 
-
     editingShiftIndex =
       -1;
-
 
     const button =
       document.getElementById(
         "addShiftButton"
       );
-
 
     if (button) {
 
@@ -2523,14 +2502,46 @@ function addOrUpdateShift() {
 
     }
 
- } else {
+  } else {
 
-  appData.shiftTypes.push({
-    name,
-    start,
-    end,
-    break: breakTime
-  });
+    appData.shiftTypes.push({
+      name,
+      start,
+      end,
+      break: breakTime
+    });
+
+  }
+
+  nameInput.value =
+    "";
+
+  if (startInput) {
+
+    startInput.value =
+      "";
+
+  }
+
+  if (endInput) {
+
+    endInput.value =
+      "";
+
+  }
+
+  if (breakInput) {
+
+    breakInput.value =
+      "";
+
+  }
+
+  saveData();
+
+  renderShiftList();
+
+  renderSchedule();
 
   saveShiftTypeToSupabase({
     name,
@@ -2540,49 +2551,6 @@ function addOrUpdateShift() {
   });
 
 }
-
-
-  nameInput.value =
-    "";
-
-
-  if (startInput) {
-
-    startInput.value =
-      "";
-
-  }
-
-
-  if (endInput) {
-
-    endInput.value =
-      "";
-
-  }
-
-
-  if (breakInput) {
-
-    breakInput.value =
-      "";
-
-  }
-
-
-  saveData();
-renderShiftList();
-renderSchedule();
-
-saveShiftTypeToSupabase({
-  name,
-  start,
-  end,
-  break: breakTime
-});
-
-}
-
 
 /* ==================================================
    勤務形態一覧
