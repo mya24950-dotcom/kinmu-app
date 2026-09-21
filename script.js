@@ -1713,16 +1713,19 @@ async function addOrUpdateStaff() {
 
       if (error) {
 
-        console.error(
-          "Supabase登録エラー:",
-          error
-        );
+  console.error(
+    "Supabase登録エラー:",
+    error
+  );
 
-        alert(
-          "職員は登録されましたが、クラウドへの保存に失敗しました。"
-        );
+  alert(
+    "Supabaseエラー\n\n" +
+    "code: " + error.code +
+    "\nmessage: " + error.message +
+    "\ndetails: " + error.details
+  );
 
-      }
+}
 
     } catch (error) {
 
