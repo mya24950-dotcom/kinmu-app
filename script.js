@@ -2569,10 +2569,17 @@ function addOrUpdateShift() {
 
 
   saveData();
+renderShiftList();
+renderSchedule();
 
-  renderShiftList();
+console.log("勤務形態追加処理を実行しました");
 
-  renderSchedule();
+saveShiftTypeToSupabase({
+  name,
+  start,
+  end,
+  break: breakTime
+});
 
 }
 
