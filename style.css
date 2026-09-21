@@ -831,3 +831,43 @@ input:focus {
 #scheduleTable .staff-name-cell {
   border-right: 1px solid #d1d1d6;
 }
+
+/* ========================================
+   勤務表：職員列を完全固定
+======================================== */
+
+#scheduleTable {
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+}
+
+/* 職員列 */
+#scheduleTable th.staff-header,
+#scheduleTable th.staff-name-cell {
+  width: 140px !important;
+  min-width: 140px !important;
+  max-width: 140px !important;
+  box-sizing: border-box !important;
+}
+
+/* 職員見出し */
+#scheduleTable th.staff-header {
+  position: sticky !important;
+  left: 0 !important;
+  z-index: 100 !important;
+  background: #f2f2f7 !important;
+}
+
+/* 職員名 */
+#scheduleTable th.staff-name-cell {
+  position: sticky !important;
+  left: 0 !important;
+  z-index: 90 !important;
+  background: #ffffff !important;
+}
+
+/* 職員列の右側の境界 */
+#scheduleTable th.staff-header,
+#scheduleTable th.staff-name-cell {
+  border-right: 1px solid #d1d1d6 !important;
+}
