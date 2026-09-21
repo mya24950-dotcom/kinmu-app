@@ -1703,16 +1703,22 @@ function renderStaffList() {
         );
 
       item.className =
-        "staff-list-item";
+        "list-item";
 
       item.innerHTML = `
-        <span>
-          ${escapeHtml(name)}
-        </span>
+        <div class="list-item-main">
 
-        <div>
+          <div class="list-item-title">
+            ${escapeHtml(name)}
+          </div>
+
+        </div>
+
+        <div class="list-item-buttons">
+
           <button
             type="button"
+            class="list-button"
             data-edit
           >
             編集
@@ -1720,12 +1726,16 @@ function renderStaffList() {
 
           <button
             type="button"
+            class="list-button delete"
             data-delete
           >
             削除
           </button>
+
         </div>
       `;
+
+      /* 編集 */
 
       item
         .querySelector(
@@ -1763,6 +1773,8 @@ function renderStaffList() {
             }
           }
         );
+
+      /* 削除 */
 
       item
         .querySelector(
