@@ -4032,3 +4032,42 @@ async function loadStaffFromSupabase() {
     renderSchedule();
   }
 }
+
+async function testSupabaseWorkShift() {
+
+  const { data, error } =
+    await supabaseClient
+      .from("work_shifts")
+      .insert([
+        {
+          staff_name: appData.staff[0],
+          work_date: "2026-09-21",
+          shift_name: "テスト"
+        }
+      ])
+      .select();
+
+  if (error) {
+
+    console.error(
+      "勤務テスト保存エラー:",
+      error
+    );
+
+    alert(
+      "勤務保存失敗\n" +
+      error.message
+    );
+
+    return;
+  }
+
+  alert(
+    "勤務データをSupabaseに保存しました"
+  );
+
+  console.log(
+    "保存された勤務:",
+    data
+  );
+}
