@@ -1138,22 +1138,7 @@ function renderSchedule() {
     ★職員行そのものも確認
   */
 
-  const staffRows =
-    table.querySelectorAll(
-      ".staff-row"
-    );
-
-  staffRows.forEach(row => {
-
-    row.style.width =
-      requiredTableWidth + "px";
-
-    row.style.minWidth =
-      requiredTableWidth + "px";
-
-    row.style.maxWidth =
-      requiredTableWidth + "px";
-  });
+  
 
   bindScheduleCells();
   bindStaffNameCells();
