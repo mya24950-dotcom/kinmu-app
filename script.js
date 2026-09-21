@@ -37,7 +37,9 @@ function loadData() {
 
       appData = {
         staff: Array.isArray(parsed.staff) ? parsed.staff : [],
-        shiftTypes: Array.isArray(parsed.shiftTypes) ? parsed.shiftTypes : [],
+        shiftTypes: Array.isArray(parsed.shiftTypes)
+          ? parsed.shiftTypes
+          : [],
         companyHolidays: Array.isArray(parsed.companyHolidays)
           ? parsed.companyHolidays
           : [],
@@ -54,7 +56,10 @@ function loadData() {
 }
 
 function saveData() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+  localStorage.setItem(
+    STORAGE_KEY,
+    JSON.stringify(appData)
+  );
 }
 
 /* =========================
@@ -69,64 +74,122 @@ function bindEvents() {
   });
 
   const prev = document.getElementById("prevMonth");
-  const next = document.getElementById("nextMonth");
 
   if (prev) {
     prev.addEventListener("click", () => {
-      currentDate.setMonth(currentDate.getMonth() - 1);
+      currentDate.setMonth(
+        currentDate.getMonth() - 1
+      );
       renderSchedule();
     });
   }
+
+  const next = document.getElementById("nextMonth");
 
   if (next) {
     next.addEventListener("click", () => {
-      currentDate.setMonth(currentDate.getMonth() + 1);
+      currentDate.setMonth(
+        currentDate.getMonth() + 1
+      );
       renderSchedule();
     });
   }
 
-  const addStaff = document.getElementById("addStaffButton");
+  const addStaff =
+    document.getElementById("addStaffButton");
+
   if (addStaff) {
-    addStaff.addEventListener("click", addOrUpdateStaff);
+    addStaff.addEventListener(
+      "click",
+      addOrUpdateStaff
+    );
   }
 
-  const addShift = document.getElementById("addShiftButton");
+  const addShift =
+    document.getElementById("addShiftButton");
+
   if (addShift) {
-    addShift.addEventListener("click", addOrUpdateShift);
+    addShift.addEventListener(
+      "click",
+      addOrUpdateShift
+    );
   }
 
-  const addHoliday = document.getElementById("addCompanyHolidayButton");
+  const addHoliday =
+    document.getElementById(
+      "addCompanyHolidayButton"
+    );
+
   if (addHoliday) {
-    addHoliday.addEventListener("click", addCompanyHoliday);
+    addHoliday.addEventListener(
+      "click",
+      addCompanyHoliday
+    );
   }
 
-  const saveAke = document.getElementById("saveAkeTimeButton");
+  const saveAke =
+    document.getElementById(
+      "saveAkeTimeButton"
+    );
+
   if (saveAke) {
-    saveAke.addEventListener("click", saveAkeTime);
+    saveAke.addEventListener(
+      "click",
+      saveAkeTime
+    );
   }
 
-  const calendarCancel = document.getElementById("calendarCancelButton");
+  const calendarCancel =
+    document.getElementById(
+      "calendarCancelButton"
+    );
+
   if (calendarCancel) {
-    calendarCancel.addEventListener("click", closeCalendarModal);
+    calendarCancel.addEventListener(
+      "click",
+      closeCalendarModal
+    );
   }
 
-  const calendarOK = document.getElementById("calendarOKButton");
+  const calendarOK =
+    document.getElementById(
+      "calendarOKButton"
+    );
+
   if (calendarOK) {
-    calendarOK.addEventListener("click", exportCalendar);
+    calendarOK.addEventListener(
+      "click",
+      exportCalendar
+    );
   }
 
-  const deleteMonth = document.getElementById("deleteMonthButton");
+  const deleteMonth =
+    document.getElementById(
+      "deleteMonthButton"
+    );
+
   if (deleteMonth) {
-    deleteMonth.addEventListener("click", deleteCurrentMonth);
+    deleteMonth.addEventListener(
+      "click",
+      deleteCurrentMonth
+    );
   }
 
-  const deleteFiscal = document.getElementById("deleteFiscalYearButton");
+  const deleteFiscal =
+    document.getElementById(
+      "deleteFiscalYearButton"
+    );
+
   if (deleteFiscal) {
-    deleteFiscal.addEventListener("click", deleteFiscalYear);
+    deleteFiscal.addEventListener(
+      "click",
+      deleteFiscalYear
+    );
   }
 
   document.addEventListener("click", e => {
-    const menu = document.getElementById("shiftMenu");
+    const menu =
+      document.getElementById("shiftMenu");
 
     if (!menu) return;
 
@@ -148,7 +211,8 @@ function showPage(page) {
     p.style.display = "none";
   });
 
-  const target = document.getElementById(page + "Page");
+  const target =
+    document.getElementById(page + "Page");
 
   if (target) {
     target.style.display = "";
@@ -190,11 +254,19 @@ function renderAll() {
   renderShiftList();
   renderHolidayList();
 
-  const start = document.getElementById("akeStartInput");
-  const end = document.getElementById("akeEndInput");
+  const start =
+    document.getElementById("akeStartInput");
 
-  if (start) start.value = appData.akeTime.start;
-  if (end) end.value = appData.akeTime.end;
+  const end =
+    document.getElementById("akeEndInput");
+
+  if (start) {
+    start.value = appData.akeTime.start;
+  }
+
+  if (end) {
+    end.value = appData.akeTime.end;
+  }
 }
 
 /* =========================
@@ -202,15 +274,24 @@ function renderAll() {
 ========================= */
 
 function getDateKey(year, month, day) {
-  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+  return `${year}-${String(month).padStart(
+    2,
+    "0"
+  )}-${String(day).padStart(2, "0")}`;
 }
 
 function getDaysInMonth(year, month) {
-  return new Date(year, month, 0).getDate();
+  return new Date(
+    year,
+    month,
+    0
+  ).getDate();
 }
 
 function formatDateJP(dateKey) {
-  const [y, m, d] = dateKey.split("-").map(Number);
+  const [y, m, d] =
+    dateKey.split("-").map(Number);
+
   return `${y}/${m}/${d}`;
 }
 
@@ -220,13 +301,19 @@ function formatDateJP(dateKey) {
 
 function isCompanyHoliday(dateKey) {
   return appData.companyHolidays.some(h => {
-    return dateKey >= h.start && dateKey <= h.end;
+    return (
+      dateKey >= h.start &&
+      dateKey <= h.end
+    );
   });
 }
 
 function getCompanyHoliday(dateKey) {
   return appData.companyHolidays.find(h => {
-    return dateKey >= h.start && dateKey <= h.end;
+    return (
+      dateKey >= h.start &&
+      dateKey <= h.end
+    );
   });
 }
 
@@ -238,34 +325,66 @@ function isPublicHoliday(dateKey) {
    勤務表示
 ========================= */
 
-function getStoredShift(staffName, dateKey) {
+function getStoredShift(
+  staffName,
+  dateKey
+) {
   if (!appData.shifts[staffName]) {
     return "";
   }
 
-  return appData.shifts[staffName][dateKey] || "";
+  return (
+    appData.shifts[staffName][dateKey] ||
+    ""
+  );
 }
 
-function setStoredShift(staffName, dateKey, shiftName) {
+function setStoredShift(
+  staffName,
+  dateKey,
+  shiftName
+) {
   if (!appData.shifts[staffName]) {
     appData.shifts[staffName] = {};
   }
 
   if (shiftName) {
-    appData.shifts[staffName][dateKey] = shiftName;
+    appData.shifts[staffName][dateKey] =
+      shiftName;
   } else {
     delete appData.shifts[staffName][dateKey];
   }
 }
 
-/* 自動「明」 */
-function getDisplayShift(staffName, dateKey) {
-  const stored = getStoredShift(staffName, dateKey);
+/* =========================
+   自動「明」
+========================= */
 
-  const [year, month, day] = dateKey.split("-").map(Number);
-  const current = new Date(year, month - 1, day);
-  const previous = new Date(current);
-  previous.setDate(previous.getDate() - 1);
+function getDisplayShift(
+  staffName,
+  dateKey
+) {
+  const stored =
+    getStoredShift(
+      staffName,
+      dateKey
+    );
+
+  const [year, month, day] =
+    dateKey.split("-").map(Number);
+
+  const current = new Date(
+    year,
+    month - 1,
+    day
+  );
+
+  const previous =
+    new Date(current);
+
+  previous.setDate(
+    previous.getDate() - 1
+  );
 
   const prevKey = getDateKey(
     previous.getFullYear(),
@@ -273,12 +392,18 @@ function getDisplayShift(staffName, dateKey) {
     previous.getDate()
   );
 
-  const previousShift = getStoredShift(staffName, prevKey);
+  const previousShift =
+    getStoredShift(
+      staffName,
+      prevKey
+    );
 
   if (
     previousShift &&
-    (previousShift.includes("宿") ||
-      previousShift.includes("夜"))
+    (
+      previousShift.includes("宿") ||
+      previousShift.includes("夜")
+    )
   ) {
     return "明";
   }
@@ -291,248 +416,551 @@ function getDisplayShift(staffName, dateKey) {
 ========================= */
 
 function renderSchedule() {
-  const table = document.getElementById("scheduleTable");
-  const monthLabel = document.getElementById("currentMonth");
+  const table =
+    document.getElementById(
+      "scheduleTable"
+    );
+
+  const monthLabel =
+    document.getElementById(
+      "currentMonth"
+    );
 
   if (!table) return;
 
-  const year = currentDate.getFullYear();
-  const month = currentDate.getMonth() + 1;
-  const days = getDaysInMonth(year, month);
+  const year =
+    currentDate.getFullYear();
+
+  const month =
+    currentDate.getMonth() + 1;
+
+  const days =
+    getDaysInMonth(
+      year,
+      month
+    );
 
   if (monthLabel) {
-    monthLabel.textContent = `${year}年${month}月`;
+    monthLabel.textContent =
+      `${year}年${month}月`;
   }
 
   let html = "";
 
-  /* ヘッダー1 */
+  /* ========================================
+     列幅を明確に固定
+     最初の1列を必ず職員列にする
+  ======================================== */
+
+  html += "<colgroup>";
+
+  /* 職員列 */
+  html += `
+    <col
+      class="staff-column"
+      style="
+        width:90px;
+        min-width:90px;
+        max-width:90px;
+      "
+    >
+  `;
+
+  /* 日付列 */
+  for (let day = 1; day <= days; day++) {
+    html += `
+      <col
+        style="
+          width:46px;
+          min-width:46px;
+        "
+      >
+    `;
+  }
+
+  /* 勤務形態列 */
+  appData.shiftTypes.forEach(() => {
+    html += `
+      <col
+        style="
+          width:48px;
+          min-width:48px;
+        "
+      >
+    `;
+
+    html += `
+      <col
+        style="
+          width:48px;
+          min-width:48px;
+        "
+      >
+    `;
+  });
+
+  html += "</colgroup>";
+
+  /* ========================================
+     ヘッダー1
+  ======================================== */
+
   html += "<thead>";
   html += "<tr>";
 
-  html += `<th class="staff-header" rowspan="2">職員</th>`;
+  html += `
+    <th
+      class="staff-header"
+      rowspan="2"
+      style="
+        position:sticky;
+        left:0;
+        width:90px;
+        min-width:90px;
+        max-width:90px;
+        z-index:100;
+      "
+    >
+      職員
+    </th>
+  `;
 
-  for (let day = 1; day <= days; day++) {
-    const dateKey = getDateKey(year, month, day);
-    const week = new Date(year, month - 1, day).getDay();
+  for (
+    let day = 1;
+    day <= days;
+    day++
+  ) {
+    const dateKey =
+      getDateKey(
+        year,
+        month,
+        day
+      );
 
-    let cls = "date-header";
+    const week =
+      new Date(
+        year,
+        month - 1,
+        day
+      ).getDay();
 
-    if (isCompanyHoliday(dateKey)) {
-      cls += " company-holiday";
-    } else if (week === 0 || isPublicHoliday(dateKey)) {
+    let cls =
+      "date-header";
+
+    if (
+      isCompanyHoliday(
+        dateKey
+      )
+    ) {
+      cls +=
+        " company-holiday";
+    } else if (
+      week === 0 ||
+      isPublicHoliday(
+        dateKey
+      )
+    ) {
       cls += " sunday";
-    } else if (week === 6) {
+    } else if (
+      week === 6
+    ) {
       cls += " saturday";
     }
 
     html += `
-      <th class="${cls}" rowspan="2">
+      <th
+        class="${cls}"
+        rowspan="2"
+      >
         ${day}<br>
-        ${["日", "月", "火", "水", "木", "金", "土"][week]}
+        ${
+          [
+            "日",
+            "月",
+            "火",
+            "水",
+            "木",
+            "金",
+            "土"
+          ][week]
+        }
       </th>
     `;
   }
 
-  appData.shiftTypes.forEach(shift => {
-    html += `
-      <th colspan="2" class="shift-header">
-        ${escapeHtml(shift.name)}
-      </th>
-    `;
-  });
+  appData.shiftTypes.forEach(
+    shift => {
+      html += `
+        <th
+          colspan="2"
+          class="shift-header"
+        >
+          ${escapeHtml(
+            shift.name
+          )}
+        </th>
+      `;
+    }
+  );
 
   html += "</tr>";
 
-  /* ヘッダー2 */
+  /* ========================================
+     ヘッダー2
+  ======================================== */
+
   html += "<tr>";
 
   appData.shiftTypes.forEach(() => {
-    html += `<th class="total-header">合計</th>`;
-    html += `<th class="total-header">累計</th>`;
+    html += `
+      <th class="total-header">
+        合計
+      </th>
+    `;
+
+    html += `
+      <th class="total-header">
+        累計
+      </th>
+    `;
   });
 
   html += "</tr>";
   html += "</thead>";
 
-  /* 本体 */
+  /* ========================================
+     本体
+  ======================================== */
+
   html += "<tbody>";
 
-  appData.staff.forEach(staffName => {
-    html += "<tr>";
+  appData.staff.forEach(
+    staffName => {
 
-    html += `
-      <th class="staff-name-cell"
-          data-staff="${escapeHtml(staffName)}">
-        ${escapeHtml(staffName)}
-      </th>
-    `;
+      html += "<tr>";
 
-    for (let day = 1; day <= days; day++) {
-      const dateKey = getDateKey(year, month, day);
-      const week = new Date(year, month - 1, day).getDay();
+      /*
+       * ここが重要
+       *
+       * staff-cell と staff-name-cell の
+       * 両方を付ける
+       */
+      html += `
+        <th
+          class="staff-cell staff-name-cell"
+          data-staff="${escapeHtml(
+            staffName
+          )}"
+          style="
+            position:sticky;
+            left:0;
+            width:90px;
+            min-width:90px;
+            max-width:90px;
+            z-index:90;
+            background:#ffffff;
+          "
+        >
+          ${escapeHtml(
+            staffName
+          )}
+        </th>
+      `;
 
-      let cls = "schedule-cell";
+      /* 日付 */
+      for (
+        let day = 1;
+        day <= days;
+        day++
+      ) {
+        const dateKey =
+          getDateKey(
+            year,
+            month,
+            day
+          );
 
-      if (isCompanyHoliday(dateKey)) {
-        cls += " company-holiday";
-      } else if (week === 0 || isPublicHoliday(dateKey)) {
-        cls += " sunday";
-      } else if (week === 6) {
-        cls += " saturday";
+        const week =
+          new Date(
+            year,
+            month - 1,
+            day
+          ).getDay();
+
+        let cls =
+          "schedule-cell";
+
+        if (
+          isCompanyHoliday(
+            dateKey
+          )
+        ) {
+          cls +=
+            " company-holiday";
+        } else if (
+          week === 0 ||
+          isPublicHoliday(
+            dateKey
+          )
+        ) {
+          cls += " sunday";
+        } else if (
+          week === 6
+        ) {
+          cls += " saturday";
+        }
+
+        const display =
+          getDisplayShift(
+            staffName,
+            dateKey
+          );
+
+        html += `
+          <td
+            class="${cls}"
+            data-staff="${escapeHtml(
+              staffName
+            )}"
+            data-date="${dateKey}"
+          >
+            ${escapeHtml(
+              display
+            )}
+          </td>
+        `;
       }
 
-      const display = getDisplayShift(
-        staffName,
-        dateKey
+      /* 集計 */
+      appData.shiftTypes.forEach(
+        shift => {
+
+          const monthly =
+            calculateMonthlyTotal(
+              staffName,
+              shift.name,
+              year,
+              month
+            );
+
+          const fiscal =
+            calculateFiscalTotal(
+              staffName,
+              shift.name,
+              year,
+              month
+            );
+
+          html += `
+            <td class="total-cell">
+              ${monthly}
+            </td>
+          `;
+
+          html += `
+            <td class="total-cell">
+              ${fiscal}
+            </td>
+          `;
+        }
       );
 
-      html += `
-        <td
-          class="${cls}"
-          data-staff="${escapeHtml(staffName)}"
-          data-date="${dateKey}"
-        >
-          ${escapeHtml(display)}
-        </td>
-      `;
+      html += "</tr>";
     }
-
-    appData.shiftTypes.forEach(shift => {
-      const monthly = calculateMonthlyTotal(
-        staffName,
-        shift.name,
-        year,
-        month
-      );
-
-      const fiscal = calculateFiscalTotal(
-        staffName,
-        shift.name,
-        year,
-        month
-      );
-
-      html += `
-        <td class="total-cell">
-          ${monthly}
-        </td>
-        <td class="total-cell">
-          ${fiscal}
-        </td>
-      `;
-    });
-
-    html += "</tr>";
-  });
+  );
 
   html += "</tbody>";
 
   table.innerHTML = html;
 
+  /*
+   * 表示後にも幅を確実に固定
+   */
+  table.querySelectorAll(
+    ".staff-header, .staff-cell, .staff-name-cell"
+  ).forEach(cell => {
+    cell.style.position =
+      "sticky";
+
+    cell.style.left = "0";
+    cell.style.width = "90px";
+    cell.style.minWidth = "90px";
+    cell.style.maxWidth = "90px";
+    cell.style.boxSizing =
+      "border-box";
+  });
+
   bindScheduleCells();
   bindStaffNameCells();
 }
 
+/* =========================
+   勤務セル
+========================= */
+
 function bindScheduleCells() {
-  document.querySelectorAll(".schedule-cell").forEach(cell => {
-    cell.addEventListener("click", e => {
-      e.stopPropagation();
+  document
+    .querySelectorAll(
+      ".schedule-cell"
+    )
+    .forEach(cell => {
 
-      selectedCell = cell;
+      cell.addEventListener(
+        "click",
+        e => {
+          e.stopPropagation();
 
-      showShiftMenu(
-        cell,
-        cell.dataset.staff,
-        cell.dataset.date
+          selectedCell = cell;
+
+          showShiftMenu(
+            cell,
+            cell.dataset.staff,
+            cell.dataset.date
+          );
+        }
       );
     });
-  });
 }
 
 function bindStaffNameCells() {
-  document.querySelectorAll(".staff-name-cell").forEach(cell => {
-    cell.addEventListener("click", () => {
-      const staff = cell.dataset.staff;
-      openCalendarConfirm(staff);
+  document
+    .querySelectorAll(
+      ".staff-name-cell"
+    )
+    .forEach(cell => {
+
+      cell.addEventListener(
+        "click",
+        () => {
+          const staff =
+            cell.dataset.staff;
+
+          openCalendarConfirm(
+            staff
+          );
+        }
+      );
     });
-  });
 }
 
 /* =========================
    勤務メニュー
 ========================= */
 
-function showShiftMenu(cell, staffName, dateKey) {
-  const menu = document.getElementById("shiftMenu");
+function showShiftMenu(
+  cell,
+  staffName,
+  dateKey
+) {
+  const menu =
+    document.getElementById(
+      "shiftMenu"
+    );
 
   if (!menu) return;
 
-  const buttons = document.getElementById("shiftMenuButtons");
+  const buttons =
+    document.getElementById(
+      "shiftMenuButtons"
+    );
 
   if (!buttons) return;
 
   buttons.innerHTML = "";
 
-  appData.shiftTypes.forEach(shift => {
-    const button = document.createElement("button");
+  appData.shiftTypes.forEach(
+    shift => {
 
-    button.type = "button";
-    button.textContent = shift.name;
+      const button =
+        document.createElement(
+          "button"
+        );
 
-    button.addEventListener("click", e => {
+      button.type = "button";
+      button.textContent =
+        shift.name;
+
+      button.addEventListener(
+        "click",
+        e => {
+          e.stopPropagation();
+
+          setStoredShift(
+            staffName,
+            dateKey,
+            shift.name
+          );
+
+          saveData();
+          renderSchedule();
+          hideShiftMenu();
+        }
+      );
+
+      buttons.appendChild(
+        button
+      );
+    }
+  );
+
+  const deleteButton =
+    document.createElement(
+      "button"
+    );
+
+  deleteButton.type =
+    "button";
+
+  deleteButton.textContent =
+    "削除";
+
+  deleteButton.addEventListener(
+    "click",
+    e => {
       e.stopPropagation();
 
       setStoredShift(
         staffName,
         dateKey,
-        shift.name
+        ""
       );
 
       saveData();
       renderSchedule();
       hideShiftMenu();
-    });
-
-    buttons.appendChild(button);
-  });
-
-  const deleteButton = document.createElement("button");
-
-  deleteButton.type = "button";
-  deleteButton.textContent = "削除";
-
-  deleteButton.addEventListener("click", e => {
-    e.stopPropagation();
-
-    setStoredShift(
-      staffName,
-      dateKey,
-      ""
-    );
-
-    saveData();
-    renderSchedule();
-    hideShiftMenu();
-  });
-
-  buttons.appendChild(deleteButton);
-
-  menu.style.display = "grid";
-
-  const rect = cell.getBoundingClientRect();
-
-  const menuWidth = Math.min(
-    190,
-    window.innerWidth - 20
+    }
   );
 
-  menu.style.width = menuWidth + "px";
+  buttons.appendChild(
+    deleteButton
+  );
 
-  let left = rect.right + 6;
+  menu.style.display =
+    "grid";
 
-  if (left + menuWidth > window.innerWidth - 10) {
-    left = rect.left - menuWidth - 6;
+  const rect =
+    cell.getBoundingClientRect();
+
+  const menuWidth =
+    Math.min(
+      190,
+      window.innerWidth - 20
+    );
+
+  menu.style.width =
+    menuWidth + "px";
+
+  let left =
+    rect.right + 6;
+
+  if (
+    left + menuWidth >
+    window.innerWidth - 10
+  ) {
+    left =
+      rect.left -
+      menuWidth -
+      6;
   }
 
   if (left < 10) {
@@ -541,27 +969,46 @@ function showShiftMenu(cell, staffName, dateKey) {
 
   let top = rect.top;
 
-  const menuHeight = menu.offsetHeight || 150;
+  const menuHeight =
+    menu.offsetHeight ||
+    150;
 
-  if (top + menuHeight > window.innerHeight - 10) {
-    top = window.innerHeight - menuHeight - 10;
+  if (
+    top + menuHeight >
+    window.innerHeight - 10
+  ) {
+    top =
+      window.innerHeight -
+      menuHeight -
+      10;
   }
 
   if (top < 10) {
     top = 10;
   }
 
-  menu.style.position = "fixed";
-  menu.style.left = left + "px";
-  menu.style.top = top + "px";
-  menu.style.zIndex = "9999";
+  menu.style.position =
+    "fixed";
+
+  menu.style.left =
+    left + "px";
+
+  menu.style.top =
+    top + "px";
+
+  menu.style.zIndex =
+    "9999";
 }
 
 function hideShiftMenu() {
-  const menu = document.getElementById("shiftMenu");
+  const menu =
+    document.getElementById(
+      "shiftMenu"
+    );
 
   if (menu) {
-    menu.style.display = "none";
+    menu.style.display =
+      "none";
   }
 
   selectedCell = null;
@@ -577,20 +1024,31 @@ function calculateMonthlyTotal(
   year,
   month
 ) {
-  const days = getDaysInMonth(year, month);
+  const days =
+    getDaysInMonth(
+      year,
+      month
+    );
+
   let total = 0;
 
-  for (let day = 1; day <= days; day++) {
-    const dateKey = getDateKey(
-      year,
-      month,
-      day
-    );
+  for (
+    let day = 1;
+    day <= days;
+    day++
+  ) {
+    const dateKey =
+      getDateKey(
+        year,
+        month,
+        day
+      );
 
-    const display = getDisplayShift(
-      staffName,
-      dateKey
-    );
+    const display =
+      getDisplayShift(
+        staffName,
+        dateKey
+      );
 
     if (
       display === shiftName &&
@@ -633,7 +1091,10 @@ function calculateFiscalTotal(
       endMonth = month;
     }
 
-    if (y === startYear && month < 4) {
+    if (
+      y === startYear &&
+      month < 4
+    ) {
       endMonth = 12;
     }
 
@@ -642,23 +1103,29 @@ function calculateFiscalTotal(
       m <= endMonth;
       m++
     ) {
-      const days = getDaysInMonth(y, m);
+      const days =
+        getDaysInMonth(
+          y,
+          m
+        );
 
       for (
         let day = 1;
         day <= days;
         day++
       ) {
-        const dateKey = getDateKey(
-          y,
-          m,
-          day
-        );
+        const dateKey =
+          getDateKey(
+            y,
+            m,
+            day
+          );
 
-        const display = getDisplayShift(
-          staffName,
-          dateKey
-        );
+        const display =
+          getDisplayShift(
+            staffName,
+            dateKey
+          );
 
         if (
           display === shiftName &&
@@ -670,22 +1137,35 @@ function calculateFiscalTotal(
     }
   }
 
-  /* 1〜3月の場合 */
   if (month < 4) {
-    for (let m = 1; m <= month; m++) {
-      const days = getDaysInMonth(year, m);
-
-      for (let day = 1; day <= days; day++) {
-        const dateKey = getDateKey(
+    for (
+      let m = 1;
+      m <= month;
+      m++
+    ) {
+      const days =
+        getDaysInMonth(
           year,
-          m,
-          day
+          m
         );
 
-        const display = getDisplayShift(
-          staffName,
-          dateKey
-        );
+      for (
+        let day = 1;
+        day <= days;
+        day++
+      ) {
+        const dateKey =
+          getDateKey(
+            year,
+            m,
+            day
+          );
+
+        const display =
+          getDisplayShift(
+            staffName,
+            dateKey
+          );
 
         if (
           display === shiftName &&
@@ -705,19 +1185,27 @@ function calculateFiscalTotal(
 ========================= */
 
 function addOrUpdateStaff() {
-  const input = document.getElementById("staffNameInput");
+  const input =
+    document.getElementById(
+      "staffNameInput"
+    );
 
   if (!input) return;
 
-  const name = input.value.trim();
+  const name =
+    input.value.trim();
 
   if (!name) {
-    alert("職員名を入力してください");
+    alert(
+      "職員名を入力してください"
+    );
     return;
   }
 
   if (name === "明") {
-    alert("「明」は職員名に使用できません");
+    alert(
+      "「明」は職員名に使用できません"
+    );
     return;
   }
 
@@ -728,21 +1216,37 @@ function addOrUpdateStaff() {
         i !== editingStaffIndex
     )
   ) {
-    alert("同じ職員名は登録できません");
+    alert(
+      "同じ職員名は登録できません"
+    );
     return;
   }
 
-  if (editingStaffIndex >= 0) {
+  if (
+    editingStaffIndex >= 0
+  ) {
     const oldName =
-      appData.staff[editingStaffIndex];
+      appData.staff[
+        editingStaffIndex
+      ];
 
-    appData.staff[editingStaffIndex] = name;
+    appData.staff[
+      editingStaffIndex
+    ] = name;
 
-    if (appData.shifts[oldName]) {
+    if (
+      appData.shifts[
+        oldName
+      ]
+    ) {
       appData.shifts[name] =
-        appData.shifts[oldName];
+        appData.shifts[
+          oldName
+        ];
 
-      delete appData.shifts[oldName];
+      delete appData.shifts[
+        oldName
+      ];
     }
 
     editingStaffIndex = -1;
@@ -750,13 +1254,17 @@ function addOrUpdateStaff() {
     input.value = "";
 
     const button =
-      document.getElementById("addStaffButton");
+      document.getElementById(
+        "addStaffButton"
+      );
 
     if (button) {
-      button.textContent = "職員を追加";
+      button.textContent =
+        "職員を追加";
     }
   } else {
     appData.staff.push(name);
+
     input.value = "";
   }
 
@@ -767,71 +1275,116 @@ function addOrUpdateStaff() {
 
 function renderStaffList() {
   const list =
-    document.getElementById("staffList");
+    document.getElementById(
+      "staffList"
+    );
 
   if (!list) return;
 
   list.innerHTML = "";
 
-  appData.staff.forEach((name, index) => {
-    const item = document.createElement("div");
+  appData.staff.forEach(
+    (name, index) => {
 
-    item.className = "staff-list-item";
+      const item =
+        document.createElement(
+          "div"
+        );
 
-    item.innerHTML = `
-      <span>${escapeHtml(name)}</span>
-      <div>
-        <button type="button" data-edit>編集</button>
-        <button type="button" data-delete>削除</button>
-      </div>
-    `;
+      item.className =
+        "staff-list-item";
 
-    item.querySelector("[data-edit]")
-      .addEventListener("click", () => {
-        const input =
-          document.getElementById(
-            "staffNameInput"
-          );
+      item.innerHTML = `
+        <span>
+          ${escapeHtml(name)}
+        </span>
 
-        if (input) {
-          input.value = name;
-          input.focus();
-        }
+        <div>
+          <button
+            type="button"
+            data-edit
+          >
+            編集
+          </button>
 
-        editingStaffIndex = index;
+          <button
+            type="button"
+            data-delete
+          >
+            削除
+          </button>
+        </div>
+      `;
 
-        const button =
-          document.getElementById(
-            "addStaffButton"
-          );
+      item
+        .querySelector(
+          "[data-edit]"
+        )
+        .addEventListener(
+          "click",
+          () => {
 
-        if (button) {
-          button.textContent =
-            "職員を更新";
-        }
-      });
+            const input =
+              document.getElementById(
+                "staffNameInput"
+              );
 
-    item.querySelector("[data-delete]")
-      .addEventListener("click", () => {
-        if (
-          !confirm(
-            `${name}を削除しますか？`
-          )
-        ) {
-          return;
-        }
+            if (input) {
+              input.value =
+                name;
 
-        delete appData.shifts[name];
+              input.focus();
+            }
 
-        appData.staff.splice(index, 1);
+            editingStaffIndex =
+              index;
 
-        saveData();
-        renderStaffList();
-        renderSchedule();
-      });
+            const button =
+              document.getElementById(
+                "addStaffButton"
+              );
 
-    list.appendChild(item);
-  });
+            if (button) {
+              button.textContent =
+                "職員を更新";
+            }
+          }
+        );
+
+      item
+        .querySelector(
+          "[data-delete]"
+        )
+        .addEventListener(
+          "click",
+          () => {
+
+            if (
+              !confirm(
+                `${name}を削除しますか？`
+              )
+            ) {
+              return;
+            }
+
+            delete appData.shifts[
+              name
+            ];
+
+            appData.staff.splice(
+              index,
+              1
+            );
+
+            saveData();
+            renderStaffList();
+            renderSchedule();
+          }
+        );
+
+      list.appendChild(item);
+    }
+  );
 }
 
 /* =========================
@@ -840,39 +1393,56 @@ function renderStaffList() {
 
 function addOrUpdateShift() {
   const nameInput =
-    document.getElementById("shiftNameInput");
+    document.getElementById(
+      "shiftNameInput"
+    );
 
   const startInput =
-    document.getElementById("shiftStartInput");
+    document.getElementById(
+      "shiftStartInput"
+    );
 
   const endInput =
-    document.getElementById("shiftEndInput");
+    document.getElementById(
+      "shiftEndInput"
+    );
 
   const breakInput =
-    document.getElementById("shiftBreakInput");
+    document.getElementById(
+      "shiftBreakInput"
+    );
 
   if (!nameInput) return;
 
-  const name = nameInput.value.trim();
-  const start = startInput
-    ? startInput.value
-    : "";
+  const name =
+    nameInput.value.trim();
 
-  const end = endInput
-    ? endInput.value
-    : "";
+  const start =
+    startInput
+      ? startInput.value
+      : "";
 
-  const breakTime = breakInput
-    ? breakInput.value
-    : "";
+  const end =
+    endInput
+      ? endInput.value
+      : "";
+
+  const breakTime =
+    breakInput
+      ? breakInput.value
+      : "";
 
   if (!name) {
-    alert("勤務形態名を入力してください");
+    alert(
+      "勤務形態名を入力してください"
+    );
     return;
   }
 
   if (name === "明") {
-    alert("「明」は登録できません");
+    alert(
+      "「明」は登録できません"
+    );
     return;
   }
 
@@ -889,7 +1459,9 @@ function addOrUpdateShift() {
     return;
   }
 
-  if (editingShiftIndex >= 0) {
+  if (
+    editingShiftIndex >= 0
+  ) {
     const oldName =
       appData.shiftTypes[
         editingShiftIndex
@@ -904,22 +1476,28 @@ function addOrUpdateShift() {
       break: breakTime
     };
 
-    /* 既存勤務表の名称変更 */
     if (oldName !== name) {
-      Object.keys(appData.shifts)
-        .forEach(staff => {
-          Object.keys(
-            appData.shifts[staff]
-          ).forEach(date => {
-            if (
-              appData.shifts[staff][date] ===
-              oldName
-            ) {
-              appData.shifts[staff][date] =
-                name;
-            }
-          });
+      Object.keys(
+        appData.shifts
+      ).forEach(staff => {
+
+        Object.keys(
+          appData.shifts[
+            staff
+          ]
+        ).forEach(date => {
+
+          if (
+            appData.shifts[
+              staff
+            ][date] === oldName
+          ) {
+            appData.shifts[
+              staff
+            ][date] = name;
+          }
         });
+      });
     }
 
     editingShiftIndex = -1;
@@ -944,9 +1522,17 @@ function addOrUpdateShift() {
 
   nameInput.value = "";
 
-  if (startInput) startInput.value = "";
-  if (endInput) endInput.value = "";
-  if (breakInput) breakInput.value = "";
+  if (startInput) {
+    startInput.value = "";
+  }
+
+  if (endInput) {
+    endInput.value = "";
+  }
+
+  if (breakInput) {
+    breakInput.value = "";
+  }
 
   saveData();
   renderShiftList();
@@ -955,7 +1541,9 @@ function addOrUpdateShift() {
 
 function renderShiftList() {
   const list =
-    document.getElementById("shiftList");
+    document.getElementById(
+      "shiftList"
+    );
 
   if (!list) return;
 
@@ -963,111 +1551,142 @@ function renderShiftList() {
 
   appData.shiftTypes.forEach(
     (shift, index) => {
+
       const item =
-        document.createElement("div");
+        document.createElement(
+          "div"
+        );
 
       item.className =
         "shift-list-item";
 
       const timeText =
-        shift.start && shift.end
+        shift.start &&
+        shift.end
           ? `${shift.start} ～ ${shift.end}`
           : "";
 
       item.innerHTML = `
         <div>
-          <strong>${escapeHtml(
-            shift.name
-          )}</strong>
+          <strong>
+            ${escapeHtml(
+              shift.name
+            )}
+          </strong>
+
           <div class="shift-time">
-            ${escapeHtml(timeText)}
+            ${escapeHtml(
+              timeText
+            )}
           </div>
         </div>
 
         <div>
-          <button type="button" data-edit>
+          <button
+            type="button"
+            data-edit
+          >
             編集
           </button>
-          <button type="button" data-delete>
+
+          <button
+            type="button"
+            data-delete
+          >
             削除
           </button>
         </div>
       `;
 
-      item.querySelector("[data-edit]")
-        .addEventListener("click", () => {
-          const nameInput =
-            document.getElementById(
-              "shiftNameInput"
+      item
+        .querySelector(
+          "[data-edit]"
+        )
+        .addEventListener(
+          "click",
+          () => {
+
+            const nameInput =
+              document.getElementById(
+                "shiftNameInput"
+              );
+
+            const startInput =
+              document.getElementById(
+                "shiftStartInput"
+              );
+
+            const endInput =
+              document.getElementById(
+                "shiftEndInput"
+              );
+
+            const breakInput =
+              document.getElementById(
+                "shiftBreakInput"
+              );
+
+            if (nameInput) {
+              nameInput.value =
+                shift.name;
+            }
+
+            if (startInput) {
+              startInput.value =
+                shift.start || "";
+            }
+
+            if (endInput) {
+              endInput.value =
+                shift.end || "";
+            }
+
+            if (breakInput) {
+              breakInput.value =
+                shift.break || "";
+            }
+
+            editingShiftIndex =
+              index;
+
+            const button =
+              document.getElementById(
+                "addShiftButton"
+              );
+
+            if (button) {
+              button.textContent =
+                "勤務形態を更新";
+            }
+          }
+        );
+
+      item
+        .querySelector(
+          "[data-delete]"
+        )
+        .addEventListener(
+          "click",
+          () => {
+
+            if (
+              !confirm(
+                `${shift.name}を削除しますか？`
+              )
+            ) {
+              return;
+            }
+
+            appData.shiftTypes.splice(
+              index,
+              1
             );
 
-          const startInput =
-            document.getElementById(
-              "shiftStartInput"
-            );
-
-          const endInput =
-            document.getElementById(
-              "shiftEndInput"
-            );
-
-          const breakInput =
-            document.getElementById(
-              "shiftBreakInput"
-            );
-
-          if (nameInput) {
-            nameInput.value =
-              shift.name;
+            saveData();
+            renderShiftList();
+            renderSchedule();
           }
-
-          if (startInput) {
-            startInput.value =
-              shift.start || "";
-          }
-
-          if (endInput) {
-            endInput.value =
-              shift.end || "";
-          }
-
-          if (breakInput) {
-            breakInput.value =
-              shift.break || "";
-          }
-
-          editingShiftIndex = index;
-
-          const button =
-            document.getElementById(
-              "addShiftButton"
-            );
-
-          if (button) {
-            button.textContent =
-              "勤務形態を更新";
-          }
-        });
-
-      item.querySelector("[data-delete]")
-        .addEventListener("click", () => {
-          if (
-            !confirm(
-              `${shift.name}を削除しますか？`
-            )
-          ) {
-            return;
-          }
-
-          appData.shiftTypes.splice(
-            index,
-            1
-          );
-
-          saveData();
-          renderShiftList();
-          renderSchedule();
-        });
+        );
 
       list.appendChild(item);
     }
@@ -1094,7 +1713,10 @@ function addCompanyHoliday() {
       "companyHolidayEnd"
     );
 
-  if (!nameInput || !startInput) {
+  if (
+    !nameInput ||
+    !startInput
+  ) {
     return;
   }
 
@@ -1105,17 +1727,22 @@ function addCompanyHoliday() {
     startInput.value;
 
   const end =
-    endInput && endInput.value
+    endInput &&
+    endInput.value
       ? endInput.value
       : start;
 
   if (!name) {
-    alert("休業名を入力してください");
+    alert(
+      "休業名を入力してください"
+    );
     return;
   }
 
   if (!start) {
-    alert("開始日を入力してください");
+    alert(
+      "開始日を入力してください"
+    );
     return;
   }
 
@@ -1127,12 +1754,14 @@ function addCompanyHoliday() {
   }
 
   const overlap =
-    appData.companyHolidays.some(h => {
-      return (
-        start <= h.end &&
-        end >= h.start
-      );
-    });
+    appData.companyHolidays.some(
+      h => {
+        return (
+          start <= h.end &&
+          end >= h.start
+        );
+      }
+    );
 
   if (overlap) {
     alert(
@@ -1149,7 +1778,9 @@ function addCompanyHoliday() {
 
   appData.companyHolidays.sort(
     (a, b) =>
-      a.start.localeCompare(b.start)
+      a.start.localeCompare(
+        b.start
+      )
   );
 
   nameInput.value = "";
@@ -1176,15 +1807,21 @@ function renderHolidayList() {
 
   appData.companyHolidays.forEach(
     (holiday, index) => {
+
       const item =
-        document.createElement("div");
+        document.createElement(
+          "div"
+        );
 
       item.className =
         "holiday-list-item";
 
       const dateText =
-        holiday.start === holiday.end
-          ? formatDateJP(holiday.start)
+        holiday.start ===
+        holiday.end
+          ? formatDateJP(
+              holiday.start
+            )
           : `${formatDateJP(
               holiday.start
             )} ～ ${formatDateJP(
@@ -1193,11 +1830,16 @@ function renderHolidayList() {
 
       item.innerHTML = `
         <div>
-          <strong>${escapeHtml(
-            holiday.name
-          )}</strong>
+          <strong>
+            ${escapeHtml(
+              holiday.name
+            )}
+          </strong>
+
           <div>
-            ${escapeHtml(dateText)}
+            ${escapeHtml(
+              dateText
+            )}
           </div>
         </div>
 
@@ -1206,17 +1848,24 @@ function renderHolidayList() {
         </button>
       `;
 
-      item.querySelector("button")
-        .addEventListener("click", () => {
-          appData.companyHolidays.splice(
-            index,
-            1
-          );
+      item
+        .querySelector(
+          "button"
+        )
+        .addEventListener(
+          "click",
+          () => {
 
-          saveData();
-          renderHolidayList();
-          renderSchedule();
-        });
+            appData.companyHolidays.splice(
+              index,
+              1
+            );
+
+            saveData();
+            renderHolidayList();
+            renderSchedule();
+          }
+        );
 
       list.appendChild(item);
     }
@@ -1240,12 +1889,20 @@ function saveAkeTime() {
 
   if (!start || !end) return;
 
-  if (!start.value || !end.value) {
-    alert("開始時間と終了時間を入力してください");
+  if (
+    !start.value ||
+    !end.value
+  ) {
+    alert(
+      "開始時間と終了時間を入力してください"
+    );
     return;
   }
 
-  if (start.value >= end.value) {
+  if (
+    start.value >=
+    end.value
+  ) {
     alert(
       "明け時間の終了は開始より後にしてください"
     );
@@ -1259,14 +1916,18 @@ function saveAkeTime() {
 
   saveData();
 
-  alert("明け時間を保存しました");
+  alert(
+    "明け時間を保存しました"
+  );
 }
 
 /* =========================
    カレンダー
 ========================= */
 
-function openCalendarConfirm(staffName) {
+function openCalendarConfirm(
+  staffName
+) {
   const title =
     document.getElementById(
       "calendarConfirmTitle"
@@ -1303,7 +1964,8 @@ function openCalendarConfirm(staffName) {
       `${year}年${month}月の勤務をカレンダー用ファイルとして出力しますか？`;
   }
 
-  modal.style.display = "flex";
+  modal.style.display =
+    "flex";
 }
 
 function closeCalendarModal() {
@@ -1313,7 +1975,8 @@ function closeCalendarModal() {
     );
 
   if (modal) {
-    modal.style.display = "none";
+    modal.style.display =
+      "none";
   }
 }
 
@@ -1338,17 +2001,27 @@ function exportCalendar() {
 
   let ics =
     "BEGIN:VCALENDAR\r\n";
+
   ics +=
     "VERSION:2.0\r\n";
+
   ics +=
     "PRODID:-//Kinmu App//JP\r\n";
+
   ics +=
     "CALSCALE:GREGORIAN\r\n";
 
   const days =
-    getDaysInMonth(year, month);
+    getDaysInMonth(
+      year,
+      month
+    );
 
-  for (let day = 1; day <= days; day++) {
+  for (
+    let day = 1;
+    day <= days;
+    day++
+  ) {
     const dateKey =
       getDateKey(
         year,
@@ -1362,12 +2035,16 @@ function exportCalendar() {
         dateKey
       );
 
-    if (!shiftName) continue;
+    if (!shiftName) {
+      continue;
+    }
 
     const uid =
       `${staffName}-${dateKey}-${Date.now()}@kinmu-app`;
 
-    if (shiftName === "休み") {
+    if (
+      shiftName === "休み"
+    ) {
       ics += createAllDayEvent(
         uid,
         dateKey,
@@ -1378,7 +2055,9 @@ function exportCalendar() {
       continue;
     }
 
-    if (shiftName === "明") {
+    if (
+      shiftName === "明"
+    ) {
       ics += createTimedEvent(
         uid,
         dateKey,
@@ -1393,12 +2072,19 @@ function exportCalendar() {
 
     const shift =
       appData.shiftTypes.find(
-        s => s.name === shiftName
+        s =>
+          s.name ===
+          shiftName
       );
 
-    if (!shift) continue;
+    if (!shift) {
+      continue;
+    }
 
-    if (!shift.start || !shift.end) {
+    if (
+      !shift.start ||
+      !shift.end
+    ) {
       ics += createAllDayEvent(
         uid,
         dateKey,
@@ -1421,15 +2107,21 @@ function exportCalendar() {
     "END:VCALENDAR\r\n";
 
   const blob =
-    new Blob([ics], {
-      type: "text/calendar;charset=utf-8"
-    });
+    new Blob(
+      [ics],
+      {
+        type:
+          "text/calendar;charset=utf-8"
+      }
+    );
 
   const url =
     URL.createObjectURL(blob);
 
   const a =
-    document.createElement("a");
+    document.createElement(
+      "a"
+    );
 
   a.href = url;
 
@@ -1437,7 +2129,9 @@ function exportCalendar() {
     `${staffName}_${year}年${month}月勤務表.ics`;
 
   document.body.appendChild(a);
+
   a.click();
+
   a.remove();
 
   URL.revokeObjectURL(url);
@@ -1452,11 +2146,18 @@ function createAllDayEvent(
   staffName
 ) {
   const date =
-    dateKey.replace(/-/g, "");
+    dateKey.replace(
+      /-/g,
+      ""
+    );
 
   const next =
-    addOneDay(dateKey)
-      .replace(/-/g, "");
+    addOneDay(
+      dateKey
+    ).replace(
+      /-/g,
+      ""
+    );
 
   let text =
     "BEGIN:VEVENT\r\n";
@@ -1474,7 +2175,9 @@ function createAllDayEvent(
     `DTEND;VALUE=DATE:${next}\r\n`;
 
   text +=
-    `SUMMARY:${escapeICS(title)}\r\n`;
+    `SUMMARY:${escapeICS(
+      title
+    )}\r\n`;
 
   text +=
     `DESCRIPTION:${escapeICS(
@@ -1510,9 +2213,14 @@ function createTimedEvent(
       end
     );
 
-  if (endDate <= startDate) {
+  if (
+    endDate <=
+    startDate
+  ) {
     endDate =
-      new Date(endDate);
+      new Date(
+        endDate
+      );
 
     endDate.setDate(
       endDate.getDate() + 1
@@ -1539,7 +2247,9 @@ function createTimedEvent(
     )}\r\n`;
 
   text +=
-    `SUMMARY:${escapeICS(title)}\r\n`;
+    `SUMMARY:${escapeICS(
+      title
+    )}\r\n`;
 
   text +=
     `DESCRIPTION:${escapeICS(
@@ -1560,10 +2270,14 @@ function makeDateTime(
   time
 ) {
   const [y, m, d] =
-    dateKey.split("-").map(Number);
+    dateKey
+      .split("-")
+      .map(Number);
 
   const [hh, mm] =
-    time.split(":").map(Number);
+    time
+      .split(":")
+      .map(Number);
 
   return new Date(
     y,
@@ -1599,15 +2313,25 @@ function formatUTC(date) {
 }
 
 function utcNow() {
-  return formatUTC(new Date());
+  return formatUTC(
+    new Date()
+  );
 }
 
-function addOneDay(dateKey) {
+function addOneDay(
+  dateKey
+) {
   const [y, m, d] =
-    dateKey.split("-").map(Number);
+    dateKey
+      .split("-")
+      .map(Number);
 
   const date =
-    new Date(y, m - 1, d);
+    new Date(
+      y,
+      m - 1,
+      d
+    );
 
   date.setDate(
     date.getDate() + 1
@@ -1626,23 +2350,32 @@ function getOtherStaffDescription(
 ) {
   const lines = [];
 
-  appData.staff.forEach(staff => {
-    if (staff === currentStaff) return;
+  appData.staff.forEach(
+    staff => {
 
-    const shift =
-      getDisplayShift(
-        staff,
-        dateKey
-      );
+      if (
+        staff === currentStaff
+      ) {
+        return;
+      }
 
-    if (shift) {
-      lines.push(
-        `${staff}: ${shift}`
-      );
+      const shift =
+        getDisplayShift(
+          staff,
+          dateKey
+        );
+
+      if (shift) {
+        lines.push(
+          `${staff}: ${shift}`
+        );
+      }
     }
-  });
+  );
 
-  return lines.join("\\n");
+  return lines.join(
+    "\\n"
+  );
 }
 
 /* =========================
@@ -1665,28 +2398,40 @@ function deleteCurrentMonth() {
   }
 
   const days =
-    getDaysInMonth(year, month);
+    getDaysInMonth(
+      year,
+      month
+    );
 
-  appData.staff.forEach(staff => {
-    if (!appData.shifts[staff]) return;
+  appData.staff.forEach(
+    staff => {
 
-    for (
-      let day = 1;
-      day <= days;
-      day++
-    ) {
-      const key =
-        getDateKey(
-          year,
-          month,
-          day
-        );
+      if (
+        !appData.shifts[
+          staff
+        ]
+      ) {
+        return;
+      }
 
-      delete appData.shifts[
-        staff
-      ][key];
+      for (
+        let day = 1;
+        day <= days;
+        day++
+      ) {
+        const key =
+          getDateKey(
+            year,
+            month,
+            day
+          );
+
+        delete appData.shifts[
+          staff
+        ][key];
+      }
     }
-  });
+  );
 
   saveData();
   renderSchedule();
@@ -1716,27 +2461,46 @@ function deleteFiscalYear() {
     return;
   }
 
-  appData.staff.forEach(staff => {
-    if (!appData.shifts[staff]) return;
-
-    Object.keys(
-      appData.shifts[staff]
-    ).forEach(key => {
-      const [y, m] =
-        key.split("-").map(Number);
-
-      const fiscalYear =
-        m >= 4 ? y : y - 1;
+  appData.staff.forEach(
+    staff => {
 
       if (
-        fiscalYear === fiscalStart
-      ) {
-        delete appData.shifts[
+        !appData.shifts[
           staff
-        ][key];
+        ]
+      ) {
+        return;
       }
-    });
-  });
+
+      Object.keys(
+        appData.shifts[
+          staff
+        ]
+      ).forEach(
+        key => {
+
+          const [y, m] =
+            key
+              .split("-")
+              .map(Number);
+
+          const fiscalYear =
+            m >= 4
+              ? y
+              : y - 1;
+
+          if (
+            fiscalYear ===
+            fiscalStart
+          ) {
+            delete appData.shifts[
+              staff
+            ][key];
+          }
+        }
+      );
+    }
+  );
 
   saveData();
   renderSchedule();
@@ -1763,6 +2527,7 @@ async function loadPublicHolidays() {
       await response.json();
 
     renderSchedule();
+
   } catch (e) {
     console.warn(
       "祝日データを取得できませんでした",
@@ -1772,22 +2537,53 @@ async function loadPublicHolidays() {
 }
 
 /* =========================
-   HTML / ICS エスケープ
+   エスケープ
 ========================= */
 
 function escapeHtml(value) {
-  return String(value ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+  return String(
+    value ?? ""
+  )
+    .replace(
+      /&/g,
+      "&amp;"
+    )
+    .replace(
+      /</g,
+      "&lt;"
+    )
+    .replace(
+      />/g,
+      "&gt;"
+    )
+    .replace(
+      /"/g,
+      "&quot;"
+    )
+    .replace(
+      /'/g,
+      "&#039;"
+    );
 }
 
 function escapeICS(value) {
-  return String(value ?? "")
-    .replace(/\\/g, "\\\\")
-    .replace(/\r?\n/g, "\\n")
-    .replace(/;/g, "\\;")
-    .replace(/,/g, "\\,");
+  return String(
+    value ?? ""
+  )
+    .replace(
+      /\\/g,
+      "\\\\"
+    )
+    .replace(
+      /\r?\n/g,
+      "\\n"
+    )
+    .replace(
+      /;/g,
+      "\\;"
+    )
+    .replace(
+      /,/g,
+      "\\,"
+    );
 }
