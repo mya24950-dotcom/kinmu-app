@@ -2890,6 +2890,7 @@ function showLeaveMenu(
     }
   );
 
+
   // =========================
   // 休暇を解除
   // =========================
@@ -2923,6 +2924,42 @@ function showLeaveMenu(
   buttons.appendChild(
     deleteButton
   );
+
+
+  // =========================
+  // キャンセル
+  // =========================
+
+  const cancelButton =
+    document.createElement(
+      "button"
+    );
+
+  cancelButton.type =
+    "button";
+
+  cancelButton.textContent =
+    "キャンセル";
+
+  cancelButton.className =
+    "shift-menu-button shift-cancel";
+
+  cancelButton.addEventListener(
+    "click",
+    e => {
+
+      e.stopPropagation();
+
+      // 休暇メニューを閉じる
+      hideLeaveMenu();
+
+    }
+  );
+
+  buttons.appendChild(
+    cancelButton
+  );
+
 
   // =========================
   // 休暇メニュー表示
@@ -2999,6 +3036,21 @@ function showLeaveMenu(
 
 }
 
+function hideLeaveMenu() {
+
+  const menu =
+    document.getElementById(
+      "leaveMenu"
+    );
+
+  if (!menu) {
+    return;
+  }
+
+  menu.style.display =
+    "none";
+
+}
 
 function hideShiftMenu() {
 
