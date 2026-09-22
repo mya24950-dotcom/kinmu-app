@@ -24,20 +24,12 @@ const STORAGE_KEY =
 ================================================== */
 
 let appData = {
-
   staff: [],
-
   shiftTypes: [],
-
+  leaveTypes: [],
   companyHolidays: [],
-
   shifts: {},
-
-  akeTime: {
-    start: "05:30",
-    end: "11:15"
-  }
-
+  akeTime: { start: "05:30", end: "11:15" }
 };
 
 
