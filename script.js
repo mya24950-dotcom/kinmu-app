@@ -688,44 +688,6 @@ async function reloadFromSupabase() {
   }
 
 }
-/* ==================================================
-   Realtime更新
-================================================== */
-
-let realtimeUpdating = false;
-
-
-async function reloadFromSupabase() {
-
-  if (realtimeUpdating) {
-    return;
-  }
-
-
-  realtimeUpdating = true;
-
-
-  try {
-
-    await loadAllFromSupabase();
-
-    renderAll();
-
-  } catch (error) {
-
-    console.error(
-      "自動更新エラー",
-      error
-    );
-
-  } finally {
-
-    realtimeUpdating = false;
-
-  }
-
-}
-
 
 /* ==================================================
    イベント
