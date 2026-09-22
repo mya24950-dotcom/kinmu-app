@@ -5543,26 +5543,21 @@ function renderHolidayList() {
    明け時間
 ================================================== */
 
-function saveAkeTime() {
+async function saveAkeTime() {
 
   const start =
     document.getElementById(
       "akeStartInput"
     );
 
-
   const end =
     document.getElementById(
       "akeEndInput"
     );
 
-
   if (!start || !end) {
-
     return;
-
   }
-
 
   if (
     !start.value ||
@@ -5574,9 +5569,7 @@ function saveAkeTime() {
     );
 
     return;
-
   }
-
 
   if (
     start.value >=
@@ -5588,11 +5581,9 @@ function saveAkeTime() {
     );
 
     return;
-
   }
 
-
-  appData.akeTime = {
+  const newAkeTime = {
 
     start:
       start.value,
@@ -5602,14 +5593,57 @@ function saveAkeTime() {
 
   };
 
+  // ローカル保存
+  appData.akeTime =
+    newAkeTime;
 
   saveLocalData();
 
+  // Supabase保存
+  if (supabaseClient) {
+
+    const result =
+      await supabaseClient
+        .from("app_settings")
+        .upsert(
+          [
+            {
+              setting_name:
+                "ake_start",
+              setting_value:
+                start.value
+            },
+            {
+              setting_name:
+                "ake_end",
+              setting_value:
+                end.value
+            }
+          ],
+          {
+            onConflict:
+              "setting_name"
+          }
+        );
+
+    if (result.error) {
+
+      console.error(
+        "明け時間のクラウド保存に失敗:",
+        result.error
+      );
+
+      alert(
+        "明け時間をクラウドに保存できませんでした"
+      );
+
+      return;
+    }
+  }
 
   alert(
     "明け時間を保存しました"
   );
-
 }
 
 
