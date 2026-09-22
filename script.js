@@ -325,7 +325,7 @@ async function loadAllFromSupabase() {
       .from("staff")
 
       .select(
-        "id,name,created_at,sort_order"
+        "id,name,created_at,sort_order,calendar_token"
       );
 
 
@@ -434,6 +434,7 @@ async function loadAllFromSupabase() {
   /* -----------------------------------------------
      職員データ
      ★ sort_orderで並び替え
+     ★ calendar_token追加
   ------------------------------------------------ */
 
   const rawStaff =
@@ -455,6 +456,9 @@ async function loadAllFromSupabase() {
             ? Number(row.sort_order)
 
             : null,
+
+        calendar_token:
+          row.calendar_token || "",
 
         created_at:
           row.created_at || "",
@@ -559,7 +563,10 @@ async function loadAllFromSupabase() {
           row.name,
 
         sort_order:
-          row.sort_order
+          row.sort_order,
+
+        calendar_token:
+          row.calendar_token || ""
 
       })
     );
@@ -1266,7 +1273,7 @@ function bindEvents() {
 
     calendarOK.addEventListener(
       "click",
-      exportCalendar
+      subscribeStaffCalendar
     );
 
   }
@@ -5659,22 +5666,88 @@ function openCalendarConfirm(
 
   if (text) {
 
-    const year =
-      currentDate.getFullYear();
-
-
-    const month =
-      currentDate.getMonth() + 1;
-
-
     text.textContent =
-      `${year}年${month}月の勤務をカレンダー用ファイルとして出力しますか？`;
+      `${name}の勤務カレンダーを登録しますか？`;
 
   }
 
 
   modal.style.display =
     "flex";
+
+}
+
+
+/* ==================================================
+   Webcal登録
+================================================== */
+
+function subscribeStaffCalendar() {
+
+  const modal =
+    document.getElementById(
+      "calendarConfirm"
+    );
+
+
+  if (!modal) {
+
+    return;
+
+  }
+
+
+  const staffName =
+    modal.dataset.staff;
+
+
+  if (!staffName) {
+
+    return;
+
+  }
+
+
+  const staff =
+    appData.staff.find(
+      item =>
+        getStaffName(item) ===
+        staffName
+    );
+
+
+  if (
+    !staff ||
+    !staff.calendar_token
+  ) {
+
+    alert(
+      "この職員のカレンダー情報がありません。"
+    );
+
+    return;
+
+  }
+
+
+  const webcalUrl =
+    "webcal://" +
+    SUPABASE_URL
+      .replace(
+        "https://",
+        ""
+      ) +
+    "/functions/v1/staff-calendar?token=" +
+    encodeURIComponent(
+      staff.calendar_token
+    );
+
+
+  closeCalendarModal();
+
+
+  window.location.href =
+    webcalUrl;
 
 }
 
