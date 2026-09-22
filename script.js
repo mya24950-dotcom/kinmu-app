@@ -570,49 +570,51 @@ function setupRealtime() {
 
       .subscribe(
 
-        status => {
+  status => {
 
-          console.log(
-            "Supabase Realtime STATUS:",
-            status
-          );
-
-
-          if (
-            status === "SUBSCRIBED"
-          ) {
-
-            console.log(
-              "★ Supabase Realtime接続成功"
-            );
-
-          }
+    console.log(
+      "Supabase Realtime STATUS:",
+      status
+    );
 
 
-          if (
-            status === "CHANNEL_ERROR"
-          ) {
+    if (
+      status === "SUBSCRIBED"
+    ) {
 
-            console.error(
-              "★ Supabase Realtime接続エラー"
-            );
-
-          }
-
-
-          if (
-            status === "TIMED_OUT"
-          ) {
-
-            console.error(
-              "★ Supabase Realtime接続タイムアウト"
-            );
-
-          }
-
-        }
-
+      console.log(
+        "★ Supabase Realtime接続成功"
       );
+
+    }
+
+
+    if (
+      status === "CHANNEL_ERROR" ||
+      status === "TIMED_OUT" ||
+      status === "CLOSED"
+    ) {
+
+      console.error(
+        "★ Supabase Realtime接続が切れました"
+      );
+
+
+      setTimeout(() => {
+
+        console.log(
+          "★ Realtime再接続します"
+        );
+
+        setupRealtime();
+
+      }, 2000);
+
+    }
+
+  }
+
+);
 
 }
 
