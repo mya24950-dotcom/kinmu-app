@@ -3346,7 +3346,110 @@ async function saveWorkShift(
 
 }
 
+async function saveLeave(
+  staffName,
+  dateKey,
+  leaveType
+) {
 
+  if (!supabaseClient) {
+    return;
+  }
+
+
+  const result =
+    await supabaseClient
+      .from("work_shifts")
+      .select("id")
+      .eq("staff_name", staffName)
+      .eq("work_date", dateKey)
+      .order("id", {
+        ascending: true
+      })
+      .limit(1);
+
+
+  if (result.error) {
+
+    console.error(
+      "休暇検索エラー:",
+      result.error
+    );
+
+    return;
+
+  }
+
+
+  const existingRow =
+    result.data &&
+    result.data.length > 0
+      ? result.data[0]
+      : null;
+
+
+  let saveResult;
+
+
+  if (existingRow) {
+
+    saveResult =
+      await supabaseClient
+        .from("work_shifts")
+        .update({
+          leave_type:
+            leaveType || null
+        })
+        .eq(
+          "id",
+          existingRow.id
+        );
+
+  } else {
+
+    saveResult =
+      await supabaseClient
+        .from("work_shifts")
+        .insert([
+          {
+            staff_name:
+              staffName,
+
+            work_date:
+              dateKey,
+
+            shift_name:
+              "",
+
+            leave_type:
+              leaveType || null
+          }
+        ]);
+
+  }
+
+
+  if (saveResult.error) {
+
+    console.error(
+      "休暇保存エラー:",
+      saveResult.error
+    );
+
+    alert(
+      "休暇の保存に失敗しました。"
+    );
+
+    return;
+
+  }
+
+
+  await loadAllFromSupabase();
+
+  renderAll();
+
+}
 /* ==================================================
    月間集計
 ================================================== */
