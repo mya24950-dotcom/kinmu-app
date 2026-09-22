@@ -708,6 +708,67 @@ async function loadAllFromSupabase() {
         );
 
   }
+  /* -----------------------------------------------
+     明け時間
+  ------------------------------------------------ */
+
+  const akeResult =
+    await supabaseClient
+      .from("app_settings")
+      .select(
+        "setting_name,setting_value"
+      );
+
+  if (akeResult.error) {
+
+    console.error(
+      "app_settings取得エラー:",
+      akeResult.error
+    );
+
+  } else {
+
+    let akeStart = "05:30";
+    let akeEnd = "11:15";
+
+    (akeResult.data || [])
+      .forEach(row => {
+
+        if (
+          row.setting_name ===
+          "ake_start"
+        ) {
+
+          akeStart =
+            row.setting_value ||
+            "05:30";
+
+        }
+
+        if (
+          row.setting_name ===
+          "ake_end"
+        ) {
+
+          akeEnd =
+            row.setting_value ||
+            "11:15";
+
+        }
+
+      });
+
+    appData.akeTime = {
+
+      start:
+        akeStart,
+
+      end:
+        akeEnd
+
+    };
+
+  }
 
 
   saveLocalData();
