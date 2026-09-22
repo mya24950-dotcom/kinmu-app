@@ -767,7 +767,10 @@ async function loadAllFromSupabase() {
         akeEnd
 
     };
-
+console.log(
+  "★ Supabaseから取得した明け時間:",
+  appData.akeTime
+);
   }
 
 
