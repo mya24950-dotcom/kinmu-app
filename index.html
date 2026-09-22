@@ -175,7 +175,10 @@
         <span id="staffCount">0人</span>
       </div>
 
-      <div id="staffList" class="list"></div>
+      <div
+        id="staffList"
+        class="list">
+      </div>
 
     </div>
 
@@ -219,7 +222,9 @@
                 id="shiftStartInput"
                 type="time">
 
-              <span class="time-separator">～</span>
+              <span class="time-separator">
+                ～
+              </span>
 
               <input
                 id="shiftEndInput"
@@ -269,7 +274,9 @@
               id="akeStartInput"
               type="time">
 
-            <span class="time-separator">～</span>
+            <span class="time-separator">
+              ～
+            </span>
 
             <input
               id="akeEndInput"
@@ -338,7 +345,9 @@
 
           <div class="date-box">
 
-            <label>開始日</label>
+            <label>
+              開始日
+            </label>
 
             <input
               id="companyHolidayStart"
@@ -354,7 +363,9 @@
 
           <div class="date-box">
 
-            <label>終了日（任意）</label>
+            <label>
+              終了日（任意）
+            </label>
 
             <input
               id="companyHolidayEnd"
@@ -400,23 +411,24 @@
       class="shift-menu-buttons">
     </div>
 
-    <!-- =========================
-     休暇選択メニュー
-========================= -->
-<div
-  id="leaveMenu"
-  class="shift-menu">
-
-  <div class="shift-menu-title">
-    休暇を選択
   </div>
 
+
+  <!-- =========================
+       休暇選択メニュー
+  ========================== -->
   <div
-    id="leaveMenuButtons"
-    class="shift-menu-buttons">
-  </div>
+    id="leaveMenu"
+    class="shift-menu">
 
-</div>
+    <div class="shift-menu-title">
+      休暇を選択
+    </div>
+
+    <div
+      id="leaveMenuButtons"
+      class="shift-menu-buttons">
+    </div>
 
   </div>
 
@@ -474,32 +486,42 @@
      Service Worker
 ========================= -->
 <script>
+
 if ("serviceWorker" in navigator) {
 
-  window.addEventListener("load", function() {
+  window.addEventListener(
+    "load",
+    function() {
 
-    navigator.serviceWorker.register("./sw.js")
+      navigator.serviceWorker
+        .register("./sw.js")
 
-      .then(function() {
+        .then(
+          function() {
 
-        console.log(
-          "Service Worker registered"
+            console.log(
+              "Service Worker registered"
+            );
+
+          }
+        )
+
+        .catch(
+          function(error) {
+
+            console.log(
+              "Service Worker registration failed:",
+              error
+            );
+
+          }
         );
 
-      })
-
-      .catch(function(error) {
-
-        console.log(
-          "Service Worker registration failed:",
-          error
-        );
-
-      });
-
-  });
+    }
+  );
 
 }
+
 </script>
 
 </body>
