@@ -2667,6 +2667,41 @@ function showShiftMenu(
         button
       );
 
+      const leaveButton =
+  document.createElement(
+    "button"
+  );
+
+leaveButton.type =
+  "button";
+
+leaveButton.textContent =
+  "休暇";
+
+leaveButton.className =
+  "shift-menu-button";
+
+leaveButton.addEventListener(
+  "click",
+  e => {
+
+    e.stopPropagation();
+
+    hideShiftMenu();
+
+    showLeaveMenu(
+      cell,
+      staffName,
+      dateKey
+    );
+
+  }
+);
+
+buttons.appendChild(
+  leaveButton
+);
+
     }
   );
 
