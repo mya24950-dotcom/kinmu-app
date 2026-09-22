@@ -2577,7 +2577,277 @@ function bindStaffNameCells() {
 
 }
 
+function showShiftMenu(
+  cell,
+  staffName,
+  dateKey
+) {
 
+  const menu =
+    document.getElementById(
+      "shiftMenu"
+    );
+
+
+  if (!menu) {
+    return;
+  }
+
+
+  const buttons =
+    document.getElementById(
+      "shiftMenuButtons"
+    );
+
+
+  if (!buttons) {
+    return;
+  }
+
+
+  // メニューを空にする
+  buttons.innerHTML = "";
+
+
+  // =========================
+  // 勤務形態ボタン
+  // =========================
+
+  appData.shiftTypes.forEach(
+    shift => {
+
+      const button =
+        document.createElement(
+          "button"
+        );
+
+
+      button.type =
+        "button";
+
+
+      button.textContent =
+        shift.name;
+
+
+      button.className =
+        "shift-menu-button";
+
+
+      button.addEventListener(
+        "click",
+        async e => {
+
+          e.stopPropagation();
+
+
+          await saveWorkShift(
+            staffName,
+            dateKey,
+            shift.name
+          );
+
+
+          hideShiftMenu();
+
+        }
+      );
+
+
+      buttons.appendChild(
+        button
+      );
+
+    }
+  );
+
+
+  // =========================
+  // 削除ボタン
+  // =========================
+
+  const deleteButton =
+    document.createElement(
+      "button"
+    );
+
+
+  deleteButton.type =
+    "button";
+
+
+  deleteButton.textContent =
+    "削除";
+
+
+  deleteButton.className =
+    "shift-menu-button shift-delete";
+
+
+  deleteButton.addEventListener(
+    "click",
+    async e => {
+
+      e.stopPropagation();
+
+
+      await saveWorkShift(
+        staffName,
+        dateKey,
+        ""
+      );
+
+
+      hideShiftMenu();
+
+    }
+  );
+
+
+  buttons.appendChild(
+    deleteButton
+  );
+
+
+  // =========================
+  // 休暇ボタン
+  // =========================
+
+  const leaveButton =
+    document.createElement(
+      "button"
+    );
+
+
+  leaveButton.type =
+    "button";
+
+
+  leaveButton.textContent =
+    "休暇";
+
+
+  leaveButton.className =
+    "shift-menu-button";
+
+
+  leaveButton.addEventListener(
+    "click",
+    e => {
+
+      e.stopPropagation();
+
+
+      hideShiftMenu();
+
+
+      showLeaveMenu(
+        cell,
+        staffName,
+        dateKey
+      );
+
+    }
+  );
+
+
+  buttons.appendChild(
+    leaveButton
+  );
+
+
+  // =========================
+  // メニュー表示
+  // =========================
+
+  menu.style.display =
+    "grid";
+
+
+  const rect =
+    cell.getBoundingClientRect();
+
+
+  const menuWidth =
+    Math.min(
+      190,
+      window.innerWidth - 20
+    );
+
+
+  menu.style.width =
+    menuWidth + "px";
+
+
+  let left =
+    rect.right + 6;
+
+
+  if (
+    left + menuWidth >
+    window.innerWidth - 10
+  ) {
+
+    left =
+      rect.left -
+      menuWidth -
+      6;
+
+  }
+
+
+  if (left < 10) {
+
+    left = 10;
+
+  }
+
+
+  let top =
+    rect.top;
+
+
+  const menuHeight =
+    menu.offsetHeight ||
+    150;
+
+
+  if (
+    top + menuHeight >
+    window.innerHeight - 10
+  ) {
+
+    top =
+      window.innerHeight -
+      menuHeight -
+      10;
+
+  }
+
+
+  if (top < 10) {
+
+    top = 10;
+
+  }
+
+
+  menu.style.position =
+    "fixed";
+
+
+  menu.style.left =
+    left + "px";
+
+
+  menu.style.top =
+    top + "px";
+
+
+  menu.style.zIndex =
+    "9999";
+
+}
 /* ==================================================
    勤務メニュー
 ================================================== */
