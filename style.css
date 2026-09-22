@@ -9,14 +9,15 @@ body {
 }
 
 body {
-  background: #f2f2f7;
-  color: #1c1c1e;
+  background: #f5f5f7;
+  color: #1d1d1f;
   font-family:
     -apple-system,
     BlinkMacSystemFont,
     "Helvetica Neue",
     sans-serif;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 button,
@@ -26,6 +27,7 @@ input {
 
 button {
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .app {
@@ -46,14 +48,16 @@ button {
   align-items: center;
   justify-content: space-between;
   padding: 0 16px;
-  background: rgba(255, 255, 255, 0.96);
-  backdrop-filter: blur(15px);
-  border-bottom: 1px solid #d1d1d6;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(60, 60, 67, 0.12);
 }
 
 .header-title {
   font-size: 20px;
   font-weight: 700;
+  letter-spacing: -0.3px;
 }
 
 .header-delete-buttons {
@@ -62,11 +66,11 @@ button {
 }
 
 .header-delete-buttons button {
-  border: none;
-  border-radius: 8px;
+  border: 1px solid rgba(255, 59, 48, 0.08);
+  border-radius: 9px;
   padding: 7px 9px;
-  background: #fff0f0;
-  color: #ff3b30;
+  background: #fff5f5;
+  color: #d93025;
   font-size: 11px;
   font-weight: 700;
   white-space: nowrap;
@@ -74,6 +78,7 @@ button {
 
 .header-delete-buttons button:active {
   transform: scale(0.96);
+  background: #ffeaea;
 }
 
 /* ========================================
@@ -84,30 +89,42 @@ button {
   display: flex;
   gap: 6px;
   padding: 8px;
-  background: white;
-  border-bottom: 1px solid #d1d1d6;
+  background: rgba(255, 255, 255, 0.96);
+  border-bottom: 1px solid rgba(60, 60, 67, 0.12);
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.nav::-webkit-scrollbar {
+  display: none;
 }
 
 .nav-button {
-  border: none;
-  background: #f2f2f7;
-  color: #555;
+  border: 0;
+  background: transparent;
+  color: #6e6e73;
   padding: 10px 14px;
-  border-radius: 12px;
+  border-radius: 11px;
   font-size: 14px;
+  font-weight: 500;
   white-space: nowrap;
   flex-shrink: 0;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    transform 0.1s ease;
 }
 
 .nav-button.active {
   background: #007aff;
-  color: white;
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0, 122, 255, 0.2);
 }
 
 .nav-button:active {
-  transform: scale(0.98);
+  transform: scale(0.97);
 }
 
 /* ========================================
@@ -115,7 +132,7 @@ button {
 ======================================== */
 
 .page {
-  padding: 12px;
+  padding: 14px;
 }
 
 /* ========================================
@@ -127,7 +144,7 @@ button {
   align-items: center;
   justify-content: center;
   gap: 20px;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .month-title {
@@ -135,29 +152,34 @@ button {
   text-align: center;
   font-size: 20px;
   font-weight: 700;
+  letter-spacing: -0.3px;
 }
 
 .month-button {
   width: 42px;
   height: 42px;
-  border: none;
+  border: 1px solid rgba(60, 60, 67, 0.08);
   border-radius: 50%;
-  background: white;
-  color: #1c1c1e;
-  font-size: 28px;
+  background: #fff;
+  color: #1d1d1f;
+  font-size: 27px;
   line-height: 1;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.06),
+    0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
 .month-button:active {
-  transform: scale(0.95);
+  transform: scale(0.94);
+  background: #f2f2f7;
 }
 
 .calendar-hint {
-  margin-bottom: 8px;
-  padding: 9px 12px;
-  border-radius: 10px;
-  background: #eaf4ff;
+  margin-bottom: 10px;
+  padding: 10px 13px;
+  border: 1px solid rgba(0, 122, 255, 0.08);
+  border-radius: 11px;
+  background: #eef6ff;
   color: #0066cc;
   font-size: 12px;
   line-height: 1.5;
@@ -171,27 +193,21 @@ button {
   width: 100%;
   overflow-x: auto;
   overflow-y: visible;
-  background: white;
-  border-radius: 14px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+  background: #fff;
+  border: 1px solid rgba(60, 60, 67, 0.08);
+  border-radius: 15px;
+  box-shadow:
+    0 3px 12px rgba(0, 0, 0, 0.045),
+    0 1px 3px rgba(0, 0, 0, 0.035);
   -webkit-overflow-scrolling: touch;
-
-  /*
-    横スクロール時にstickyを正常に動かすため
-  */
   position: relative;
 }
 
 #scheduleTable {
   border-collapse: separate;
   border-spacing: 0;
-
-  /*
-    勤務形態が0件でも職員列の幅が変わらないようにする
-  */
   width: max-content;
   min-width: max-content;
-
   font-size: 12px;
 }
 
@@ -201,20 +217,16 @@ button {
 
 #scheduleTable th,
 #scheduleTable td {
-  border-right: 1px solid #d1d1d6;
-  border-bottom: 1px solid #d1d1d6;
+  border-right: 1px solid #e3e3e8;
+  border-bottom: 1px solid #e3e3e8;
   text-align: center;
   padding: 0;
 }
 
 /* ========================================
    職員列
-   ★ここが今回の重要部分
 ======================================== */
 
-/*
-   職員見出し
-*/
 #scheduleTable .staff-header {
   position: sticky !important;
   left: 0 !important;
@@ -227,18 +239,15 @@ button {
 
   z-index: 100 !important;
 
-  background: #f2f2f7 !important;
+  background: #f5f5f7 !important;
 
   font-weight: 700;
 
   box-sizing: border-box !important;
 
-  border-right: 1px solid #d1d1d6 !important;
+  border-right: 1px solid #d8d8de !important;
 }
 
-/*
-   職員名
-*/
 #scheduleTable .staff-cell {
   position: sticky !important;
   left: 0 !important;
@@ -251,7 +260,7 @@ button {
 
   z-index: 90 !important;
 
-  background: #ffffff !important;
+  background: #fff !important;
 
   font-weight: 600;
 
@@ -267,16 +276,13 @@ button {
 
   box-sizing: border-box !important;
 
-  border-right: 1px solid #d1d1d6 !important;
+  border-right: 1px solid #d8d8de !important;
 }
 
 #scheduleTable .staff-cell:active {
-  background: #e5e5ea !important;
+  background: #f0f0f3 !important;
 }
 
-/*
-   職員列の中にある文字
-*/
 #scheduleTable .staff-name-cell {
   width: 90px !important;
   min-width: 90px !important;
@@ -295,17 +301,19 @@ button {
   width: 46px;
   min-width: 46px;
   height: 70px;
-  background: white;
+  background: #fff;
   font-weight: 600;
   vertical-align: middle;
 }
 
 .day-number {
   font-size: 14px;
+  font-weight: 700;
 }
 
 .day-week {
   margin-top: 3px;
+  color: #6e6e73;
   font-size: 11px;
 }
 
@@ -314,16 +322,16 @@ button {
 ======================================== */
 
 .saturday {
-  background: #eaf6ff !important;
+  background: #edf7ff !important;
 }
 
 .sunday,
 .holiday {
-  background: #fff0f0 !important;
+  background: #fff2f2 !important;
 }
 
 .company-holiday {
-  background: #fff3cd !important;
+  background: #fff8df !important;
 }
 
 /* ========================================
@@ -334,16 +342,17 @@ button {
   width: 46px;
   min-width: 46px;
   height: 46px;
-  background: white;
+  background: #fff;
   cursor: pointer;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
   font-size: 11px;
   font-weight: 600;
+  color: #1d1d1f;
 }
 
 .shift-cell:active {
-  background: #e5e5ea;
+  background: #f0f0f3;
 }
 
 /* ========================================
@@ -354,11 +363,12 @@ button {
   width: 110px;
   min-width: 110px;
   height: 35px;
-  background: #f2f2f7;
+  background: #f5f5f7;
+  color: #3a3a3c;
   font-size: 12px;
   font-weight: 700;
   white-space: nowrap;
-  border-left: 1px solid #d1d1d6;
+  border-left: 1px solid #dedee3;
 }
 
 /* ========================================
@@ -369,11 +379,12 @@ button {
   width: 48px;
   min-width: 48px;
   height: 35px;
-  background: #f2f2f7;
+  background: #f5f5f7;
+  color: #3a3a3c;
   font-size: 11px;
   font-weight: 700;
   white-space: nowrap;
-  border-left: 1px solid #d1d1d6;
+  border-left: 1px solid #dedee3;
 }
 
 .total-cell {
@@ -381,14 +392,15 @@ button {
   min-width: 48px;
   height: 46px;
   background: #fafafa;
+  color: #1d1d1f;
   font-size: 13px;
   font-weight: 700;
   white-space: nowrap;
-  border-left: 1px solid #d1d1d6;
+  border-left: 1px solid #dedee3;
 }
 
 .shift-group-start {
-  border-left: 1px solid #d1d1d6;
+  border-left: 1px solid #dedee3;
 }
 
 /* ========================================
@@ -396,17 +408,21 @@ button {
 ======================================== */
 
 .settings-card {
-  background: white;
+  background: #fff;
+  border: 1px solid rgba(60, 60, 67, 0.06);
   border-radius: 16px;
   padding: 18px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
-  margin-bottom: 12px;
+  box-shadow:
+    0 3px 12px rgba(0, 0, 0, 0.045),
+    0 1px 3px rgba(0, 0, 0, 0.03);
+  margin-bottom: 14px;
 }
 
 .settings-card h2 {
   margin: 0 0 16px;
   font-size: 20px;
   line-height: 1.4;
+  letter-spacing: -0.2px;
 }
 
 input {
@@ -415,20 +431,23 @@ input {
   min-height: 42px;
   padding: 8px 12px;
   margin: 0;
-  border: 1px solid #d1d1d6;
+  border: 1px solid #d2d2d7;
   border-radius: 10px;
-  background: white;
-  color: #1c1c1e;
+  background: #fff;
+  color: #1d1d1f;
   font-size: 14px;
   outline: none;
   box-sizing: border-box;
   -webkit-appearance: none;
   appearance: none;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 input:focus {
   border-color: #007aff;
-  box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.12);
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.13);
 }
 
 .input-row {
@@ -466,10 +485,10 @@ input:focus {
   min-height: 36px;
   margin: 0;
   padding: 4px 7px;
-  border: 1px solid #d1d1d6;
+  border: 1px solid #d2d2d7;
   border-radius: 9px;
-  background: white;
-  color: #1c1c1e;
+  background: #fff;
+  color: #1d1d1f;
   font-size: 14px;
   font-weight: 400;
   line-height: 26px;
@@ -495,7 +514,7 @@ input:focus {
   justify-content: center;
   margin: 0;
   padding: 0;
-  color: #666;
+  color: #8e8e93;
   font-size: 15px;
   font-weight: 600;
   line-height: 1;
@@ -524,14 +543,19 @@ input:focus {
   border-radius: 10px;
   padding: 8px 16px;
   background: #007aff;
-  color: white;
+  color: #fff;
   font-size: 14px;
   font-weight: 600;
   white-space: nowrap;
+  box-shadow: 0 1px 2px rgba(0, 122, 255, 0.16);
+  transition:
+    transform 0.1s ease,
+    background 0.15s ease;
 }
 
 .add-button:active {
   transform: scale(0.98);
+  background: #006fe6;
 }
 
 /* ========================================
@@ -550,9 +574,11 @@ input:focus {
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  padding: 12px;
-  background: #f2f2f7;
+  padding: 12px 13px;
+  background: #fff;
+  border: 1px solid rgba(60, 60, 67, 0.08);
   border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.035);
 }
 
 .list-item-main {
@@ -560,6 +586,7 @@ input:focus {
 }
 
 .list-item-title {
+  color: #1d1d1f;
   font-size: 15px;
   font-weight: 700;
   overflow: hidden;
@@ -569,7 +596,7 @@ input:focus {
 
 .list-item-sub {
   margin-top: 3px;
-  color: #666;
+  color: #8e8e93;
   font-size: 12px;
 }
 
@@ -580,16 +607,24 @@ input:focus {
 }
 
 .list-button {
-  border: none;
+  border: 1px solid rgba(60, 60, 67, 0.08);
   border-radius: 8px;
   padding: 7px 9px;
-  background: white;
-  color: #1c1c1e;
+  background: #f5f5f7;
+  color: #1d1d1f;
   font-size: 12px;
+  font-weight: 500;
+}
+
+.list-button:active {
+  transform: scale(0.96);
+  background: #e5e5ea;
 }
 
 .list-button.delete {
-  color: #ff3b30;
+  color: #d93025;
+  background: #fff5f5;
+  border-color: rgba(255, 59, 48, 0.08);
 }
 
 /* ========================================
@@ -615,7 +650,7 @@ input:focus {
 
 .info {
   margin-top: 12px;
-  color: #666;
+  color: #8e8e93;
   font-size: 12px;
   line-height: 1.6;
 }
@@ -643,13 +678,13 @@ input:focus {
 .date-box label {
   display: block;
   margin-bottom: 5px;
-  color: #666;
+  color: #8e8e93;
   font-size: 12px;
 }
 
 .date-arrow {
   padding-bottom: 11px;
-  color: #888;
+  color: #8e8e93;
 }
 
 /* ========================================
@@ -664,15 +699,19 @@ input:focus {
   max-height: 70vh;
   overflow-y: auto;
   padding: 10px;
-  background: white;
-  border: 1px solid #d1d1d6;
-  border-radius: 14px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.22);
+  background: rgba(255, 255, 255, 0.97);
+  border: 1px solid rgba(60, 60, 67, 0.12);
+  border-radius: 15px;
+  box-shadow:
+    0 12px 35px rgba(0, 0, 0, 0.16),
+    0 2px 8px rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
 .shift-menu-title {
   padding: 7px;
-  color: #666;
+  color: #8e8e93;
   font-size: 12px;
   font-weight: 700;
 }
@@ -690,19 +729,21 @@ input:focus {
   border-radius: 9px;
   padding: 9px 7px;
   background: #f2f2f7;
+  color: #1d1d1f;
   text-align: center;
   font-size: 13px;
   font-weight: 600;
 }
 
 .shift-menu-button:active {
-  background: #d1d1d6;
+  background: #e5e5ea;
+  transform: scale(0.98);
 }
 
 .shift-menu-button.shift-delete {
   grid-column: 1 / -1;
-  color: #ff3b30;
-  background: #fff0f0;
+  color: #d93025;
+  background: #fff2f2;
 }
 
 /* ========================================
@@ -717,17 +758,21 @@ input:focus {
   align-items: center;
   justify-content: center;
   padding: 20px;
-  background: rgba(0, 0, 0, 0.35);
-  backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.32);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
 }
 
 .confirm-card {
   width: 100%;
   max-width: 360px;
   padding: 22px;
-  background: white;
+  background: #fff;
+  border: 1px solid rgba(60, 60, 67, 0.08);
   border-radius: 20px;
-  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.25);
+  box-shadow:
+    0 18px 55px rgba(0, 0, 0, 0.18),
+    0 3px 12px rgba(0, 0, 0, 0.08);
 }
 
 .confirm-title {
@@ -739,7 +784,7 @@ input:focus {
 
 .confirm-text {
   margin-bottom: 20px;
-  color: #555;
+  color: #6e6e73;
   text-align: center;
   font-size: 14px;
   line-height: 1.7;
@@ -762,12 +807,12 @@ input:focus {
 
 .confirm-cancel {
   background: #f2f2f7;
-  color: #333;
+  color: #3a3a3c;
 }
 
 .confirm-ok {
   background: #007aff;
-  color: white;
+  color: #fff;
 }
 
 /* ========================================
@@ -867,9 +912,6 @@ input:focus {
     font-size: 10px;
   }
 
-  /*
-     スマホでも職員列を90pxに完全固定
-  */
   #scheduleTable .staff-header,
   #scheduleTable .staff-cell,
   #scheduleTable .staff-name-cell {
@@ -885,12 +927,12 @@ input:focus {
 
   #scheduleTable .staff-header {
     z-index: 100 !important;
-    background: #f2f2f7 !important;
+    background: #f5f5f7 !important;
   }
 
   #scheduleTable .staff-cell {
     z-index: 90 !important;
-    background: #ffffff !important;
+    background: #fff !important;
   }
 
   .date-header {
@@ -1012,4 +1054,27 @@ input:focus {
 
 .staff-list-header + .list {
   margin-top: 0;
+}
+
+/* ========================================
+   Safari / iOS 表示安定化
+======================================== */
+
+@supports (-webkit-touch-callout: none) {
+  input,
+  button {
+    -webkit-appearance: none;
+  }
+
+  .header,
+  .nav,
+  .shift-menu,
+  .modal-overlay {
+    -webkit-backdrop-filter: blur(20px);
+  }
+
+  #scheduleTable .staff-header,
+  #scheduleTable .staff-cell {
+    -webkit-transform: translateZ(0);
+  }
 }
