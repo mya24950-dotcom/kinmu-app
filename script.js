@@ -2902,6 +2902,202 @@ function showShiftMenu(
 
 }
 
+function showLeaveMenu(
+  cell,
+  staffName,
+  dateKey
+) {
+
+  const menu =
+    document.getElementById(
+      "leaveMenu"
+    );
+
+  if (!menu) {
+    return;
+  }
+
+  const buttons =
+    document.getElementById(
+      "leaveMenuButtons"
+    );
+
+  if (!buttons) {
+    return;
+  }
+
+  buttons.innerHTML = "";
+
+  const leaveTypes = [
+    "年休",
+    "A休",
+    "P休"
+  ];
+
+  leaveTypes.forEach(
+    leaveType => {
+
+      const button =
+        document.createElement(
+          "button"
+        );
+
+      button.type =
+        "button";
+
+      button.textContent =
+        leaveType;
+
+      button.className =
+        "shift-menu-button";
+
+      button.addEventListener(
+        "click",
+        async e => {
+
+          e.stopPropagation();
+
+          await saveLeave(
+            staffName,
+            dateKey,
+            leaveType
+          );
+
+          hideLeaveMenu();
+
+        }
+      );
+
+      buttons.appendChild(
+        button
+      );
+
+    }
+  );
+
+
+  const deleteButton =
+    document.createElement(
+      "button"
+    );
+
+  deleteButton.type =
+    "button";
+
+  deleteButton.textContent =
+    "休暇を解除";
+
+  deleteButton.className =
+    "shift-menu-button shift-delete";
+
+  deleteButton.addEventListener(
+    "click",
+    async e => {
+
+      e.stopPropagation();
+
+      await saveLeave(
+        staffName,
+        dateKey,
+        ""
+      );
+
+      hideLeaveMenu();
+
+    }
+  );
+
+  buttons.appendChild(
+    deleteButton
+  );
+
+
+  menu.style.display =
+    "grid";
+
+
+  const rect =
+    cell.getBoundingClientRect();
+
+
+  const menuWidth =
+    Math.min(
+      190,
+      window.innerWidth - 20
+    );
+
+
+  menu.style.width =
+    menuWidth + "px";
+
+
+  let left =
+    rect.right + 6;
+
+
+  if (
+    left + menuWidth >
+    window.innerWidth - 10
+  ) {
+
+    left =
+      rect.left -
+      menuWidth -
+      6;
+
+  }
+
+
+  if (left < 10) {
+
+    left = 10;
+
+  }
+
+
+  let top =
+    rect.top;
+
+
+  const menuHeight =
+    menu.offsetHeight ||
+    150;
+
+
+  if (
+    top + menuHeight >
+    window.innerHeight - 10
+  ) {
+
+    top =
+      window.innerHeight -
+      menuHeight -
+      10;
+
+  }
+
+
+  if (top < 10) {
+
+    top = 10;
+
+  }
+
+
+  menu.style.position =
+    "fixed";
+
+  menu.style.left =
+    left + "px";
+
+  menu.style.top =
+    top + "px";
+
+  menu.style.zIndex =
+    "9999";
+
+}
+
 
 function hideShiftMenu() {
 
