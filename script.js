@@ -455,87 +455,239 @@ async function loadAllFromSupabase() {
    Realtime
 ================================================== */
 
+let realtimeChannel = null;
+let realtimeReloadTimer = null;
+
+
+/* ==================================================
+   Realtime開始
+================================================== */
+
 function setupRealtime() {
 
   if (!supabaseClient) {
+
+    console.error(
+      "Supabaseクライアントがありません"
+    );
+
     return;
+
   }
 
 
-  supabaseClient
+  /* すでに接続していたら削除 */
 
-    .channel(
-      "kinmu-app-realtime"
-    )
+  if (realtimeChannel) {
 
-    .on(
+    supabaseClient.removeChannel(
+      realtimeChannel
+    );
 
-      "postgres_changes",
+    realtimeChannel = null;
 
-      {
-        event: "*",
-        schema: "public",
-        table: "staff"
-      },
+  }
+
+
+  realtimeChannel =
+
+    supabaseClient
+
+      .channel(
+        "kinmu-app-realtime"
+      )
+
+      .on(
+
+        "postgres_changes",
+
+        {
+          event: "*",
+          schema: "public",
+          table: "staff"
+        },
+
+        payload => {
+
+          console.log(
+            "Realtime staff:",
+            payload
+          );
+
+          scheduleRealtimeReload();
+
+        }
+
+      )
+
+      .on(
+
+        "postgres_changes",
+
+        {
+          event: "*",
+          schema: "public",
+          table: "work_shifts"
+        },
+
+        payload => {
+
+          console.log(
+            "Realtime work_shifts:",
+            payload
+          );
+
+          scheduleRealtimeReload();
+
+        }
+
+      )
+
+      .on(
+
+        "postgres_changes",
+
+        {
+          event: "*",
+          schema: "public",
+          table: "shift_types"
+        },
+
+        payload => {
+
+          console.log(
+            "Realtime shift_types:",
+            payload
+          );
+
+          scheduleRealtimeReload();
+
+        }
+
+      )
+
+      .subscribe(
+
+        status => {
+
+          console.log(
+            "Supabase Realtime STATUS:",
+            status
+          );
+
+
+          if (
+            status === "SUBSCRIBED"
+          ) {
+
+            console.log(
+              "★ Supabase Realtime接続成功"
+            );
+
+          }
+
+
+          if (
+            status === "CHANNEL_ERROR"
+          ) {
+
+            console.error(
+              "★ Supabase Realtime接続エラー"
+            );
+
+          }
+
+
+          if (
+            status === "TIMED_OUT"
+          ) {
+
+            console.error(
+              "★ Supabase Realtime接続タイムアウト"
+            );
+
+          }
+
+        }
+
+      );
+
+}
+
+
+/* ==================================================
+   Realtime更新予約
+================================================== */
+
+function scheduleRealtimeReload() {
+
+  clearTimeout(
+    realtimeReloadTimer
+  );
+
+
+  realtimeReloadTimer =
+
+    setTimeout(
 
       async () => {
 
         await reloadFromSupabase();
 
-      }
-
-    )
-
-    .on(
-
-      "postgres_changes",
-
-      {
-        event: "*",
-        schema: "public",
-        table: "work_shifts"
       },
 
-      async () => {
+      300
 
-        await reloadFromSupabase();
-
-      }
-
-    )
-
-    .on(
-
-      "postgres_changes",
-
-      {
-        event: "*",
-        schema: "public",
-        table: "shift_types"
-      },
-
-      async () => {
-
-        await reloadFromSupabase();
-
-      }
-
-    )
-
-    .subscribe(
-      status => {
-
-        console.log(
-          "Supabase Realtime:",
-          status
-        );
-
-      }
     );
 
 }
 
 
+/* ==================================================
+   Realtime更新
+================================================== */
+
+let realtimeUpdating = false;
+
+
+async function reloadFromSupabase() {
+
+  if (
+    realtimeUpdating
+  ) {
+
+    return;
+
+  }
+
+
+  realtimeUpdating = true;
+
+
+  try {
+
+    await loadAllFromSupabase();
+
+    renderAll();
+
+    console.log(
+      "★ 勤務表を自動更新しました"
+    );
+
+  } catch (error) {
+
+    console.error(
+      "自動更新エラー",
+      error
+    );
+
+  } finally {
+
+    realtimeUpdating = false;
+
+  }
+
+}
 /* ==================================================
    Realtime更新
 ================================================== */
