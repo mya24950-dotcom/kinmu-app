@@ -3007,63 +3007,36 @@ function hideLeaveMenu() {
 ================================================== */
 
 async function saveWorkShift(
-
   staffName,
-
   dateKey,
-
   shiftName
-
 ) {
 
   if (!supabaseClient) {
-
-    alert(
-      "Supabaseに接続されていません。"
-    );
-
     return;
-
   }
 
-
-  const name =
-    getStaffName(
-      staffName
-    );
-
+  const name = getStaffName(staffName);
 
   cloudOperationBusy = true;
 
-
   try {
+
+    // ==========================================
+    // 削除
+    // ==========================================
 
     if (!shiftName) {
 
-      const result =
+      const { error } =
         await supabaseClient
-
-          .from(
-            "work_shifts"
-          )
-
+          .from("work_shifts")
           .delete()
+          .eq("staff_name", name)
+          .eq("work_date", dateKey);
 
-          .eq(
-            "staff_name",
-            name
-          )
-
-          .eq(
-            "work_date",
-            dateKey
-          );
-
-
-      if (result.error) {
-
-        throw result.error;
-
+      if (error) {
+        throw error;
       }
 
 
@@ -3073,133 +3046,61 @@ async function saveWorkShift(
         ""
       );
 
+      setStoredLeave(
+        name,
+        dateKey,
+        ""
+      );
+
 
       renderSchedule();
 
-
       return;
-
     }
 
 
-    const existing =
+    // ==========================================
+    // 勤務を登録
+    // ==========================================
+
+    const { data, error } =
       await supabaseClient
-
-        .from(
-          "work_shifts"
-        )
-
-        .select(
-          "id"
-        )
-
-        .eq(
-          "staff_name",
-          name
-        )
-
-        .eq(
-          "work_date",
-          dateKey
-        )
-
-        .order(
-          "id",
+        .from("work_shifts")
+        .upsert(
           {
-            ascending: true
+            staff_name: name,
+            work_date: dateKey,
+            shift_name: shiftName,
+            leave_type: null
+          },
+          {
+            onConflict:
+              "staff_name,work_date"
           }
         )
+        .select()
+        .single();
 
-        .limit(1);
 
-
-    if (existing.error) {
-
-      throw existing.error;
-
+    if (error) {
+      throw error;
     }
 
 
-    const existingRow =
-
-      existing.data &&
-      existing.data.length > 0
-
-        ? existing.data[0]
-
-        : null;
-
-
-    if (existingRow) {
-
-      const result =
-        await supabaseClient
-
-          .from(
-            "work_shifts"
-          )
-
-          .update({
-
-            shift_name:
-              shiftName
-
-          })
-
-          .eq(
-            "id",
-            existingRow.id
-          );
-
-
-      if (result.error) {
-
-        throw result.error;
-
-      }
-
-    }
-
-    else {
-
-      const result =
-        await supabaseClient
-
-          .from(
-            "work_shifts"
-          )
-
-          .insert({
-
-            staff_name:
-              name,
-
-            work_date:
-              dateKey,
-
-            shift_name:
-              shiftName
-
-          });
-
-
-      if (result.error) {
-
-        throw result.error;
-
-      }
-
-    }
-
+    // ==========================================
+    // ローカルデータ更新
+    // ==========================================
 
     setStoredShift(
-
       name,
-
       dateKey,
-
       shiftName
+    );
 
+    setStoredLeave(
+      name,
+      dateKey,
+      ""
     );
 
 
@@ -3209,15 +3110,14 @@ async function saveWorkShift(
   } catch (error) {
 
     console.error(
-      "勤務保存エラー",
+      "勤務保存エラー:",
       error
     );
 
-
     alert(
-      "勤務の保存に失敗しました。"
+      "勤務の保存に失敗しました。\n" +
+      error.message
     );
-
 
   } finally {
 
@@ -3237,93 +3137,117 @@ async function saveLeave(
     return;
   }
 
+  const name =
+    getStaffName(staffName);
 
-  const result =
-    await supabaseClient
-      .from("work_shifts")
-      .select("id")
-      .eq("staff_name", staffName)
-      .eq("work_date", dateKey)
-      .order("id", {
-        ascending: true
-      })
-      .limit(1);
+  cloudOperationBusy = true;
+
+  try {
+
+    // ==========================================
+    // 休暇解除
+    // ==========================================
+
+    if (!leaveType) {
+
+      const { error } =
+        await supabaseClient
+          .from("work_shifts")
+          .delete()
+          .eq("staff_name", name)
+          .eq("work_date", dateKey);
+
+      if (error) {
+        throw error;
+      }
 
 
-  if (result.error) {
+      setStoredLeave(
+        name,
+        dateKey,
+        ""
+      );
 
-    console.error(
-      "休暇検索エラー:",
-      result.error
+      setStoredShift(
+        name,
+        dateKey,
+        ""
+      );
+
+
+      renderSchedule();
+
+      return;
+    }
+
+
+    // ==========================================
+    // 休暇を登録
+    // ==========================================
+
+    const { data, error } =
+      await supabaseClient
+        .from("work_shifts")
+        .upsert(
+          {
+            staff_name: name,
+            work_date: dateKey,
+            shift_name: "",
+            leave_type: leaveType
+          },
+          {
+            onConflict:
+              "staff_name,work_date"
+          }
+        )
+        .select()
+        .single();
+
+
+    if (error) {
+      throw error;
+    }
+
+
+    // ==========================================
+    // ローカルデータ更新
+    // ==========================================
+
+    setStoredShift(
+      name,
+      dateKey,
+      ""
     );
 
-    return;
-
-  }
-
-
-  const existingRow =
-    result.data &&
-    result.data.length > 0
-      ? result.data[0]
-      : null;
+    setStoredLeave(
+      name,
+      dateKey,
+      leaveType
+    );
 
 
-  let saveResult;
+    renderSchedule();
 
 
-  if (existingRow) {
-
-    saveResult =
-      await supabaseClient
-        .from("work_shifts")
-        .update({
-          leave_type:
-            leaveType || null
-        })
-        .eq(
-          "id",
-          existingRow.id
-        );
-
-  } else {
-
-    saveResult =
-      await supabaseClient
-        .from("work_shifts")
-        .insert([
-          {
-            staff_name:
-              staffName,
-
-            work_date:
-              dateKey,
-
-            shift_name:
-              "",
-
-            leave_type:
-              leaveType || null
-          }
-        ]);
-
-  }
-
-
-  if (saveResult.error) {
+  } catch (error) {
 
     console.error(
       "休暇保存エラー:",
-      saveResult.error
+      error
     );
 
     alert(
-      "休暇の保存に失敗しました。"
+      "休暇の保存に失敗しました。\n" +
+      error.message
     );
 
-    return;
+  } finally {
+
+    cloudOperationBusy = false;
 
   }
+
+}
 
 
   await loadAllFromSupabase();
