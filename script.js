@@ -2698,6 +2698,42 @@ function showShiftMenu(
   );
 
   // =========================
+  // 休暇ボタン
+  // =========================
+
+  const leaveButton =
+    document.createElement(
+      "button"
+    );
+
+  leaveButton.type =
+    "button";
+
+  leaveButton.textContent =
+    "休暇";
+
+  // 削除ボタンと同じサイズ
+  // 緑文字＋薄緑背景
+  leaveButton.className =
+    "shift-menu-button shift-leave";
+
+  leaveButton.addEventListener(
+    "click",
+    e => {
+
+      e.stopPropagation();
+
+      // 今は何もしない
+      // 後で休暇メニューを追加する
+
+    }
+  );
+
+  buttons.appendChild(
+    leaveButton
+  );
+
+  // =========================
   // メニュー表示
   // =========================
 
