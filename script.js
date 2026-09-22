@@ -13,7 +13,6 @@ let supabaseClient = null;
 
 /* ==================================================
    ローカル保存
-   ※明け時間などに使用
 ================================================== */
 
 const STORAGE_KEY =
@@ -90,11 +89,6 @@ async function init() {
     );
 
 
-    /*
-      index.htmlで読み込んだ
-      Supabaseライブラリを使用
-    */
-
     if (
       !window.supabase ||
       typeof window.supabase.createClient !== "function"
@@ -112,10 +106,6 @@ async function init() {
     );
 
 
-    /*
-      Supabaseクライアント作成
-    */
-
     supabaseClient =
       window.supabase.createClient(
         SUPABASE_URL,
@@ -128,23 +118,11 @@ async function init() {
     );
 
 
-    /*
-      ローカル設定読み込み
-    */
-
     loadLocalData();
 
 
-    /*
-      イベント設定
-    */
-
     bindEvents();
 
-
-    /*
-      Supabaseからデータ取得
-    */
 
     try {
 
@@ -161,6 +139,10 @@ async function init() {
         error
       );
 
+      /*
+        Supabase全体が失敗した場合だけ通知
+      */
+
       alert(
         "Supabaseからデータを取得できませんでした。\n現在の画面を表示します。"
       );
@@ -168,37 +150,17 @@ async function init() {
     }
 
 
-    /*
-      画面表示
-    */
-
     renderAll();
 
-
-    /*
-      公休日
-    */
 
     loadPublicHolidays();
 
 
-    /*
-      Realtime開始
-    */
-
     setupRealtime();
 
 
-    /*
-      10秒自動同期開始
-    */
-
     startAutoSync();
 
-
-    /*
-      アプリ復帰時に同期
-    */
 
     setupVisibilitySync();
 
@@ -215,11 +177,6 @@ async function init() {
       error
     );
 
-
-    /*
-      Supabaseに接続できなくても
-      アプリ自体は表示する
-    */
 
     loadLocalData();
 
@@ -263,11 +220,6 @@ function loadLocalData() {
     const parsed =
       JSON.parse(saved);
 
-
-    /*
-      休業設定は旧バージョンとの
-      互換用として読み込む
-    */
 
     appData.companyHolidays =
       Array.isArray(
@@ -316,7 +268,6 @@ function loadLocalData() {
 
 /* ==================================================
    ローカル設定保存
-   ※現在は明け時間などに使用
 ================================================== */
 
 function saveLocalData() {
@@ -328,10 +279,6 @@ function saveLocalData() {
       STORAGE_KEY,
 
       JSON.stringify({
-
-        /*
-          旧データとの互換用
-        */
 
         companyHolidays:
           appData.companyHolidays,
@@ -370,9 +317,9 @@ async function loadAllFromSupabase() {
   }
 
 
-  /*
-    職員
-  */
+  /* -----------------------------------------------
+     職員
+  ------------------------------------------------ */
 
   const staffResult =
     await supabaseClient
@@ -393,14 +340,19 @@ async function loadAllFromSupabase() {
 
   if (staffResult.error) {
 
+    console.error(
+      "staff取得エラー:",
+      staffResult.error
+    );
+
     throw staffResult.error;
 
   }
 
 
-  /*
-    勤務形態
-  */
+  /* -----------------------------------------------
+     勤務形態
+  ------------------------------------------------ */
 
   const shiftResult =
     await supabaseClient
@@ -421,14 +373,19 @@ async function loadAllFromSupabase() {
 
   if (shiftResult.error) {
 
+    console.error(
+      "shift_types取得エラー:",
+      shiftResult.error
+    );
+
     throw shiftResult.error;
 
   }
 
 
-  /*
-    勤務
-  */
+  /* -----------------------------------------------
+     勤務
+  ------------------------------------------------ */
 
   const workResult =
     await supabaseClient
@@ -442,14 +399,21 @@ async function loadAllFromSupabase() {
 
   if (workResult.error) {
 
+    console.error(
+      "work_shifts取得エラー:",
+      workResult.error
+    );
+
     throw workResult.error;
 
   }
 
 
-  /*
-    休業設定
-  */
+  /* -----------------------------------------------
+     休業設定
+     ★ここだけ失敗しても
+       アプリ全体を停止させない
+  ------------------------------------------------ */
 
   const holidayResult =
     await supabaseClient
@@ -470,14 +434,22 @@ async function loadAllFromSupabase() {
 
   if (holidayResult.error) {
 
-    throw holidayResult.error;
+    console.error(
+      "company_holidays取得エラー:",
+      holidayResult.error
+    );
+
+    /*
+      休業設定だけ取得できない場合は
+      現在のローカルデータを維持する
+    */
 
   }
 
 
-  /*
-    職員データ
-  */
+  /* -----------------------------------------------
+     職員データ
+  ------------------------------------------------ */
 
   appData.staff =
     (staffResult.data || [])
@@ -499,9 +471,9 @@ async function loadAllFromSupabase() {
       );
 
 
-  /*
-    勤務形態
-  */
+  /* -----------------------------------------------
+     勤務形態
+  ------------------------------------------------ */
 
   appData.shiftTypes =
     (shiftResult.data || [])
@@ -538,9 +510,9 @@ async function loadAllFromSupabase() {
       );
 
 
-  /*
-    勤務データ
-  */
+  /* -----------------------------------------------
+     勤務データ
+  ------------------------------------------------ */
 
   appData.shifts = {};
 
@@ -592,52 +564,50 @@ async function loadAllFromSupabase() {
     });
 
 
-  /*
-    休業設定
-  */
+  /* -----------------------------------------------
+     休業設定
+  ------------------------------------------------ */
 
-  appData.companyHolidays =
-    (holidayResult.data || [])
-      .map(row => ({
+  if (!holidayResult.error) {
 
-        id:
-          row.id,
+    appData.companyHolidays =
+      (holidayResult.data || [])
+        .map(row => ({
 
-        name:
-          String(
-            row.name || ""
-          ),
+          id:
+            row.id,
 
-        start:
-          String(
-            row.start_date || ""
-          ),
+          name:
+            String(
+              row.name || ""
+            ),
 
-        end:
-          String(
-            row.end_date || ""
-          )
+          start:
+            String(
+              row.start_date || ""
+            ),
 
-      }))
-      .filter(
-        row =>
-          row.name &&
-          row.start &&
-          row.end
-      )
-      .sort(
-        (a, b) =>
-          a.start.localeCompare(
-            b.start
-          )
-      );
+          end:
+            String(
+              row.end_date || ""
+            )
 
+        }))
+        .filter(
+          row =>
+            row.name &&
+            row.start &&
+            row.end
+        )
+        .sort(
+          (a, b) =>
+            a.start.localeCompare(
+              b.start
+            )
+        );
 
-  /*
-    旧ローカルデータに残っている
-    休業設定を自動的に消す
-    ※Supabaseを正式な保存先にするため
-  */
+  }
+
 
   saveLocalData();
 
@@ -661,10 +631,6 @@ function setupRealtime() {
   }
 
 
-  /*
-    既存チャンネル削除
-  */
-
   if (realtimeChannel) {
 
     try {
@@ -687,10 +653,6 @@ function setupRealtime() {
   }
 
 
-  /*
-    新しいチャンネル
-  */
-
   realtimeChannel =
 
     supabaseClient
@@ -700,9 +662,7 @@ function setupRealtime() {
       )
 
 
-      /*
-        職員
-      */
+      /* 職員 */
 
       .on(
 
@@ -728,9 +688,7 @@ function setupRealtime() {
       )
 
 
-      /*
-        勤務
-      */
+      /* 勤務 */
 
       .on(
 
@@ -756,9 +714,7 @@ function setupRealtime() {
       )
 
 
-      /*
-        勤務形態
-      */
+      /* 勤務形態 */
 
       .on(
 
@@ -784,9 +740,7 @@ function setupRealtime() {
       )
 
 
-      /*
-        ★ 休業設定
-      */
+      /* 休業設定 */
 
       .on(
 
@@ -852,10 +806,6 @@ function setupRealtime() {
                   "visible"
                 ) {
 
-                  console.log(
-                    "★ Realtime再接続します"
-                  );
-
                   setupRealtime();
 
                 }
@@ -914,10 +864,6 @@ async function reloadFromSupabase() {
   }
 
 
-  /*
-    保存処理中は同期しない
-  */
-
   if (cloudOperationBusy) {
 
     console.log(
@@ -928,10 +874,6 @@ async function reloadFromSupabase() {
 
   }
 
-
-  /*
-    同期中なら重複実行しない
-  */
 
   if (realtimeUpdating) {
 
@@ -961,7 +903,6 @@ async function reloadFromSupabase() {
       "自動更新エラー",
       error
     );
-
 
   } finally {
 
@@ -1015,11 +956,6 @@ function startAutoSync() {
           return;
 
         }
-
-
-        console.log(
-          "★ 10秒自動同期"
-        );
 
 
         await reloadFromSupabase();
@@ -2780,10 +2716,6 @@ async function saveWorkShift(
 
   try {
 
-    /*
-      削除
-    */
-
     if (!shiftName) {
 
       const result =
@@ -2827,10 +2759,6 @@ async function saveWorkShift(
 
     }
 
-
-    /*
-      既存データ確認
-    */
 
     const existing =
       await supabaseClient
@@ -2909,7 +2837,6 @@ async function saveWorkShift(
       }
 
     }
-
 
     else {
 
@@ -3355,7 +3282,6 @@ async function addOrUpdateStaff() {
 
       }
 
-
       else {
 
         const workResult =
@@ -3450,7 +3376,6 @@ async function addOrUpdateStaff() {
       }
 
     }
-
 
     else {
 
@@ -3908,7 +3833,6 @@ async function addOrUpdateShift() {
 
       }
 
-
       else {
 
         const workResult =
@@ -4012,7 +3936,6 @@ async function addOrUpdateShift() {
       }
 
     }
-
 
     else {
 
@@ -4399,7 +4322,7 @@ function renderShiftList() {
 
 /* ==================================================
    休業設定
-   ★ Supabase対応版
+   ★ Supabase保存
 ================================================== */
 
 async function addCompanyHoliday() {
@@ -4518,10 +4441,6 @@ async function addCompanyHoliday() {
 
   try {
 
-    /*
-      ★ Supabaseへ保存
-    */
-
     const result =
       await supabaseClient
 
@@ -4544,14 +4463,15 @@ async function addCompanyHoliday() {
 
     if (result.error) {
 
+      console.error(
+        "company_holidays insert:",
+        result.error
+      );
+
       throw result.error;
 
     }
 
-
-    /*
-      入力欄クリア
-    */
 
     nameInput.value =
       "";
@@ -4568,10 +4488,6 @@ async function addCompanyHoliday() {
 
     }
 
-
-    /*
-      Supabaseから最新状態を取得
-    */
 
     await loadAllFromSupabase();
 
@@ -4595,7 +4511,7 @@ async function addCompanyHoliday() {
 
 
     alert(
-      "休業設定の保存に失敗しました。"
+      "休業設定の保存に失敗しました。\nSupabaseのcompany_holidays設定を確認してください。"
     );
 
 
@@ -4632,7 +4548,7 @@ function renderHolidayList() {
 
 
   appData.companyHolidays.forEach(
-    (holiday, index) => {
+    holiday => {
 
       const item =
         document.createElement(
@@ -4719,22 +4635,17 @@ function renderHolidayList() {
             }
 
 
-            /*
-              ★ Supabaseから削除
-            */
-
             cloudOperationBusy = true;
 
 
             try {
 
-              /*
-                idがある場合
-              */
+              let result;
+
 
               if (holiday.id) {
 
-                const result =
+                result =
                   await supabaseClient
 
                     .from(
@@ -4748,23 +4659,11 @@ function renderHolidayList() {
                       holiday.id
                     );
 
-
-                if (result.error) {
-
-                  throw result.error;
-
-                }
-
               }
-
-
-              /*
-                idがない旧データの場合
-              */
 
               else {
 
-                const result =
+                result =
                   await supabaseClient
 
                     .from(
@@ -4788,19 +4687,15 @@ function renderHolidayList() {
                       holiday.end
                     );
 
-
-                if (result.error) {
-
-                  throw result.error;
-
-                }
-
               }
 
 
-              /*
-                最新データを取得
-              */
+              if (result.error) {
+
+                throw result.error;
+
+              }
+
 
               await loadAllFromSupabase();
 
@@ -4811,7 +4706,7 @@ function renderHolidayList() {
 
 
               console.log(
-                "★ 休業設定をSupabaseから削除しました"
+                "★ 休業設定を削除しました"
               );
 
 
