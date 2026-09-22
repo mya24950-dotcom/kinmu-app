@@ -50,6 +50,8 @@ let editingStaffIndex = -1;
 
 let editingShiftIndex = -1;
 
+let editingHolidayId = null;
+
 let selectedCell = null;
 
 let publicHolidays = {};
@@ -138,10 +140,6 @@ async function init() {
         "★ Supabaseデータ取得失敗",
         error
       );
-
-      /*
-        Supabase全体が失敗した場合だけ通知
-      */
 
       alert(
         "Supabaseからデータを取得できませんでした。\n現在の画面を表示します。"
@@ -327,14 +325,7 @@ async function loadAllFromSupabase() {
       .from("staff")
 
       .select(
-        "id,name,created_at"
-      )
-
-      .order(
-        "created_at",
-        {
-          ascending: true
-        }
+        "id,name,created_at,sort_order"
       );
 
 
@@ -411,8 +402,6 @@ async function loadAllFromSupabase() {
 
   /* -----------------------------------------------
      休業設定
-     ★ここだけ失敗しても
-       アプリ全体を停止させない
   ------------------------------------------------ */
 
   const holidayResult =
@@ -439,21 +428,17 @@ async function loadAllFromSupabase() {
       holidayResult.error
     );
 
-    /*
-      休業設定だけ取得できない場合は
-      現在のローカルデータを維持する
-    */
-
   }
 
 
   /* -----------------------------------------------
      職員データ
+     ★ sort_orderで並び替え
   ------------------------------------------------ */
 
-  appData.staff =
+  const rawStaff =
     (staffResult.data || [])
-      .map(row => ({
+      .map((row, index) => ({
 
         id:
           row.id,
@@ -461,7 +446,21 @@ async function loadAllFromSupabase() {
         name:
           String(
             row.name || ""
-          )
+          ),
+
+        sort_order:
+          row.sort_order !== null &&
+          row.sort_order !== undefined
+
+            ? Number(row.sort_order)
+
+            : null,
+
+        created_at:
+          row.created_at || "",
+
+        originalIndex:
+          index
 
       }))
       .filter(
@@ -469,6 +468,101 @@ async function loadAllFromSupabase() {
           row.name &&
           row.name !== "明"
       );
+
+
+  rawStaff.sort(
+    (a, b) => {
+
+      const aHas =
+        Number.isFinite(
+          a.sort_order
+        );
+
+      const bHas =
+        Number.isFinite(
+          b.sort_order
+        );
+
+
+      if (aHas && bHas) {
+
+        if (
+          a.sort_order !==
+          b.sort_order
+        ) {
+
+          return (
+            a.sort_order -
+            b.sort_order
+          );
+
+        }
+
+      }
+
+
+      if (aHas && !bHas) {
+
+        return -1;
+
+      }
+
+
+      if (!aHas && bHas) {
+
+        return 1;
+
+      }
+
+
+      if (
+        a.created_at &&
+        b.created_at
+      ) {
+
+        const result =
+          String(
+            a.created_at
+          ).localeCompare(
+            String(
+              b.created_at
+            )
+          );
+
+
+        if (result !== 0) {
+
+          return result;
+
+        }
+
+      }
+
+
+      return (
+        a.originalIndex -
+        b.originalIndex
+      );
+
+    }
+  );
+
+
+  appData.staff =
+    rawStaff.map(
+      row => ({
+
+        id:
+          row.id,
+
+        name:
+          row.name,
+
+        sort_order:
+          row.sort_order
+
+      })
+    );
 
 
   /* -----------------------------------------------
@@ -3379,6 +3473,27 @@ async function addOrUpdateStaff() {
 
     else {
 
+      const maxOrder =
+        appData.staff.reduce(
+          (max, staff) => {
+
+            const value =
+              Number(
+                staff.sort_order
+              );
+
+            return Number.isFinite(value)
+              ? Math.max(
+                  max,
+                  value
+                )
+              : max;
+
+          },
+          -1
+        );
+
+
       const result =
         await supabaseClient
 
@@ -3388,7 +3503,10 @@ async function addOrUpdateStaff() {
 
           .insert({
 
-            name
+            name,
+
+            sort_order:
+              maxOrder + 1
 
           });
 
@@ -3425,6 +3543,210 @@ async function addOrUpdateStaff() {
       "職員の保存に失敗しました。"
     );
 
+
+  } finally {
+
+    cloudOperationBusy = false;
+
+  }
+
+}
+
+
+/* ==================================================
+   職員並び順保存
+================================================== */
+
+async function saveStaffOrder() {
+
+  if (!supabaseClient) {
+
+    alert(
+      "Supabaseに接続されていません。"
+    );
+
+    return false;
+
+  }
+
+
+  try {
+
+    const updates =
+      appData.staff.map(
+        (staff, index) => {
+
+          return supabaseClient
+
+            .from("staff")
+
+            .update({
+
+              sort_order:
+                index
+
+            })
+
+            .eq(
+              "id",
+              staff.id
+            );
+
+        }
+      );
+
+
+    const results =
+      await Promise.all(
+        updates
+      );
+
+
+    const failed =
+      results.find(
+        result =>
+          result.error
+      );
+
+
+    if (failed) {
+
+      throw failed.error;
+
+    }
+
+
+    appData.staff =
+      appData.staff.map(
+        (staff, index) => ({
+
+          ...staff,
+
+          sort_order:
+            index
+
+        })
+      );
+
+
+    return true;
+
+
+  } catch (error) {
+
+    console.error(
+      "職員並び順保存エラー",
+      error
+    );
+
+
+    return false;
+
+  }
+
+}
+
+
+/* ==================================================
+   職員並び替え
+================================================== */
+
+async function moveStaff(
+  index,
+  direction
+) {
+
+  const newIndex =
+    index + direction;
+
+
+  if (
+    newIndex < 0 ||
+    newIndex >= appData.staff.length
+  ) {
+
+    return;
+
+  }
+
+
+  if (cloudOperationBusy) {
+
+    return;
+
+  }
+
+
+  const temp =
+    appData.staff[index];
+
+
+  appData.staff[index] =
+    appData.staff[newIndex];
+
+
+  appData.staff[newIndex] =
+    temp;
+
+
+  appData.staff =
+    appData.staff.map(
+      (staff, i) => ({
+
+        ...staff,
+
+        sort_order:
+          i
+
+      })
+    );
+
+
+  renderStaffList();
+
+  renderSchedule();
+
+
+  cloudOperationBusy = true;
+
+
+  try {
+
+    const success =
+      await saveStaffOrder();
+
+
+    if (!success) {
+
+      throw new Error(
+        "職員の並び順保存に失敗しました"
+      );
+
+    }
+
+
+    console.log(
+      "★ 職員の並び順を保存しました"
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      error
+    );
+
+
+    alert(
+      "職員の並び順の保存に失敗しました。"
+    );
+
+
+    await loadAllFromSupabase();
+
+    renderStaffList();
+
+    renderSchedule();
 
   } finally {
 
@@ -3477,13 +3799,57 @@ function renderStaffList() {
         "staff-item";
 
 
+      item.style.display =
+        "flex";
+
+      item.style.alignItems =
+        "center";
+
+      item.style.justifyContent =
+        "space-between";
+
+      item.style.gap =
+        "8px";
+
+
       item.innerHTML = `
 
-        <span>
+        <span
+          style="
+            flex:1;
+            min-width:0;
+          "
+        >
           ${escapeHtml(name)}
         </span>
 
-        <div>
+        <div
+          class="staff-actions"
+          style="
+            display:flex;
+            align-items:center;
+            gap:4px;
+            flex-shrink:0;
+          "
+        >
+
+          <button
+            type="button"
+            class="move-staff-up-button"
+            ${index === 0 ? "disabled" : ""}
+            title="上へ"
+          >
+            ↑
+          </button>
+
+          <button
+            type="button"
+            class="move-staff-down-button"
+            ${index === appData.staff.length - 1 ? "disabled" : ""}
+            title="下へ"
+          >
+            ↓
+          </button>
 
           <button
             type="button"
@@ -3502,6 +3868,52 @@ function renderStaffList() {
         </div>
 
       `;
+
+
+      const upButton =
+        item.querySelector(
+          ".move-staff-up-button"
+        );
+
+
+      if (upButton) {
+
+        upButton.addEventListener(
+          "click",
+          () => {
+
+            moveStaff(
+              index,
+              -1
+            );
+
+          }
+        );
+
+      }
+
+
+      const downButton =
+        item.querySelector(
+          ".move-staff-down-button"
+        );
+
+
+      if (downButton) {
+
+        downButton.addEventListener(
+          "click",
+          () => {
+
+            moveStaff(
+              index,
+              1
+            );
+
+          }
+        );
+
+      }
 
 
       const editButton =
@@ -3530,6 +3942,8 @@ function renderStaffList() {
 
               input.value =
                 name;
+
+              input.focus();
 
             }
 
@@ -4064,6 +4478,19 @@ function renderShiftList() {
         "shift-list-item";
 
 
+      item.style.display =
+        "flex";
+
+      item.style.alignItems =
+        "center";
+
+      item.style.justifyContent =
+        "space-between";
+
+      item.style.gap =
+        "8px";
+
+
       const timeText =
 
         shift.start &&
@@ -4076,7 +4503,12 @@ function renderShiftList() {
 
       item.innerHTML = `
 
-        <div>
+        <div
+          style="
+            flex:1;
+            min-width:0;
+          "
+        >
 
           <strong>
             ${escapeHtml(
@@ -4092,7 +4524,15 @@ function renderShiftList() {
 
         </div>
 
-        <div>
+        <div
+          class="shift-actions"
+          style="
+            display:flex;
+            align-items:center;
+            gap:4px;
+            flex-shrink:0;
+          "
+        >
 
           <button
             type="button"
@@ -4153,6 +4593,8 @@ function renderShiftList() {
 
               nameInput.value =
                 shift.name;
+
+              nameInput.focus();
 
             }
 
@@ -4322,7 +4764,7 @@ function renderShiftList() {
 
 /* ==================================================
    休業設定
-   ★ Supabase保存
+   ★ Supabase保存・編集対応
 ================================================== */
 
 async function addCompanyHoliday() {
@@ -4408,9 +4850,25 @@ async function addCompanyHoliday() {
 
   const overlap =
     appData.companyHolidays.some(
-      h =>
-        start <= h.end &&
-        end >= h.start
+      h => {
+
+        if (
+          editingHolidayId &&
+          String(h.id) ===
+            String(editingHolidayId)
+        ) {
+
+          return false;
+
+        }
+
+
+        return (
+          start <= h.end &&
+          end >= h.start
+        );
+
+      }
     );
 
 
@@ -4441,34 +4899,102 @@ async function addCompanyHoliday() {
 
   try {
 
-    const result =
-      await supabaseClient
-
-        .from(
-          "company_holidays"
-        )
-
-        .insert({
-
-          name,
-
-          start_date:
-            start,
-
-          end_date:
-            end
-
-        });
+    let result;
 
 
-    if (result.error) {
+    /* -------------------------------------------
+       編集
+    ------------------------------------------- */
 
-      console.error(
-        "company_holidays insert:",
-        result.error
-      );
+    if (editingHolidayId) {
 
-      throw result.error;
+      result =
+        await supabaseClient
+
+          .from(
+            "company_holidays"
+          )
+
+          .update({
+
+            name,
+
+            start_date:
+              start,
+
+            end_date:
+              end
+
+          })
+
+          .eq(
+            "id",
+            editingHolidayId
+          );
+
+
+      if (result.error) {
+
+        throw result.error;
+
+      }
+
+
+      editingHolidayId =
+        null;
+
+
+      const button =
+        document.getElementById(
+          "addCompanyHolidayButton"
+        );
+
+
+      if (button) {
+
+        button.textContent =
+          "休業を登録";
+
+      }
+
+    }
+
+    /* -------------------------------------------
+       新規登録
+    ------------------------------------------- */
+
+    else {
+
+      result =
+        await supabaseClient
+
+          .from(
+            "company_holidays"
+          )
+
+          .insert({
+
+            name,
+
+            start_date:
+              start,
+
+            end_date:
+              end
+
+          });
+
+
+      if (result.error) {
+
+        console.error(
+          "company_holidays insert:",
+          result.error
+        );
+
+        throw result.error;
+
+      }
 
     }
 
@@ -4498,7 +5024,7 @@ async function addCompanyHoliday() {
 
 
     console.log(
-      "★ 休業設定をSupabaseへ保存しました"
+      "★ 休業設定を保存しました"
     );
 
 
@@ -4560,6 +5086,19 @@ function renderHolidayList() {
         "holiday-list-item";
 
 
+      item.style.display =
+        "flex";
+
+      item.style.alignItems =
+        "center";
+
+      item.style.justifyContent =
+        "space-between";
+
+      item.style.gap =
+        "8px";
+
+
       const dateText =
 
         holiday.start ===
@@ -4578,7 +5117,12 @@ function renderHolidayList() {
 
       item.innerHTML = `
 
-        <div>
+        <div
+          style="
+            flex:1;
+            min-width:0;
+          "
+        >
 
           <strong>
             ${escapeHtml(
@@ -4594,22 +5138,136 @@ function renderHolidayList() {
 
         </div>
 
-        <button type="button">
-          削除
-        </button>
+        <div
+          class="holiday-actions"
+          style="
+            display:flex;
+            align-items:center;
+            gap:4px;
+            flex-shrink:0;
+          "
+        >
+
+          <button
+            type="button"
+            data-edit-holiday
+          >
+            編集
+          </button>
+
+          <button
+            type="button"
+            data-delete-holiday
+          >
+            削除
+          </button>
+
+        </div>
 
       `;
 
 
-      const button =
+      /* -----------------------------------------
+         編集
+      ----------------------------------------- */
+
+      const editButton =
         item.querySelector(
-          "button"
+          "[data-edit-holiday]"
         );
 
 
-      if (button) {
+      if (editButton) {
 
-        button.addEventListener(
+        editButton.addEventListener(
+          "click",
+          () => {
+
+            const nameInput =
+              document.getElementById(
+                "companyHolidayName"
+              );
+
+
+            const startInput =
+              document.getElementById(
+                "companyHolidayStart"
+              );
+
+
+            const endInput =
+              document.getElementById(
+                "companyHolidayEnd"
+              );
+
+
+            if (nameInput) {
+
+              nameInput.value =
+                holiday.name;
+
+              nameInput.focus();
+
+            }
+
+
+            if (startInput) {
+
+              startInput.value =
+                holiday.start;
+
+            }
+
+
+            if (endInput) {
+
+              endInput.value =
+                holiday.start ===
+                holiday.end
+
+                  ? ""
+
+                  : holiday.end;
+
+            }
+
+
+            editingHolidayId =
+              holiday.id;
+
+
+            const addButton =
+              document.getElementById(
+                "addCompanyHolidayButton"
+              );
+
+
+            if (addButton) {
+
+              addButton.textContent =
+                "休業を更新";
+
+            }
+
+          }
+        );
+
+      }
+
+
+      /* -----------------------------------------
+         削除
+      ----------------------------------------- */
+
+      const deleteButton =
+        item.querySelector(
+          "[data-delete-holiday]"
+        );
+
+
+      if (deleteButton) {
+
+        deleteButton.addEventListener(
           "click",
           async () => {
 
@@ -4693,6 +5351,32 @@ function renderHolidayList() {
               if (result.error) {
 
                 throw result.error;
+
+              }
+
+
+              if (
+                editingHolidayId &&
+                String(editingHolidayId) ===
+                  String(holiday.id)
+              ) {
+
+                editingHolidayId =
+                  null;
+
+
+                const addButton =
+                  document.getElementById(
+                    "addCompanyHolidayButton"
+                  );
+
+
+                if (addButton) {
+
+                  addButton.textContent =
+                    "休業を登録";
+
+                }
 
               }
 
@@ -5428,7 +6112,8 @@ function formatUTC(
 
     String(
       date.getUTCSeconds()
-    ).padStart(2, "0") +
+    ).padStart(2, "0"
+    ) +
 
     "Z"
 
