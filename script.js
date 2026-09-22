@@ -2878,7 +2878,6 @@ function showLeaveMenu(
           e.stopPropagation();
 
           // 今はまだ保存処理はしない
-          // 後でここに処理を追加する
 
         }
       );
@@ -2916,7 +2915,6 @@ function showLeaveMenu(
       e.stopPropagation();
 
       // 今はまだ保存処理はしない
-      // 後でここに処理を追加する
 
     }
   );
@@ -2950,7 +2948,6 @@ function showLeaveMenu(
 
       e.stopPropagation();
 
-      // 休暇メニューを閉じる
       hideLeaveMenu();
 
     }
