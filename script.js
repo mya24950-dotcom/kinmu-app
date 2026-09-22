@@ -105,7 +105,9 @@ async function init() {
       Supabaseからデータ取得
     */
 
-    await loadAllFromSupabase();
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+await loadAllFromSupabase();
 
 
     /*
