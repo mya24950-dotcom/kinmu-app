@@ -2521,27 +2521,50 @@ function bindScheduleCells() {
     .querySelectorAll(
       ".schedule-cell"
     )
-    .forEach(cell => {
+    .forEach(
+      cell => {
 
-      cell.addEventListener(
-        "click",
-        e => {
+        cell.addEventListener(
+          "click",
+          e => {
 
-          e.stopPropagation();
+            e.stopPropagation();
 
-          selectedCell =
-            cell;
+            // =========================
+            // 休暇メニュー表示中は
+            // 他のセルをタップしても
+            // 勤務メニューを開かない
+            // =========================
 
-          showShiftMenu(
-            cell,
-            cell.dataset.staff,
-            cell.dataset.date
-          );
+            const leaveMenu =
+              document.getElementById(
+                "leaveMenu"
+              );
 
-        }
-      );
+            if (
+              leaveMenu &&
+              leaveMenu.style.display !== "none" &&
+              leaveMenu.style.display !== ""
+            ) {
 
-    });
+              return;
+
+            }
+
+            selectedCell =
+              cell;
+
+            showShiftMenu(
+              cell,
+              cell.dataset.staff,
+              cell.dataset.date
+            );
+
+          }
+        );
+
+      }
+    );
 
 }
 
