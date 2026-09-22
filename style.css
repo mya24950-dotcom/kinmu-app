@@ -1084,3 +1084,9 @@ input:focus {
   color: #2e8b57 !important;
   background: #e8f5e9 !important;
 }
+
+.shift-cancel {
+  grid-column: 1 / -1;
+  color: #1d1d1f !important;
+  background: #f2f2f7 !important;
+}
