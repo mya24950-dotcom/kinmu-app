@@ -756,8 +756,6 @@ function setupRealtime() {
       )
 
 
-      /* 職員 */
-
       .on(
 
         "postgres_changes",
@@ -781,8 +779,6 @@ function setupRealtime() {
 
       )
 
-
-      /* 勤務 */
 
       .on(
 
@@ -808,8 +804,6 @@ function setupRealtime() {
       )
 
 
-      /* 勤務形態 */
-
       .on(
 
         "postgres_changes",
@@ -833,8 +827,6 @@ function setupRealtime() {
 
       )
 
-
-      /* 休業設定 */
 
       .on(
 
@@ -3561,10 +3553,6 @@ async function saveStaffOrder() {
 
   if (!supabaseClient) {
 
-    alert(
-      "Supabaseに接続されていません。"
-    );
-
     return false;
 
   }
@@ -3572,61 +3560,45 @@ async function saveStaffOrder() {
 
   try {
 
-    const updates =
-      appData.staff.map(
-        (staff, index) => {
+    for (
+      let i = 0;
+      i < appData.staff.length;
+      i++
+    ) {
 
-          return supabaseClient
-
-            .from("staff")
-
-            .update({
-
-              sort_order:
-                index
-
-            })
-
-            .eq(
-              "id",
-              staff.id
-            );
-
-        }
-      );
+      const staff =
+        appData.staff[i];
 
 
-    const results =
-      await Promise.all(
-        updates
-      );
+      const result =
+        await supabaseClient
+
+          .from("staff")
+
+          .update({
+
+            sort_order:
+              i
+
+          })
+
+          .eq(
+            "id",
+            staff.id
+          );
 
 
-    const failed =
-      results.find(
-        result =>
-          result.error
-      );
+      if (result.error) {
+
+        throw result.error;
+
+      }
 
 
-    if (failed) {
-
-      throw failed.error;
+      staff.sort_order =
+        i;
 
     }
-
-
-    appData.staff =
-      appData.staff.map(
-        (staff, index) => ({
-
-          ...staff,
-
-          sort_order:
-            index
-
-        })
-      );
 
 
     return true;
@@ -3759,6 +3731,7 @@ async function moveStaff(
 
 /* ==================================================
    職員一覧
+   ★ 既存のlist-itemを使用
 ================================================== */
 
 function renderStaffList() {
@@ -3796,46 +3769,30 @@ function renderStaffList() {
 
 
       item.className =
-        "staff-item";
-
-
-      item.style.display =
-        "flex";
-
-      item.style.alignItems =
-        "center";
-
-      item.style.justifyContent =
-        "space-between";
-
-      item.style.gap =
-        "8px";
+        "list-item";
 
 
       item.innerHTML = `
 
-        <span
-          style="
-            flex:1;
-            min-width:0;
-          "
+        <div
+          class="list-item-main"
         >
-          ${escapeHtml(name)}
-        </span>
+
+          <div
+            class="list-item-title"
+          >
+            ${escapeHtml(name)}
+          </div>
+
+        </div>
 
         <div
-          class="staff-actions"
-          style="
-            display:flex;
-            align-items:center;
-            gap:4px;
-            flex-shrink:0;
-          "
+          class="list-item-buttons"
         >
 
           <button
             type="button"
-            class="move-staff-up-button"
+            class="list-button move-staff-up-button"
             ${index === 0 ? "disabled" : ""}
             title="上へ"
           >
@@ -3844,7 +3801,7 @@ function renderStaffList() {
 
           <button
             type="button"
-            class="move-staff-down-button"
+            class="list-button move-staff-down-button"
             ${index === appData.staff.length - 1 ? "disabled" : ""}
             title="下へ"
           >
@@ -3853,14 +3810,14 @@ function renderStaffList() {
 
           <button
             type="button"
-            class="edit-staff-button"
+            class="list-button edit-staff-button"
           >
             編集
           </button>
 
           <button
             type="button"
-            class="delete-staff-button"
+            class="list-button delete delete-staff-button"
           >
             削除
           </button>
@@ -3880,9 +3837,9 @@ function renderStaffList() {
 
         upButton.addEventListener(
           "click",
-          () => {
+          async () => {
 
-            moveStaff(
+            await moveStaff(
               index,
               -1
             );
@@ -3903,9 +3860,9 @@ function renderStaffList() {
 
         downButton.addEventListener(
           "click",
-          () => {
+          async () => {
 
-            moveStaff(
+            await moveStaff(
               index,
               1
             );
@@ -3990,6 +3947,17 @@ function renderStaffList() {
             }
 
 
+            if (!supabaseClient) {
+
+              alert(
+                "Supabaseに接続されていません。"
+              );
+
+              return;
+
+            }
+
+
             cloudOperationBusy = true;
 
 
@@ -4041,7 +4009,97 @@ function renderStaffList() {
               }
 
 
+              if (
+                editingStaffIndex ===
+                index
+              ) {
+
+                editingStaffIndex =
+                  -1;
+
+
+                const input =
+                  document.getElementById(
+                    "staffNameInput"
+                  );
+
+
+                if (input) {
+
+                  input.value =
+                    "";
+
+                }
+
+
+                const button =
+                  document.getElementById(
+                    "addStaffButton"
+                  );
+
+
+                if (button) {
+
+                  button.textContent =
+                    "職員を追加";
+
+                }
+
+              }
+
+
               await loadAllFromSupabase();
+
+
+              /*
+               * 削除後も0,1,2...の順番になるよう整理
+               */
+
+              for (
+                let i = 0;
+                i < appData.staff.length;
+                i++
+              ) {
+
+                const currentStaff =
+                  appData.staff[i];
+
+
+                const orderResult =
+                  await supabaseClient
+
+                    .from("staff")
+
+                    .update({
+
+                      sort_order:
+                        i
+
+                    })
+
+                    .eq(
+                      "id",
+                      currentStaff.id
+                    );
+
+
+                if (
+                  orderResult.error
+                ) {
+
+                  throw orderResult.error;
+
+                }
+
+
+                currentStaff.sort_order =
+                  i;
+
+              }
+
+
+              await loadAllFromSupabase();
+
 
               renderStaffList();
 
@@ -4079,6 +4137,20 @@ function renderStaffList() {
 
     }
   );
+
+
+  const count =
+    document.getElementById(
+      "staffCount"
+    );
+
+
+  if (count) {
+
+    count.textContent =
+      `${appData.staff.length}人`;
+
+  }
 
 }
 
@@ -4444,6 +4516,7 @@ async function addOrUpdateShift() {
 
 /* ==================================================
    勤務形態一覧
+   ★ 既存のlist-itemを使用
 ================================================== */
 
 function renderShiftList() {
@@ -4475,20 +4548,7 @@ function renderShiftList() {
 
 
       item.className =
-        "shift-list-item";
-
-
-      item.style.display =
-        "flex";
-
-      item.style.alignItems =
-        "center";
-
-      item.style.justifyContent =
-        "space-between";
-
-      item.style.gap =
-        "8px";
+        "list-item";
 
 
       const timeText =
@@ -4504,19 +4564,20 @@ function renderShiftList() {
       item.innerHTML = `
 
         <div
-          style="
-            flex:1;
-            min-width:0;
-          "
+          class="list-item-main"
         >
 
-          <strong>
+          <div
+            class="list-item-title"
+          >
             ${escapeHtml(
               shift.name
             )}
-          </strong>
+          </div>
 
-          <div class="shift-time">
+          <div
+            class="list-item-sub"
+          >
             ${escapeHtml(
               timeText
             )}
@@ -4525,25 +4586,19 @@ function renderShiftList() {
         </div>
 
         <div
-          class="shift-actions"
-          style="
-            display:flex;
-            align-items:center;
-            gap:4px;
-            flex-shrink:0;
-          "
+          class="list-item-buttons"
         >
 
           <button
             type="button"
-            data-edit
+            class="list-button edit-shift-button"
           >
             編集
           </button>
 
           <button
             type="button"
-            data-delete
+            class="list-button delete delete-shift-button"
           >
             削除
           </button>
@@ -4555,7 +4610,7 @@ function renderShiftList() {
 
       const editButton =
         item.querySelector(
-          "[data-edit]"
+          ".edit-shift-button"
         );
 
 
@@ -4648,7 +4703,7 @@ function renderShiftList() {
 
       const deleteButton =
         item.querySelector(
-          "[data-delete]"
+          ".delete-shift-button"
         );
 
 
@@ -4716,6 +4771,87 @@ function renderShiftList() {
               if (result.error) {
 
                 throw result.error;
+
+              }
+
+
+              if (
+                editingShiftIndex ===
+                index
+              ) {
+
+                editingShiftIndex =
+                  -1;
+
+
+                const nameInput =
+                  document.getElementById(
+                    "shiftNameInput"
+                  );
+
+
+                const startInput =
+                  document.getElementById(
+                    "shiftStartInput"
+                  );
+
+
+                const endInput =
+                  document.getElementById(
+                    "shiftEndInput"
+                  );
+
+
+                const breakInput =
+                  document.getElementById(
+                    "shiftBreakInput"
+                  );
+
+
+                if (nameInput) {
+
+                  nameInput.value =
+                    "";
+
+                }
+
+
+                if (startInput) {
+
+                  startInput.value =
+                    "";
+
+                }
+
+
+                if (endInput) {
+
+                  endInput.value =
+                    "";
+
+                }
+
+
+                if (breakInput) {
+
+                  breakInput.value =
+                    "";
+
+                }
+
+
+                const button =
+                  document.getElementById(
+                    "addShiftButton"
+                  );
+
+
+                if (button) {
+
+                  button.textContent =
+                    "勤務形態を追加";
+
+                }
 
               }
 
@@ -4902,10 +5038,6 @@ async function addCompanyHoliday() {
     let result;
 
 
-    /* -------------------------------------------
-       編集
-    ------------------------------------------- */
-
     if (editingHolidayId) {
 
       result =
@@ -4958,10 +5090,6 @@ async function addCompanyHoliday() {
       }
 
     }
-
-    /* -------------------------------------------
-       新規登録
-    ------------------------------------------- */
 
     else {
 
@@ -5052,6 +5180,7 @@ async function addCompanyHoliday() {
 
 /* ==================================================
    休業一覧
+   ★ 既存のlist-itemを使用
 ================================================== */
 
 function renderHolidayList() {
@@ -5083,20 +5212,7 @@ function renderHolidayList() {
 
 
       item.className =
-        "holiday-list-item";
-
-
-      item.style.display =
-        "flex";
-
-      item.style.alignItems =
-        "center";
-
-      item.style.justifyContent =
-        "space-between";
-
-      item.style.gap =
-        "8px";
+        "list-item";
 
 
       const dateText =
@@ -5118,19 +5234,20 @@ function renderHolidayList() {
       item.innerHTML = `
 
         <div
-          style="
-            flex:1;
-            min-width:0;
-          "
+          class="list-item-main"
         >
 
-          <strong>
+          <div
+            class="list-item-title"
+          >
             ${escapeHtml(
               holiday.name
             )}
-          </strong>
+          </div>
 
-          <div>
+          <div
+            class="list-item-sub"
+          >
             ${escapeHtml(
               dateText
             )}
@@ -5139,25 +5256,19 @@ function renderHolidayList() {
         </div>
 
         <div
-          class="holiday-actions"
-          style="
-            display:flex;
-            align-items:center;
-            gap:4px;
-            flex-shrink:0;
-          "
+          class="list-item-buttons"
         >
 
           <button
             type="button"
-            data-edit-holiday
+            class="list-button edit-holiday-button"
           >
             編集
           </button>
 
           <button
             type="button"
-            data-delete-holiday
+            class="list-button delete delete-holiday-button"
           >
             削除
           </button>
@@ -5167,13 +5278,9 @@ function renderHolidayList() {
       `;
 
 
-      /* -----------------------------------------
-         編集
-      ----------------------------------------- */
-
       const editButton =
         item.querySelector(
-          "[data-edit-holiday]"
+          ".edit-holiday-button"
         );
 
 
@@ -5255,13 +5362,9 @@ function renderHolidayList() {
       }
 
 
-      /* -----------------------------------------
-         削除
-      ----------------------------------------- */
-
       const deleteButton =
         item.querySelector(
-          "[data-delete-holiday]"
+          ".delete-holiday-button"
         );
 
 
