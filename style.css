@@ -1080,6 +1080,7 @@ input:focus {
 }
 
 .shift-leave {
+  grid-column: 1 / -1;
   color: #2e8b57 !important;
   background: #e8f5e9 !important;
 }
