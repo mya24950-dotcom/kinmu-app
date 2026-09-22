@@ -2601,11 +2601,11 @@ function showShiftMenu(
     return;
   }
 
-  // メニューをリセット
+  // メニューを空にする
   buttons.innerHTML = "";
 
   // =========================
-  // 勤務形態
+  // 勤務形態ボタン
   // =========================
 
   if (
@@ -2659,7 +2659,7 @@ function showShiftMenu(
   }
 
   // =========================
-  // 削除
+  // 削除ボタン
   // =========================
 
   const deleteButton =
@@ -2695,47 +2695,6 @@ function showShiftMenu(
 
   buttons.appendChild(
     deleteButton
-  );
-
-  // =========================
-  // 休暇
-  // =========================
-
-  const leaveButton =
-    document.createElement(
-      "button"
-    );
-
-  leaveButton.type =
-    "button";
-
-  leaveButton.textContent =
-    "休暇";
-
-  leaveButton.className =
-    "shift-menu-button";
-
-  leaveButton.addEventListener(
-    "click",
-    e => {
-
-      e.stopPropagation();
-
-      // 勤務形態メニューを閉じる
-      hideShiftMenu();
-
-      // 休暇メニューだけ表示
-      showLeaveMenu(
-        cell,
-        staffName,
-        dateKey
-      );
-
-    }
-  );
-
-  buttons.appendChild(
-    leaveButton
   );
 
   // =========================
