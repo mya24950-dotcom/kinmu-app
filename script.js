@@ -2582,332 +2582,6 @@ function bindStaffNameCells() {
    勤務メニュー
 ================================================== */
 
-function showShiftMenu(
-  cell,
-  staffName,
-  dateKey
-) {
-
-  const menu =
-    document.getElementById(
-      "shiftMenu"
-    );
-
-
-  if (!menu) {
-
-    return;
-
-  }
-
-
-  const buttons =
-    document.getElementById(
-      "shiftMenuButtons"
-    );
-
-
-  if (!buttons) {
-
-    return;
-
-  }
-
-
-  // メニューを一度空にする
-  buttons.innerHTML =
-    "";
-
-
-  // =========================
-  // 勤務形態ボタン
-  // =========================
-
-  appData.shiftTypes.forEach(
-    shift => {
-
-      const button =
-        document.createElement(
-          "button"
-        );
-
-
-      button.type =
-        "button";
-
-
-      button.textContent =
-        shift.name;
-
-
-      button.className =
-        "shift-menu-button";
-
-
-      button.addEventListener(
-        "click",
-        async e => {
-
-          e.stopPropagation();
-
-
-          await saveWorkShift(
-            staffName,
-            dateKey,
-            shift.name
-          );
-
-
-          hideShiftMenu();
-
-        }
-      );
-
-
-      buttons.appendChild(
-        button
-      );
-
-    }
-  );
-
-
-  // =========================
-  // 削除ボタン
-  // =========================
-
-  const deleteButton =
-    document.createElement(
-      "button"
-    );
-
-
-  deleteButton.type =
-    "button";
-
-
-  deleteButton.textContent =
-    "削除";
-
-
-  deleteButton.className =
-    "shift-menu-button shift-delete";
-
-
-  deleteButton.addEventListener(
-    "click",
-    async e => {
-
-      e.stopPropagation();
-
-
-      await saveWorkShift(
-        staffName,
-        dateKey,
-        ""
-      );
-
-
-      // 休暇情報も解除
-      cell.dataset.leaveType = "";
-
-
-      hideShiftMenu();
-
-    }
-  );
-
-
-  buttons.appendChild(
-    deleteButton
-  );
-
-
-  // =========================
-  // 休暇 / 休暇解除ボタン
-  // =========================
-
-  const leaveButton =
-    document.createElement(
-      "button"
-    );
-
-
-  leaveButton.type =
-    "button";
-
-
-  // 休暇が設定されているか確認
-  const hasLeave =
-    !!cell.dataset.leaveType;
-
-
-  if (hasLeave) {
-
-    // すでに休暇が設定されている
-    leaveButton.textContent =
-      "休暇解除";
-
-    leaveButton.className =
-      "shift-menu-button shift-delete";
-
-
-    leaveButton.addEventListener(
-      "click",
-      async e => {
-
-        e.stopPropagation();
-
-
-        // 休暇情報を削除
-        cell.dataset.leaveType =
-          "";
-
-
-        // 勤務形態も空にする
-        await saveWorkShift(
-          staffName,
-          dateKey,
-          ""
-        );
-
-
-        hideShiftMenu();
-
-      }
-    );
-
-  } else {
-
-    // 休暇が設定されていない
-    leaveButton.textContent =
-      "休暇";
-
-    leaveButton.className =
-      "shift-menu-button";
-
-
-    leaveButton.addEventListener(
-      "click",
-      e => {
-
-        e.stopPropagation();
-
-
-        hideShiftMenu();
-
-
-        showLeaveMenu(
-          cell,
-          staffName,
-          dateKey
-        );
-
-      }
-    );
-
-  }
-
-
-  buttons.appendChild(
-    leaveButton
-  );
-
-
-  // =========================
-  // メニュー表示
-  // =========================
-
-  menu.style.display =
-    "grid";
-
-
-  const rect =
-    cell.getBoundingClientRect();
-
-
-  const menuWidth =
-    Math.min(
-      190,
-      window.innerWidth - 20
-    );
-
-
-  menu.style.width =
-    menuWidth +
-    "px";
-
-
-  let left =
-    rect.right + 6;
-
-
-  if (
-    left + menuWidth >
-    window.innerWidth - 10
-  ) {
-
-    left =
-      rect.left -
-      menuWidth -
-      6;
-
-  }
-
-
-  if (left < 10) {
-
-    left = 10;
-
-  }
-
-
-  let top =
-    rect.top;
-
-
-  const menuHeight =
-    menu.offsetHeight ||
-    150;
-
-
-  if (
-    top + menuHeight >
-    window.innerHeight - 10
-  ) {
-
-    top =
-      window.innerHeight -
-      menuHeight -
-      10;
-
-  }
-
-
-  if (top < 10) {
-
-    top = 10;
-
-  }
-
-
-  menu.style.position =
-    "fixed";
-
-
-  menu.style.left =
-    left + "px";
-
-
-  menu.style.top =
-    top + "px";
-
-
-  menu.style.zIndex =
-    "9999";
-
-}
-
 function showLeaveMenu(
   cell,
   staffName,
@@ -2919,27 +2593,38 @@ function showLeaveMenu(
       "leaveMenu"
     );
 
+
   if (!menu) {
     return;
   }
+
 
   const buttons =
     document.getElementById(
       "leaveMenuButtons"
     );
 
+
   if (!buttons) {
     return;
   }
 
+
+  // メニューを空にする
   buttons.innerHTML = "";
+
+
+  // =========================
+  // 休暇の種類
+  // =========================
 
   const leaveTypes = [
     "年休",
     "午前休",
     "午後休",
-     "時間休"
+    "時間休"
   ];
+
 
   leaveTypes.forEach(
     leaveType => {
@@ -2949,14 +2634,18 @@ function showLeaveMenu(
           "button"
         );
 
+
       button.type =
         "button";
+
 
       button.textContent =
         leaveType;
 
+
       button.className =
         "shift-menu-button";
+
 
       button.addEventListener(
         "click",
@@ -2964,16 +2653,24 @@ function showLeaveMenu(
 
           e.stopPropagation();
 
+
           await saveLeave(
             staffName,
             dateKey,
             leaveType
           );
 
+
+          // セルに休暇が設定されたことを記録
+          cell.dataset.leaveType =
+            leaveType;
+
+
           hideLeaveMenu();
 
         }
       );
+
 
       buttons.appendChild(
         button
@@ -2983,19 +2680,27 @@ function showLeaveMenu(
   );
 
 
+  // =========================
+  // 休暇を解除
+  // =========================
+
   const deleteButton =
     document.createElement(
       "button"
     );
 
+
   deleteButton.type =
     "button";
+
 
   deleteButton.textContent =
     "休暇を解除";
 
+
   deleteButton.className =
     "shift-menu-button shift-delete";
+
 
   deleteButton.addEventListener(
     "click",
@@ -3003,53 +2708,33 @@ function showLeaveMenu(
 
       e.stopPropagation();
 
+
       await saveLeave(
         staffName,
         dateKey,
         ""
       );
 
+
+      // セルの休暇情報を削除
+      cell.dataset.leaveType =
+        "";
+
+
       hideLeaveMenu();
 
     }
   );
 
+
   buttons.appendChild(
     deleteButton
   );
 
-   const leaveButton =
-  document.createElement(
-    "button"
-  );
 
-leaveButton.type =
-  "button";
-
-leaveButton.textContent =
-  "休暇";
-
-leaveButton.className =
-  "shift-menu-button";
-
-leaveButton.addEventListener(
-  "click",
-  e => {
-
-    e.stopPropagation();
-
-    showLeaveMenu(
-      cell,
-      staffName,
-      dateKey
-    );
-
-  }
-);
-
-buttons.appendChild(
-  leaveButton
-);
+  // =========================
+  // メニュー表示
+  // =========================
 
   menu.style.display =
     "grid";
@@ -3126,11 +2811,14 @@ buttons.appendChild(
   menu.style.position =
     "fixed";
 
+
   menu.style.left =
     left + "px";
 
+
   menu.style.top =
     top + "px";
+
 
   menu.style.zIndex =
     "9999";
