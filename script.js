@@ -2614,9 +2614,14 @@ function showShiftMenu(
   }
 
 
+  // メニューを一度空にする
   buttons.innerHTML =
     "";
 
+
+  // =========================
+  // 勤務形態ボタン
+  // =========================
 
   appData.shiftTypes.forEach(
     shift => {
@@ -2647,13 +2652,9 @@ function showShiftMenu(
 
 
           await saveWorkShift(
-
             staffName,
-
             dateKey,
-
             shift.name
-
           );
 
 
@@ -2667,44 +2668,13 @@ function showShiftMenu(
         button
       );
 
-      const leaveButton =
-  document.createElement(
-    "button"
-  );
-
-leaveButton.type =
-  "button";
-
-leaveButton.textContent =
-  "休暇";
-
-leaveButton.className =
-  "shift-menu-button";
-
-leaveButton.addEventListener(
-  "click",
-  e => {
-
-    e.stopPropagation();
-
-    hideShiftMenu();
-
-    showLeaveMenu(
-      cell,
-      staffName,
-      dateKey
-    );
-
-  }
-);
-
-buttons.appendChild(
-  leaveButton
-);
-
     }
   );
 
+
+  // =========================
+  // 削除ボタン
+  // =========================
 
   const deleteButton =
     document.createElement(
@@ -2732,14 +2702,14 @@ buttons.appendChild(
 
 
       await saveWorkShift(
-
         staffName,
-
         dateKey,
-
         ""
-
       );
+
+
+      // 休暇情報も解除
+      cell.dataset.leaveType = "";
 
 
       hideShiftMenu();
@@ -2752,6 +2722,101 @@ buttons.appendChild(
     deleteButton
   );
 
+
+  // =========================
+  // 休暇 / 休暇解除ボタン
+  // =========================
+
+  const leaveButton =
+    document.createElement(
+      "button"
+    );
+
+
+  leaveButton.type =
+    "button";
+
+
+  // 休暇が設定されているか確認
+  const hasLeave =
+    !!cell.dataset.leaveType;
+
+
+  if (hasLeave) {
+
+    // すでに休暇が設定されている
+    leaveButton.textContent =
+      "休暇解除";
+
+    leaveButton.className =
+      "shift-menu-button shift-delete";
+
+
+    leaveButton.addEventListener(
+      "click",
+      async e => {
+
+        e.stopPropagation();
+
+
+        // 休暇情報を削除
+        cell.dataset.leaveType =
+          "";
+
+
+        // 勤務形態も空にする
+        await saveWorkShift(
+          staffName,
+          dateKey,
+          ""
+        );
+
+
+        hideShiftMenu();
+
+      }
+    );
+
+  } else {
+
+    // 休暇が設定されていない
+    leaveButton.textContent =
+      "休暇";
+
+    leaveButton.className =
+      "shift-menu-button";
+
+
+    leaveButton.addEventListener(
+      "click",
+      e => {
+
+        e.stopPropagation();
+
+
+        hideShiftMenu();
+
+
+        showLeaveMenu(
+          cell,
+          staffName,
+          dateKey
+        );
+
+      }
+    );
+
+  }
+
+
+  buttons.appendChild(
+    leaveButton
+  );
+
+
+  // =========================
+  // メニュー表示
+  // =========================
 
   menu.style.display =
     "grid";
