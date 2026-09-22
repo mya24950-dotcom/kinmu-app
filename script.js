@@ -2523,11 +2523,25 @@ function bindScheduleCells() {
     )
     .forEach(cell => {
 
+      let longPressTimer = null;
+      let longPressTriggered = false;
+
+
+      // 通常タップ
       cell.addEventListener(
         "click",
         e => {
 
           e.stopPropagation();
+
+          // 長押し後のclickは無視
+          if (longPressTriggered) {
+
+            longPressTriggered = false;
+
+            return;
+
+          }
 
 
           selectedCell =
@@ -2545,6 +2559,80 @@ function bindScheduleCells() {
           );
 
         }
+      );
+
+
+      // 長押し開始
+      cell.addEventListener(
+        "pointerdown",
+        e => {
+
+          longPressTriggered = false;
+
+
+          longPressTimer =
+            setTimeout(
+              () => {
+
+                longPressTriggered =
+                  true;
+
+
+                selectedCell =
+                  cell;
+
+
+                showLeaveMenu(
+
+                  cell,
+
+                  cell.dataset.staff,
+
+                  cell.dataset.date
+
+                );
+
+              },
+              600
+            );
+
+        }
+      );
+
+
+      // 長押しキャンセル
+      const cancelLongPress =
+        () => {
+
+          if (longPressTimer) {
+
+            clearTimeout(
+              longPressTimer
+            );
+
+            longPressTimer =
+              null;
+
+          }
+
+        };
+
+
+      cell.addEventListener(
+        "pointerup",
+        cancelLongPress
+      );
+
+
+      cell.addEventListener(
+        "pointerleave",
+        cancelLongPress
+      );
+
+
+      cell.addEventListener(
+        "pointercancel",
+        cancelLongPress
       );
 
     });
