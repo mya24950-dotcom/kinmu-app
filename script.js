@@ -2509,6 +2509,7 @@ function showShiftMenu(
     return;
   }
 
+
   const buttons =
     document.getElementById(
       "shiftMenuButtons"
@@ -2518,80 +2519,75 @@ function showShiftMenu(
     return;
   }
 
-  // メニューを空にする
+
+  // ==========================================
+  // メニューを初期化
+  // ==========================================
+
   buttons.innerHTML = "";
 
-  // =========================
-  // 勤務形態ボタン
-  // =========================
 
-  if (
-    appData &&
-    Array.isArray(
-      appData.shiftTypes
-    )
-  ) {
+  // ==========================================
+  // 勤務形態
+  // ==========================================
 
-    appData.shiftTypes.forEach(
-      shift => {
+  appData.shiftTypes.forEach(
+    shift => {
 
-        const button =
-          document.createElement(
-            "button"
+      const button =
+        document.createElement(
+          "button"
+        );
+
+      button.type = "button";
+
+      button.className =
+        "shift-menu-button";
+
+      button.textContent =
+        shift.name;
+
+      button.addEventListener(
+        "click",
+        async e => {
+
+          e.stopPropagation();
+
+          await saveWorkShift(
+            staffName,
+            dateKey,
+            shift.name
           );
 
-        button.type =
-          "button";
+          hideShiftMenu();
 
-        button.textContent =
-          shift.name;
+        }
+      );
 
-        button.className =
-          "shift-menu-button";
+      buttons.appendChild(
+        button
+      );
 
-        button.addEventListener(
-          "click",
-          async e => {
+    }
+  );
 
-            e.stopPropagation();
 
-            await saveWorkShift(
-              staffName,
-              dateKey,
-              shift.name
-            );
-
-            hideShiftMenu();
-
-          }
-        );
-
-        buttons.appendChild(
-          button
-        );
-
-      }
-    );
-
-  }
-
-  // =========================
-  // 削除ボタン
-  // =========================
+  // ==========================================
+  // 削除
+  // ==========================================
 
   const deleteButton =
     document.createElement(
       "button"
     );
 
-  deleteButton.type =
-    "button";
-
-  deleteButton.textContent =
-    "削除";
+  deleteButton.type = "button";
 
   deleteButton.className =
     "shift-menu-button shift-delete";
+
+  deleteButton.textContent =
+    "削除";
 
   deleteButton.addEventListener(
     "click",
@@ -2614,119 +2610,129 @@ function showShiftMenu(
     deleteButton
   );
 
-  // =========================
-  // 休暇ボタン
-  // =========================
 
-  const leaveButton =
-    document.createElement(
-      "button"
-    );
+  // ==========================================
+  // 休暇
+  //
+  // 休暇種類が1つ以上ある場合だけ表示
+  // ==========================================
 
-  leaveButton.type =
-    "button";
+  if (
+    Array.isArray(
+      appData.leaveTypes
+    ) &&
+    appData.leaveTypes.length > 0
+  ) {
 
-  leaveButton.textContent =
-    "休暇";
-
-  leaveButton.className =
-    "shift-menu-button shift-leave";
-
-  leaveButton.addEventListener(
-    "click",
-    e => {
-
-      e.stopPropagation();
-
-      // 勤務形態メニューを閉じる
-      hideShiftMenu();
-
-      // 休暇メニューを表示
-      showLeaveMenu(
-        cell,
-        staffName,
-        dateKey
+    const leaveButton =
+      document.createElement(
+        "button"
       );
 
-    }
-  );
+    leaveButton.type = "button";
 
-  buttons.appendChild(
-    leaveButton
-  );
+    leaveButton.className =
+      "shift-menu-button shift-leave";
 
-  // =========================
-  // 勤務形態メニュー表示
-  // =========================
+    leaveButton.textContent =
+      "休暇";
 
-  menu.style.display =
-    "grid";
+    leaveButton.addEventListener(
+      "click",
+      e => {
+
+        e.stopPropagation();
+
+        hideShiftMenu();
+
+        showLeaveMenu(
+          cell,
+          staffName,
+          dateKey
+        );
+
+      }
+    );
+
+    buttons.appendChild(
+      leaveButton
+    );
+
+  }
+
+
+  // ==========================================
+  // メニュー表示
+  // ==========================================
+
+  menu.style.display = "grid";
+
+
+  // ==========================================
+  // 位置調整
+  // ==========================================
 
   const rect =
     cell.getBoundingClientRect();
 
   const menuWidth =
-    Math.min(
-      190,
-      window.innerWidth - 20
-    );
+    menu.offsetWidth || 230;
 
-  menu.style.width =
-    menuWidth + "px";
+  const menuHeight =
+    menu.offsetHeight || 200;
 
   let left =
-    rect.right + 6;
+    rect.left;
 
+  let top =
+    rect.bottom + 6;
+
+
+  // 右端からはみ出す場合
   if (
     left + menuWidth >
     window.innerWidth - 10
   ) {
 
     left =
-      rect.left -
+      window.innerWidth -
       menuWidth -
-      6;
+      10;
 
   }
 
+
+  // 左端からはみ出す場合
   if (left < 10) {
     left = 10;
   }
 
-  let top =
-    rect.top;
 
-  const menuHeight =
-    menu.offsetHeight ||
-    150;
-
+  // 下からはみ出す場合
   if (
     top + menuHeight >
     window.innerHeight - 10
   ) {
 
     top =
-      window.innerHeight -
+      rect.top -
       menuHeight -
-      10;
+      6;
 
   }
 
+
+  // 上からはみ出す場合
   if (top < 10) {
     top = 10;
   }
 
-  menu.style.position =
-    "fixed";
 
   menu.style.left =
-    left + "px";
+    `${left}px`;
 
   menu.style.top =
-    top + "px";
-
-  menu.style.zIndex =
-    "9999";
+    `${top}px`;
 
 }
 /* ==================================================
@@ -2748,6 +2754,7 @@ function showLeaveMenu(
     return;
   }
 
+
   const buttons =
     document.getElementById(
       "leaveMenuButtons"
@@ -2757,47 +2764,58 @@ function showLeaveMenu(
     return;
   }
 
-  // メニューを空にする
+
+  // ==========================================
+  // 初期化
+  // ==========================================
+
   buttons.innerHTML = "";
 
-  // =========================
-  // 休暇一覧
-  // =========================
 
-  const leaveTypes = [
-    "年休",
-    "午前休",
-    "午後休",
-    "時間休"
-  ];
+  // ==========================================
+  // 休暇種類
+  // ==========================================
 
-  leaveTypes.forEach(
-    leaveType => {
+  appData.leaveTypes.forEach(
+    leave => {
 
       const button =
         document.createElement(
           "button"
         );
 
-      button.type =
-        "button";
-
-      button.textContent =
-        leaveType;
+      button.type = "button";
 
       button.className =
         "shift-menu-button";
 
+      button.textContent =
+        leave.name;
+
+
+      // 休暇の色をボタンにも反映
+      button.style.background =
+        leave.color ||
+        "#e8f5e9";
+
+
       button.addEventListener(
         "click",
-        e => {
+        async e => {
 
           e.stopPropagation();
 
-          // 今はまだ保存処理はしない
+          await saveLeave(
+            staffName,
+            dateKey,
+            leave.name
+          );
+
+          hideLeaveMenu();
 
         }
       );
+
 
       buttons.appendChild(
         button
@@ -2807,57 +2825,64 @@ function showLeaveMenu(
   );
 
 
-  // =========================
+  // ==========================================
   // 休暇を解除
-  // =========================
+  // ==========================================
 
-  const deleteButton =
+  const clearButton =
     document.createElement(
       "button"
     );
 
-  deleteButton.type =
-    "button";
+  clearButton.type = "button";
 
-  deleteButton.textContent =
-    "休暇を解除";
-
-  deleteButton.className =
+  clearButton.className =
     "shift-menu-button shift-delete";
 
-  deleteButton.addEventListener(
+  clearButton.textContent =
+    "休暇を解除";
+
+
+  clearButton.addEventListener(
     "click",
-    e => {
+    async e => {
 
       e.stopPropagation();
 
-      // 今はまだ保存処理はしない
+      await saveLeave(
+        staffName,
+        dateKey,
+        ""
+      );
+
+      hideLeaveMenu();
 
     }
   );
 
+
   buttons.appendChild(
-    deleteButton
+    clearButton
   );
 
 
-  // =========================
+  // ==========================================
   // キャンセル
-  // =========================
+  // ==========================================
 
   const cancelButton =
     document.createElement(
       "button"
     );
 
-  cancelButton.type =
-    "button";
+  cancelButton.type = "button";
+
+  cancelButton.className =
+    "shift-menu-button shift-cancel";
 
   cancelButton.textContent =
     "キャンセル";
 
-  cancelButton.className =
-    "shift-menu-button shift-cancel";
 
   cancelButton.addEventListener(
     "click",
@@ -2870,83 +2895,85 @@ function showLeaveMenu(
     }
   );
 
+
   buttons.appendChild(
     cancelButton
   );
 
 
-  // =========================
-  // 休暇メニュー表示
-  // =========================
+  // ==========================================
+  // 表示
+  // ==========================================
 
   menu.style.display =
     "grid";
+
+
+  // ==========================================
+  // 位置調整
+  // ==========================================
 
   const rect =
     cell.getBoundingClientRect();
 
   const menuWidth =
-    Math.min(
-      190,
-      window.innerWidth - 20
-    );
+    menu.offsetWidth || 230;
 
-  menu.style.width =
-    menuWidth + "px";
+  const menuHeight =
+    menu.offsetHeight || 200;
 
   let left =
-    rect.right + 6;
+    rect.left;
 
+  let top =
+    rect.bottom + 6;
+
+
+  // 右端
   if (
     left + menuWidth >
     window.innerWidth - 10
   ) {
 
     left =
-      rect.left -
+      window.innerWidth -
       menuWidth -
-      6;
+      10;
 
   }
 
+
+  // 左端
   if (left < 10) {
     left = 10;
   }
 
-  let top =
-    rect.top;
 
-  const menuHeight =
-    menu.offsetHeight ||
-    150;
-
+  // 下端
   if (
     top + menuHeight >
     window.innerHeight - 10
   ) {
 
     top =
-      window.innerHeight -
+      rect.top -
       menuHeight -
-      10;
+      6;
 
   }
 
+
+  // 上端
   if (top < 10) {
     top = 10;
   }
 
-  menu.style.position =
-    "fixed";
 
   menu.style.left =
-    left + "px";
+    `${left}px`;
 
   menu.style.top =
-    top + "px";
-
-  menu.style.zIndex =
-    "9999";
+    `${top}px`;
 
 }
 
@@ -2966,26 +2993,6 @@ function hideLeaveMenu() {
 
 }
 
-function hideShiftMenu() {
-
-  const menu =
-    document.getElementById(
-      "shiftMenu"
-    );
-
-
-  if (menu) {
-
-    menu.style.display =
-      "none";
-
-  }
-
-
-  selectedCell =
-    null;
-
-}
 
 function hideLeaveMenu() {
 
