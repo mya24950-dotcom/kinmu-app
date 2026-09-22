@@ -299,477 +299,384 @@ function saveLocalData() {
 async function loadAllFromSupabase() {
 
   if (!supabaseClient) {
-
-    throw new Error(
-      "Supabaseクライアントがありません"
-    );
-
+    return;
   }
 
+  try {
 
-  /* -----------------------------------------------
-     職員
-  ------------------------------------------------ */
+    const [
+      staffResult,
+      shiftResult,
+      workResult,
+      holidayResult,
+      settingsResult,
+      leaveTypeResult
+    ] = await Promise.all([
 
-  const staffResult =
-    await supabaseClient
+      // 職員
+      supabaseClient
+        .from("staff")
+        .select(
+          "id,name,created_at,sort_order,calendar_token"
+        ),
 
-      .from("staff")
+      // 勤務形態
+      supabaseClient
+        .from("shift_types")
+        .select(
+          "id,name,created_at,start_time,end_time,break_time"
+        )
+        .order(
+          "created_at",
+          { ascending: true }
+        ),
 
-      .select(
-        "id,name,created_at,sort_order,calendar_token"
-      );
+      // 勤務・休暇
+      supabaseClient
+        .from("work_shifts")
+        .select(
+          "id,staff_name,work_date,shift_name,leave_type"
+        ),
 
+      // 会社休日
+      supabaseClient
+        .from("company_holidays")
+        .select(
+          "id,name,start_date,end_date,created_at"
+        )
+        .order(
+          "start_date",
+          { ascending: true }
+        ),
 
-  if (staffResult.error) {
+      // アプリ設定
+      supabaseClient
+        .from("app_settings")
+        .select(
+          "setting_name,setting_value"
+        ),
 
-    console.error(
-      "staff取得エラー:",
-      staffResult.error
-    );
+      // 休暇種類
+      supabaseClient
+        .from("leave_types")
+        .select(
+          "id,name,color,created_at"
+        )
+        .order(
+          "created_at",
+          { ascending: true }
+        )
 
-    throw staffResult.error;
-
-  }
-
-
-  /* -----------------------------------------------
-     勤務形態
-  ------------------------------------------------ */
-
-  const shiftResult =
-    await supabaseClient
-
-      .from("shift_types")
-
-      .select(
-        "id,name,created_at,start_time,end_time,break_time"
-      )
-
-      .order(
-        "created_at",
-        {
-          ascending: true
-        }
-      );
-
-
-  if (shiftResult.error) {
-
-    console.error(
-      "shift_types取得エラー:",
-      shiftResult.error
-    );
-
-    throw shiftResult.error;
-
-  }
-
-
-  /* -----------------------------------------------
-     勤務
-  ------------------------------------------------ */
-
-  const workResult =
-    await supabaseClient
-
-      .from("work_shifts")
-
-      .select(
-        "id,staff_name,work_date,shift_name"
-      );
+    ]);
 
 
-  if (workResult.error) {
+    // ==========================================
+    // エラーチェック
+    // ==========================================
 
-    console.error(
-      "work_shifts取得エラー:",
-      workResult.error
-    );
+    if (staffResult.error) {
+      throw staffResult.error;
+    }
 
-    throw workResult.error;
+    if (shiftResult.error) {
+      throw shiftResult.error;
+    }
 
-  }
+    if (workResult.error) {
+      throw workResult.error;
+    }
 
+    if (holidayResult.error) {
+      throw holidayResult.error;
+    }
 
-  /* -----------------------------------------------
-     休業設定
-  ------------------------------------------------ */
+    if (settingsResult.error) {
+      throw settingsResult.error;
+    }
 
-  const holidayResult =
-    await supabaseClient
-
-      .from("company_holidays")
-
-      .select(
-        "id,name,start_date,end_date,created_at"
-      )
-
-      .order(
-        "start_date",
-        {
-          ascending: true
-        }
-      );
+    if (leaveTypeResult.error) {
+      throw leaveTypeResult.error;
+    }
 
 
-  if (holidayResult.error) {
+    // ==========================================
+    // 職員
+    // ==========================================
 
-    console.error(
-      "company_holidays取得エラー:",
-      holidayResult.error
-    );
-
-  }
-
-
-  /* -----------------------------------------------
-     職員データ
-     ★ sort_orderで並び替え
-     ★ calendar_token追加
-  ------------------------------------------------ */
-
-  const rawStaff =
-    (staffResult.data || [])
-      .map((row, index) => ({
-
-        id:
-          row.id,
-
-        name:
-          String(
-            row.name || ""
-          ),
-
+    appData.staff = (staffResult.data || [])
+      .map(row => ({
+        id: row.id,
+        name: row.name,
+        created_at: row.created_at,
         sort_order:
-          row.sort_order !== null &&
-          row.sort_order !== undefined
-
-            ? Number(row.sort_order)
-
-            : null,
-
+          row.sort_order ?? 999999,
         calendar_token:
-          row.calendar_token || "",
-
-        created_at:
-          row.created_at || "",
-
-        originalIndex:
-          index
-
+          row.calendar_token || ""
       }))
-      .filter(
-        row =>
-          row.name &&
-          row.name !== "明"
-      );
-
-
-  rawStaff.sort(
-    (a, b) => {
-
-      const aHas =
-        Number.isFinite(
-          a.sort_order
-        );
-
-      const bHas =
-        Number.isFinite(
-          b.sort_order
-        );
-
-
-      if (aHas && bHas) {
+      .sort((a, b) => {
 
         if (
           a.sort_order !==
           b.sort_order
         ) {
-
           return (
             a.sort_order -
             b.sort_order
           );
-
         }
 
-      }
-
-
-      if (aHas && !bHas) {
-
-        return -1;
-
-      }
-
-
-      if (!aHas && bHas) {
-
-        return 1;
-
-      }
-
-
-      if (
-        a.created_at &&
-        b.created_at
-      ) {
-
-        const result =
-          String(
-            a.created_at
-          ).localeCompare(
-            String(
-              b.created_at
-            )
+        return String(a.name || "")
+          .localeCompare(
+            String(b.name || ""),
+            "ja"
           );
 
-
-        if (result !== 0) {
-
-          return result;
-
-        }
-
-      }
+      });
 
 
-      return (
-        a.originalIndex -
-        b.originalIndex
-      );
+    // ==========================================
+    // 勤務形態
+    // ==========================================
 
-    }
-  );
-
-
-  appData.staff =
-    rawStaff.map(
-      row => ({
-
-        id:
-          row.id,
-
-        name:
-          row.name,
-
-        sort_order:
-          row.sort_order,
-
-        calendar_token:
-          row.calendar_token || ""
-
-      })
-    );
-
-
-  /* -----------------------------------------------
-     勤務形態
-  ------------------------------------------------ */
-
-  appData.shiftTypes =
-    (shiftResult.data || [])
-      .map(row => ({
-
-        id:
-          row.id,
-
-        name:
-          String(
-            row.name || ""
-          ),
-
-        start:
-          String(
-            row.start_time || ""
-          ),
-
-        end:
-          String(
-            row.end_time || ""
-          ),
-
-        break:
-          String(
+    appData.shiftTypes =
+      (shiftResult.data || [])
+        .map(row => ({
+          id: row.id,
+          name: row.name,
+          created_at: row.created_at,
+          start_time:
+            row.start_time || "",
+          end_time:
+            row.end_time || "",
+          break_time:
             row.break_time || ""
-          )
-
-      }))
-      .filter(
-        row =>
-          row.name &&
-          row.name !== "明"
-      );
+        }));
 
 
-  /* -----------------------------------------------
-     勤務データ
-  ------------------------------------------------ */
+    // ==========================================
+    // 休暇種類
+    // ==========================================
 
-  appData.shifts = {};
-
-
-  appData.staff.forEach(
-    staff => {
-
-      appData.shifts[
-        staff.name
-      ] = {};
-
-    }
-  );
-
-
-  (workResult.data || [])
-    .forEach(row => {
-
-      if (
-        !row.staff_name ||
-        !row.work_date
-      ) {
-
-        return;
-
-      }
+    appData.leaveTypes =
+      (leaveTypeResult.data || [])
+        .map(row => ({
+          id: row.id,
+          name: row.name,
+          color:
+            row.color ||
+            "#d9f2df",
+          created_at:
+            row.created_at
+        }));
 
 
-      if (
-        !appData.shifts[
-          row.staff_name
-        ]
-      ) {
+    // ==========================================
+    // 勤務・休暇データを初期化
+    // ==========================================
 
-        appData.shifts[
-          row.staff_name
-        ] = {};
-
-      }
+    appData.shifts = {};
+    appData.leaves = {};
 
 
-      appData.shifts[
-        row.staff_name
-      ][
-        row.work_date
-      ] =
-        row.shift_name || "";
+    appData.staff.forEach(staff => {
+
+      appData.shifts[staff.name] = {};
+      appData.leaves[staff.name] = {};
 
     });
 
 
-  /* -----------------------------------------------
-     休業設定
-  ------------------------------------------------ */
+    // ==========================================
+    // 勤務・休暇データを読み込み
+    // ==========================================
 
-  if (!holidayResult.error) {
-
-    appData.companyHolidays =
-      (holidayResult.data || [])
-        .map(row => ({
-
-          id:
-            row.id,
-
-          name:
-            String(
-              row.name || ""
-            ),
-
-          start:
-            String(
-              row.start_date || ""
-            ),
-
-          end:
-            String(
-              row.end_date || ""
-            )
-
-        }))
-        .filter(
-          row =>
-            row.name &&
-            row.start &&
-            row.end
-        )
-        .sort(
-          (a, b) =>
-            a.start.localeCompare(
-              b.start
-            )
-        );
-
-  }
-  /* -----------------------------------------------
-     明け時間
-  ------------------------------------------------ */
-
-  const akeResult =
-    await supabaseClient
-      .from("app_settings")
-      .select(
-        "setting_name,setting_value"
-      );
-
-  if (akeResult.error) {
-
-    console.error(
-      "app_settings取得エラー:",
-      akeResult.error
-    );
-
-  } else {
-
-    let akeStart = "05:30";
-    let akeEnd = "11:15";
-
-    (akeResult.data || [])
+    (workResult.data || [])
       .forEach(row => {
 
         if (
-          row.setting_name ===
-          "ake_start"
+          !row.staff_name ||
+          !row.work_date
         ) {
+          return;
+        }
 
-          akeStart =
-            row.setting_value ||
-            "05:30";
+
+        // 職員が存在しない場合
+        if (
+          !appData.shifts[
+            row.staff_name
+          ]
+        ) {
+          appData.shifts[
+            row.staff_name
+          ] = {};
+        }
+
+
+        if (
+          !appData.leaves[
+            row.staff_name
+          ]
+        ) {
+          appData.leaves[
+            row.staff_name
+          ] = {};
+        }
+
+
+        // 勤務
+        if (row.shift_name) {
+
+          appData.shifts[
+            row.staff_name
+          ][row.work_date] =
+            row.shift_name;
 
         }
 
-        if (
-          row.setting_name ===
-          "ake_end"
-        ) {
 
-          akeEnd =
-            row.setting_value ||
-            "11:15";
+        // 休暇
+        if (row.leave_type) {
+
+          appData.leaves[
+            row.staff_name
+          ][row.work_date] =
+            row.leave_type;
 
         }
 
       });
 
-    appData.akeTime = {
 
-      start:
-        akeStart,
+    // ==========================================
+    // 会社休日
+    // ==========================================
 
-      end:
-        akeEnd
+    appData.companyHolidays =
+      (holidayResult.data || [])
+        .map(row => ({
+          id: row.id,
+          name: row.name,
+          start_date:
+            row.start_date,
+          end_date:
+            row.end_date,
+          created_at:
+            row.created_at
+        }))
+        .sort((a, b) =>
+          String(a.start_date || "")
+            .localeCompare(
+              String(b.start_date || "")
+            )
+        );
 
-    };
-console.log(
-  "★ Supabaseから取得した明け時間:",
-  appData.akeTime
-);
+
+    // ==========================================
+    // アプリ設定
+    // ==========================================
+
+    const settings =
+      settingsResult.data || [];
+
+
+    const akeSetting =
+      settings.find(
+        row =>
+          row.setting_name ===
+          "akeTime"
+      );
+
+
+    if (akeSetting) {
+
+      try {
+
+        const parsed =
+          JSON.parse(
+            akeSetting.setting_value
+          );
+
+        if (
+          parsed &&
+          parsed.start &&
+          parsed.end
+        ) {
+
+          appData.akeTime = {
+            start: parsed.start,
+            end: parsed.end
+          };
+
+        }
+
+      } catch (e) {
+
+        console.warn(
+          "akeTime設定の読み込みに失敗:",
+          e
+        );
+
+      }
+
+    }
+
+
+    saveLocalData();
+
+
+  } catch (error) {
+
+    console.error(
+      "Supabaseデータ読み込みエラー:",
+      error
+    );
+
+    throw error;
+
   }
-
-
-  saveLocalData();
 
 }
 
+function getStoredLeave(staffName, dateKey) {
+
+  const name = getStaffName(staffName);
+
+  if (!appData.leaves[name]) {
+    return "";
+  }
+
+  return (
+    appData.leaves[name][dateKey] ||
+    ""
+  );
+
+}
+
+function setStoredLeave(
+  staffName,
+  dateKey,
+  leaveType
+) {
+
+  const name = getStaffName(staffName);
+
+  if (!appData.leaves[name]) {
+    appData.leaves[name] = {};
+  }
+
+  if (leaveType) {
+
+    appData.leaves[name][dateKey] =
+      leaveType;
+
+  } else {
+
+    delete appData.leaves[name][dateKey];
+
+  }
+
+}
 
 /* ==================================================
    Realtime
@@ -1733,73 +1640,69 @@ function getDisplayShift(
   dateKey
 ) {
 
-  const stored =
+  // ==========================================
+  // まず休暇を確認
+  // ==========================================
+
+  const leave =
+    getStoredLeave(
+      staffName,
+      dateKey
+    );
+
+  if (leave) {
+    return leave;
+  }
+
+
+  // ==========================================
+  // 通常勤務
+  // ==========================================
+
+  const shift =
     getStoredShift(
       staffName,
       dateKey
     );
 
+  if (!shift) {
+    return "";
+  }
 
-  const [
-    year,
-    month,
-    day
-  ] =
-    dateKey
-      .split("-")
-      .map(Number);
 
+  // ==========================================
+  // 前日の勤務を確認して「明」を自動表示
+  // ==========================================
 
   const current =
-    new Date(
-      year,
-      month - 1,
-      day
-    );
+    new Date(dateKey + "T00:00:00");
 
-
-  const previous =
-    new Date(
-      current
-    );
-
-
-  previous.setDate(
-    previous.getDate() - 1
+  current.setDate(
+    current.getDate() - 1
   );
 
 
-  const prevKey =
+  const previousDateKey =
     getDateKey(
-
-      previous.getFullYear(),
-
-      previous.getMonth() + 1,
-
-      previous.getDate()
-
+      current.getFullYear(),
+      current.getMonth(),
+      current.getDate()
     );
 
 
   const previousShift =
     getStoredShift(
-
       staffName,
-
-      prevKey
-
+      previousDateKey
     );
 
 
   if (
-
     previousShift &&
-
     (
       previousShift.includes("宿") ||
       previousShift.includes("夜")
     )
-
   ) {
 
     return "明";
@@ -1807,10 +1710,9 @@ function getDisplayShift(
   }
 
 
-  return stored;
+  return shift;
 
 }
-
 
 /* ==================================================
    勤務表
