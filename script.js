@@ -6,14 +6,13 @@ const SUPABASE_URL =
   "https://pyfdhlqvnponaczmbuot.supabase.co";
 
 const SUPABASE_KEY =
-  "sb_publishable_dROecn8WChOgOOipDaIX6w_3eIWK0co";
+  "sb_publishable_dROecn8WChOgOOipDaIXw_3eIWK0co";
 
 let supabaseClient = null;
 
 
 /* ==================================================
    ローカル保存
-   ※休業設定・明け時間などに使用
 ================================================== */
 
 const STORAGE_KEY =
@@ -57,6 +56,23 @@ let publicHolidays = {};
 
 
 /* ==================================================
+   同期管理
+================================================== */
+
+let realtimeChannel = null;
+
+let realtimeReloadTimer = null;
+
+let realtimeReconnectTimer = null;
+
+let syncInterval = null;
+
+let realtimeUpdating = false;
+
+let lastDataSignature = "";
+
+
+/* ==================================================
    初期化
 ================================================== */
 
@@ -69,10 +85,6 @@ document.addEventListener(
 async function init() {
 
   try {
-
-    /*
-      Supabase JSを読み込む
-    */
 
     const module =
       await import(
@@ -88,30 +100,28 @@ async function init() {
 
 
     /*
-      ローカル設定読み込み
+      ローカル設定
     */
 
     loadLocalData();
 
 
     /*
-      イベント設定
+      イベント
     */
 
     bindEvents();
 
 
     /*
-      Supabaseからデータ取得
+      Supabase初回読み込み
     */
 
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-await loadAllFromSupabase();
+    await loadAllFromSupabase();
 
 
     /*
-      画面表示
+      初回表示
     */
 
     renderAll();
@@ -125,10 +135,29 @@ await loadAllFromSupabase();
 
 
     /*
-      Realtime開始
+      Realtime
     */
 
     setupRealtime();
+
+
+    /*
+      10秒ごとの自動同期
+    */
+
+    startAutoSync();
+
+
+    /*
+      アプリ復帰時同期
+    */
+
+    setupVisibilitySync();
+
+
+    console.log(
+      "★ 勤務表アプリ初期化完了"
+    );
 
 
   } catch (error) {
@@ -137,6 +166,7 @@ await loadAllFromSupabase();
       "初期化エラー",
       error
     );
+
 
     alert(
       "Supabaseへの接続に失敗しました。"
@@ -149,7 +179,6 @@ await loadAllFromSupabase();
 
 /* ==================================================
    ローカルデータ
-   休業設定・明け時間のみ
 ================================================== */
 
 function loadLocalData() {
@@ -255,13 +284,15 @@ function saveLocalData() {
 
 
 /* ==================================================
-   Supabaseから全データ取得
+   Supabase全データ取得
 ================================================== */
 
 async function loadAllFromSupabase() {
 
   if (!supabaseClient) {
+
     return;
+
   }
 
 
@@ -343,11 +374,12 @@ async function loadAllFromSupabase() {
 
 
   /*
-    職員データ
+    職員
   */
 
   appData.staff =
     (staffResult.data || [])
+
       .map(row => ({
 
         id:
@@ -359,6 +391,7 @@ async function loadAllFromSupabase() {
           )
 
       }))
+
       .filter(
         row =>
           row.name &&
@@ -372,6 +405,7 @@ async function loadAllFromSupabase() {
 
   appData.shiftTypes =
     (shiftResult.data || [])
+
       .map(row => ({
 
         id:
@@ -398,6 +432,7 @@ async function loadAllFromSupabase() {
           )
 
       }))
+
       .filter(
         row =>
           row.name &&
@@ -406,8 +441,7 @@ async function loadAllFromSupabase() {
 
 
   /*
-    勤務データを
-    画面用オブジェクトに変換
+    勤務データ
   */
 
   appData.shifts = {};
@@ -427,21 +461,34 @@ async function loadAllFromSupabase() {
   (workResult.data || [])
     .forEach(row => {
 
+      const staffName =
+        String(
+          row.staff_name || ""
+        );
+
+
+      if (!staffName) {
+
+        return;
+
+      }
+
+
       if (
         !appData.shifts[
-          row.staff_name
+          staffName
         ]
       ) {
 
         appData.shifts[
-          row.staff_name
+          staffName
         ] = {};
 
       }
 
 
       appData.shifts[
-        row.staff_name
+        staffName
       ][
         row.work_date
       ] =
@@ -454,11 +501,25 @@ async function loadAllFromSupabase() {
 
 
 /* ==================================================
-   Realtime
+   データ変更チェック
 ================================================== */
 
-let realtimeChannel = null;
-let realtimeReloadTimer = null;
+function createDataSignature() {
+
+  return JSON.stringify({
+
+    staff:
+      appData.staff,
+
+    shiftTypes:
+      appData.shiftTypes,
+
+    shifts:
+      appData.shifts
+
+  });
+
+}
 
 
 /* ==================================================
@@ -478,18 +539,53 @@ function setupRealtime() {
   }
 
 
-  /* すでに接続していたら削除 */
+  /*
+    再接続タイマー解除
+  */
 
-  if (realtimeChannel) {
+  if (realtimeReconnectTimer) {
 
-    supabaseClient.removeChannel(
-      realtimeChannel
+    clearTimeout(
+      realtimeReconnectTimer
     );
 
-    realtimeChannel = null;
+    realtimeReconnectTimer =
+      null;
 
   }
 
+
+  /*
+    古いチャンネル削除
+  */
+
+  if (realtimeChannel) {
+
+    try {
+
+      supabaseClient.removeChannel(
+        realtimeChannel
+      );
+
+    } catch (error) {
+
+      console.warn(
+        "Realtimeチャンネル削除エラー",
+        error
+      );
+
+    }
+
+
+    realtimeChannel =
+      null;
+
+  }
+
+
+  /*
+    新しいチャンネル
+  */
 
   realtimeChannel =
 
@@ -570,51 +666,81 @@ function setupRealtime() {
 
       .subscribe(
 
-  status => {
+        status => {
 
-    console.log(
-      "Supabase Realtime STATUS:",
-      status
-    );
+          console.log(
+            "Supabase Realtime STATUS:",
+            status
+          );
 
 
-    if (
-      status === "SUBSCRIBED"
-    ) {
+          if (
+            status === "SUBSCRIBED"
+          ) {
 
-      console.log(
-        "★ Supabase Realtime接続成功"
+            console.log(
+              "★ Supabase Realtime接続成功"
+            );
+
+          }
+
+
+          if (
+
+            status === "CHANNEL_ERROR" ||
+
+            status === "TIMED_OUT" ||
+
+            status === "CLOSED"
+
+          ) {
+
+            console.error(
+              "★ Realtime接続が切れました"
+            );
+
+
+            scheduleRealtimeReconnect();
+
+          }
+
+        }
+
       );
 
-    }
+}
 
 
-    if (
-      status === "CHANNEL_ERROR" ||
-      status === "TIMED_OUT" ||
-      status === "CLOSED"
-    ) {
+/* ==================================================
+   Realtime再接続
+================================================== */
 
-      console.error(
-        "★ Supabase Realtime接続が切れました"
-      );
+function scheduleRealtimeReconnect() {
 
+  if (
+    realtimeReconnectTimer
+  ) {
 
-      setTimeout(() => {
-
-        console.log(
-          "★ Realtime再接続します"
-        );
-
-        setupRealtime();
-
-      }, 2000);
-
-    }
+    return;
 
   }
 
-);
+
+  realtimeReconnectTimer =
+    setTimeout(() => {
+
+      realtimeReconnectTimer =
+        null;
+
+
+      console.log(
+        "★ Realtime再接続します"
+      );
+
+
+      setupRealtime();
+
+    }, 3000);
 
 }
 
@@ -631,7 +757,6 @@ function scheduleRealtimeReload() {
 
 
   realtimeReloadTimer =
-
     setTimeout(
 
       async () => {
@@ -648,11 +773,8 @@ function scheduleRealtimeReload() {
 
 
 /* ==================================================
-   Realtime更新
+   Supabase再読み込み
 ================================================== */
-
-let realtimeUpdating = false;
-
 
 async function reloadFromSupabase() {
 
@@ -665,18 +787,50 @@ async function reloadFromSupabase() {
   }
 
 
+  if (!supabaseClient) {
+
+    return;
+
+  }
+
+
   realtimeUpdating = true;
 
 
   try {
 
+    const before =
+      lastDataSignature;
+
+
     await loadAllFromSupabase();
 
-    renderAll();
 
-    console.log(
-      "★ 勤務表を自動更新しました"
-    );
+    const after =
+      createDataSignature();
+
+
+    /*
+      実際に変更があった場合だけ
+      画面を再描画
+    */
+
+    if (
+      before !== after
+    ) {
+
+      renderAll();
+
+      lastDataSignature =
+        after;
+
+
+      console.log(
+        "★ 勤務表を自動更新しました"
+      );
+
+    }
+
 
   } catch (error) {
 
@@ -687,11 +841,107 @@ async function reloadFromSupabase() {
 
   } finally {
 
-    realtimeUpdating = false;
+    realtimeUpdating =
+      false;
 
   }
 
 }
+
+
+/* ==================================================
+   10秒ごとの自動同期
+================================================== */
+
+function startAutoSync() {
+
+  if (syncInterval) {
+
+    clearInterval(
+      syncInterval
+    );
+
+  }
+
+
+  syncInterval =
+    setInterval(
+
+      async () => {
+
+        /*
+          Supabaseがなければ終了
+        */
+
+        if (!supabaseClient) {
+
+          return;
+
+        }
+
+
+        /*
+          表示中でもバックグラウンドでも
+          Supabaseを確認する
+        */
+
+        await reloadFromSupabase();
+
+      },
+
+      10000
+
+    );
+
+
+  console.log(
+    "★ 10秒自動同期開始"
+  );
+
+}
+
+
+/* ==================================================
+   アプリ復帰時同期
+================================================== */
+
+function setupVisibilitySync() {
+
+  document.addEventListener(
+    "visibilitychange",
+    async () => {
+
+      if (
+        !document.hidden
+      ) {
+
+        console.log(
+          "★ アプリ復帰 → 同期します"
+        );
+
+
+        await reloadFromSupabase();
+
+
+        /*
+          Realtimeも念のため確認
+        */
+
+        if (
+          !realtimeChannel
+        ) {
+
+          setupRealtime();
+
+        }
+
+      }
+
+    }
+  );
+
+}
+
 
 /* ==================================================
    イベント
@@ -906,15 +1156,20 @@ function bindEvents() {
 
 
       if (!menu) {
+
         return;
+
       }
 
 
       if (
+
         !menu.contains(e.target) &&
+
         !e.target.closest(
           ".schedule-cell"
         )
+
       ) {
 
         hideShiftMenu();
@@ -1047,6 +1302,10 @@ function renderAll() {
       appData.akeTime.end;
 
   }
+
+
+  lastDataSignature =
+    createDataSignature();
 
 }
 
@@ -1357,7 +1616,9 @@ function renderSchedule() {
 
 
   if (!table) {
+
     return;
+
   }
 
 
@@ -2117,7 +2378,9 @@ function showShiftMenu(
 
 
   if (!menu) {
+
     return;
+
   }
 
 
@@ -2128,7 +2391,9 @@ function showShiftMenu(
 
 
   if (!buttons) {
+
     return;
+
   }
 
 
@@ -2351,6 +2616,7 @@ function hideShiftMenu() {
 
 /* ==================================================
    勤務保存
+   ※重複データにも対応
 ================================================== */
 
 async function saveWorkShift(
@@ -2364,7 +2630,9 @@ async function saveWorkShift(
 ) {
 
   if (!supabaseClient) {
+
     return;
+
   }
 
 
@@ -2377,56 +2645,11 @@ async function saveWorkShift(
   try {
 
     /*
-      削除
+      同じ職員＋同じ日付を
+      全件取得
     */
 
-    if (!shiftName) {
-
-      const result =
-        await supabaseClient
-
-          .from(
-            "work_shifts"
-          )
-
-          .delete()
-
-          .eq(
-            "staff_name",
-            name
-          )
-
-          .eq(
-            "work_date",
-            dateKey
-          );
-
-
-      if (result.error) {
-        throw result.error;
-      }
-
-
-      setStoredShift(
-        name,
-        dateKey,
-        ""
-      );
-
-
-      renderSchedule();
-
-
-      return;
-
-    }
-
-
-    /*
-      既存データ確認
-    */
-
-    const existing =
+    const existingResult =
       await supabaseClient
 
         .from(
@@ -2445,22 +2668,99 @@ async function saveWorkShift(
         .eq(
           "work_date",
           dateKey
-        )
-        .maybeSingle();
+        );
 
 
-    if (existing.error) {
-      throw existing.error;
+    if (
+      existingResult.error
+    ) {
+
+      throw existingResult.error;
+
+    }
+
+
+    const rows =
+      existingResult.data || [];
+
+
+    /*
+      削除
+    */
+
+    if (!shiftName) {
+
+      if (
+        rows.length > 0
+      ) {
+
+        const deleteResult =
+          await supabaseClient
+
+            .from(
+              "work_shifts"
+            )
+
+            .delete()
+
+            .eq(
+              "staff_name",
+              name
+            )
+
+            .eq(
+              "work_date",
+              dateKey
+            );
+
+
+        if (
+          deleteResult.error
+        ) {
+
+          throw deleteResult.error;
+
+        }
+
+      }
+
+
+      setStoredShift(
+        name,
+        dateKey,
+        ""
+      );
+
+
+      renderSchedule();
+
+
+      lastDataSignature =
+        createDataSignature();
+
+
+      return;
+
     }
 
 
     /*
-      既存ならUPDATE
+      既存データがある
     */
 
-    if (existing.data) {
+    if (
+      rows.length > 0
+    ) {
 
-      const result =
+      /*
+        1件目を更新
+      */
+
+      const firstId =
+        rows[0].id;
+
+
+      const updateResult =
         await supabaseClient
 
           .from(
@@ -2476,23 +2776,74 @@ async function saveWorkShift(
 
           .eq(
             "id",
-            existing.data.id
+            firstId
           );
 
 
-      if (result.error) {
-        throw result.error;
+      if (
+        updateResult.error
+      ) {
+
+        throw updateResult.error;
+
+      }
+
+
+      /*
+        万一重複していたら
+        2件目以降を削除
+      */
+
+      if (
+        rows.length > 1
+      ) {
+
+        const duplicateIds =
+          rows
+            .slice(1)
+            .map(row => row.id);
+
+
+        for (
+          const id of duplicateIds
+        ) {
+
+          const deleteResult =
+            await supabaseClient
+
+              .from(
+                "work_shifts"
+              )
+
+              .delete()
+
+              .eq(
+                "id",
+                id
+              );
+
+
+          if (
+            deleteResult.error
+          ) {
+
+            throw deleteResult.error;
+
+          }
+
+        }
+
       }
 
     }
 
     /*
-      なければINSERT
+      データがなければINSERT
     */
 
     else {
 
-      const result =
+      const insertResult =
         await supabaseClient
 
           .from(
@@ -2513,8 +2864,12 @@ async function saveWorkShift(
           });
 
 
-      if (result.error) {
-        throw result.error;
+      if (
+        insertResult.error
+      ) {
+
+        throw insertResult.error;
+
       }
 
     }
@@ -2532,6 +2887,10 @@ async function saveWorkShift(
 
 
     renderSchedule();
+
+
+    lastDataSignature =
+      createDataSignature();
 
 
   } catch (error) {
@@ -2623,6 +2982,7 @@ function calculateMonthlyTotal(
 
 /* ==================================================
    年度集計
+   ※4月開始
 ================================================== */
 
 function calculateFiscalTotal(
@@ -2637,51 +2997,100 @@ function calculateFiscalTotal(
 
 ) {
 
-  let startYear =
-    year;
+  let fiscalStartYear =
+    month >= 4
+      ? year
+      : year - 1;
 
 
-  if (month < 4) {
-
-    startYear--;
-
-  }
+  const fiscalEndYear =
+    fiscalStartYear + 1;
 
 
   let total = 0;
 
 
+  /*
+    4月～12月
+  */
+
   for (
-    let y = startYear;
-    y <= year;
-    y++
+    let m = 4;
+    m <= 12;
+    m++
   ) {
 
-    let startMonth =
-      4;
-
-
-    let endMonth =
-      12;
-
-
-    if (y === year) {
-
-      endMonth =
-        month;
-
-    }
+    const days =
+      getDaysInMonth(
+        fiscalStartYear,
+        m
+      );
 
 
     for (
-      let m = startMonth;
+      let day = 1;
+      day <= days;
+      day++
+    ) {
+
+      const dateKey =
+        getDateKey(
+          fiscalStartYear,
+          m,
+          day
+        );
+
+
+      const display =
+        getDisplayShift(
+
+          staffName,
+
+          dateKey
+
+        );
+
+
+      if (
+
+        display === shiftName &&
+
+        display !== "明"
+
+      ) {
+
+        total++;
+
+      }
+
+    }
+
+  }
+
+
+  /*
+    1月～現在の月
+  */
+
+  const endMonth =
+    month < 4
+      ? month
+      : 3;
+
+
+  if (
+    month < 4
+  ) {
+
+    for (
+      let m = 1;
       m <= endMonth;
       m++
     ) {
 
       const days =
         getDaysInMonth(
-          y,
+          fiscalEndYear,
           m
         );
 
@@ -2694,7 +3103,7 @@ function calculateFiscalTotal(
 
         const dateKey =
           getDateKey(
-            y,
+            fiscalEndYear,
             m,
             day
           );
@@ -2726,20 +3135,22 @@ function calculateFiscalTotal(
 
     }
 
-  }
+  } else {
 
-
-  if (month < 4) {
+    /*
+      4月～現在の月まで
+      当年度の場合
+    */
 
     for (
       let m = 1;
-      m <= month;
+      m <= 3;
       m++
     ) {
 
       const days =
         getDaysInMonth(
-          year,
+          fiscalEndYear,
           m
         );
 
@@ -2752,7 +3163,7 @@ function calculateFiscalTotal(
 
         const dateKey =
           getDateKey(
-            year,
+            fiscalEndYear,
             m,
             day
           );
@@ -2805,7 +3216,9 @@ async function addOrUpdateStaff() {
 
 
   if (!nameInput) {
+
     return;
+
   }
 
 
@@ -2895,7 +3308,11 @@ async function addOrUpdateStaff() {
         oldStaff.id;
 
 
-      const result =
+      /*
+        先に職員名を変更
+      */
+
+      const staffResult =
         await supabaseClient
 
           .from(
@@ -2914,13 +3331,18 @@ async function addOrUpdateStaff() {
           );
 
 
-      if (result.error) {
-        throw result.error;
+      if (
+        staffResult.error
+      ) {
+
+        throw staffResult.error;
+
       }
 
 
       /*
-        勤務データの職員名も変更
+        名前が変わった場合
+        勤務データも変更
       */
 
       if (
@@ -2947,8 +3369,36 @@ async function addOrUpdateStaff() {
             );
 
 
-        if (workResult.error) {
+        if (
+          workResult.error
+        ) {
+
+          /*
+            勤務データ変更に失敗したら
+            職員名を元に戻す
+          */
+
+          await supabaseClient
+
+            .from(
+              "staff"
+            )
+
+            .update({
+
+              name:
+                oldName
+
+            })
+
+            .eq(
+              "id",
+              id
+            );
+
+
           throw workResult.error;
+
         }
 
       }
@@ -2993,8 +3443,12 @@ async function addOrUpdateStaff() {
           });
 
 
-      if (result.error) {
+      if (
+        result.error
+      ) {
+
         throw result.error;
+
       }
 
     }
@@ -3006,9 +3460,14 @@ async function addOrUpdateStaff() {
 
     await loadAllFromSupabase();
 
+
     renderStaffList();
 
     renderSchedule();
+
+
+    lastDataSignature =
+      createDataSignature();
 
 
   } catch (error) {
@@ -3041,7 +3500,9 @@ function renderStaffList() {
 
 
   if (!list) {
+
     return;
+
   }
 
 
@@ -3216,16 +3677,25 @@ function renderStaffList() {
                   );
 
 
-              if (result.error) {
+              if (
+                result.error
+              ) {
+
                 throw result.error;
+
               }
 
 
               await loadAllFromSupabase();
 
+
               renderStaffList();
 
               renderSchedule();
+
+
+              lastDataSignature =
+                createDataSignature();
 
 
             } catch (error) {
@@ -3289,7 +3759,9 @@ async function addOrUpdateShift() {
 
 
   if (!nameInput) {
+
     return;
+
   }
 
 
@@ -3409,14 +3881,17 @@ async function addOrUpdateShift() {
           );
 
 
-      if (result.error) {
+      if (
+        result.error
+      ) {
+
         throw result.error;
+
       }
 
 
       /*
-        勤務名を変更した場合
-        work_shifts側も変更
+        勤務データの名前変更
       */
 
       if (
@@ -3443,8 +3918,44 @@ async function addOrUpdateShift() {
             );
 
 
-        if (workResult.error) {
+        if (
+          workResult.error
+        ) {
+
+          /*
+            勤務形態を元に戻す
+          */
+
+          await supabaseClient
+
+            .from(
+              "shift_types"
+            )
+
+            .update({
+
+              name:
+                oldShift.name,
+
+              start_time:
+                oldShift.start || null,
+
+              end_time:
+                oldShift.end || null,
+
+              break_time:
+                oldShift.break || null
+
+            })
+
+            .eq(
+              "id",
+              oldShift.id
+            );
+
+
           throw workResult.error;
+
         }
 
       }
@@ -3498,8 +4009,12 @@ async function addOrUpdateShift() {
           });
 
 
-      if (result.error) {
+      if (
+        result.error
+      ) {
+
         throw result.error;
+
       }
 
     }
@@ -3510,28 +4025,39 @@ async function addOrUpdateShift() {
 
 
     if (startInput) {
+
       startInput.value =
         "";
+
     }
 
 
     if (endInput) {
+
       endInput.value =
         "";
+
     }
 
 
     if (breakInput) {
+
       breakInput.value =
         "";
+
     }
 
 
     await loadAllFromSupabase();
 
+
     renderShiftList();
 
     renderSchedule();
+
+
+    lastDataSignature =
+      createDataSignature();
 
 
   } catch (error) {
@@ -3564,7 +4090,9 @@ function renderShiftList() {
 
 
   if (!list) {
+
     return;
+
   }
 
 
@@ -3751,7 +4279,7 @@ function renderShiftList() {
             try {
 
               /*
-                勤務データからも削除
+                勤務データ削除
               */
 
               const workResult =
@@ -3797,16 +4325,25 @@ function renderShiftList() {
                   );
 
 
-              if (result.error) {
+              if (
+                result.error
+              ) {
+
                 throw result.error;
+
               }
 
 
               await loadAllFromSupabase();
 
+
               renderShiftList();
 
               renderSchedule();
+
+
+              lastDataSignature =
+                createDataSignature();
 
 
             } catch (error) {
@@ -4000,7 +4537,9 @@ function renderHolidayList() {
 
 
   if (!list) {
+
     return;
+
   }
 
 
@@ -4121,7 +4660,9 @@ function saveAkeTime() {
 
 
   if (!start || !end) {
+
     return;
+
   }
 
 
@@ -4207,7 +4748,9 @@ function openCalendarConfirm(
 
 
   if (!modal) {
+
     return;
+
   }
 
 
@@ -4276,7 +4819,9 @@ function exportCalendar() {
 
 
   if (!modal) {
+
     return;
+
   }
 
 
@@ -4285,7 +4830,9 @@ function exportCalendar() {
 
 
   if (!staffName) {
+
     return;
+
   }
 
 
@@ -4345,7 +4892,9 @@ function exportCalendar() {
 
 
     if (!shiftName) {
+
       continue;
+
     }
 
 
@@ -4414,7 +4963,9 @@ function exportCalendar() {
 
 
     if (!shift) {
+
       continue;
+
     }
 
 
@@ -4972,14 +5523,23 @@ async function deleteCurrentMonth() {
         );
 
 
-    if (result.error) {
+    if (
+      result.error
+    ) {
+
       throw result.error;
+
     }
 
 
     await loadAllFromSupabase();
 
+
     renderSchedule();
+
+
+    lastDataSignature =
+      createDataSignature();
 
 
   } catch (error) {
@@ -5060,14 +5620,23 @@ async function deleteFiscalYear() {
         );
 
 
-    if (result.error) {
+    if (
+      result.error
+    ) {
+
       throw result.error;
+
     }
 
 
     await loadAllFromSupabase();
 
+
     renderSchedule();
+
+
+    lastDataSignature =
+      createDataSignature();
 
 
   } catch (error) {
