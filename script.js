@@ -2712,8 +2712,6 @@ function showShiftMenu(
   leaveButton.textContent =
     "休暇";
 
-  // 削除ボタンと同じサイズ
-  // 緑文字＋薄緑背景
   leaveButton.className =
     "shift-menu-button shift-leave";
 
@@ -2723,8 +2721,15 @@ function showShiftMenu(
 
       e.stopPropagation();
 
-      // 今は何もしない
-      // 後で休暇メニューを追加する
+      // 勤務形態メニューを閉じる
+      hideShiftMenu();
+
+      // 休暇メニューを表示
+      showLeaveMenu(
+        cell,
+        staffName,
+        dateKey
+      );
 
     }
   );
@@ -2734,7 +2739,7 @@ function showShiftMenu(
   );
 
   // =========================
-  // メニュー表示
+  // 勤務形態メニュー表示
   // =========================
 
   menu.style.display =
@@ -2835,11 +2840,11 @@ function showLeaveMenu(
     return;
   }
 
-  // メニューをリセット
+  // メニューを空にする
   buttons.innerHTML = "";
 
   // =========================
-  // 休暇種類
+  // 休暇一覧
   // =========================
 
   const leaveTypes = [
@@ -2868,17 +2873,12 @@ function showLeaveMenu(
 
       button.addEventListener(
         "click",
-        async e => {
+        e => {
 
           e.stopPropagation();
 
-          await saveLeave(
-            staffName,
-            dateKey,
-            leaveType
-          );
-
-          hideLeaveMenu();
+          // 今はまだ保存処理はしない
+          // 後でここに処理を追加する
 
         }
       );
@@ -2910,17 +2910,12 @@ function showLeaveMenu(
 
   deleteButton.addEventListener(
     "click",
-    async e => {
+    e => {
 
       e.stopPropagation();
 
-      await saveLeave(
-        staffName,
-        dateKey,
-        ""
-      );
-
-      hideLeaveMenu();
+      // 今はまだ保存処理はしない
+      // 後でここに処理を追加する
 
     }
   );
