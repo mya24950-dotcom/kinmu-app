@@ -1078,3 +1078,8 @@ input:focus {
     -webkit-transform: translateZ(0);
   }
 }
+
+.shift-leave {
+  color: #2e8b57 !important;
+  background: #e8f5e9 !important;
+}
