@@ -2836,8 +2836,9 @@ function showLeaveMenu(
 
   const leaveTypes = [
     "年休",
-    "A休",
-    "P休"
+    "午前休",
+    "午後休",
+     "時間休"
   ];
 
   leaveTypes.forEach(
@@ -2917,6 +2918,38 @@ function showLeaveMenu(
     deleteButton
   );
 
+   const leaveButton =
+  document.createElement(
+    "button"
+  );
+
+leaveButton.type =
+  "button";
+
+leaveButton.textContent =
+  "休暇";
+
+leaveButton.className =
+  "shift-menu-button";
+
+leaveButton.addEventListener(
+  "click",
+  e => {
+
+    e.stopPropagation();
+
+    showLeaveMenu(
+      cell,
+      staffName,
+      dateKey
+    );
+
+  }
+);
+
+buttons.appendChild(
+  leaveButton
+);
 
   menu.style.display =
     "grid";
