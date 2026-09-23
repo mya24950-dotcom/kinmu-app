@@ -26,7 +26,6 @@ const STORAGE_KEY =
 let appData = {
   staff: [],
   shiftTypes: [],
-  leaveTypes: [],
   companyHolidays: [],
   shifts: {},
   akeTime: { start: "05:30", end: "11:15" }
@@ -700,6 +699,8 @@ async function loadAllFromSupabase() {
         );
 
   }
+
+
   /* -----------------------------------------------
      明け時間
   ------------------------------------------------ */
@@ -759,10 +760,13 @@ async function loadAllFromSupabase() {
         akeEnd
 
     };
-console.log(
-  "★ Supabaseから取得した明け時間:",
-  appData.akeTime
-);
+
+
+    console.log(
+      "★ Supabaseから取得した明け時間:",
+      appData.akeTime
+    );
+
   }
 
 
@@ -2522,27 +2526,6 @@ function bindScheduleCells() {
 
             e.stopPropagation();
 
-            // =========================
-            // 休暇メニュー表示中は
-            // 他のセルをタップしても
-            // 勤務メニューを開かない
-            // =========================
-
-            const leaveMenu =
-              document.getElementById(
-                "leaveMenu"
-              );
-
-            if (
-              leaveMenu &&
-              leaveMenu.style.display !== "none" &&
-              leaveMenu.style.display !== ""
-            ) {
-
-              return;
-
-            }
-
             selectedCell =
               cell;
 
@@ -2591,6 +2574,7 @@ function bindStaffNameCells() {
     });
 
 }
+
 
 function showShiftMenu(
   cell,
@@ -2713,47 +2697,6 @@ function showShiftMenu(
   );
 
   // =========================
-  // 休暇ボタン
-  // =========================
-
-  const leaveButton =
-    document.createElement(
-      "button"
-    );
-
-  leaveButton.type =
-    "button";
-
-  leaveButton.textContent =
-    "休暇";
-
-  leaveButton.className =
-    "shift-menu-button shift-leave";
-
-  leaveButton.addEventListener(
-    "click",
-    e => {
-
-      e.stopPropagation();
-
-      // 勤務形態メニューを閉じる
-      hideShiftMenu();
-
-      // 休暇メニューを表示
-      showLeaveMenu(
-        cell,
-        staffName,
-        dateKey
-      );
-
-    }
-  );
-
-  buttons.appendChild(
-    leaveButton
-  );
-
-  // =========================
   // 勤務形態メニュー表示
   // =========================
 
@@ -2827,242 +2770,11 @@ function showShiftMenu(
     "9999";
 
 }
+
+
 /* ==================================================
    勤務メニュー
 ================================================== */
-
-function showLeaveMenu(
-  cell,
-  staffName,
-  dateKey
-) {
-
-  const menu =
-    document.getElementById(
-      "leaveMenu"
-    );
-
-  if (!menu) {
-    return;
-  }
-
-  const buttons =
-    document.getElementById(
-      "leaveMenuButtons"
-    );
-
-  if (!buttons) {
-    return;
-  }
-
-  // メニューを空にする
-  buttons.innerHTML = "";
-
-  // =========================
-  // 休暇一覧
-  // =========================
-
-  const leaveTypes = [
-    "年休",
-    "午前休",
-    "午後休",
-    "時間休"
-  ];
-
-  leaveTypes.forEach(
-    leaveType => {
-
-      const button =
-        document.createElement(
-          "button"
-        );
-
-      button.type =
-        "button";
-
-      button.textContent =
-        leaveType;
-
-      button.className =
-        "shift-menu-button";
-
-      button.addEventListener(
-        "click",
-        e => {
-
-          e.stopPropagation();
-
-          // 今はまだ保存処理はしない
-
-        }
-      );
-
-      buttons.appendChild(
-        button
-      );
-
-    }
-  );
-
-
-  // =========================
-  // 休暇を解除
-  // =========================
-
-  const deleteButton =
-    document.createElement(
-      "button"
-    );
-
-  deleteButton.type =
-    "button";
-
-  deleteButton.textContent =
-    "休暇を解除";
-
-  deleteButton.className =
-    "shift-menu-button shift-delete";
-
-  deleteButton.addEventListener(
-    "click",
-    e => {
-
-      e.stopPropagation();
-
-      // 今はまだ保存処理はしない
-
-    }
-  );
-
-  buttons.appendChild(
-    deleteButton
-  );
-
-
-  // =========================
-  // キャンセル
-  // =========================
-
-  const cancelButton =
-    document.createElement(
-      "button"
-    );
-
-  cancelButton.type =
-    "button";
-
-  cancelButton.textContent =
-    "キャンセル";
-
-  cancelButton.className =
-    "shift-menu-button shift-cancel";
-
-  cancelButton.addEventListener(
-    "click",
-    e => {
-
-      e.stopPropagation();
-
-      hideLeaveMenu();
-
-    }
-  );
-
-  buttons.appendChild(
-    cancelButton
-  );
-
-
-  // =========================
-  // 休暇メニュー表示
-  // =========================
-
-  menu.style.display =
-    "grid";
-
-  const rect =
-    cell.getBoundingClientRect();
-
-  const menuWidth =
-    Math.min(
-      190,
-      window.innerWidth - 20
-    );
-
-  menu.style.width =
-    menuWidth + "px";
-
-  let left =
-    rect.right + 6;
-
-  if (
-    left + menuWidth >
-    window.innerWidth - 10
-  ) {
-
-    left =
-      rect.left -
-      menuWidth -
-      6;
-
-  }
-
-  if (left < 10) {
-    left = 10;
-  }
-
-  let top =
-    rect.top;
-
-  const menuHeight =
-    menu.offsetHeight ||
-    150;
-
-  if (
-    top + menuHeight >
-    window.innerHeight - 10
-  ) {
-
-    top =
-      window.innerHeight -
-      menuHeight -
-      10;
-
-  }
-
-  if (top < 10) {
-    top = 10;
-  }
-
-  menu.style.position =
-    "fixed";
-
-  menu.style.left =
-    left + "px";
-
-  menu.style.top =
-    top + "px";
-
-  menu.style.zIndex =
-    "9999";
-
-}
-
-function hideLeaveMenu() {
-
-  const menu =
-    document.getElementById(
-      "leaveMenu"
-    );
-
-  if (!menu) {
-    return;
-  }
-
-  menu.style.display =
-    "none";
-
-}
 
 function hideShiftMenu() {
 
@@ -3085,21 +2797,7 @@ function hideShiftMenu() {
 
 }
 
-function hideLeaveMenu() {
 
-  const menu =
-    document.getElementById(
-      "leaveMenu"
-    );
-
-  if (!menu) {
-    return;
-  }
-
-  menu.style.display =
-    "none";
-
-}
 /* ==================================================
    勤務保存
 ================================================== */
@@ -3325,110 +3023,7 @@ async function saveWorkShift(
 
 }
 
-async function saveLeave(
-  staffName,
-  dateKey,
-  leaveType
-) {
 
-  if (!supabaseClient) {
-    return;
-  }
-
-
-  const result =
-    await supabaseClient
-      .from("work_shifts")
-      .select("id")
-      .eq("staff_name", staffName)
-      .eq("work_date", dateKey)
-      .order("id", {
-        ascending: true
-      })
-      .limit(1);
-
-
-  if (result.error) {
-
-    console.error(
-      "休暇検索エラー:",
-      result.error
-    );
-
-    return;
-
-  }
-
-
-  const existingRow =
-    result.data &&
-    result.data.length > 0
-      ? result.data[0]
-      : null;
-
-
-  let saveResult;
-
-
-  if (existingRow) {
-
-    saveResult =
-      await supabaseClient
-        .from("work_shifts")
-        .update({
-          leave_type:
-            leaveType || null
-        })
-        .eq(
-          "id",
-          existingRow.id
-        );
-
-  } else {
-
-    saveResult =
-      await supabaseClient
-        .from("work_shifts")
-        .insert([
-          {
-            staff_name:
-              staffName,
-
-            work_date:
-              dateKey,
-
-            shift_name:
-              "",
-
-            leave_type:
-              leaveType || null
-          }
-        ]);
-
-  }
-
-
-  if (saveResult.error) {
-
-    console.error(
-      "休暇保存エラー:",
-      saveResult.error
-    );
-
-    alert(
-      "休暇の保存に失敗しました。"
-    );
-
-    return;
-
-  }
-
-
-  await loadAllFromSupabase();
-
-  renderAll();
-
-}
 /* ==================================================
    月間集計
 ================================================== */
