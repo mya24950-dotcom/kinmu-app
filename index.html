@@ -20,52 +20,72 @@
 <body>
 
 <header class="app-header">
-  <div>
+
+  <div class="header-left">
     <h1 class="app-title">勤務表</h1>
     <div id="appStatus" class="app-status">起動中...</div>
   </div>
+
 </header>
+
 
 <nav class="nav">
 
   <button type="button" class="nav-button active" data-page="schedule">
-    📅 勤務表
+    <span>📅</span>
+    <span>勤務表</span>
   </button>
 
   <button type="button" class="nav-button" data-page="staff">
-    👤 職員
+    <span>👤</span>
+    <span>職員</span>
   </button>
 
   <button type="button" class="nav-button" data-page="shift">
-    🕐 勤務形態
+    <span>🕐</span>
+    <span>勤務形態</span>
   </button>
 
   <button type="button" class="nav-button" data-page="holiday">
-    🏖 休業日
+    <span>🏖</span>
+    <span>休業日</span>
   </button>
 
   <button type="button" class="nav-button" data-page="leaveType">
-    📝 休暇種類
+    <span>📝</span>
+    <span>休暇種類</span>
   </button>
 
 </nav>
 
+
 <main>
 
-  <!-- 勤務表 -->
+
+  <!-- =========================
+       勤務表
+  ========================== -->
+
   <section id="schedulePage" class="page">
 
     <div class="schedule-toolbar">
 
       <div class="month-navigation">
 
-        <button type="button" id="prevMonth">‹</button>
+        <button type="button" id="prevMonth" class="month-button">
+          ‹
+        </button>
 
-        <div id="currentMonth">----年--月</div>
+        <div id="currentMonth" class="current-month">
+          ----年--月
+        </div>
 
-        <button type="button" id="nextMonth">›</button>
+        <button type="button" id="nextMonth" class="month-button">
+          ›
+        </button>
 
       </div>
+
 
       <div class="toolbar-buttons">
 
@@ -89,6 +109,7 @@
 
     </div>
 
+
     <div class="schedule-wrapper">
 
       <table id="scheduleTable">
@@ -106,7 +127,11 @@
   </section>
 
 
-  <!-- 職員 -->
+
+  <!-- =========================
+       職員
+  ========================== -->
+
   <section id="staffPage" class="page" style="display:none;">
 
     <div class="settings-card">
@@ -117,7 +142,9 @@
 
         <div class="form-group">
 
-          <label for="staffNameInput">職員名</label>
+          <label for="staffNameInput">
+            職員名
+          </label>
 
           <input
             id="staffNameInput"
@@ -149,7 +176,11 @@
   </section>
 
 
-  <!-- 勤務形態 -->
+
+  <!-- =========================
+       勤務形態
+  ========================== -->
+
   <section id="shiftPage" class="page" style="display:none;">
 
     <div class="settings-card">
@@ -160,7 +191,9 @@
 
         <div class="form-group">
 
-          <label for="shiftNameInput">勤務形態名</label>
+          <label for="shiftNameInput">
+            勤務形態名
+          </label>
 
           <input
             id="shiftNameInput"
@@ -171,9 +204,12 @@
 
         </div>
 
+
         <div class="form-group">
 
-          <label for="shiftStartInput">開始</label>
+          <label for="shiftStartInput">
+            開始
+          </label>
 
           <input
             id="shiftStartInput"
@@ -182,9 +218,12 @@
 
         </div>
 
+
         <div class="form-group">
 
-          <label for="shiftEndInput">終了</label>
+          <label for="shiftEndInput">
+            終了
+          </label>
 
           <input
             id="shiftEndInput"
@@ -193,9 +232,12 @@
 
         </div>
 
+
         <div class="form-group">
 
-          <label for="shiftBreakInput">休憩</label>
+          <label for="shiftBreakInput">
+            休憩
+          </label>
 
           <input
             id="shiftBreakInput"
@@ -208,6 +250,7 @@
 
       </div>
 
+
       <button
         type="button"
         id="addShiftButton"
@@ -216,9 +259,11 @@
         勤務形態を追加
       </button>
 
+
       <div id="shiftList" class="list"></div>
 
     </div>
+
 
 
     <div class="settings-card">
@@ -229,11 +274,14 @@
         宿直・夜勤などの翌日に表示する「明」の時間を設定します。
       </p>
 
+
       <div class="ake-time-row">
 
         <div class="form-group">
 
-          <label for="akeStartInput">開始</label>
+          <label for="akeStartInput">
+            開始
+          </label>
 
           <input
             id="akeStartInput"
@@ -243,9 +291,12 @@
 
         </div>
 
+
         <div class="form-group">
 
-          <label for="akeEndInput">終了</label>
+          <label for="akeEndInput">
+            終了
+          </label>
 
           <input
             id="akeEndInput"
@@ -254,6 +305,7 @@
           >
 
         </div>
+
 
         <button
           type="button"
@@ -270,7 +322,11 @@
   </section>
 
 
-  <!-- 休業日 -->
+
+  <!-- =========================
+       休業日
+  ========================== -->
+
   <section id="holidayPage" class="page" style="display:none;">
 
     <div class="settings-card">
@@ -281,7 +337,9 @@
 
         <div class="form-group">
 
-          <label for="companyHolidayName">休業日名</label>
+          <label for="companyHolidayName">
+            休業日名
+          </label>
 
           <input
             id="companyHolidayName"
@@ -292,9 +350,12 @@
 
         </div>
 
+
         <div class="form-group">
 
-          <label for="companyHolidayStart">開始日</label>
+          <label for="companyHolidayStart">
+            開始日
+          </label>
 
           <input
             id="companyHolidayStart"
@@ -303,9 +364,12 @@
 
         </div>
 
+
         <div class="form-group">
 
-          <label for="companyHolidayEnd">終了日</label>
+          <label for="companyHolidayEnd">
+            終了日
+          </label>
 
           <input
             id="companyHolidayEnd"
@@ -313,6 +377,7 @@
           >
 
         </div>
+
 
         <button
           type="button"
@@ -324,6 +389,7 @@
 
       </div>
 
+
       <div id="companyHolidayList" class="list"></div>
 
     </div>
@@ -331,12 +397,17 @@
   </section>
 
 
-  <!-- 休暇種類 -->
+
+  <!-- =========================
+       休暇種類
+  ========================== -->
+
   <section id="leaveTypePage" class="page" style="display:none;">
 
     <div class="settings-card">
 
       <h2>📝 休暇種類</h2>
+
 
       <div class="leave-type-form">
 
@@ -347,9 +418,12 @@
           autocomplete="off"
         >
 
+
         <div class="leave-type-color-row">
 
-          <label for="leaveTypeColorInput">色</label>
+          <label for="leaveTypeColorInput">
+            色
+          </label>
 
           <input
             id="leaveTypeColorInput"
@@ -358,6 +432,7 @@
           >
 
         </div>
+
 
         <button
           type="button"
@@ -369,9 +444,11 @@
 
       </div>
 
+
       <p class="info">
         登録した休暇種類は勤務表の「休暇」から選択できます。
       </p>
+
 
       <div id="leaveTypeList" class="list"></div>
 
@@ -382,10 +459,17 @@
 </main>
 
 
-<!-- 勤務選択 -->
+
+<!-- =========================
+     勤務選択
+========================== -->
+
 <div id="shiftMenu" class="shift-menu">
 
-  <div id="shiftMenuTitle" class="shift-menu-title">
+  <div
+    id="shiftMenuTitle"
+    class="shift-menu-title"
+  >
     勤務を選択
   </div>
 
@@ -397,10 +481,17 @@
 </div>
 
 
-<!-- 休暇選択 -->
+
+<!-- =========================
+     休暇選択
+========================== -->
+
 <div id="leaveMenu" class="shift-menu">
 
-  <div id="leaveMenuTitle" class="shift-menu-title">
+  <div
+    id="leaveMenuTitle"
+    class="shift-menu-title"
+  >
     休暇を選択
   </div>
 
@@ -412,8 +503,15 @@
 </div>
 
 
-<!-- カレンダー確認 -->
-<div id="calendarConfirm" class="calendar-modal">
+
+<!-- =========================
+     カレンダー確認
+========================== -->
+
+<div
+  id="calendarConfirm"
+  class="calendar-modal"
+>
 
   <div class="calendar-modal-content">
 
@@ -446,6 +544,7 @@
   </div>
 
 </div>
+
 
 
 <script src="script.js"></script>
