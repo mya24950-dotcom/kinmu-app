@@ -1,7 +1,3 @@
-/* =========================================================
-   基本
-========================================================= */
-
 * {
   box-sizing: border-box;
 }
@@ -12,236 +8,201 @@ body {
   padding: 0;
   width: 100%;
   min-height: 100%;
-}
-
-body {
   font-family:
     -apple-system,
     BlinkMacSystemFont,
-    "Helvetica Neue",
-    "Hiragino Kaku Gothic ProN",
-    "Yu Gothic",
-    Meiryo,
+    "Segoe UI",
+    "Noto Sans JP",
     sans-serif;
+  background: #f5f6f8;
+  color: #222;
+}
 
-  background: #f5f5f7;
-  color: #1d1d1f;
-
+body {
   overflow-x: hidden;
 }
 
-button,
-input,
-select {
-  font: inherit;
-}
 
-button {
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-
-button:disabled {
-  cursor: not-allowed;
-  opacity: .5;
-}
-
-
-/* =========================================================
+/* =========================
    ヘッダー
-========================================================= */
+========================= */
 
 .app-header {
   position: sticky;
   top: 0;
-  z-index: 500;
+  z-index: 100;
+
+  height: 58px;
 
   display: flex;
   align-items: center;
   justify-content: space-between;
 
-  min-height: 58px;
-  padding: 8px 14px;
+  padding: 0 14px;
 
-  background: rgba(255, 255, 255, .96);
+  background: #ffffff;
   border-bottom: 1px solid #ddd;
-
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
 }
 
 .app-title {
   margin: 0;
-
   font-size: 20px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .app-status {
   font-size: 12px;
-  color: #666;
+  color: #777;
 }
 
 
-/* =========================================================
-   ナビゲーション
-========================================================= */
+/* =========================
+   ナビ
+========================= */
 
 .nav {
   position: sticky;
   top: 58px;
-  z-index: 490;
+  z-index: 90;
 
   display: flex;
-  gap: 6px;
 
-  padding: 8px;
-
-  background: rgba(255, 255, 255, .96);
-  border-bottom: 1px solid #ddd;
+  width: 100%;
 
   overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
+
+  background: #ffffff;
+
+  border-bottom: 1px solid #ddd;
 }
 
 .nav-button {
   flex: 0 0 auto;
 
-  min-height: 42px;
-  padding: 8px 14px;
+  border: 0;
+  border-bottom: 3px solid transparent;
 
-  border: none;
-  border-radius: 12px;
+  background: transparent;
 
-  background: #f1f1f4;
-  color: #333;
+  padding: 12px 15px;
 
-  font-weight: 700;
-  white-space: nowrap;
+  font-size: 14px;
 
-  transition:
-    background .15s ease,
-    color .15s ease,
-    transform .1s ease;
-}
+  color: #666;
 
-.nav-button:active {
-  transform: scale(.97);
+  cursor: pointer;
 }
 
 .nav-button.active {
-  background: #1d1d1f;
-  color: #fff;
+  color: #111;
+  border-bottom-color: #333;
+  font-weight: 700;
+}
+
+.nav-button:active {
+  background: #eee;
 }
 
 
-/* =========================================================
-   メイン
-========================================================= */
+/* =========================
+   ページ
+========================= */
 
 main {
   width: 100%;
-  padding: 14px;
 }
 
 .page {
   width: 100%;
+  padding: 12px;
 }
 
 
-/* =========================================================
-   勤務表ツールバー
-========================================================= */
+/* =========================
+   勤務表上部
+========================= */
 
 .schedule-toolbar {
+  position: relative;
+
   display: flex;
   align-items: center;
-  justify-content: space-between;
 
-  gap: 10px;
+  min-height: 50px;
 
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
+
+/*
+  月移動は中央寄り
+*/
 .month-navigation {
   display: flex;
   align-items: center;
   gap: 8px;
+
+  margin-left: 5px;
 }
 
 .month-navigation button {
-  width: 44px;
-  height: 44px;
+  width: 38px;
+  height: 38px;
 
-  padding: 0;
-
-  border: none;
-  border-radius: 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
 
   background: #fff;
 
-  box-shadow:
-    0 2px 8px rgba(0, 0, 0, .08);
+  font-size: 25px;
+  line-height: 1;
 
-  font-size: 24px;
-  font-weight: 700;
-
-  transition: transform .1s ease;
-}
-
-.month-navigation button:active {
-  transform: scale(.94);
+  cursor: pointer;
 }
 
 #currentMonth {
-  min-width: 145px;
+  min-width: 110px;
 
   text-align: center;
 
-  font-size: 19px;
-  font-weight: 800;
-}
-
-
-/* =========================================================
-   ツールバーボタン
-========================================================= */
-
-.toolbar-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.toolbar-button {
-  min-height: 42px;
-
-  padding: 8px 13px;
-
-  border: none;
-  border-radius: 11px;
-
-  background: #fff;
-
-  box-shadow:
-    0 2px 8px rgba(0, 0, 0, .08);
-
+  font-size: 18px;
   font-weight: 700;
 }
 
-.toolbar-button:active {
-  transform: scale(.97);
+
+/*
+  今月削除・年度削除
+  左上・勤務表の右側
+*/
+.toolbar-buttons {
+  display: flex;
+  gap: 5px;
+
+  margin-left: auto;
+}
+
+.toolbar-button {
+  height: 34px;
+
+  padding: 0 8px;
+
+  border-radius: 6px;
+
+  font-size: 11px;
+
+  cursor: pointer;
 }
 
 .toolbar-button.danger {
-  background: #fff0f0;
-  color: #d93025;
+  border: 1px solid #d66;
+  background: #fff;
+  color: #c33;
 }
 
 
-/* =========================================================
+/* =========================
    勤務表
-========================================================= */
+========================= */
 
 .schedule-wrapper {
   width: 100%;
@@ -250,10 +211,8 @@ main {
 
   background: #fff;
 
-  border-radius: 14px;
-
-  box-shadow:
-    0 3px 14px rgba(0, 0, 0, .08);
+  border: 1px solid #d8d8d8;
+  border-radius: 8px;
 
   -webkit-overflow-scrolling: touch;
 }
@@ -265,589 +224,516 @@ main {
   width: max-content;
   min-width: 100%;
 
-  font-size: 13px;
+  font-size: 12px;
 }
 
 #scheduleTable th,
 #scheduleTable td {
+  min-width: 58px;
+
+  height: 43px;
+
+  padding: 4px;
+
+  text-align: center;
+
   border-right: 1px solid #ddd;
   border-bottom: 1px solid #ddd;
 
-  text-align: center;
-  vertical-align: middle;
+  white-space: nowrap;
 }
 
-#scheduleTable thead th {
+#scheduleTable th {
   position: sticky;
   top: 0;
-  z-index: 20;
+  z-index: 10;
 
-  min-width: 62px;
-  height: 50px;
-
-  padding: 5px;
-
-  background: #f2f2f7;
-
-  font-weight: 800;
-
-  white-space: nowrap;
-}
-
-#scheduleTable thead th:first-child {
-  position: sticky;
-  left: 0;
-  z-index: 40;
-
-  min-width: 105px;
-
-  background: #e9e9ee;
-}
-
-#scheduleTable tbody th {
-  position: sticky;
-  left: 0;
-  z-index: 15;
-
-  min-width: 105px;
-  max-width: 140px;
-
-  padding: 7px;
-
-  background: #fff;
-
-  font-weight: 800;
-
-  cursor: pointer;
-
-  white-space: nowrap;
-}
-
-#scheduleTable tbody th:hover {
-  background: #f5f5f7;
-}
-
-#scheduleTable tbody td {
-  width: 62px;
-  min-width: 62px;
-  height: 55px;
-
-  padding: 3px;
-
-  background: #fff;
-
-  cursor: pointer;
-
-  transition:
-    background .12s ease;
-}
-
-#scheduleTable tbody td:hover {
-  background: #eef6ff;
-}
-
-#scheduleTable tbody td:active {
-  opacity: .8;
-}
-
-
-/* =========================================================
-   土曜日・日曜日・休業日
-========================================================= */
-
-.saturday {
-  background: #eef6ff !important;
-}
-
-.sunday {
-  background: #fff0f0 !important;
-}
-
-.company-holiday {
-  background: #fff4e5 !important;
-}
-
-
-/* =========================================================
-   休暇セル
-========================================================= */
-
-.leave-cell {
-  font-weight: 800;
-  color: #333;
-
-  word-break: break-word;
-}
-
-
-/* =========================================================
-   「明」セル
-========================================================= */
-
-.ake-cell {
-  color: #777;
-
-  background: #f7f7f7 !important;
+  background: #f1f2f4;
 
   font-weight: 700;
 }
 
+#scheduleTable .staff-column {
+  position: sticky;
+  left: 0;
+  z-index: 20;
 
-/* =========================================================
-   合計セル
-========================================================= */
-
-.total-cell {
-  width: 65px !important;
-  min-width: 65px !important;
-
-  background: #fafafa !important;
-
-  font-weight: 800;
-}
-
-
-/* =========================================================
-   設定カード
-========================================================= */
-
-.settings-card {
-  width: 100%;
-  max-width: 1000px;
-
-  margin: 0 auto 16px;
-  padding: 18px;
+  width: 90px;
+  min-width: 90px;
 
   background: #fff;
 
-  border-radius: 16px;
+  border-right: 2px solid #bbb;
+}
+
+#scheduleTable th.staff-column {
+  z-index: 30;
+  background: #eceef1;
+}
+
+.staff-name-cell {
+  padding: 3px !important;
+}
+
+.staff-name-button {
+  width: 100%;
+
+  border: 0;
+
+  background: transparent;
+
+  font-weight: 600;
+
+  font-size: 12px;
+
+  cursor: pointer;
+
+  padding: 7px 3px;
+}
+
+.staff-name-button:active {
+  background: #eee;
+}
+
+.date-header {
+  min-width: 52px !important;
+}
+
+.date-header small {
+  display: block;
+
+  margin-top: 2px;
+
+  font-size: 10px;
+
+  font-weight: 400;
+}
+
+.schedule-cell {
+  cursor: pointer;
+
+  background: #fff;
+
+  font-weight: 600;
+
+  transition:
+    background 0.1s;
+}
+
+.schedule-cell:hover {
+  background: #f0f5ff;
+}
+
+.schedule-cell:active {
+  background: #dfeaff;
+}
+
+.sunday {
+  background: #fff4f4 !important;
+}
+
+.saturday {
+  background: #f3f7ff !important;
+}
+
+.holiday {
+  background: #fff1e5 !important;
+}
+
+.total-column {
+  position: sticky;
+  right: 0;
+  z-index: 9;
+
+  min-width: 48px !important;
+
+  background: #f5f5f5 !important;
+
+  font-weight: 700;
+
+  border-left: 2px solid #aaa;
+}
+
+
+/* =========================
+   管理画面
+========================= */
+
+.settings-card {
+  width: 100%;
+  max-width: 1100px;
+
+  margin: 0 auto 14px;
+
+  padding: 15px;
+
+  background: #fff;
+
+  border: 1px solid #ddd;
+  border-radius: 10px;
 
   box-shadow:
-    0 3px 14px rgba(0, 0, 0, .08);
+    0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .settings-card h2 {
-  margin: 0 0 16px;
+  margin: 0 0 14px;
 
-  font-size: 20px;
-  font-weight: 800;
+  font-size: 18px;
 }
-
-
-/* =========================================================
-   フォーム
-========================================================= */
 
 .form-row {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-end;
 
   gap: 10px;
 
-  margin-bottom: 14px;
+  align-items: end;
 }
 
 .form-group {
-  flex: 1 1 180px;
-
   display: flex;
   flex-direction: column;
 
-  gap: 6px;
+  gap: 5px;
 }
 
 .form-group label {
-  font-size: 13px;
-  font-weight: 700;
-
+  font-size: 12px;
   color: #555;
 }
 
-
-/* =========================================================
-   入力
-========================================================= */
-
-input[type="text"],
-input[type="time"],
-input[type="date"] {
-  width: 100%;
-
-  min-height: 44px;
-
-  padding: 8px 11px;
+.form-group input {
+  height: 40px;
 
   border: 1px solid #ccc;
-  border-radius: 10px;
+  border-radius: 6px;
+
+  padding: 0 10px;
+
+  font-size: 14px;
 
   background: #fff;
-  color: #1d1d1f;
+}
 
+.form-group input:focus,
+.leave-type-form input:focus {
   outline: none;
 
-  -webkit-appearance: none;
-}
-
-input[type="color"] {
-  width: 60px;
-  height: 44px;
-
-  padding: 3px;
-
-  border: 1px solid #ccc;
-  border-radius: 10px;
-
-  background: #fff;
-
-  cursor: pointer;
-}
-
-input:focus {
-  border-color: #007aff;
+  border-color: #777;
 
   box-shadow:
-    0 0 0 3px rgba(0, 122, 255, .12);
+    0 0 0 2px
+    rgba(0, 0, 0, 0.06);
+}
+
+.info {
+  margin: 10px 0;
+
+  color: #777;
+
+  font-size: 12px;
 }
 
 
-/* =========================================================
-   追加・保存ボタン
-========================================================= */
+/* =========================
+   追加ボタン
+========================= */
 
 .add-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  height: 40px;
 
-  min-height: 44px;
+  padding: 0 15px;
 
-  padding: 8px 18px;
+  border: 0;
+  border-radius: 7px;
 
-  border: none;
-  border-radius: 10px;
+  background: #333;
 
-  background: #007aff;
   color: #fff;
 
-  font-weight: 800;
+  font-size: 13px;
+  font-weight: 600;
 
-  box-shadow:
-    0 2px 6px rgba(0, 0, 0, .12);
+  cursor: pointer;
 
-  transition:
-    transform .1s ease,
-    filter .15s ease;
+  white-space: nowrap;
 }
 
 .add-button:hover {
-  filter: brightness(.96);
+  background: #222;
 }
 
 .add-button:active {
-  transform: scale(.97);
+  transform: translateY(1px);
 }
 
 
-/* =========================================================
-   リスト
-========================================================= */
+/* =========================
+   一覧
+========================= */
 
 .list {
   display: flex;
   flex-direction: column;
 
-  gap: 8px;
+  gap: 7px;
 
-  margin-top: 16px;
+  margin-top: 12px;
 }
 
-.list-item {
+.management-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
 
-  gap: 12px;
+  gap: 10px;
 
-  min-height: 60px;
+  min-height: 50px;
 
-  padding: 9px 10px 9px 14px;
+  padding: 7px 9px;
 
-  background: #f7f7f8;
+  border: 1px solid #ddd;
+  border-radius: 7px;
 
-  border: 1px solid #e4e4e7;
-  border-radius: 12px;
+  background: #fafafa;
 }
 
-.list-item-main {
-  min-width: 0;
+.item-main {
   flex: 1;
-}
 
-.list-item-name {
-  font-weight: 800;
+  min-width: 0;
 
-  word-break: break-word;
-}
+  overflow: hidden;
 
-.list-item-detail {
-  margin-top: 3px;
-
-  font-size: 12px;
-
-  color: #666;
-
-  word-break: break-word;
-}
-
-.list-actions {
-  flex: 0 0 auto;
-
-  display: flex;
-  align-items: center;
-
-  gap: 7px;
-}
-
-
-/* =========================================================
-   編集・削除ボタン
-========================================================= */
-
-.edit-button,
-.delete-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  min-width: 72px;
-  min-height: 40px;
-
-  padding: 7px 12px;
-
-  border: none;
-  border-radius: 10px;
-
-  font-size: 14px;
-  font-weight: 800;
+  text-overflow: ellipsis;
 
   white-space: nowrap;
 
-  transition:
-    transform .1s ease,
-    filter .15s ease;
+  font-size: 14px;
+}
+
+.item-actions {
+  display: flex;
+
+  flex: 0 0 auto;
+
+  gap: 6px;
+}
+
+.item-actions button {
+  min-width: 48px;
+  height: 34px;
+
+  padding: 0 8px;
+
+  border-radius: 6px;
+
+  font-size: 12px;
+
+  cursor: pointer;
 }
 
 .edit-button {
-  background: #e8f1ff;
-  color: #0066cc;
+  border: 1px solid #888;
+
+  background: #fff;
+
+  color: #333;
 }
 
 .delete-button {
-  background: #fff0f0;
-  color: #d93025;
-}
+  border: 1px solid #d66;
 
-.edit-button:hover,
-.delete-button:hover {
-  filter: brightness(.96);
+  background: #fff;
+
+  color: #c33;
 }
 
 .edit-button:active,
 .delete-button:active {
-  transform: scale(.96);
+  background: #eee;
 }
 
 
-/* =========================================================
-   編集中
-========================================================= */
+/* =========================
+   勤務形態
+========================= */
 
-.editing-mode {
-  background: #fff8e1 !important;
-
-  border: 2px solid #f0b400 !important;
-}
-
-
-/* =========================================================
-   説明文
-========================================================= */
-
-.info {
-  margin: 10px 0;
-
-  font-size: 13px;
-
-  line-height: 1.6;
-
-  color: #666;
-}
-
-
-/* =========================================================
-   休暇種類
-========================================================= */
-
-.leave-type-form {
+.ake-time-row {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-end;
+
+  align-items: end;
 
   gap: 10px;
 }
 
+
+/* =========================
+   休暇種類
+========================= */
+
+.leave-type-form {
+  display: flex;
+  align-items: end;
+  flex-wrap: wrap;
+
+  gap: 8px;
+}
+
 .leave-type-form > input[type="text"] {
-  flex: 1 1 220px;
+  width: 220px;
+  height: 40px;
+
+  border: 1px solid #ccc;
+  border-radius: 6px;
+
+  padding: 0 10px;
+
+  font-size: 14px;
 }
 
 .leave-type-color-row {
   display: flex;
   align-items: center;
 
-  gap: 8px;
+  gap: 6px;
 }
 
 .leave-type-color-row label {
-  font-size: 13px;
-  font-weight: 700;
-
-  white-space: nowrap;
+  font-size: 12px;
+  color: #555;
 }
 
+#leaveTypeColorInput {
+  width: 42px;
+  height: 40px;
 
-/* =========================================================
-   休暇色
-========================================================= */
+  padding: 2px;
 
-.leave-color-preview {
+  border: 1px solid #ccc;
+  border-radius: 6px;
+
+  background: #fff;
+
+  cursor: pointer;
+}
+
+.leave-item-main {
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+}
+
+.leave-color {
   display: inline-block;
+
+  flex: 0 0 auto;
 
   width: 22px;
   height: 22px;
 
-  margin-right: 8px;
-
-  border-radius: 6px;
-
-  border: 1px solid rgba(0, 0, 0, .15);
-
-  vertical-align: middle;
+  border: 1px solid #aaa;
+  border-radius: 5px;
 }
 
 
-/* =========================================================
+/* =========================
    勤務選択メニュー
-========================================================= */
+========================= */
 
 .shift-menu {
-  position: fixed;
-
-  z-index: 1000;
+  position: absolute;
 
   display: none;
 
-  width: 240px;
-  max-width: calc(100vw - 20px);
-  max-height: 75vh;
+  z-index: 1000;
 
-  overflow-y: auto;
+  width: 210px;
 
-  padding: 12px;
+  padding: 10px;
 
-  background: rgba(255, 255, 255, .98);
+  background: #fff;
 
-  border: 1px solid rgba(60, 60, 67, .15);
-
-  border-radius: 16px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
 
   box-shadow:
-    0 12px 35px rgba(0, 0, 0, .18),
-    0 2px 8px rgba(0, 0, 0, .08);
-
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+    0 8px 25px
+    rgba(0, 0, 0, 0.18);
 }
 
 .shift-menu-title {
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 
-  font-size: 14px;
-
-  font-weight: 800;
+  font-size: 13px;
+  font-weight: 700;
 
   color: #555;
 }
 
 .shift-menu-buttons {
-  display: grid;
-
-  grid-template-columns: 1fr 1fr;
-
-  gap: 7px;
-}
-
-.shift-menu-button {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
 
-  min-height: 46px;
-
-  padding: 8px;
-
-  border: none;
-  border-radius: 10px;
-
-  background: #f2f2f7;
-  color: #1d1d1f;
-
-  font-size: 14px;
-  font-weight: 800;
-
-  text-align: center;
-
-  transition:
-    transform .1s ease,
-    filter .15s ease;
+  gap: 6px;
 }
 
-.shift-menu-button:hover {
-  filter: brightness(.97);
+.menu-button {
+  width: 100%;
+
+  min-height: 38px;
+
+  border: 1px solid #ccc;
+  border-radius: 7px;
+
+  background: #f7f7f7;
+
+  font-size: 13px;
+
+  cursor: pointer;
 }
 
-.shift-menu-button:active {
-  transform: scale(.97);
+.menu-button:active {
+  transform: translateY(1px);
 }
 
-.shift-menu-button.shift-delete,
-.shift-menu-button.shift-leave,
-.shift-menu-button.shift-cancel {
-  grid-column: 1 / -1;
-}
+.menu-delete {
+  border-color: #e08080;
 
-.shift-menu-button.shift-delete {
   background: #fff0f0;
 
-  color: #d93025;
+  color: #c22;
 }
 
-.shift-menu-button.shift-leave {
-  background: #e8f5e9;
+.menu-leave {
+  border-color: #7fb38a;
 
-  color: #2e8b57;
+  background: #eaf7ed;
+
+  color: #26723a;
 }
 
-.shift-menu-button.shift-cancel {
-  background: #f2f2f7;
+.menu-clear {
+  border-color: #d5a34a;
 
-  color: #1d1d1f;
+  background: #fff8e7;
+
+  color: #8a5b00;
+}
+
+.menu-cancel {
+  background: #eee;
+
+  color: #555;
 }
 
 
-/* =========================================================
+/* =========================
    カレンダーモーダル
-========================================================= */
+========================= */
 
 .calendar-modal {
   position: fixed;
@@ -863,32 +749,35 @@ input:focus {
 
   padding: 20px;
 
-  background: rgba(0, 0, 0, .35);
+  background:
+    rgba(0, 0, 0, 0.45);
 }
 
 .calendar-modal-content {
-  width: min(480px, 100%);
+  width: 100%;
+  max-width: 380px;
 
-  padding: 22px;
+  padding: 20px;
 
   background: #fff;
 
-  border-radius: 18px;
+  border-radius: 12px;
 
   box-shadow:
-    0 20px 50px rgba(0, 0, 0, .25);
+    0 15px 40px
+    rgba(0, 0, 0, 0.25);
 }
 
 .calendar-modal-content h3 {
   margin: 0 0 10px;
 
-  font-size: 20px;
+  font-size: 18px;
 }
 
 .calendar-modal-content p {
   margin: 0 0 18px;
 
-  line-height: 1.6;
+  font-size: 14px;
 
   color: #555;
 }
@@ -896,97 +785,43 @@ input:focus {
 .calendar-modal-buttons {
   display: flex;
 
-  gap: 10px;
+  justify-content: flex-end;
+
+  gap: 8px;
 }
 
 .calendar-modal-buttons button {
-  flex: 1;
+  height: 40px;
 
-  min-height: 46px;
+  padding: 0 14px;
 
-  border: none;
-  border-radius: 10px;
+  border: 1px solid #ccc;
+  border-radius: 7px;
 
-  font-weight: 800;
-}
+  background: #fff;
 
-#calendarCancelButton {
-  background: #f2f2f7;
-
-  color: #1d1d1f;
+  cursor: pointer;
 }
 
 #calendarOKButton {
-  background: #007aff;
+  background: #333;
+
+  border-color: #333;
 
   color: #fff;
 }
 
 
-/* =========================================================
-   早番・明設定
-========================================================= */
-
-.ake-time-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-
-  gap: 10px;
-}
-
-
-/* =========================================================
-   空リスト
-========================================================= */
-
-.empty-list {
-  padding: 25px;
-
-  text-align: center;
-
-  color: #888;
-
-  font-size: 14px;
-}
-
-
-/* =========================================================
-   スクロールバー
-========================================================= */
-
-.schedule-wrapper::-webkit-scrollbar,
-.shift-menu::-webkit-scrollbar,
-.nav::-webkit-scrollbar {
-  height: 8px;
-  width: 8px;
-}
-
-.schedule-wrapper::-webkit-scrollbar-track,
-.shift-menu::-webkit-scrollbar-track,
-.nav::-webkit-scrollbar-track {
-  background: #f1f1f1;
-}
-
-.schedule-wrapper::-webkit-scrollbar-thumb,
-.shift-menu::-webkit-scrollbar-thumb,
-.nav::-webkit-scrollbar-thumb {
-  background: #c7c7cc;
-  border-radius: 10px;
-}
-
-
-/* =========================================================
+/* =========================
    スマホ
-========================================================= */
+========================= */
 
 @media (max-width: 700px) {
 
   .app-header {
-    min-height: 54px;
+    height: 52px;
 
-    padding:
-      7px 10px;
+    padding: 0 10px;
   }
 
   .app-title {
@@ -994,454 +829,178 @@ input:focus {
   }
 
   .app-status {
-    display: none;
+    font-size: 10px;
   }
 
   .nav {
-    top: 54px;
-
-    padding: 7px;
+    top: 52px;
   }
 
   .nav-button {
-    min-height: 40px;
+    padding: 10px 11px;
 
-    padding:
-      7px 12px;
-
-    font-size: 13px;
-  }
-
-  main {
-    padding: 9px;
-  }
-
-  .schedule-toolbar {
-    align-items: stretch;
-
-    flex-direction: column;
-  }
-
-  .month-navigation {
-    justify-content: center;
-  }
-
-  #currentMonth {
-    min-width: 130px;
-
-    font-size: 18px;
-  }
-
-  .toolbar-buttons {
-    width: 100%;
-  }
-
-  .toolbar-button {
-    flex: 1;
-  }
-
-  .settings-card {
-    padding: 14px;
-
-    border-radius: 14px;
-  }
-
-  .settings-card h2 {
-    font-size: 18px;
-  }
-
-  .form-group {
-    flex-basis: 100%;
-  }
-
-  .form-group .add-button,
-  .form-row > .form-group:last-child .add-button {
-    width: 100%;
-  }
-
-  .leave-type-form {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .leave-type-form > input[type="text"] {
-    width: 100%;
-  }
-
-  .leave-type-color-row {
-    justify-content: space-between;
-  }
-
-  .leave-type-form .add-button {
-    width: 100%;
-  }
-
-  .list-item {
-    align-items: stretch;
-
-    flex-direction: column;
-
-    padding: 12px;
-  }
-
-  .list-actions {
-    width: 100%;
-  }
-
-  .edit-button,
-  .delete-button {
-    flex: 1;
-
-    min-height: 42px;
-  }
-
-  .shift-menu {
-    width: 230px;
-
-    padding: 10px;
-  }
-
-  .shift-menu-button {
-    min-height: 44px;
-
-    font-size: 13px;
-  }
-
-  .calendar-modal {
-    padding: 12px;
-  }
-
-  .calendar-modal-content {
-    padding: 18px;
-  }
-
-}
-
-
-/* =========================================================
-   小さいスマホ
-========================================================= */
-
-@media (max-width: 380px) {
-
-  #currentMonth {
-    min-width: 110px;
-
-    font-size: 16px;
-  }
-
-  .month-navigation button {
-    width: 40px;
-    height: 40px;
-  }
-
-  #scheduleTable {
     font-size: 12px;
   }
 
-  #scheduleTable thead th {
-    min-width: 56px;
+  .page {
+    padding: 8px;
   }
-
-  #scheduleTable tbody td {
-    width: 56px;
-    min-width: 56px;
-  }
-
-  #scheduleTable tbody th,
-  #scheduleTable thead th:first-child {
-    min-width: 90px;
-  }
-
-}
-
-/* =========================================================
-   今月削除・年度削除
-========================================================= */
-
-.schedule-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.toolbar-buttons {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex: 0 0 auto;
-}
-
-.toolbar-button {
-  min-height: 38px;
-  padding: 6px 10px;
-
-  border: none;
-  border-radius: 9px;
-
-  font-size: 12px;
-  font-weight: 700;
-
-  white-space: nowrap;
-}
-
-.toolbar-button.danger {
-  background: #fff0f0;
-  color: #d93025;
-}
-
-
-/* =========================================================
-   編集・削除は必ず項目の右側
-========================================================= */
-
-.list-item {
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-
-  gap: 8px;
-
-  width: 100%;
-}
-
-.list-item-main {
-  flex: 1 1 auto;
-  min-width: 0;
-}
-
-.list-actions {
-  flex: 0 0 auto !important;
-
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: center !important;
-
-  gap: 5px;
-}
-
-.edit-button,
-.delete-button {
-  flex: 0 0 auto !important;
-
-  width: 64px;
-  min-width: 64px;
-  min-height: 38px;
-
-  padding: 5px 7px;
-
-  font-size: 13px;
-}
-
-
-/* =========================================================
-   休暇種類入力
-========================================================= */
-
-.leave-type-form {
-  display: flex;
-
-  align-items: center;
-
-  gap: 8px;
-
-  width: 100%;
-}
-
-.leave-type-form > input[type="text"] {
-  flex: 1 1 auto;
-
-  width: auto;
-  min-width: 0;
-
-  min-height: 42px;
-}
-
-.leave-type-color-row {
-  flex: 0 0 auto;
-
-  display: flex;
-  align-items: center;
-
-  gap: 5px;
-}
-
-.leave-type-color-row label {
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.leave-type-color-row input[type="color"] {
-  width: 42px;
-  min-width: 42px;
-
-  height: 42px;
-
-  padding: 2px;
-}
-
-.leave-type-form .add-button {
-  flex: 0 0 auto;
-
-  min-height: 42px;
-
-  padding: 7px 12px;
-
-  white-space: nowrap;
-
-  font-size: 13px;
-}
-
-
-/* =========================================================
-   スマホでも横並びを維持
-========================================================= */
-
-@media (max-width: 700px) {
 
   .schedule-toolbar {
-    flex-direction: row !important;
-
-    align-items: center !important;
+    min-height: 42px;
   }
 
   .month-navigation {
-    flex: 0 0 auto;
-  }
-
-  .toolbar-buttons {
-    flex: 0 0 auto;
-
-    display: flex;
-    flex-direction: column;
-
     gap: 4px;
   }
 
-  .toolbar-button {
-    min-height: 34px;
+  .month-navigation button {
+    width: 32px;
+    height: 32px;
 
-    padding: 4px 8px;
+    font-size: 21px;
+  }
+
+  #currentMonth {
+    min-width: 90px;
+
+    font-size: 15px;
+  }
+
+  .toolbar-buttons {
+    gap: 3px;
+  }
+
+  .toolbar-button {
+    height: 30px;
+
+    padding: 0 5px;
+
+    font-size: 9px;
+  }
+
+  #scheduleTable th,
+  #scheduleTable td {
+    min-width: 51px;
+
+    height: 40px;
 
     font-size: 11px;
   }
 
-
-  /* 編集・削除を右側に固定 */
-
-  .list-item {
-    flex-direction: row !important;
-
-    align-items: center !important;
+  #scheduleTable .staff-column {
+    width: 76px;
+    min-width: 76px;
   }
 
-  .list-item-main {
-    min-width: 0;
+  .date-header {
+    min-width: 48px !important;
   }
 
-  .list-actions {
-    flex: 0 0 auto !important;
-
-    width: auto !important;
-
-    flex-direction: row !important;
+  .settings-card {
+    padding: 12px;
   }
 
-  .edit-button,
-  .delete-button {
-    width: 58px;
-    min-width: 58px;
-
-    min-height: 36px;
-
-    padding: 4px 5px;
-
-    font-size: 12px;
+  .settings-card h2 {
+    font-size: 16px;
   }
 
+  .form-row {
+    display: grid;
 
-  /* 休暇種類 */
+    grid-template-columns:
+      1fr 1fr;
+  }
+
+  .form-group:first-child {
+    grid-column:
+      1 / -1;
+  }
+
+  .form-group input {
+    width: 100%;
+  }
+
+  .add-button {
+    width: 100%;
+  }
 
   .leave-type-form {
-    display: flex !important;
-
-    flex-direction: row !important;
-
-    align-items: center !important;
-
-    flex-wrap: nowrap !important;
-
-    gap: 5px;
+    display: flex;
   }
 
   .leave-type-form > input[type="text"] {
-    flex: 1 1 auto;
-
-    width: auto !important;
-
-    min-width: 0;
-
-    height: 42px;
+    width: 100%;
   }
 
   .leave-type-color-row {
     flex: 0 0 auto;
-
-    width: auto;
   }
 
-  .leave-type-color-row label {
-    display: none;
+  .leave-type-form
+    .add-button {
+    flex: 1;
   }
 
-  .leave-type-color-row input[type="color"] {
-    width: 42px;
-    min-width: 42px;
-
-    height: 42px;
+  .management-item {
+    min-height: 46px;
   }
 
-  .leave-type-form .add-button {
-    flex: 0 0 auto;
+  .item-main {
+    font-size: 13px;
+  }
 
-    width: auto !important;
+  .item-actions button {
+    min-width: 43px;
 
-    min-height: 42px;
+    height: 32px;
 
-    padding: 6px 9px;
+    padding: 0 6px;
 
-    font-size: 12px;
+    font-size: 11px;
+  }
+
+  .shift-menu {
+    width: 190px;
   }
 
 }
 
 
-/* =========================================================
-   かなり小さい画面
-========================================================= */
+/* =========================
+   さらに小さい画面
+========================= */
 
-@media (max-width: 380px) {
+@media (max-width: 400px) {
 
   .toolbar-button {
+    padding: 0 4px;
+
+    font-size: 8px;
+  }
+
+  #scheduleTable .staff-column {
+    width: 68px;
+    min-width: 68px;
+  }
+
+  #scheduleTable th,
+  #scheduleTable td {
+    min-width: 45px;
+
     font-size: 10px;
-
-    padding: 3px 6px;
   }
 
-  .edit-button,
-  .delete-button {
-    width: 52px;
-    min-width: 52px;
-
-    font-size: 11px;
+  .item-actions {
+    gap: 3px;
   }
 
-  .leave-type-form .add-button {
-    font-size: 11px;
+  .item-actions button {
+    min-width: 38px;
 
-    padding: 5px 7px;
+    padding: 0 4px;
+
+    font-size: 10px;
   }
 
 }
