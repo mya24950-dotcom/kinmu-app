@@ -2995,21 +2995,6 @@ function hideLeaveMenu() {
 }
 
 
-function hideLeaveMenu() {
-
-  const menu =
-    document.getElementById(
-      "leaveMenu"
-    );
-
-  if (!menu) {
-    return;
-  }
-
-  menu.style.display =
-    "none";
-
-}
 /* ==================================================
    勤務保存
 ================================================== */
