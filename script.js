@@ -13,8 +13,10 @@ const SUPABASE_KEY =
 const LOCAL_STORAGE_KEY =
   "workScheduleAppData";
 
+
 const $ = id =>
   document.getElementById(id);
+
 
 const $$ = selector =>
   Array.from(
@@ -116,11 +118,61 @@ document.addEventListener(
     try {
 
       /*
-        起動時にカレンダーモーダルが
-        表示されないように強制的に閉じる
+        起動直後に全メニューを強制的に閉じる
       */
 
       closeCalendarModal();
+
+      closeShiftMenu();
+
+      closeLeaveMenu();
+
+
+      /*
+        CSS側で表示状態になっていても
+        強制的に非表示にする
+      */
+
+      const shiftMenu =
+        $("shiftMenu");
+
+      if (shiftMenu) {
+
+        shiftMenu.classList.remove(
+          "show"
+        );
+
+        shiftMenu.style.display =
+          "none";
+
+        shiftMenu.style.left =
+          "-9999px";
+
+        shiftMenu.style.top =
+          "-9999px";
+
+      }
+
+
+      const leaveMenu =
+        $("leaveMenu");
+
+      if (leaveMenu) {
+
+        leaveMenu.classList.remove(
+          "show"
+        );
+
+        leaveMenu.style.display =
+          "none";
+
+        leaveMenu.style.left =
+          "-9999px";
+
+        leaveMenu.style.top =
+          "-9999px";
+
+      }
 
 
       initSupabase();
@@ -364,6 +416,7 @@ async function loadAllFromSupabase(
     const shifts =
       {};
 
+
     const leaves =
       {};
 
@@ -444,6 +497,7 @@ async function loadAllFromSupabase(
 
     let akeStart =
       "05:30";
+
 
     let akeEnd =
       "11:15";
@@ -681,6 +735,9 @@ function bindEvents() {
       "click",
       () => {
 
+        closeAllMenus();
+
+
         currentDate.setMonth(
           currentDate.getMonth() - 1
         );
@@ -700,6 +757,9 @@ function bindEvents() {
     ?.addEventListener(
       "click",
       () => {
+
+        closeAllMenus();
+
 
         currentDate.setMonth(
           currentDate.getMonth() + 1
@@ -802,7 +862,6 @@ function bindEvents() {
 
   /*
     カレンダー登録
-    webcal方式
   */
 
   $("calendarOKButton")
@@ -863,9 +922,7 @@ function bindEvents() {
     "resize",
     () => {
 
-      closeShiftMenu();
-
-      closeLeaveMenu();
+      closeAllMenus();
 
     }
   );
@@ -879,9 +936,7 @@ function bindEvents() {
     "scroll",
     () => {
 
-      closeShiftMenu();
-
-      closeLeaveMenu();
+      closeAllMenus();
 
     },
     true
@@ -898,12 +953,28 @@ function bindEvents() {
 
 
 /* =========================================================
+   全メニューを閉じる
+========================================================= */
+
+function closeAllMenus() {
+
+  closeShiftMenu();
+
+  closeLeaveMenu();
+
+}
+
+
+/* =========================================================
    ページ切り替え
 ========================================================= */
 
 function showPage(
   pageName
 ) {
+
+  closeAllMenus();
+
 
   $$(".page")
     .forEach(
@@ -1166,6 +1237,14 @@ async function loadPublicHolidays() {
       await response.json();
 
 
+    /*
+      祝日取得だけで
+      メニューを出さない
+    */
+
+    closeAllMenus();
+
+
     renderSchedule();
 
 
@@ -1301,6 +1380,11 @@ function shouldShowAke(
 
 function renderAll() {
 
+  closeAllMenus();
+
+  closeCalendarModal();
+
+
   renderSchedule();
 
   renderStaffList();
@@ -1322,11 +1406,22 @@ function renderAll() {
 
 function renderSchedule() {
 
+  /*
+    再描画時にメニューを必ず閉じる
+  */
+
+  closeShiftMenu();
+
+  closeLeaveMenu();
+
+
   const header =
     $("scheduleHeader");
 
+
   const body =
     $("scheduleBody");
+
 
   const monthLabel =
     $("currentMonth");
@@ -1403,10 +1498,6 @@ function renderSchedule() {
       "date-header";
 
 
-    /*
-      会社休業日
-    */
-
     if (
       isCompanyHoliday(key)
     ) {
@@ -1415,11 +1506,6 @@ function renderSchedule() {
         " company-holiday";
 
     }
-
-
-    /*
-      日曜・祝日
-    */
 
     else if (
 
@@ -1433,11 +1519,6 @@ function renderSchedule() {
         " sunday";
 
     }
-
-
-    /*
-      土曜
-    */
 
     else if (
       week === 6
@@ -1576,10 +1657,6 @@ function renderSchedule() {
           "schedule-cell";
 
 
-        /*
-          会社休業日
-        */
-
         if (
           isCompanyHoliday(key)
         ) {
@@ -1588,11 +1665,6 @@ function renderSchedule() {
             " company-holiday-cell";
 
         }
-
-
-        /*
-          日曜・祝日
-        */
 
         else if (
 
@@ -1607,11 +1679,6 @@ function renderSchedule() {
 
         }
 
-
-        /*
-          土曜
-        */
-
         else if (
           week === 6
         ) {
@@ -1621,10 +1688,6 @@ function renderSchedule() {
 
         }
 
-
-        /*
-          休暇
-        */
 
         let style = "";
 
@@ -1659,17 +1722,9 @@ function renderSchedule() {
         }
 
 
-        /*
-          セル表示
-        */
-
         let value =
           "";
 
-
-        /*
-          勤務
-        */
 
         if (shift) {
 
@@ -1680,11 +1735,6 @@ function renderSchedule() {
 
         }
 
-
-        /*
-          休暇
-        */
-
         else if (leave) {
 
           value =
@@ -1693,11 +1743,6 @@ function renderSchedule() {
             );
 
         }
-
-
-        /*
-          明
-        */
 
         else if (
           shouldShowAke(
@@ -1724,10 +1769,13 @@ function renderSchedule() {
                 ${escapeHtml(
                   appData.akeTime.start
                 )}
+
                 ～
+
                 ${escapeHtml(
                   appData.akeTime.end
                 )}
+
               </span>
 
             </span>
@@ -1777,7 +1825,7 @@ function renderSchedule() {
 
 
   /*
-    ★ 人数行はここでは作らない
+    ★ 人数行は作らない
   */
 
   body.innerHTML =
@@ -1785,7 +1833,7 @@ function renderSchedule() {
 
 
   /*
-    勤務セルクリック
+    勤務セル
   */
 
   $$(".schedule-cell")
@@ -1813,7 +1861,7 @@ function renderSchedule() {
 
 
   /*
-    職員名クリック
+    職員名
   */
 
   $$(".staff-calendar-button")
@@ -1842,7 +1890,15 @@ function renderSchedule() {
     祝日
   */
 
-  loadPublicHolidays();
+  if (
+    Object.keys(
+      publicHolidays
+    ).length === 0
+  ) {
+
+    loadPublicHolidays();
+
+  }
 
 }
 
@@ -1856,6 +1912,10 @@ function showShiftMenu(
   staffName,
   date
 ) {
+
+  /*
+    休暇メニューを閉じる
+  */
 
   closeLeaveMenu();
 
@@ -1923,6 +1983,10 @@ function showShiftMenu(
 
         button.type =
           "button";
+
+
+        button.className =
+          "shift-option";
 
 
         button.textContent =
@@ -2018,7 +2082,7 @@ function showShiftMenu(
 
 
   leaveButton.textContent =
-    "📝 休暇";
+    "休暇を選択";
 
 
   leaveButton.className =
@@ -2049,6 +2113,10 @@ function showShiftMenu(
     leaveButton
   );
 
+
+  /*
+    ★ 表示位置を計算
+  */
 
   positionMenuFromCell(
     menu,
@@ -2137,6 +2205,10 @@ function showLeaveMenu(
 
         button.type =
           "button";
+
+
+        button.className =
+          "leave-option";
 
 
         button.textContent =
@@ -2256,6 +2328,17 @@ function showLeaveMenu(
 
       closeLeaveMenu();
 
+
+      /*
+        元の勤務メニューに戻す
+      */
+
+      showShiftMenu(
+        cell,
+        staffName,
+        date
+      );
+
     }
   );
 
@@ -2264,6 +2347,10 @@ function showLeaveMenu(
     cancelButton
   );
 
+
+  /*
+    表示位置
+  */
 
   positionMenuFromCell(
     menu,
@@ -2274,7 +2361,8 @@ function showLeaveMenu(
 
 
 /* =========================================================
-   メニュー位置
+   メニュー位置調整
+   ★ iPhone対応
 ========================================================= */
 
 function positionMenuFromCell(
@@ -2282,79 +2370,218 @@ function positionMenuFromCell(
   cell
 ) {
 
-  const rect =
-    cell.getBoundingClientRect();
+  if (
+    !menu ||
+    !cell
+  ) {
 
+    return;
+
+  }
+
+
+  /*
+    画面基準
+  */
+
+  menu.style.position =
+    "fixed";
+
+
+  /*
+    いったん表示
+  */
 
   menu.style.display =
     "block";
-
-
-  const menuRect =
-    menu.getBoundingClientRect();
-
-
-  let left =
-    rect.left;
-
-
-  let top =
-    rect.bottom + 6;
-
-
-  if (
-    left +
-      menuRect.width >
-    window.innerWidth - 10
-  ) {
-
-    left =
-      window.innerWidth -
-      menuRect.width -
-      10;
-
-  }
-
-
-  if (
-    top +
-      menuRect.height >
-    window.innerHeight - 10
-  ) {
-
-    top =
-      rect.top -
-      menuRect.height -
-      6;
-
-  }
-
-
-  if (left < 10)
-    left = 10;
-
-
-  if (top < 10)
-    top = 10;
-
-
-  menu.style.left =
-    left + "px";
-
-
-  menu.style.top =
-    top + "px";
 
 
   menu.classList.add(
     "show"
   );
 
+
+  /*
+    画面からはみ出さないようにする
+  */
+
+  const rect =
+    cell.getBoundingClientRect();
+
+
+  const screenWidth =
+    window.innerWidth;
+
+
+  const screenHeight =
+    window.innerHeight;
+
+
+  const margin =
+    10;
+
+
+  const gap =
+    6;
+
+
+  /*
+    実際のメニューサイズ
+  */
+
+  const menuRect =
+    menu.getBoundingClientRect();
+
+
+  /*
+    横位置
+  */
+
+  let left =
+    rect.left;
+
+
+  /*
+    右にはみ出る
+  */
+
+  if (
+    left +
+      menuRect.width >
+    screenWidth -
+      margin
+  ) {
+
+    left =
+      screenWidth -
+      menuRect.width -
+      margin;
+
+  }
+
+
+  /*
+    左にはみ出る
+  */
+
+  if (
+    left <
+    margin
+  ) {
+
+    left =
+      margin;
+
+  }
+
+
+  /*
+    縦位置
+  */
+
+  let top =
+    rect.bottom +
+    gap;
+
+
+  /*
+    下に入りきらない
+  */
+
+  if (
+    top +
+      menuRect.height >
+    screenHeight -
+      margin
+  ) {
+
+    const above =
+      rect.top -
+      menuRect.height -
+      gap;
+
+
+    /*
+      上に入るなら上へ
+    */
+
+    if (
+      above >=
+      margin
+    ) {
+
+      top =
+        above;
+
+    }
+
+  }
+
+
+  /*
+    上にも入りきらない
+  */
+
+  if (
+    top <
+    margin
+  ) {
+
+    top =
+      margin;
+
+  }
+
+
+  /*
+    画面高さを超える場合
+    → メニュー内をスクロール
+  */
+
+  const availableHeight =
+    screenHeight -
+    top -
+    margin;
+
+
+  const finalMaxHeight =
+    Math.max(
+      160,
+      availableHeight
+    );
+
+
+  menu.style.maxHeight =
+    finalMaxHeight +
+    "px";
+
+
+  menu.style.overflowY =
+    "auto";
+
+
+  menu.style.webkitOverflowScrolling =
+    "touch";
+
+
+  /*
+    最終位置
+  */
+
+  menu.style.left =
+    Math.round(left) +
+    "px";
+
+
+  menu.style.top =
+    Math.round(top) +
+    "px";
+
 }
 
 
 /* =========================================================
-   メニューを閉じる
+   勤務メニューを閉じる
 ========================================================= */
 
 function closeShiftMenu() {
@@ -2375,8 +2602,32 @@ function closeShiftMenu() {
   menu.style.display =
     "none";
 
+
+  menu.style.position =
+    "fixed";
+
+
+  menu.style.left =
+    "-9999px";
+
+
+  menu.style.top =
+    "-9999px";
+
+
+  menu.style.maxHeight =
+    "";
+
+
+  menu.style.overflowY =
+    "";
+
 }
 
+
+/* =========================================================
+   休暇メニューを閉じる
+========================================================= */
 
 function closeLeaveMenu() {
 
@@ -2397,11 +2648,35 @@ function closeLeaveMenu() {
     "none";
 
 
+  menu.style.position =
+    "fixed";
+
+
+  menu.style.left =
+    "-9999px";
+
+
+  menu.style.top =
+    "-9999px";
+
+
+  menu.style.maxHeight =
+    "";
+
+
+  menu.style.overflowY =
+    "";
+
+
   leaveMenuOpen =
     false;
 
 }
 
+
+/* =========================================================
+   画面外クリック
+========================================================= */
 
 function handleDocumentClick(
   event
@@ -2425,6 +2700,10 @@ function handleDocumentClick(
 
     !shiftMenu.contains(
       event.target
+    ) &&
+
+    !event.target.closest(
+      ".schedule-cell"
     )
 
   ) {
@@ -2444,6 +2723,10 @@ function handleDocumentClick(
 
     !leaveMenu.contains(
       event.target
+    ) &&
+
+    !event.target.closest(
+      ".schedule-cell"
     )
 
   ) {
@@ -2799,7 +3082,7 @@ async function clearLeaveOnly(
 
 
 /* =========================================================
-   勤務・休暇を完全クリア
+   勤務・休暇完全クリア
 ========================================================= */
 
 async function clearWorkShift(
@@ -4929,6 +5212,7 @@ function renderCompanyHolidayList() {
             <div
               class="list-item-sub"
             >
+
               ${escapeHtml(
                 holiday.start_date
               )}
@@ -5489,10 +5773,6 @@ function openCalendarModal(
     return;
 
 
-  /*
-    職員名を保存
-  */
-
   modal.dataset.staff =
     staffName;
 
@@ -5555,10 +5835,6 @@ function closeCalendarModal() {
     "none";
 
 
-  /*
-    ★ 起動時にも確実に消す
-  */
-
   modal.dataset.staff =
     "";
 
@@ -5593,7 +5869,9 @@ function subscribeStaffCalendar() {
       "職員情報を取得できませんでした。"
     );
 
+
     closeCalendarModal();
+
 
     return;
 
@@ -5620,7 +5898,9 @@ function subscribeStaffCalendar() {
       "この職員のカレンダー情報がありません。"
     );
 
+
     closeCalendarModal();
+
 
     return;
 
@@ -5628,8 +5908,7 @@ function subscribeStaffCalendar() {
 
 
   /*
-    ★ 旧方式
-       webcal://
+    ★ webcal方式を維持
   */
 
   const webcalUrl =
@@ -5650,10 +5929,6 @@ function subscribeStaffCalendar() {
 
   closeCalendarModal();
 
-
-  /*
-    iPhoneのカレンダー登録画面へ
-  */
 
   window.location.href =
     webcalUrl;
@@ -5867,7 +6142,7 @@ function startAutoSync() {
 
 
 /* =========================================================
-   アプリ復帰時
+   アプリ復帰
 ========================================================= */
 
 document.addEventListener(
@@ -5883,26 +6158,13 @@ document.addEventListener(
     ) {
 
       /*
-        復帰時にも
-        カレンダーモーダルを
-        勝手に表示しない
+        iPhoneから戻ってきた時も
+        メニューを勝手に表示しない
       */
 
-      const modal =
-        $("calendarConfirm");
+      closeAllMenus();
 
-
-      if (modal) {
-
-        modal.classList.remove(
-          "show"
-        );
-
-
-        modal.style.display =
-          "none";
-
-      }
+      closeCalendarModal();
 
 
       loadAllFromSupabase(
