@@ -2474,9 +2474,7 @@ function renderLeaveLegend() {
               box-sizing:border-box;
               flex-shrink:0;
             "
-            title="${escapeHtml(
-              color
-            )}"
+            
           ></span>
 
           <span
@@ -2492,17 +2490,7 @@ function renderLeaveLegend() {
             )}
           </span>
 
-          <span
-            style="
-              font-size:11px;
-              color:#777;
-              white-space:nowrap;
-            "
-          >
-            ${escapeHtml(
-              color
-            )}
-          </span>
+   
 
         </div>
       `;
