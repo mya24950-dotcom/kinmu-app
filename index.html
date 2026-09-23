@@ -7,7 +7,7 @@
 
   <meta
     name="viewport"
-    content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
 
   <title>勤務表</title>
 
@@ -118,8 +118,6 @@
   <nav class="nav">
 
 
-    <!-- 勤務表 -->
-
     <button
       class="nav-button active"
       data-page="schedule">
@@ -128,8 +126,6 @@
 
     </button>
 
-
-    <!-- 職員管理 -->
 
     <button
       class="nav-button"
@@ -140,8 +136,6 @@
     </button>
 
 
-    <!-- ★ 休暇設定 -->
-
     <button
       class="nav-button"
       data-page="leave">
@@ -151,8 +145,6 @@
     </button>
 
 
-    <!-- 勤務形態 -->
-
     <button
       class="nav-button"
       data-page="shift">
@@ -161,8 +153,6 @@
 
     </button>
 
-
-    <!-- 休業設定 -->
 
     <button
       class="nav-button"
@@ -185,8 +175,6 @@
     id="schedulePage"
     class="page">
 
-
-    <!-- 月切り替え -->
 
     <div class="month-bar">
 
@@ -220,8 +208,6 @@
 
 
 
-    <!-- 説明 -->
-
     <div class="calendar-hint">
 
       💡 職員名をタップすると、
@@ -230,8 +216,6 @@
     </div>
 
 
-
-    <!-- 勤務表 -->
 
     <div class="table-wrapper">
 
@@ -265,8 +249,6 @@
 
 
 
-      <!-- 職員追加 -->
-
       <div class="input-row">
 
 
@@ -289,8 +271,6 @@
 
 
 
-      <!-- 職員数 -->
-
       <div class="staff-list-header">
 
 
@@ -308,8 +288,6 @@
 
 
 
-      <!-- 職員一覧 -->
-
       <div
         id="staffList"
         class="list">
@@ -325,7 +303,7 @@
 
 
   <!-- ==================================================
-       ★ 休暇設定
+       休暇設定
   ================================================== -->
 
   <section
@@ -351,23 +329,14 @@
 
 
 
-      <!-- =========================
-           休暇登録フォーム
-      ========================== -->
-
       <div class="shift-form">
 
-
-        <!-- 休暇名 -->
 
         <input
           id="leaveNameInput"
           type="text"
           placeholder="休暇名（例：年休）">
 
-
-
-        <!-- 色 -->
 
         <div
           style="
@@ -401,9 +370,6 @@
         </div>
 
 
-
-        <!-- 登録ボタン -->
-
         <button
           id="addLeaveButton"
           class="add-button">
@@ -416,10 +382,6 @@
       </div>
 
 
-
-      <!-- =========================
-           休暇一覧
-      ========================== -->
 
       <div
         id="leaveList"
@@ -448,16 +410,8 @@
     <div class="shift-layout">
 
 
-      <!-- ==================================================
-           左側
-      ================================================== -->
-
       <div>
 
-
-        <!-- =========================
-             勤務形態登録
-        ========================== -->
 
         <div class="settings-card">
 
@@ -467,20 +421,14 @@
           </h2>
 
 
-
           <div class="shift-form">
 
-
-            <!-- 勤務形態名 -->
 
             <input
               id="shiftNameInput"
               type="text"
               placeholder="勤務形態名">
 
-
-
-            <!-- 開始 ～ 終了 -->
 
             <div class="time-row">
 
@@ -505,18 +453,12 @@
             </div>
 
 
-
-            <!-- 休憩 -->
-
             <input
               id="shiftBreakInput"
               type="number"
               min="0"
               placeholder="休憩（分）">
 
-
-
-            <!-- 登録 -->
 
             <button
               id="addShiftButton"
@@ -530,7 +472,6 @@
           </div>
 
 
-
           <p class="info">
 
             ※「明」は自動表示されるため登録できません。
@@ -541,10 +482,6 @@
         </div>
 
 
-
-        <!-- ==================================================
-             明け時間設定
-        ================================================== -->
 
         <div class="settings-card">
 
@@ -559,7 +496,6 @@
             「明」と表示される勤務の時間を設定します。
 
           </p>
-
 
 
           <div class="time-row ake-time-row">
@@ -585,7 +521,6 @@
           </div>
 
 
-
           <button
             id="saveAkeTimeButton"
             class="add-button">
@@ -601,11 +536,6 @@
       </div>
 
 
-
-      <!-- ==================================================
-           右側
-           勤務リスト
-      ================================================== -->
 
       <div
         class="settings-card shift-list-card">
@@ -660,15 +590,8 @@
       </p>
 
 
-
-      <!-- =========================
-           休業登録
-      ========================== -->
-
       <div class="holiday-form">
 
-
-        <!-- 休業名 -->
 
         <input
           id="companyHolidayName"
@@ -676,13 +599,8 @@
           placeholder="休業名（例：年末年始休業）">
 
 
-
-        <!-- 日付 -->
-
         <div class="date-row">
 
-
-          <!-- 開始日 -->
 
           <div class="date-box">
 
@@ -700,18 +618,12 @@
           </div>
 
 
-
-          <!-- 矢印 -->
-
           <div class="date-arrow">
 
             →
 
           </div>
 
-
-
-          <!-- 終了日 -->
 
           <div class="date-box">
 
@@ -732,9 +644,6 @@
         </div>
 
 
-
-        <!-- 登録 -->
-
         <button
           id="addCompanyHolidayButton"
           class="add-button">
@@ -746,9 +655,6 @@
 
       </div>
 
-
-
-      <!-- 休業一覧 -->
 
       <div
         id="companyHolidayList"
@@ -852,17 +758,9 @@
 
 
 
-<!-- ==================================================
-     JavaScript
-================================================== -->
-
 <script src="script.js"></script>
 
 
-
-<!-- ==================================================
-     Service Worker
-================================================== -->
 
 <script>
 
