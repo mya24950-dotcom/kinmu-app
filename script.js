@@ -3286,38 +3286,69 @@ function showShiftMenu(
       }
     );
 // 勤務削除ボタン
-const deleteShiftButton = document.createElement("button");
-
-deleteShiftButton.textContent = "🗑️ 勤務削除";
-
-deleteShiftButton.style.width = "100%";
-deleteShiftButton.style.minWidth = "100%";
-deleteShiftButton.style.gridColumn = "1 / -1";
-deleteShiftButton.style.boxSizing = "border-box";
-
-deleteShiftButton.style.background = "#6f42c1";
-deleteShiftButton.style.color = "#ffffff";
-deleteShiftButton.style.borderColor = "#59339d";
-deleteShiftButton.style.fontWeight = "700";
-
-deleteShiftButton.addEventListener("click", async () => {
-
-  // 勤務形態だけ削除
-  await saveWorkShift(
-    staffName,
-    dateKey,
-    ""
+const deleteShiftButton =
+  document.createElement(
+    "button"
   );
 
-  // メニューを閉じる
-  menu.style.display = "none";
+deleteShiftButton.type =
+  "button";
 
-  // 表示更新
-  renderSchedule();
-});
+deleteShiftButton.textContent =
+  "🗑️ 勤務削除";
 
-// キャンセルボタンの上に追加
-buttons.appendChild(deleteShiftButton);
+deleteShiftButton.className =
+  "shift-menu-button";
+
+deleteShiftButton.style.width =
+  "100%";
+
+deleteShiftButton.style.minWidth =
+  "100%";
+
+deleteShiftButton.style.gridColumn =
+  "1 / -1";
+
+deleteShiftButton.style.boxSizing =
+  "border-box";
+
+deleteShiftButton.style.background =
+  "#6f42c1";
+
+deleteShiftButton.style.color =
+  "#ffffff";
+
+deleteShiftButton.style.borderColor =
+  "#59339d";
+
+deleteShiftButton.style.fontWeight =
+  "700";
+
+deleteShiftButton.addEventListener(
+  "click",
+  async e => {
+
+    e.stopPropagation();
+
+    // 勤務形態だけ削除
+    await saveWorkShift(
+      staffName,
+      dateKey,
+      ""
+    );
+
+    menu.style.display =
+      "none";
+
+    renderSchedule();
+
+  }
+);
+
+// キャンセルの上に追加
+buttons.appendChild(
+  deleteShiftButton
+);
 
     /* ==================================================
        キャンセル
