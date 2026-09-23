@@ -1154,3 +1154,294 @@ input:focus {
   }
 
 }
+
+/* =========================================================
+   今月削除・年度削除
+========================================================= */
+
+.schedule-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.toolbar-buttons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+}
+
+.toolbar-button {
+  min-height: 38px;
+  padding: 6px 10px;
+
+  border: none;
+  border-radius: 9px;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  white-space: nowrap;
+}
+
+.toolbar-button.danger {
+  background: #fff0f0;
+  color: #d93025;
+}
+
+
+/* =========================================================
+   編集・削除は必ず項目の右側
+========================================================= */
+
+.list-item {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+
+  gap: 8px;
+
+  width: 100%;
+}
+
+.list-item-main {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.list-actions {
+  flex: 0 0 auto !important;
+
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+
+  gap: 5px;
+}
+
+.edit-button,
+.delete-button {
+  flex: 0 0 auto !important;
+
+  width: 64px;
+  min-width: 64px;
+  min-height: 38px;
+
+  padding: 5px 7px;
+
+  font-size: 13px;
+}
+
+
+/* =========================================================
+   休暇種類入力
+========================================================= */
+
+.leave-type-form {
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  width: 100%;
+}
+
+.leave-type-form > input[type="text"] {
+  flex: 1 1 auto;
+
+  width: auto;
+  min-width: 0;
+
+  min-height: 42px;
+}
+
+.leave-type-color-row {
+  flex: 0 0 auto;
+
+  display: flex;
+  align-items: center;
+
+  gap: 5px;
+}
+
+.leave-type-color-row label {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.leave-type-color-row input[type="color"] {
+  width: 42px;
+  min-width: 42px;
+
+  height: 42px;
+
+  padding: 2px;
+}
+
+.leave-type-form .add-button {
+  flex: 0 0 auto;
+
+  min-height: 42px;
+
+  padding: 7px 12px;
+
+  white-space: nowrap;
+
+  font-size: 13px;
+}
+
+
+/* =========================================================
+   スマホでも横並びを維持
+========================================================= */
+
+@media (max-width: 700px) {
+
+  .schedule-toolbar {
+    flex-direction: row !important;
+
+    align-items: center !important;
+  }
+
+  .month-navigation {
+    flex: 0 0 auto;
+  }
+
+  .toolbar-buttons {
+    flex: 0 0 auto;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 4px;
+  }
+
+  .toolbar-button {
+    min-height: 34px;
+
+    padding: 4px 8px;
+
+    font-size: 11px;
+  }
+
+
+  /* 編集・削除を右側に固定 */
+
+  .list-item {
+    flex-direction: row !important;
+
+    align-items: center !important;
+  }
+
+  .list-item-main {
+    min-width: 0;
+  }
+
+  .list-actions {
+    flex: 0 0 auto !important;
+
+    width: auto !important;
+
+    flex-direction: row !important;
+  }
+
+  .edit-button,
+  .delete-button {
+    width: 58px;
+    min-width: 58px;
+
+    min-height: 36px;
+
+    padding: 4px 5px;
+
+    font-size: 12px;
+  }
+
+
+  /* 休暇種類 */
+
+  .leave-type-form {
+    display: flex !important;
+
+    flex-direction: row !important;
+
+    align-items: center !important;
+
+    flex-wrap: nowrap !important;
+
+    gap: 5px;
+  }
+
+  .leave-type-form > input[type="text"] {
+    flex: 1 1 auto;
+
+    width: auto !important;
+
+    min-width: 0;
+
+    height: 42px;
+  }
+
+  .leave-type-color-row {
+    flex: 0 0 auto;
+
+    width: auto;
+  }
+
+  .leave-type-color-row label {
+    display: none;
+  }
+
+  .leave-type-color-row input[type="color"] {
+    width: 42px;
+    min-width: 42px;
+
+    height: 42px;
+  }
+
+  .leave-type-form .add-button {
+    flex: 0 0 auto;
+
+    width: auto !important;
+
+    min-height: 42px;
+
+    padding: 6px 9px;
+
+    font-size: 12px;
+  }
+
+}
+
+
+/* =========================================================
+   かなり小さい画面
+========================================================= */
+
+@media (max-width: 380px) {
+
+  .toolbar-button {
+    font-size: 10px;
+
+    padding: 3px 6px;
+  }
+
+  .edit-button,
+  .delete-button {
+    width: 52px;
+    min-width: 52px;
+
+    font-size: 11px;
+  }
+
+  .leave-type-form .add-button {
+    font-size: 11px;
+
+    padding: 5px 7px;
+  }
+
+}
