@@ -3285,7 +3285,39 @@ function showShiftMenu(
 
       }
     );
+// 勤務削除ボタン
+const deleteShiftButton = document.createElement("button");
 
+deleteShiftButton.textContent = "🗑️ 勤務削除";
+
+deleteShiftButton.style.width = "100%";
+deleteShiftButton.style.minWidth = "100%";
+deleteShiftButton.style.gridColumn = "1 / -1";
+deleteShiftButton.style.boxSizing = "border-box";
+
+deleteShiftButton.style.background = "#6f42c1";
+deleteShiftButton.style.color = "#ffffff";
+deleteShiftButton.style.borderColor = "#59339d";
+deleteShiftButton.style.fontWeight = "700";
+
+deleteShiftButton.addEventListener("click", async () => {
+
+  // 勤務形態だけ削除
+  await saveWorkShift(
+    staffName,
+    dateKey,
+    ""
+  );
+
+  // メニューを閉じる
+  menu.style.display = "none";
+
+  // 表示更新
+  renderSchedule();
+});
+
+// キャンセルの上に追加
+buttons.appendChild(deleteShiftButton);
 
     /* ==================================================
        キャンセル
