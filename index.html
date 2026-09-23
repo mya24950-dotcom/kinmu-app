@@ -11,24 +11,13 @@
 
   <title>勤務表</title>
 
-
-  <!-- =========================
-       PWA
-  ========================== -->
-
   <link
     rel="manifest"
     href="manifest.json">
 
-
   <meta
     name="theme-color"
     content="#007aff">
-
-
-  <!-- =========================
-       iPhone
-  ========================== -->
 
   <meta
     name="apple-mobile-web-app-capable"
@@ -42,19 +31,9 @@
     name="apple-mobile-web-app-title"
     content="勤務表">
 
-
-  <!-- =========================
-       CSS
-  ========================== -->
-
   <link
     rel="stylesheet"
     href="style.css">
-
-
-  <!-- =========================
-       Supabase
-  ========================== -->
 
   <script
     src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.0">
@@ -62,29 +41,22 @@
 
 </head>
 
-
 <body>
-
 
 <div class="app">
 
 
-  <!-- ==================================================
+  <!-- ==============================
        ヘッダー
-  ================================================== -->
+  =============================== -->
 
   <header class="header">
 
-
     <div class="header-title">
-
       🗓️ 勤務表
-
     </div>
 
-
     <div class="header-delete-buttons">
-
 
       <button
         type="button"
@@ -94,7 +66,6 @@
 
       </button>
 
-
       <button
         type="button"
         id="deleteFiscalYearButton">
@@ -103,20 +74,17 @@
 
       </button>
 
-
     </div>
-
 
   </header>
 
 
 
-  <!-- ==================================================
-       ナビゲーション
-  ================================================== -->
+  <!-- ==============================
+       ナビ
+  =============================== -->
 
   <nav class="nav">
-
 
     <button
       class="nav-button active"
@@ -126,7 +94,6 @@
 
     </button>
 
-
     <button
       class="nav-button"
       data-page="staff">
@@ -134,7 +101,6 @@
       👤 職員管理
 
     </button>
-
 
     <button
       class="nav-button"
@@ -144,7 +110,6 @@
 
     </button>
 
-
     <button
       class="nav-button"
       data-page="shift">
@@ -152,7 +117,6 @@
       ⏰ 勤務形態
 
     </button>
-
 
     <button
       class="nav-button"
@@ -162,22 +126,19 @@
 
     </button>
 
-
   </nav>
 
 
 
-  <!-- ==================================================
+  <!-- ==============================
        勤務表
-  ================================================== -->
+  =============================== -->
 
   <main
     id="schedulePage"
     class="page">
 
-
     <div class="month-bar">
-
 
       <button
         id="prevMonth"
@@ -187,13 +148,11 @@
 
       </button>
 
-
       <div
         id="currentMonth"
         class="month-title">
 
       </div>
-
 
       <button
         id="nextMonth"
@@ -203,9 +162,7 @@
 
       </button>
 
-
     </div>
-
 
 
     <div class="calendar-hint">
@@ -216,47 +173,37 @@
     </div>
 
 
-
     <div class="table-wrapper">
-
 
       <table id="scheduleTable"></table>
 
-
     </div>
-
 
   </main>
 
 
 
-  <!-- ==================================================
+  <!-- ==============================
        職員管理
-  ================================================== -->
+  =============================== -->
 
   <section
     id="staffPage"
     class="page"
     style="display:none;">
 
-
     <div class="settings-card">
-
 
       <h2>
         👤 職員管理
       </h2>
 
-
-
       <div class="input-row">
-
 
         <input
           id="staffNameInput"
           type="text"
           placeholder="職員名">
-
 
         <button
           id="addStaffButton"
@@ -266,26 +213,20 @@
 
         </button>
 
-
       </div>
 
 
-
       <div class="staff-list-header">
-
 
         <span>
           登録職員
         </span>
 
-
         <span id="staffCount">
           0人
         </span>
 
-
       </div>
-
 
 
       <div
@@ -294,31 +235,26 @@
 
       </div>
 
-
     </div>
-
 
   </section>
 
 
 
-  <!-- ==================================================
+  <!-- ==============================
        休暇設定
-  ================================================== -->
+  =============================== -->
 
   <section
     id="leavePage"
     class="page"
     style="display:none;">
 
-
     <div class="settings-card">
-
 
       <h2>
         🏖️ 休暇設定
       </h2>
-
 
       <p class="info">
 
@@ -328,9 +264,7 @@
       </p>
 
 
-
       <div class="shift-form">
-
 
         <input
           id="leaveNameInput"
@@ -345,7 +279,6 @@
             gap:12px;
             margin:10px 0;
           ">
-
 
           <label
             for="leaveColorInput">
@@ -366,7 +299,6 @@
               cursor:pointer;
             ">
 
-
         </div>
 
 
@@ -378,9 +310,7 @@
 
         </button>
 
-
       </div>
-
 
 
       <div
@@ -389,32 +319,27 @@
 
       </div>
 
-
     </div>
-
 
   </section>
 
 
 
-  <!-- ==================================================
+  <!-- ==============================
        勤務形態
-  ================================================== -->
+  =============================== -->
 
   <section
     id="shiftPage"
     class="page"
     style="display:none;">
 
-
     <div class="shift-layout">
 
 
       <div>
 
-
         <div class="settings-card">
-
 
           <h2>
             ⏰ 勤務形態
@@ -422,7 +347,6 @@
 
 
           <div class="shift-form">
-
 
             <input
               id="shiftNameInput"
@@ -432,23 +356,17 @@
 
             <div class="time-row">
 
-
               <input
                 id="shiftStartInput"
                 type="time">
 
-
               <span class="time-separator">
-
                 ～
-
               </span>
-
 
               <input
                 id="shiftEndInput"
                 type="time">
-
 
             </div>
 
@@ -468,7 +386,6 @@
 
             </button>
 
-
           </div>
 
 
@@ -478,13 +395,11 @@
 
           </p>
 
-
         </div>
 
 
 
         <div class="settings-card">
-
 
           <h2>
             🌅 明け時間設定
@@ -500,23 +415,17 @@
 
           <div class="time-row ake-time-row">
 
-
             <input
               id="akeStartInput"
               type="time">
 
-
             <span class="time-separator">
-
               ～
-
             </span>
-
 
             <input
               id="akeEndInput"
               type="time">
-
 
           </div>
 
@@ -529,9 +438,7 @@
 
           </button>
 
-
         </div>
-
 
       </div>
 
@@ -539,7 +446,6 @@
 
       <div
         class="settings-card shift-list-card">
-
 
         <h2>
           📋 勤務リスト
@@ -552,29 +458,25 @@
 
         </div>
 
-
       </div>
 
 
     </div>
 
-
   </section>
 
 
 
-  <!-- ==================================================
+  <!-- ==============================
        休業設定
-  ================================================== -->
+  =============================== -->
 
   <section
     id="holidayPage"
     class="page"
     style="display:none;">
 
-
     <div class="settings-card">
-
 
       <h2>
         🏢 休業設定
@@ -592,7 +494,6 @@
 
       <div class="holiday-form">
 
-
         <input
           id="companyHolidayName"
           type="text"
@@ -601,45 +502,35 @@
 
         <div class="date-row">
 
-
           <div class="date-box">
-
 
             <label>
               開始日
             </label>
 
-
             <input
               id="companyHolidayStart"
               type="date">
-
 
           </div>
 
 
           <div class="date-arrow">
-
             →
-
           </div>
 
 
           <div class="date-box">
 
-
             <label>
               終了日（任意）
             </label>
-
 
             <input
               id="companyHolidayEnd"
               type="date">
 
-
           </div>
-
 
         </div>
 
@@ -652,7 +543,6 @@
 
         </button>
 
-
       </div>
 
 
@@ -662,27 +552,22 @@
 
       </div>
 
-
     </div>
-
 
   </section>
 
 
 
-  <!-- ==================================================
+  <!-- ==============================
        勤務選択メニュー
-  ================================================== -->
+  =============================== -->
 
   <div
     id="shiftMenu"
     class="shift-menu">
 
-
     <div class="shift-menu-title">
-
       勤務を選択
-
     </div>
 
 
@@ -692,23 +577,20 @@
 
     </div>
 
-
   </div>
 
 
 
-  <!-- ==================================================
+  <!-- ==============================
        カレンダー確認
-  ================================================== -->
+  =============================== -->
 
   <div
     id="calendarConfirm"
     class="modal-overlay"
     style="display:none;">
 
-
     <div class="confirm-card">
-
 
       <div
         id="calendarConfirmTitle"
@@ -725,7 +607,6 @@
 
 
       <div class="confirm-buttons">
-
 
         <button
           id="calendarCancelButton"
@@ -744,12 +625,9 @@
 
         </button>
 
-
       </div>
 
-
     </div>
-
 
   </div>
 
