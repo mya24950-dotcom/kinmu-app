@@ -3299,7 +3299,7 @@ deleteShiftButton.style.background = "#6f42c1";
 deleteShiftButton.style.color = "#ffffff";
 deleteShiftButton.style.borderColor = "#59339d";
 deleteShiftButton.style.fontWeight = "700";
-
+deleteShiftButton.style.fontSize = "14px";
 deleteShiftButton.addEventListener("click", async () => {
 
   // 勤務形態だけ削除
