@@ -3295,17 +3295,10 @@ deleteShiftButton.style.minWidth = "100%";
 deleteShiftButton.style.gridColumn = "1 / -1";
 deleteShiftButton.style.boxSizing = "border-box";
 
-// キャンセルボタンと同じサイズ
-deleteShiftButton.style.height = cancelButton.offsetHeight + "px";
-deleteShiftButton.style.padding = cancelButton.style.padding;
-deleteShiftButton.style.fontSize = cancelButton.style.fontSize;
-deleteShiftButton.style.lineHeight = cancelButton.style.lineHeight;
-deleteShiftButton.style.fontWeight = cancelButton.style.fontWeight;
-
-// 色だけ勤務削除用に変更
 deleteShiftButton.style.background = "#6f42c1";
 deleteShiftButton.style.color = "#ffffff";
 deleteShiftButton.style.borderColor = "#59339d";
+deleteShiftButton.style.fontWeight = "700";
 
 deleteShiftButton.addEventListener("click", async () => {
 
@@ -3323,7 +3316,7 @@ deleteShiftButton.addEventListener("click", async () => {
   renderSchedule();
 });
 
-// キャンセルの上に追加
+// キャンセルボタンの上に追加
 buttons.appendChild(deleteShiftButton);
 
     /* ==================================================
