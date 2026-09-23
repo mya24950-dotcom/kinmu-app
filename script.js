@@ -24,11 +24,23 @@ const STORAGE_KEY =
 ================================================== */
 
 let appData = {
+
   staff: [],
+
   shiftTypes: [],
+
+  /* ★ 休暇設定 */
+  leaveTypes: [],
+
   companyHolidays: [],
+
   shifts: {},
-  akeTime: { start: "05:30", end: "11:15" }
+
+  akeTime: {
+    start: "05:30",
+    end: "11:15"
+  }
+
 };
 
 
@@ -42,6 +54,9 @@ let editingStaffIndex = -1;
 let editingShiftIndex = -1;
 
 let editingHolidayId = null;
+
+/* ★ 休暇編集中ID */
+let editingLeaveId = null;
 
 let selectedCell = null;
 
@@ -243,6 +258,12 @@ function loadLocalData() {
           };
 
 
+    /*
+     * 休暇設定はSupabaseを正として扱うため、
+     * ローカルには依存しません。
+     */
+
+
   } catch (error) {
 
     console.error(
@@ -387,6 +408,45 @@ async function loadAllFromSupabase() {
     );
 
     throw workResult.error;
+
+  }
+
+
+  /* -----------------------------------------------
+     休暇設定
+     ★ leave_type
+  ------------------------------------------------ */
+
+  const leaveResult =
+    await supabaseClient
+
+      .from("leave_type")
+
+      .select(
+        "id,name,color,created_at"
+      )
+
+      .order(
+        "created_at",
+        {
+          ascending: true
+        }
+      );
+
+
+  if (leaveResult.error) {
+
+    console.error(
+      "leave_type取得エラー:",
+      leaveResult.error
+    );
+
+    /*
+     * 休暇テーブルだけのエラーで
+     * アプリ全体を停止させない
+     */
+
+    appData.leaveTypes = [];
 
   }
 
@@ -600,6 +660,41 @@ async function loadAllFromSupabase() {
           row.name &&
           row.name !== "明"
       );
+
+
+  /* -----------------------------------------------
+     ★ 休暇設定
+  ------------------------------------------------ */
+
+  if (!leaveResult.error) {
+
+    appData.leaveTypes =
+      (leaveResult.data || [])
+        .map(row => ({
+
+          id:
+            row.id,
+
+          name:
+            String(
+              row.name || ""
+            ).trim(),
+
+          color:
+            String(
+              row.color || "#FFD54F"
+            ),
+
+          created_at:
+            row.created_at || ""
+
+        }))
+        .filter(
+          row =>
+            row.name
+        );
+
+  }
 
 
   /* -----------------------------------------------
@@ -885,6 +980,31 @@ function setupRealtime() {
 
           console.log(
             "Realtime shift_types:",
+            payload
+          );
+
+          scheduleRealtimeReload();
+
+        }
+
+      )
+
+
+      /* ★ 休暇設定 */
+      .on(
+
+        "postgres_changes",
+
+        {
+          event: "*",
+          schema: "public",
+          table: "leave_type"
+        },
+
+        payload => {
+
+          console.log(
+            "Realtime leave_type:",
             payload
           );
 
@@ -1275,6 +1395,23 @@ function bindEvents() {
   }
 
 
+  /* ★ 休暇追加 */
+  const addLeave =
+    document.getElementById(
+      "addLeaveButton"
+    );
+
+
+  if (addLeave) {
+
+    addLeave.addEventListener(
+      "click",
+      addOrUpdateLeave
+    );
+
+  }
+
+
   const addHoliday =
     document.getElementById(
       "addCompanyHolidayButton"
@@ -1468,6 +1605,14 @@ function showPage(page) {
   }
 
 
+  /* ★ 休暇設定 */
+  if (page === "leave") {
+
+    renderLeaveList();
+
+  }
+
+
   if (page === "shift") {
 
     renderShiftList();
@@ -1493,6 +1638,8 @@ function renderAll() {
   renderSchedule();
 
   renderStaffList();
+
+  renderLeaveList();
 
   renderShiftList();
 
@@ -2576,6 +2723,10 @@ function bindStaffNameCells() {
 }
 
 
+/* ==================================================
+   勤務選択メニュー
+================================================== */
+
 function showShiftMenu(
   cell,
   staffName,
@@ -2600,12 +2751,12 @@ function showShiftMenu(
     return;
   }
 
-  // メニューを空にする
   buttons.innerHTML = "";
 
-  // =========================
-  // 勤務形態ボタン
-  // =========================
+
+  /* =========================
+     勤務形態ボタン
+  ========================= */
 
   if (
     appData &&
@@ -2657,9 +2808,10 @@ function showShiftMenu(
 
   }
 
-  // =========================
-  // 削除ボタン
-  // =========================
+
+  /* =========================
+     削除ボタン
+  ========================= */
 
   const deleteButton =
     document.createElement(
@@ -2696,9 +2848,10 @@ function showShiftMenu(
     deleteButton
   );
 
-  // =========================
-  // 勤務形態メニュー表示
-  // =========================
+
+  /* =========================
+     メニュー表示
+  ========================= */
 
   menu.style.display =
     "grid";
@@ -3132,7 +3285,6 @@ function calculateFiscalTotal(
 
     let startMonth =
       4;
-
 
     let endMonth =
       12;
@@ -3763,7 +3915,6 @@ async function moveStaff(
 
 /* ==================================================
    職員一覧
-   ★ 既存のlist-itemを使用
 ================================================== */
 
 function renderStaffList() {
@@ -4083,10 +4234,6 @@ function renderStaffList() {
               await loadAllFromSupabase();
 
 
-              /*
-               * 削除後も0,1,2...の順番になるよう整理
-               */
-
               for (
                 let i = 0;
                 i < appData.staff.length;
@@ -4183,6 +4330,618 @@ function renderStaffList() {
       `${appData.staff.length}人`;
 
   }
+
+}
+
+
+/* ==================================================
+   ★ 休暇追加・編集
+================================================== */
+
+async function addOrUpdateLeave() {
+
+  const nameInput =
+    document.getElementById(
+      "leaveNameInput"
+    );
+
+
+  const colorInput =
+    document.getElementById(
+      "leaveColorInput"
+    );
+
+
+  if (
+    !nameInput ||
+    !colorInput
+  ) {
+
+    return;
+
+  }
+
+
+  const name =
+    nameInput.value.trim();
+
+
+  const color =
+    colorInput.value ||
+    "#FFD54F";
+
+
+  if (!name) {
+
+    alert(
+      "休暇名を入力してください"
+    );
+
+    return;
+
+  }
+
+
+  const duplicate =
+    appData.leaveTypes.some(
+      leave => {
+
+        return (
+
+          leave.name === name &&
+
+          String(leave.id) !==
+            String(editingLeaveId)
+
+        );
+
+      }
+    );
+
+
+  if (duplicate) {
+
+    alert(
+      "同じ休暇名は登録できません"
+    );
+
+    return;
+
+  }
+
+
+  if (!supabaseClient) {
+
+    alert(
+      "Supabaseに接続されていません。"
+    );
+
+    return;
+
+  }
+
+
+  cloudOperationBusy = true;
+
+
+  try {
+
+    let result;
+
+
+    /* =========================
+       編集
+    ========================= */
+
+    if (editingLeaveId) {
+
+      result =
+        await supabaseClient
+
+          .from(
+            "leave_type"
+          )
+
+          .update({
+
+            name,
+
+            color
+
+          })
+
+          .eq(
+            "id",
+            editingLeaveId
+          );
+
+
+      if (result.error) {
+
+        throw result.error;
+
+      }
+
+
+      console.log(
+        "★ 休暇設定を更新しました"
+      );
+
+    }
+
+    /* =========================
+       新規追加
+    ========================= */
+
+    else {
+
+      result =
+        await supabaseClient
+
+          .from(
+            "leave_type"
+          )
+
+          .insert({
+
+            name,
+
+            color
+
+          });
+
+
+      if (result.error) {
+
+        throw result.error;
+
+      }
+
+
+      console.log(
+        "★ 休暇設定を追加しました"
+      );
+
+    }
+
+
+    editingLeaveId =
+      null;
+
+
+    nameInput.value =
+      "";
+
+
+    colorInput.value =
+      "#FFD54F";
+
+
+    const button =
+      document.getElementById(
+        "addLeaveButton"
+      );
+
+
+    if (button) {
+
+      button.textContent =
+        "休暇を追加";
+
+    }
+
+
+    await loadAllFromSupabase();
+
+
+    renderLeaveList();
+
+
+  } catch (error) {
+
+    console.error(
+      "休暇設定保存エラー",
+      error
+    );
+
+
+    alert(
+      "休暇設定の保存に失敗しました。"
+    );
+
+
+  } finally {
+
+    cloudOperationBusy = false;
+
+  }
+
+}
+
+
+/* ==================================================
+   ★ 休暇一覧
+================================================== */
+
+function renderLeaveList() {
+
+  const list =
+    document.getElementById(
+      "leaveList"
+    );
+
+
+  if (!list) {
+
+    return;
+
+  }
+
+
+  list.innerHTML =
+    "";
+
+
+  appData.leaveTypes.forEach(
+    leave => {
+
+      const item =
+        document.createElement(
+          "div"
+        );
+
+
+      item.className =
+        "list-item";
+
+
+      item.innerHTML = `
+
+        <div
+          class="list-item-main"
+          style="
+            display:flex;
+            align-items:center;
+            gap:12px;
+          "
+        >
+
+          <div
+            style="
+              width:32px;
+              height:32px;
+              min-width:32px;
+              border-radius:8px;
+              background:${escapeHtml(
+                leave.color
+              )};
+              border:1px solid rgba(0,0,0,0.15);
+              box-sizing:border-box;
+            "
+          ></div>
+
+          <div>
+
+            <div
+              class="list-item-title"
+            >
+              ${escapeHtml(
+                leave.name
+              )}
+            </div>
+
+            <div
+              class="list-item-sub"
+            >
+              ${escapeHtml(
+                leave.color
+              )}
+            </div>
+
+          </div>
+
+        </div>
+
+        <div
+          class="list-item-buttons"
+        >
+
+          <button
+            type="button"
+            class="list-button edit-leave-button"
+          >
+            編集
+          </button>
+
+          <button
+            type="button"
+            class="list-button delete delete-leave-button"
+          >
+            削除
+          </button>
+
+        </div>
+
+      `;
+
+
+      /* =========================
+         編集
+      ========================= */
+
+      const editButton =
+        item.querySelector(
+          ".edit-leave-button"
+        );
+
+
+      if (editButton) {
+
+        editButton.addEventListener(
+          "click",
+          () => {
+
+            const nameInput =
+              document.getElementById(
+                "leaveNameInput"
+              );
+
+
+            const colorInput =
+              document.getElementById(
+                "leaveColorInput"
+              );
+
+
+            if (nameInput) {
+
+              nameInput.value =
+                leave.name;
+
+              nameInput.focus();
+
+            }
+
+
+            if (colorInput) {
+
+              colorInput.value =
+                normalizeColor(
+                  leave.color
+                );
+
+            }
+
+
+            editingLeaveId =
+              leave.id;
+
+
+            const button =
+              document.getElementById(
+                "addLeaveButton"
+              );
+
+
+            if (button) {
+
+              button.textContent =
+                "休暇を更新";
+
+            }
+
+          }
+        );
+
+      }
+
+
+      /* =========================
+         削除
+      ========================= */
+
+      const deleteButton =
+        item.querySelector(
+          ".delete-leave-button"
+        );
+
+
+      if (deleteButton) {
+
+        deleteButton.addEventListener(
+          "click",
+          async () => {
+
+            if (
+              !confirm(
+                `${leave.name}を削除しますか？`
+              )
+            ) {
+
+              return;
+
+            }
+
+
+            if (!supabaseClient) {
+
+              alert(
+                "Supabaseに接続されていません。"
+              );
+
+              return;
+
+            }
+
+
+            cloudOperationBusy = true;
+
+
+            try {
+
+              const result =
+                await supabaseClient
+
+                  .from(
+                    "leave_type"
+                  )
+
+                  .delete()
+
+                  .eq(
+                    "id",
+                    leave.id
+                  );
+
+
+              if (result.error) {
+
+                throw result.error;
+
+              }
+
+
+              if (
+                editingLeaveId &&
+                String(
+                  editingLeaveId
+                ) ===
+                String(
+                  leave.id
+                )
+              ) {
+
+                editingLeaveId =
+                  null;
+
+
+                const nameInput =
+                  document.getElementById(
+                    "leaveNameInput"
+                  );
+
+
+                const colorInput =
+                  document.getElementById(
+                    "leaveColorInput"
+                  );
+
+
+                const button =
+                  document.getElementById(
+                    "addLeaveButton"
+                  );
+
+
+                if (nameInput) {
+
+                  nameInput.value =
+                    "";
+
+                }
+
+
+                if (colorInput) {
+
+                  colorInput.value =
+                    "#FFD54F";
+
+                }
+
+
+                if (button) {
+
+                  button.textContent =
+                    "休暇を追加";
+
+                }
+
+              }
+
+
+              await loadAllFromSupabase();
+
+
+              renderLeaveList();
+
+
+              console.log(
+                "★ 休暇設定を削除しました"
+              );
+
+
+            } catch (error) {
+
+              console.error(
+                "休暇設定削除エラー",
+                error
+              );
+
+
+              alert(
+                "休暇設定の削除に失敗しました。"
+              );
+
+
+            } finally {
+
+              cloudOperationBusy = false;
+
+            }
+
+          }
+        );
+
+      }
+
+
+      list.appendChild(
+        item
+      );
+
+    }
+  );
+
+}
+
+
+/* ==================================================
+   色の正規化
+================================================== */
+
+function normalizeColor(
+  color
+) {
+
+  const value =
+    String(
+      color || ""
+    ).trim();
+
+
+  if (
+    /^#[0-9a-fA-F]{6}$/.test(
+      value
+    )
+  ) {
+
+    return value;
+
+  }
+
+
+  if (
+    /^#[0-9a-fA-F]{3}$/.test(
+      value
+    )
+  ) {
+
+    return value;
+
+  }
+
+
+  return "#FFD54F";
 
 }
 
@@ -4548,7 +5307,6 @@ async function addOrUpdateShift() {
 
 /* ==================================================
    勤務形態一覧
-   ★ 既存のlist-itemを使用
 ================================================== */
 
 function renderShiftList() {
@@ -4932,7 +5690,6 @@ function renderShiftList() {
 
 /* ==================================================
    休業設定
-   ★ Supabase保存・編集対応
 ================================================== */
 
 async function addCompanyHoliday() {
@@ -5212,7 +5969,6 @@ async function addCompanyHoliday() {
 
 /* ==================================================
    休業一覧
-   ★ 既存のlist-itemを使用
 ================================================== */
 
 function renderHolidayList() {
@@ -5618,13 +6374,11 @@ async function saveAkeTime() {
 
   };
 
-  // ローカル保存
   appData.akeTime =
     newAkeTime;
 
   saveLocalData();
 
-  // Supabase保存
   if (supabaseClient) {
 
     const result =
