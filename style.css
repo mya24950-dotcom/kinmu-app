@@ -6,6 +6,7 @@ html,
 body {
   margin: 0;
   padding: 0;
+  touch-action: manipulation;
 }
 
 body {
@@ -18,16 +19,28 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 button,
-input {
+input,
+select,
+textarea {
   font-family: inherit;
+}
+
+/* iPhone入力時の自動ズーム防止 */
+input,
+select,
+textarea {
+  font-size: 16px !important;
 }
 
 button {
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .app {
@@ -94,6 +107,7 @@ button {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
+  touch-action: pan-x;
 }
 
 .nav::-webkit-scrollbar {
@@ -181,7 +195,7 @@ button {
   border-radius: 11px;
   background: #eef6ff;
   color: #0066cc;
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.5;
 }
 
@@ -201,6 +215,7 @@ button {
     0 1px 3px rgba(0, 0, 0, 0.035);
   -webkit-overflow-scrolling: touch;
   position: relative;
+  touch-action: pan-x;
 }
 
 #scheduleTable {
@@ -208,7 +223,8 @@ button {
   border-spacing: 0;
   width: max-content;
   min-width: max-content;
-  font-size: 12px;
+  font-size: 14px;
+  table-layout: fixed !important;
 }
 
 /* ========================================
@@ -241,6 +257,7 @@ button {
 
   background: #f5f5f7 !important;
 
+  font-size: 16px;
   font-weight: 700;
 
   box-sizing: border-box !important;
@@ -262,6 +279,7 @@ button {
 
   background: #fff !important;
 
+  font-size: 16px;
   font-weight: 600;
 
   cursor: pointer;
@@ -288,6 +306,8 @@ button {
   min-width: 90px !important;
   max-width: 90px !important;
 
+  font-size: 16px;
+
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -303,18 +323,19 @@ button {
   height: 70px;
   background: #fff;
   font-weight: 600;
+  font-size: 16px;
   vertical-align: middle;
 }
 
 .day-number {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 700;
 }
 
 .day-week {
   margin-top: 3px;
   color: #6e6e73;
-  font-size: 11px;
+  font-size: 13px;
 }
 
 /* ========================================
@@ -346,7 +367,7 @@ button {
   cursor: pointer;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 600;
   color: #1d1d1f;
 }
@@ -365,7 +386,7 @@ button {
   height: 35px;
   background: #f5f5f7;
   color: #3a3a3c;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 700;
   white-space: nowrap;
   border-left: 1px solid #dedee3;
@@ -381,7 +402,7 @@ button {
   height: 35px;
   background: #f5f5f7;
   color: #3a3a3c;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
   white-space: nowrap;
   border-left: 1px solid #dedee3;
@@ -393,7 +414,7 @@ button {
   height: 46px;
   background: #fafafa;
   color: #1d1d1f;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 700;
   white-space: nowrap;
   border-left: 1px solid #dedee3;
@@ -435,7 +456,7 @@ input {
   border-radius: 10px;
   background: #fff;
   color: #1d1d1f;
-  font-size: 14px;
+  font-size: 16px !important;
   outline: none;
   box-sizing: border-box;
   -webkit-appearance: none;
@@ -489,7 +510,7 @@ input:focus {
   border-radius: 9px;
   background: #fff;
   color: #1d1d1f;
-  font-size: 14px;
+  font-size: 16px !important;
   font-weight: 400;
   line-height: 26px;
   text-align: center;
@@ -544,7 +565,7 @@ input:focus {
   padding: 8px 16px;
   background: #007aff;
   color: #fff;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
   white-space: nowrap;
   box-shadow: 0 1px 2px rgba(0, 122, 255, 0.16);
@@ -587,7 +608,7 @@ input:focus {
 
 .list-item-title {
   color: #1d1d1f;
-  font-size: 15px;
+  font-size: 17px;
   font-weight: 700;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -597,7 +618,7 @@ input:focus {
 .list-item-sub {
   margin-top: 3px;
   color: #8e8e93;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .list-item-buttons {
@@ -612,7 +633,7 @@ input:focus {
   padding: 7px 9px;
   background: #f5f5f7;
   color: #1d1d1f;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 500;
 }
 
@@ -651,7 +672,7 @@ input:focus {
 .info {
   margin-top: 12px;
   color: #8e8e93;
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.6;
 }
 
@@ -679,7 +700,7 @@ input:focus {
   display: block;
   margin-bottom: 5px;
   color: #8e8e93;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .date-arrow {
@@ -712,7 +733,7 @@ input:focus {
 .shift-menu-title {
   padding: 7px;
   color: #8e8e93;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 700;
 }
 
@@ -731,7 +752,7 @@ input:focus {
   background: #f2f2f7;
   color: #1d1d1f;
   text-align: center;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
 }
 
@@ -744,6 +765,18 @@ input:focus {
   grid-column: 1 / -1;
   color: #d93025;
   background: #fff2f2;
+}
+
+.shift-leave {
+  grid-column: 1 / -1;
+  color: #2e8b57 !important;
+  background: #e8f5e9 !important;
+}
+
+.shift-cancel {
+  grid-column: 1 / -1;
+  color: #1d1d1f !important;
+  background: #f2f2f7 !important;
 }
 
 /* ========================================
@@ -786,7 +819,7 @@ input:focus {
   margin-bottom: 20px;
   color: #6e6e73;
   text-align: center;
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.7;
 }
 
@@ -801,7 +834,7 @@ input:focus {
   border: none;
   border-radius: 12px;
   padding: 13px;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
 }
 
@@ -820,9 +853,13 @@ input:focus {
 ======================================== */
 
 @media (max-width: 900px) {
+
   .shift-layout {
-    grid-template-columns: minmax(280px, 1fr) minmax(280px, 1fr);
+    grid-template-columns:
+      minmax(280px, 1fr)
+      minmax(280px, 1fr);
   }
+
 }
 
 /* ========================================
@@ -830,6 +867,7 @@ input:focus {
 ======================================== */
 
 @media (max-width: 700px) {
+
   .page {
     padding: 10px;
   }
@@ -867,7 +905,7 @@ input:focus {
     height: 36px;
     min-height: 36px;
     padding: 4px 5px;
-    font-size: 14px;
+    font-size: 16px !important;
     line-height: 26px;
     text-align: center;
   }
@@ -885,9 +923,10 @@ input:focus {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 15px;
+    font-size: 16px;
     line-height: 1;
   }
+
 }
 
 /* ========================================
@@ -895,6 +934,7 @@ input:focus {
 ======================================== */
 
 @media (max-width: 600px) {
+
   .header {
     padding: 0 10px;
   }
@@ -915,6 +955,7 @@ input:focus {
   #scheduleTable .staff-header,
   #scheduleTable .staff-cell,
   #scheduleTable .staff-name-cell {
+
     width: 90px !important;
     min-width: 90px !important;
     max-width: 90px !important;
@@ -923,6 +964,7 @@ input:focus {
     left: 0 !important;
 
     box-sizing: border-box !important;
+
   }
 
   #scheduleTable .staff-header {
@@ -938,11 +980,13 @@ input:focus {
   .date-header {
     width: 42px;
     min-width: 42px;
+    font-size: 16px;
   }
 
   .shift-cell {
     width: 42px;
     min-width: 42px;
+    font-size: 13px;
   }
 
   .total-header,
@@ -971,7 +1015,7 @@ input:focus {
 
   .shift-menu-button {
     min-height: 46px;
-    font-size: 13px;
+    font-size: 15px;
   }
 
   .time-row {
@@ -991,7 +1035,7 @@ input:focus {
     height: 36px;
     min-height: 36px;
     padding: 4px 5px;
-    font-size: 14px;
+    font-size: 16px !important;
     line-height: 26px;
     text-align: center;
   }
@@ -1003,7 +1047,9 @@ input:focus {
     display: flex;
     align-items: center;
     justify-content: center;
+    font-size: 16px;
   }
+
 }
 
 /* ========================================
@@ -1022,7 +1068,6 @@ input:focus {
   width: 100% !important;
   min-width: 100% !important;
   max-width: none !important;
-
   display: table-row !important;
 }
 
@@ -1042,13 +1087,13 @@ input:focus {
   margin-top: 18px;
   margin-bottom: 8px;
   padding: 0 2px;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 700;
 }
 
 #staffCount {
   color: #8e8e93;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
 }
 
@@ -1061,6 +1106,7 @@ input:focus {
 ======================================== */
 
 @supports (-webkit-touch-callout: none) {
+
   input,
   button {
     -webkit-appearance: none;
@@ -1077,16 +1123,5 @@ input:focus {
   #scheduleTable .staff-cell {
     -webkit-transform: translateZ(0);
   }
-}
 
-.shift-leave {
-  grid-column: 1 / -1;
-  color: #2e8b57 !important;
-  background: #e8f5e9 !important;
-}
-
-.shift-cancel {
-  grid-column: 1 / -1;
-  color: #1d1d1f !important;
-  background: #f2f2f7 !important;
 }
