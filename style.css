@@ -1,148 +1,100 @@
-:root {
-  --bg: #f5f5f7;
-  --white: #ffffff;
-  --text: #1d1d1f;
-  --secondary: #86868b;
-  --tertiary: #aeaeb2;
-
-  --blue: #007aff;
-  --blue-soft: #eaf3ff;
-
-  --red: #ff3b30;
-  --red-soft: #fff0ef;
-
-  --yellow: #ff9f0a;
-  --yellow-soft: #fff7e5;
-
-  --line: #d2d2d7;
-  --line-soft: #e5e5ea;
-
-  --radius: 14px;
-  --shadow: 0 1px 3px rgba(0,0,0,.06);
-}
-
-
-/* =====================================================
-   BASE
-===================================================== */
-
 * {
   box-sizing: border-box;
-}
-
-html {
-  -webkit-text-size-adjust: 100%;
-}
-
-body {
-  margin: 0;
-
-  background: var(--bg);
-
-  color: var(--text);
-
-  font-family:
-    -apple-system,
-    BlinkMacSystemFont,
-    "SF Pro Text",
-    "SF Pro Display",
-    "Helvetica Neue",
-    Arial,
-    sans-serif;
-
-  -webkit-font-smoothing: antialiased;
-}
-
-button,
-input,
-select,
-textarea {
-  font-family: inherit;
-}
-
-button {
   -webkit-tap-highlight-color: transparent;
 }
 
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: #f5f5f7;
+  color: #1d1d1f;
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "SF Pro Display",
+    "SF Pro Text",
+    "Helvetica Neue",
+    Arial,
+    sans-serif;
+}
 
-/* =====================================================
+body {
+  min-height: 100vh;
+}
+
+
+/* =========================
    HEADER
-===================================================== */
+========================= */
 
 .app-header {
   position: sticky;
   top: 0;
-  z-index: 1000;
+  z-index: 100;
 
-  height: 60px;
+  height: 72px;
 
   display: flex;
   align-items: center;
-  justify-content: space-between;
 
-  padding: 0 20px;
+  padding: 0 18px;
 
-  background: rgba(255,255,255,.94);
+  background: rgba(245,245,247,.88);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
 
-  border-bottom: 1px solid var(--line-soft);
+  border-bottom: 1px solid rgba(0,0,0,.07);
+}
+
+.header-left {
+  min-width: 0;
 }
 
 .app-title {
   margin: 0;
 
-  font-size: 22px;
-  line-height: 1;
-
+  font-size: 23px;
   font-weight: 700;
-
   letter-spacing: -.5px;
 }
 
 .app-status {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  margin-top: 3px;
 
-  color: var(--secondary);
+  font-size: 11px;
+  color: #8e8e93;
 
-  font-size: 12px;
-  font-weight: 500;
-}
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 
-.app-status::before {
-  content: "";
-
-  width: 7px;
-  height: 7px;
-
-  border-radius: 50%;
-
-  background: #34c759;
+  max-width: 85vw;
 }
 
 
-/* =====================================================
+/* =========================
    NAV
-===================================================== */
+========================= */
 
 .nav {
   position: sticky;
-  top: 60px;
-  z-index: 900;
+  top: 72px;
+  z-index: 90;
 
   display: flex;
 
-  padding: 7px 16px;
+  gap: 5px;
 
-  gap: 4px;
+  padding: 9px 12px;
 
   overflow-x: auto;
 
-  background: rgba(255,255,255,.94);
+  background: rgba(245,245,247,.92);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
 
-  border-bottom: 1px solid var(--line-soft);
-
-  scrollbar-width: none;
+  border-bottom: 1px solid rgba(0,0,0,.06);
 }
 
 .nav::-webkit-scrollbar {
@@ -152,78 +104,59 @@ button {
 .nav-button {
   flex: 0 0 auto;
 
-  height: 36px;
-
-  padding: 0 15px;
-
-  border: none;
-  border-radius: 9px;
+  border: 0;
 
   background: transparent;
 
-  color: var(--secondary);
+  color: #6e6e73;
 
-  font-size: 14px;
-  font-weight: 500;
+  padding: 8px 13px;
+
+  border-radius: 9px;
+
+  font-size: 13px;
+  font-weight: 600;
 
   white-space: nowrap;
-
-  transition:
-    background .15s ease,
-    color .15s ease;
 }
 
-.nav-button:hover {
-  color: var(--text);
+.nav-button span:first-child {
+  margin-right: 3px;
 }
 
-.nav-button:active {
-  transform: scale(.97);
-}
+.nav-button.active {
+  background: #ffffff;
+  color: #007aff;
 
-.nav-button.active,
-.nav-button[aria-selected="true"] {
-  background: #e8e8ed;
-
-  color: var(--text);
-
-  font-weight: 600;
+  box-shadow:
+    0 1px 4px rgba(0,0,0,.08);
 }
 
 
-/* =====================================================
+/* =========================
    MAIN
-===================================================== */
+========================= */
 
 main {
-  width: min(1500px, calc(100% - 32px));
-
-  margin: 0 auto;
-
-  padding: 22px 0 50px;
+  width: 100%;
 }
 
 .page {
-  display: none;
-}
-
-.page.active,
-.page.show {
-  display: block;
+  width: 100%;
+  padding: 14px;
 }
 
 
-/* =====================================================
+/* =========================
    SCHEDULE TOOLBAR
-===================================================== */
+========================= */
 
 .schedule-toolbar {
   display: flex;
-
   align-items: center;
   justify-content: space-between;
 
-  gap: 12px;
+  gap: 10px;
 
   margin-bottom: 12px;
 }
@@ -231,904 +164,765 @@ main {
 .month-navigation {
   display: flex;
   align-items: center;
-
-  height: 48px;
-
-  padding: 3px;
-
-  background: var(--white);
-
-  border: 1px solid var(--line-soft);
-
-  border-radius: 12px;
-
-  box-shadow: var(--shadow);
+  gap: 4px;
 }
 
-.month-navigation button {
-  width: 42px;
-  height: 40px;
+.month-button {
+  width: 38px;
+  height: 38px;
 
-  border: none;
-  border-radius: 9px;
+  border: 0;
+  border-radius: 10px;
 
-  background: transparent;
+  background: #ffffff;
 
-  color: var(--text);
+  color: #007aff;
 
-  font-size: 22px;
-  font-weight: 400;
+  font-size: 29px;
+  line-height: 1;
 
-  transition: background .15s ease;
+  box-shadow:
+    0 1px 4px rgba(0,0,0,.08);
 }
 
-.month-navigation button:hover {
-  background: #f2f2f7;
-}
-
-.month-navigation button:active {
-  background: #e5e5ea;
-}
-
-#currentMonth {
-  min-width: 150px;
+.current-month {
+  min-width: 118px;
 
   text-align: center;
 
-  font-size: 17px;
-
-  font-weight: 600;
-
-  letter-spacing: -.2px;
+  font-size: 18px;
+  font-weight: 700;
 }
 
 .toolbar-buttons {
   display: flex;
-  gap: 7px;
+  gap: 6px;
 }
 
+.toolbar-button {
+  border: 0;
+  border-radius: 9px;
 
-/* =====================================================
-   BUTTONS
-===================================================== */
+  padding: 8px 10px;
 
-.primary-button,
-.secondary-button,
-.danger-button,
-.action-button {
-  min-height: 40px;
-
-  padding: 0 15px;
-
-  border-radius: 10px;
-
-  font-size: 14px;
-  font-weight: 500;
-
-  transition:
-    transform .12s ease,
-    background .15s ease;
-}
-
-.primary-button {
-  background: var(--blue);
-
-  color: #fff;
-}
-
-.primary-button:hover {
-  background: #0071e3;
-}
-
-.secondary-button,
-.action-button {
-  background: var(--white);
-
-  color: var(--text);
-
-  border: 1px solid var(--line-soft);
-}
-
-.secondary-button:hover,
-.action-button:hover {
-  background: #f2f2f7;
-}
-
-.danger-button {
-  background: var(--red-soft);
-
-  color: var(--red);
-
-  border: 1px solid rgba(255,59,48,.12);
-}
-
-.danger-button:hover {
-  background: #ffe5e3;
-}
-
-.primary-button:active,
-.secondary-button:active,
-.danger-button:active,
-.action-button:active {
-  transform: scale(.97);
-}
-
-
-/* =====================================================
-   TABLE
-===================================================== */
-
-.schedule-wrapper {
-  overflow: auto;
-
-  max-height: calc(100vh - 175px);
-
-  background: var(--white);
-
-  border: 1px solid var(--line);
-
-  border-radius: 14px;
-
-  box-shadow:
-    0 1px 2px rgba(0,0,0,.04);
-
-  -webkit-overflow-scrolling: touch;
-}
-
-#scheduleTable {
-  width: max-content;
-  min-width: 100%;
-
-  border-collapse: separate;
-  border-spacing: 0;
-
-  table-layout: fixed;
-}
-
-
-/* =====================================================
-   TABLE HEADER
-===================================================== */
-
-#scheduleTable thead {
-  position: sticky;
-  top: 0;
-
-  z-index: 30;
-}
-
-#scheduleTable th {
-  height: 64px;
-
-  padding: 5px;
-
-  background: rgba(255,255,255,.97);
-
-  border-right: 1px solid var(--line-soft);
-  border-bottom: 1px solid var(--line);
-
-  color: var(--secondary);
+  background: #ffffff;
 
   font-size: 12px;
   font-weight: 600;
 
-  text-align: center;
+  color: #555;
 }
 
-#scheduleTable th:first-child {
-  position: sticky;
-  left: 0;
-
-  z-index: 40;
-
-  width: 120px;
-  min-width: 120px;
-
-  background: rgba(255,255,255,.99);
-
-  color: var(--text);
-}
-
-
-/* =====================================================
-   DATE
-===================================================== */
-
-.date-header {
-  min-width: 72px;
-
-  font-weight: 600;
-}
-
-.date-header.saturday {
-  background: var(--blue-soft) !important;
-
-  color: #007aff;
-}
-
-.date-header.sunday,
-.date-header.public-holiday {
-  background: var(--red-soft) !important;
-
+.toolbar-button.danger {
   color: #ff3b30;
 }
 
-.date-header.company-holiday {
-  background: var(--yellow-soft) !important;
 
-  color: #b76e00;
+/* =========================
+   SCHEDULE TABLE
+========================= */
+
+.schedule-wrapper {
+  width: 100%;
+
+  overflow-x: auto;
+  overflow-y: visible;
+
+  -webkit-overflow-scrolling: touch;
+
+  background: #ffffff;
+
+  border-radius: 14px;
+
+  border: 1px solid rgba(0,0,0,.08);
+
+  box-shadow:
+    0 2px 10px rgba(0,0,0,.04);
 }
 
+#scheduleTable {
+  border-collapse: separate;
+  border-spacing: 0;
 
-/* =====================================================
-   STAFF
-===================================================== */
+  width: max-content;
+  min-width: 100%;
 
-.staff-name-cell {
+  font-size: 12px;
+}
+
+#scheduleTable th,
+#scheduleTable td {
+  border-right: 1px solid #e5e5ea;
+  border-bottom: 1px solid #e5e5ea;
+
+  padding: 0;
+
+  text-align: center;
+
+  background: #ffffff;
+}
+
+#scheduleTable th {
+  height: 52px;
+
   position: sticky;
-  left: 0;
+  top: 0;
 
   z-index: 20;
 
-  width: 120px;
-  min-width: 120px;
+  font-weight: 600;
+
+  background: #fafafa;
+}
+
+#scheduleTable tr:last-child td {
+  border-bottom: 0;
+}
+
+#scheduleTable th:last-child,
+#scheduleTable td:last-child {
+  border-right: 0;
+}
+
+
+/* =========================
+   STAFF COLUMN
+========================= */
+
+.staff-header,
+.staff-cell {
+  position: sticky;
+
+  left: 0;
+
+  z-index: 30;
+
+  width: 92px;
+  min-width: 92px;
+  max-width: 92px;
+
+  background: #ffffff !important;
+
+  box-shadow:
+    2px 0 5px rgba(0,0,0,.04);
+}
+
+.staff-header {
+  z-index: 40;
+}
+
+.staff-name {
+  font-size: 12px;
+  font-weight: 700;
+
+  line-height: 1.3;
 
   padding: 6px;
 
-  background: rgba(255,255,255,.98);
-
-  border-right: 1px solid var(--line);
-  border-bottom: 1px solid var(--line-soft);
+  white-space: normal;
+  word-break: break-all;
 }
 
-.staff-calendar-button {
-  display: flex;
-  align-items: center;
 
-  width: 100%;
+/* =========================
+   DATE HEADER
+========================= */
 
-  min-height: 40px;
+.date-header {
+  width: 48px;
+  min-width: 48px;
+  max-width: 48px;
 
-  padding: 0 8px;
+  font-size: 11px;
+}
 
-  border: none;
-  border-radius: 8px;
-
-  background: transparent;
-
-  color: var(--text);
-
+.date-header .day-number {
   font-size: 13px;
-  font-weight: 600;
-
-  text-align: left;
-
-  transition: background .15s ease;
+  font-weight: 700;
 }
 
-.staff-calendar-button:hover {
-  background: #f2f2f7;
+.date-header .weekday {
+  font-size: 10px;
+  color: #8e8e93;
 }
 
-.staff-calendar-button:active {
-  background: #e5e5ea;
+.weekend-header {
+  background: #fafafa !important;
+}
+
+.sunday-header .weekday,
+.sunday-header .day-number {
+  color: #ff3b30;
+}
+
+.saturday-header .weekday,
+.saturday-header .day-number {
+  color: #007aff;
 }
 
 
-/* =====================================================
-   CELLS
-===================================================== */
+/* =========================
+   SCHEDULE CELL
+========================= */
 
 .schedule-cell {
-  width: 78px;
-  min-width: 78px;
+  position: relative;
 
-  height: 58px;
+  width: 48px;
+  min-width: 48px;
+  height: 52px;
 
-  padding: 3px;
+  cursor: pointer;
 
-  background: var(--white);
-
-  border-right: 1px solid var(--line-soft);
-  border-bottom: 1px solid var(--line-soft);
+  user-select: none;
 }
 
-.schedule-cell.saturday {
-  background: #f7fbff;
+.schedule-cell:active {
+  background: #e5f1ff !important;
 }
 
-.schedule-cell.sunday,
-.schedule-cell.holiday-cell {
-  background: #fffafa;
+.weekend-cell {
+  background: #fafafa !important;
 }
 
-.schedule-cell.company-holiday-cell {
-  background: #fffdf5;
+.holiday-cell {
+  background: #fff7f7 !important;
 }
 
-.schedule-cell.ake-cell {
-  background: #fffaf0;
-}
-
-
-/* =====================================================
-   CELL BUTTON
-===================================================== */
-
-.schedule-cell-button {
+.cell-content {
   display: flex;
+
   align-items: center;
   justify-content: center;
 
   width: 100%;
   height: 100%;
 
-  min-height: 48px;
+  font-size: 11px;
+  font-weight: 600;
 
   padding: 3px;
 
-  border: none;
-  border-radius: 8px;
+  line-height: 1.1;
 
-  background: transparent;
-
-  color: var(--text);
-
-  font-size: 13px;
-  font-weight: 600;
-
-  line-height: 1.15;
-
-  transition:
-    background .12s ease,
-    transform .10s ease;
+  word-break: break-all;
 }
 
-.schedule-cell-button:hover {
-  background: rgba(0,122,255,.06);
+.cell-ake {
+  color: #8e8e93;
+  font-size: 10px;
 }
-
-.schedule-cell-button:active {
-  background: rgba(0,122,255,.12);
-
-  transform: scale(.95);
-}
-
-
-/* =====================================================
-   LEAVE
-===================================================== */
 
 .leave-cell {
-  border-radius: 8px;
-
-  overflow: hidden;
-}
-
-.leave-cell .schedule-cell-button {
-  color: var(--text);
+  font-size: 10px;
 }
 
 
-/* =====================================================
-   COUNT
-===================================================== */
+/* =========================
+   CALENDAR BUTTON
+========================= */
 
-.count-row td,
-.count-row th {
-  height: 40px;
+.calendar-cell {
+  width: 52px;
+  min-width: 52px;
+}
 
-  background: #f8f8fa;
+.calendar-subscribe-button {
+  width: 32px;
+  height: 32px;
 
-  border-top: 1px solid var(--line);
-  border-right: 1px solid var(--line-soft);
+  border: 0;
+  border-radius: 50%;
 
-  color: var(--secondary);
+  background: #f2f2f7;
+
+  color: #007aff;
+
+  font-size: 15px;
+}
+
+.calendar-subscribe-button:active {
+  background: #dbeeff;
+}
+
+
+/* =========================
+   SUMMARY
+========================= */
+
+.summary-header {
+  width: 50px;
+  min-width: 50px;
+
+  font-size: 10px;
+
+  background: #f7f7f8 !important;
+
+  white-space: nowrap;
+}
+
+.summary-cell {
+  width: 50px;
+  min-width: 50px;
+
+  background: #fbfbfc !important;
 
   font-size: 11px;
-  font-weight: 500;
-
-  text-align: center;
+  font-weight: 700;
 }
 
-.count-row th {
-  position: sticky;
-  left: 0;
+.summary-title {
+  display: block;
 
-  z-index: 25;
+  font-size: 9px;
+  color: #8e8e93;
 
-  background: #f8f8fa;
+  margin-bottom: 2px;
+}
+
+.summary-number {
+  font-size: 12px;
 }
 
 
-/* =====================================================
+/* =========================
    SETTINGS
-===================================================== */
+========================= */
 
 .settings-card {
   margin-bottom: 14px;
 
-  padding: 20px;
+  padding: 18px;
 
-  background: var(--white);
+  background: #ffffff;
 
-  border: 1px solid var(--line-soft);
+  border-radius: 15px;
 
-  border-radius: 14px;
+  border: 1px solid rgba(0,0,0,.06);
 
-  box-shadow: var(--shadow);
+  box-shadow:
+    0 2px 10px rgba(0,0,0,.035);
 }
 
 .settings-card h2 {
   margin: 0 0 18px;
 
-  font-size: 20px;
-
-  font-weight: 650;
-
-  letter-spacing: -.3px;
+  font-size: 18px;
 }
 
-.settings-card h3 {
-  margin: 20px 0 10px;
+.form-row {
+  display: flex;
 
-  font-size: 15px;
+  flex-wrap: wrap;
 
-  font-weight: 600;
+  align-items: flex-end;
+
+  gap: 12px;
 }
 
-
-/* =====================================================
-   FORM
-===================================================== */
-
-label {
-  display: block;
-
-  margin: 0 0 6px;
-
-  color: var(--secondary);
-
-  font-size: 13px;
-  font-weight: 500;
-}
-
-input,
-select,
-textarea {
-  width: 100%;
-
-  min-height: 44px;
-
-  padding: 9px 12px;
-
-  border: 1px solid var(--line);
-
-  border-radius: 10px;
-
-  outline: none;
-
-  background: var(--white);
-
-  color: var(--text);
-
-  font-size: 15px;
-
-  transition:
-    border-color .15s ease,
-    box-shadow .15s ease;
-}
-
-input:focus,
-select:focus,
-textarea:focus {
-  border-color: var(--blue);
-
-  box-shadow:
-    0 0 0 3px rgba(0,122,255,.14);
-}
-
-input::placeholder,
-textarea::placeholder {
-  color: var(--tertiary);
-}
-
-
-/* =====================================================
-   LIST
-===================================================== */
-
-#staffList,
-#shiftList,
-#companyHolidayList,
-#leaveTypeList {
+.form-group {
   display: flex;
 
   flex-direction: column;
 
-  gap: 1px;
+  gap: 6px;
 
-  margin-top: 15px;
+  flex: 1 1 150px;
+}
 
-  overflow: hidden;
+.form-group label {
+  font-size: 12px;
+  color: #6e6e73;
+  font-weight: 600;
+}
 
-  background: var(--line-soft);
+input,
+select {
+  width: 100%;
 
-  border: 1px solid var(--line-soft);
+  min-height: 42px;
 
-  border-radius: 12px;
+  padding: 9px 11px;
+
+  border: 1px solid #d2d2d7;
+
+  border-radius: 9px;
+
+  background: #ffffff;
+
+  font-size: 14px;
+
+  outline: none;
+}
+
+input:focus,
+select:focus {
+  border-color: #007aff;
+
+  box-shadow:
+    0 0 0 3px rgba(0,122,255,.12);
+}
+
+.add-button {
+  min-height: 42px;
+
+  padding: 0 15px;
+
+  border: 0;
+
+  border-radius: 9px;
+
+  background: #007aff;
+
+  color: #ffffff;
+
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.add-button:active {
+  opacity: .75;
+}
+
+.info {
+  margin: 10px 0;
+
+  color: #8e8e93;
+
+  font-size: 12px;
+}
+
+
+/* =========================
+   LIST
+========================= */
+
+.list {
+  margin-top: 16px;
 }
 
 .list-item {
   display: flex;
+
   align-items: center;
   justify-content: space-between;
 
-  min-height: 52px;
+  gap: 12px;
 
-  padding: 9px 12px;
+  min-height: 50px;
 
-  background: var(--white);
+  padding: 9px 0;
 
-  color: var(--text);
-
-  transition: background .15s ease;
+  border-bottom: 1px solid #e5e5ea;
 }
 
-.list-item:hover {
-  background: #f9f9fb;
+.list-item:last-child {
+  border-bottom: 0;
+}
+
+.list-main {
+  min-width: 0;
+
+  flex: 1;
+}
+
+.list-title {
+  font-size: 14px;
+  font-weight: 600;
+
+  word-break: break-word;
+}
+
+.list-subtitle {
+  margin-top: 3px;
+
+  font-size: 11px;
+
+  color: #8e8e93;
+}
+
+.delete-button {
+  flex: 0 0 auto;
+
+  border: 0;
+
+  background: transparent;
+
+  color: #ff3b30;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  padding: 8px;
 }
 
 
-/* =====================================================
-   SHIFT MENU
-===================================================== */
+/* =========================
+   AKE
+========================= */
+
+.ake-time-row {
+  display: flex;
+
+  align-items: flex-end;
+
+  flex-wrap: wrap;
+
+  gap: 12px;
+}
+
+
+/* =========================
+   LEAVE TYPE
+========================= */
+
+.leave-type-form {
+  display: flex;
+
+  flex-wrap: wrap;
+
+  align-items: center;
+
+  gap: 10px;
+}
+
+.leave-type-form > input {
+  flex: 1 1 180px;
+}
+
+.leave-type-color-row {
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  font-size: 12px;
+
+  color: #6e6e73;
+}
+
+.leave-type-color-row input {
+  width: 46px;
+  height: 42px;
+
+  padding: 2px;
+}
+
+
+/* =========================
+   SHIFT / LEAVE MENU
+========================= */
 
 .shift-menu {
-  position: fixed;
+  position: fixed !important;
 
-  left: 50%;
-  bottom: 18px;
+  display: none;
 
-  z-index: 2000;
+  z-index: 999999;
 
-  width: min(430px, calc(100vw - 24px));
+  width: min(230px, calc(100vw - 20px));
 
-  padding: 18px;
+  max-height: calc(100dvh - 20px);
 
-  background: rgba(255,255,255,.97);
+  overflow-y: auto;
 
-  border: 1px solid var(--line-soft);
-
-  border-radius: 18px;
-
-  box-shadow:
-    0 10px 35px rgba(0,0,0,.16);
-
-  transform: translate(-50%, 10px);
-
-  animation: menuIn .18s ease;
-}
-
-@keyframes menuIn {
-  from {
-    opacity: 0;
-    transform: translate(-50%, 18px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translate(-50%, 0);
-  }
-}
-
-.shift-menu h3,
-.shift-menu-title {
-  margin: 0 0 14px;
-
-  font-size: 16px;
-
-  font-weight: 650;
-
-  text-align: center;
-}
-
-.shift-menu-buttons {
-  display: grid;
-
-  grid-template-columns: repeat(2, 1fr);
-
-  gap: 7px;
-}
-
-.shift-menu-buttons button {
-  min-height: 48px;
+  -webkit-overflow-scrolling: touch;
 
   padding: 7px;
 
-  border: 1px solid var(--line-soft);
+  background: rgba(255,255,255,.97);
 
-  border-radius: 10px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 
-  background: #f8f8fa;
+  border: 1px solid rgba(0,0,0,.10);
 
-  color: var(--text);
+  border-radius: 14px;
+
+  box-shadow:
+    0 12px 40px rgba(0,0,0,.18);
+}
+
+.shift-menu.show {
+  display: block !important;
+}
+
+.shift-menu-title {
+  padding: 8px 9px;
+
+  font-size: 12px;
+
+  font-weight: 700;
+
+  color: #6e6e73;
+}
+
+.shift-menu-buttons {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 3px;
+}
+
+.shift-menu-button {
+  width: 100%;
+
+  min-height: 42px;
+
+  border: 0;
+
+  border-radius: 9px;
+
+  background: transparent;
+
+  text-align: left;
+
+  padding: 8px 10px;
 
   font-size: 13px;
-  font-weight: 500;
 
-  transition:
-    background .12s ease,
-    transform .1s ease;
+  color: #1d1d1f;
 }
 
-.shift-menu-buttons button:hover {
-  background: #eeeeF2;
+.shift-menu-button:active {
+  background: #e5f1ff;
 }
 
-.shift-menu-buttons button:active {
-  transform: scale(.95);
+.shift-menu-button.clear {
+  color: #ff3b30;
+}
 
-  background: #e5e5ea;
+.shift-menu-button.leave {
+  color: #007aff;
 }
 
 
-/* =====================================================
-   MODAL
-===================================================== */
+/* =========================
+   CALENDAR MODAL
+========================= */
 
 .calendar-modal {
   position: fixed;
 
   inset: 0;
 
-  z-index: 3000;
+  z-index: 1000000;
 
-  display: flex;
+  display: none;
+
   align-items: center;
   justify-content: center;
 
   padding: 20px;
 
-  background: rgba(0,0,0,.32);
+  background: rgba(0,0,0,.28);
 
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
 }
 
-.calendar-modal[hidden] {
-  display: none;
+.calendar-modal.show {
+  display: flex;
 }
 
 .calendar-modal-content {
-  width: min(400px, 100%);
+  width: min(360px, 100%);
 
-  padding: 24px;
+  padding: 22px;
 
-  background: var(--white);
+  background: #ffffff;
 
   border-radius: 18px;
 
   box-shadow:
-    0 15px 50px rgba(0,0,0,.2);
-
-  animation: modalIn .18s ease;
+    0 20px 60px rgba(0,0,0,.22);
 }
 
-@keyframes modalIn {
-  from {
-    opacity: 0;
-    transform: scale(.96);
-  }
+.calendar-modal-content h3 {
+  margin: 0 0 8px;
 
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-.calendar-modal-content h2 {
-  margin: 0 0 10px;
-
-  font-size: 20px;
-
-  font-weight: 650;
+  font-size: 19px;
 }
 
 .calendar-modal-content p {
-  margin: 0;
-
-  color: var(--secondary);
+  margin: 0 0 20px;
 
   font-size: 14px;
 
-  line-height: 1.6;
+  color: #6e6e73;
 }
 
 .calendar-modal-buttons {
   display: flex;
 
-  gap: 8px;
+  justify-content: flex-end;
 
-  margin-top: 22px;
+  gap: 8px;
 }
 
 .calendar-modal-buttons button {
-  flex: 1;
+  min-height: 40px;
+
+  padding: 0 14px;
+
+  border: 0;
+
+  border-radius: 9px;
+
+  background: #f2f2f7;
+
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.calendar-modal-buttons button:last-child {
+  background: #007aff;
+  color: #ffffff;
 }
 
 
-/* =====================================================
-   SCROLLBAR
-===================================================== */
-
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #c7c7cc;
-
-  border-radius: 999px;
-}
-
-
-/* =====================================================
+/* =========================
    MOBILE
-===================================================== */
+========================= */
 
 @media (max-width: 700px) {
 
   .app-header {
-    height: 56px;
-
-    padding: 0 15px;
-  }
-
-  .app-title {
-    font-size: 20px;
-  }
-
-  .app-status {
-    font-size: 11px;
+    height: 64px;
   }
 
   .nav {
-    top: 56px;
-
-    padding: 6px 10px;
+    top: 64px;
   }
 
-  .nav-button {
-    height: 35px;
-
-    padding: 0 13px;
-
-    font-size: 13px;
+  .app-title {
+    font-size: 21px;
   }
 
-  main {
-    width: calc(100% - 20px);
-
-    padding-top: 14px;
+  .page {
+    padding: 10px;
   }
 
   .schedule-toolbar {
-    flex-direction: column;
-
-    align-items: stretch;
-  }
-
-  .month-navigation {
-    width: 100%;
-  }
-
-  #currentMonth {
-    flex: 1;
-
-    min-width: 0;
+    align-items: flex-start;
   }
 
   .toolbar-buttons {
-    display: grid;
-
-    grid-template-columns: 1fr 1fr;
-
-    gap: 7px;
+    flex-direction: column;
   }
 
-  .toolbar-buttons button {
-    width: 100%;
-  }
-
-  .schedule-wrapper {
-    max-height: calc(100vh - 165px);
-
-    border-radius: 12px;
-  }
-
-  #scheduleTable th:first-child,
-  .staff-name-cell,
-  .count-row th {
-    width: 100px;
-    min-width: 100px;
-  }
-
-  #scheduleTable th {
-    height: 60px;
-
-    font-size: 11px;
-  }
-
-  .schedule-cell {
-    width: 68px;
-    min-width: 68px;
-
-    height: 54px;
-  }
-
-  .schedule-cell-button {
-    min-height: 45px;
-
-    font-size: 12px;
-  }
-
-  .staff-calendar-button {
-    min-height: 38px;
-
-    font-size: 12px;
+  .toolbar-button {
+    padding: 7px 9px;
   }
 
   .settings-card {
-    padding: 17px;
-
-    border-radius: 13px;
+    padding: 15px;
   }
 
   .shift-menu {
-    bottom: 10px;
-
-    width: calc(100vw - 18px);
-
-    border-radius: 17px;
-  }
-}
-
-
-/* =====================================================
-   SMALL IPHONE
-===================================================== */
-
-@media (max-width: 390px) {
-
-  .app-title {
-    font-size: 19px;
+    width: min(220px, calc(100vw - 20px));
   }
 
-  .app-status {
-    font-size: 10px;
-  }
-
-  .nav-button {
-    padding: 0 11px;
-
-    font-size: 12px;
-  }
-
-  #scheduleTable th:first-child,
-  .staff-name-cell,
-  .count-row th {
-    width: 92px;
-    min-width: 92px;
-  }
-
-  .schedule-cell {
-    width: 63px;
-    min-width: 63px;
-  }
 }
