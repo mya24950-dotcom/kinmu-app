@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
+
   <meta charset="UTF-8">
 
   <meta
@@ -10,9 +12,13 @@
   <title>勤務表</title>
 
   <!-- PWA -->
-  <link rel="manifest" href="manifest.json">
+  <link
+    rel="manifest"
+    href="manifest.json">
 
-  <meta name="theme-color" content="#007aff">
+  <meta
+    name="theme-color"
+    content="#007aff">
 
   <!-- iPhone -->
   <meta
@@ -28,20 +34,27 @@
     content="勤務表">
 
   <!-- CSS -->
-  <link rel="stylesheet" href="style.css">
+  <link
+    rel="stylesheet"
+    href="style.css">
 
   <!-- Supabase -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.0"></script>
+  <script
+    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.0">
+  </script>
 
 </head>
+
 
 <body>
 
 <div class="app">
 
+
   <!-- =========================
        ヘッダー
   ========================== -->
+
   <header class="header">
 
     <div class="header-title">
@@ -70,6 +83,7 @@
   <!-- =========================
        ナビゲーション
   ========================== -->
+
   <nav class="nav">
 
     <button
@@ -96,12 +110,19 @@
       🏢 休業設定
     </button>
 
+    <button
+      class="nav-button"
+      data-page="leaveType">
+      🏖️ 休暇種類
+    </button>
+
   </nav>
 
 
   <!-- =========================
        勤務表
   ========================== -->
+
   <main
     id="schedulePage"
     class="page">
@@ -135,7 +156,9 @@
 
     <div class="table-wrapper">
 
-      <table id="scheduleTable"></table>
+      <table
+        id="scheduleTable">
+      </table>
 
     </div>
 
@@ -145,6 +168,7 @@
   <!-- =========================
        職員管理
   ========================== -->
+
   <section
     id="staffPage"
     class="page"
@@ -171,9 +195,17 @@
 
 
       <div class="staff-list-header">
-        <span>登録職員</span>
-        <span id="staffCount">0人</span>
+
+        <span>
+          登録職員
+        </span>
+
+        <span id="staffCount">
+          0人
+        </span>
+
       </div>
+
 
       <div
         id="staffList"
@@ -188,6 +220,7 @@
   <!-- =========================
        勤務形態
   ========================== -->
+
   <section
     id="shiftPage"
     class="page"
@@ -196,13 +229,12 @@
     <div class="shift-layout">
 
 
-      <!-- =========================
-           左側
-      ========================== -->
+      <!-- 左側 -->
+
       <div>
 
-
         <!-- 勤務形態登録 -->
+
         <div class="settings-card">
 
           <h2>⏰ 勤務形態</h2>
@@ -215,7 +247,6 @@
               placeholder="勤務形態名">
 
 
-            <!-- 開始 ～ 終了 -->
             <div class="time-row">
 
               <input
@@ -256,9 +287,8 @@
         </div>
 
 
-        <!-- =========================
-             明け時間設定
-        ========================== -->
+        <!-- 明け時間 -->
+
         <div class="settings-card">
 
           <h2>🌅 明け時間設定</h2>
@@ -296,9 +326,8 @@
       </div>
 
 
-      <!-- =========================
-           右側：勤務リスト
-      ========================== -->
+      <!-- 右側 -->
+
       <div class="settings-card shift-list-card">
 
         <h2>📋 勤務リスト</h2>
@@ -318,6 +347,7 @@
   <!-- =========================
        休業設定
   ========================== -->
+
   <section
     id="holidayPage"
     class="page"
@@ -328,8 +358,12 @@
       <h2>🏢 休業設定</h2>
 
       <p class="info">
+
         会社全体の休業日を登録できます。<br>
-        終了日を入力しない場合は、開始日と同じ日になります。
+
+        終了日を入力しない場合は、
+        開始日と同じ日になります。
+
       </p>
 
 
@@ -396,8 +430,77 @@
 
 
   <!-- =========================
+       休暇種類
+  ========================== -->
+
+  <section
+    id="leaveTypePage"
+    class="page"
+    style="display:none;">
+
+    <div class="settings-card">
+
+      <h2>🏖️ 休暇種類</h2>
+
+
+      <div class="leave-type-form">
+
+        <input
+          id="leaveTypeNameInput"
+          type="text"
+          placeholder="休暇種類名（例：有給休暇）">
+
+
+        <div class="leave-color-row">
+
+          <label>
+            休暇の色
+          </label>
+
+          <input
+            id="leaveTypeColorInput"
+            type="color"
+            value="#d9f2df">
+
+        </div>
+
+
+        <button
+          id="addLeaveTypeButton"
+          class="add-button">
+          休暇種類を追加
+        </button>
+
+      </div>
+
+
+      <div class="staff-list-header">
+
+        <span>
+          登録休暇
+        </span>
+
+        <span id="leaveTypeCount">
+          0種類
+        </span>
+
+      </div>
+
+
+      <div
+        id="leaveTypeList"
+        class="list">
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- =========================
        勤務選択メニュー
   ========================== -->
+
   <div
     id="shiftMenu"
     class="shift-menu">
@@ -417,6 +520,7 @@
   <!-- =========================
        休暇選択メニュー
   ========================== -->
+
   <div
     id="leaveMenu"
     class="shift-menu">
@@ -436,6 +540,7 @@
   <!-- =========================
        カレンダー確認
   ========================== -->
+
   <div
     id="calendarConfirm"
     class="modal-overlay"
@@ -448,10 +553,12 @@
         class="confirm-title">
       </div>
 
+
       <div
         id="calendarConfirmText"
         class="confirm-text">
       </div>
+
 
       <div class="confirm-buttons">
 
@@ -479,12 +586,14 @@
 <!-- =========================
      JavaScript
 ========================= -->
+
 <script src="script.js"></script>
 
 
 <!-- =========================
      Service Worker
 ========================= -->
+
 <script>
 
 if ("serviceWorker" in navigator) {
@@ -524,5 +633,7 @@ if ("serviceWorker" in navigator) {
 
 </script>
 
+
 </body>
+
 </html>
