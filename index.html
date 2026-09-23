@@ -11,7 +11,6 @@
 
   <title>勤務表</title>
 
-  <!-- PWA -->
   <link
     rel="manifest"
     href="manifest.json">
@@ -20,7 +19,6 @@
     name="theme-color"
     content="#007aff">
 
-  <!-- iPhone -->
   <meta
     name="apple-mobile-web-app-capable"
     content="yes">
@@ -33,15 +31,11 @@
     name="apple-mobile-web-app-title"
     content="勤務表">
 
-  <!-- CSS -->
   <link
     rel="stylesheet"
     href="style.css">
 
-  <!-- Supabase -->
-  <script
-    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.0">
-  </script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.0"></script>
 
 </head>
 
@@ -81,39 +75,44 @@
 
 
   <!-- =========================
-       ナビゲーション
+       ナビ
   ========================== -->
 
   <nav class="nav">
 
     <button
+      type="button"
       class="nav-button active"
       data-page="schedule">
       🗓️ 勤務表
     </button>
 
     <button
+      type="button"
       class="nav-button"
       data-page="staff">
       👤 職員管理
     </button>
 
     <button
+      type="button"
       class="nav-button"
       data-page="shift">
       ⏰ 勤務形態
     </button>
 
     <button
+      type="button"
       class="nav-button"
       data-page="holiday">
       🏢 休業設定
     </button>
 
     <button
+      type="button"
       class="nav-button"
-      data-page="leaveType">
-      🏖️ 休暇種類
+      data-page="leave">
+      🌿 休暇種類
     </button>
 
   </nav>
@@ -130,6 +129,7 @@
     <div class="month-bar">
 
       <button
+        type="button"
         id="prevMonth"
         class="month-button">
         ‹
@@ -141,6 +141,7 @@
       </div>
 
       <button
+        type="button"
         id="nextMonth"
         class="month-button">
         ›
@@ -150,15 +151,13 @@
 
 
     <div class="calendar-hint">
-      💡 職員名をタップすると、勤務をカレンダーに登録できます
+      💡 職員名をタップするとカレンダー登録、勤務セルをタップすると勤務・休暇を登録できます
     </div>
 
 
     <div class="table-wrapper">
 
-      <table
-        id="scheduleTable">
-      </table>
+      <table id="scheduleTable"></table>
 
     </div>
 
@@ -186,6 +185,7 @@
           placeholder="職員名">
 
         <button
+          type="button"
           id="addStaffButton"
           class="add-button">
           追加
@@ -229,15 +229,17 @@
     <div class="shift-layout">
 
 
-      <!-- 左側 -->
-
       <div>
+
 
         <!-- 勤務形態登録 -->
 
         <div class="settings-card">
 
-          <h2>⏰ 勤務形態</h2>
+          <h2>
+            ⏰ 勤務形態
+          </h2>
+
 
           <div class="shift-form">
 
@@ -272,6 +274,7 @@
 
 
             <button
+              type="button"
               id="addShiftButton"
               class="add-button">
               勤務形態を追加
@@ -291,7 +294,10 @@
 
         <div class="settings-card">
 
-          <h2>🌅 明け時間設定</h2>
+          <h2>
+            🌅 明け時間設定
+          </h2>
+
 
           <p class="info ake-info">
             「明」と表示される勤務の時間を設定します。
@@ -316,6 +322,7 @@
 
 
           <button
+            type="button"
             id="saveAkeTimeButton"
             class="add-button">
             明け時間を保存
@@ -326,11 +333,13 @@
       </div>
 
 
-      <!-- 右側 -->
+      <!-- 勤務リスト -->
 
       <div class="settings-card shift-list-card">
 
-        <h2>📋 勤務リスト</h2>
+        <h2>
+          📋 勤務リスト
+        </h2>
 
         <div
           id="shiftList"
@@ -355,15 +364,14 @@
 
     <div class="settings-card">
 
-      <h2>🏢 休業設定</h2>
+      <h2>
+        🏢 休業設定
+      </h2>
+
 
       <p class="info">
-
         会社全体の休業日を登録できます。<br>
-
-        終了日を入力しない場合は、
-        開始日と同じ日になります。
-
+        終了日を入力しない場合は、開始日と同じ日になります。
       </p>
 
 
@@ -411,6 +419,7 @@
 
 
         <button
+          type="button"
           id="addCompanyHolidayButton"
           class="add-button">
           休業を登録
@@ -430,59 +439,58 @@
 
 
   <!-- =========================
-       休暇種類
+       休暇種類登録
   ========================== -->
 
   <section
-    id="leaveTypePage"
+    id="leavePage"
     class="page"
     style="display:none;">
 
     <div class="settings-card">
 
-      <h2>🏖️ 休暇種類</h2>
+      <h2>
+        🌿 休暇種類
+      </h2>
 
 
-      <div class="leave-type-form">
+      <p class="info">
+        勤務表で使用する休暇の種類を登録できます。
+      </p>
+
+
+      <div class="leave-form">
 
         <input
-          id="leaveTypeNameInput"
+          id="leaveNameInput"
           type="text"
-          placeholder="休暇種類名（例：有給休暇）">
+          placeholder="休暇名（例：有給休暇）">
 
 
         <div class="leave-color-row">
 
-          <label>
-            休暇の色
-          </label>
+          <div class="leave-color-preview">
 
-          <input
-            id="leaveTypeColorInput"
-            type="color"
-            value="#d9f2df">
+            <input
+              id="leaveColorInput"
+              type="color"
+              value="#d9f2df">
+
+          </div>
+
+          <span>
+            表示色
+          </span>
 
         </div>
 
 
         <button
-          id="addLeaveTypeButton"
+          type="button"
+          id="addLeaveButton"
           class="add-button">
           休暇種類を追加
         </button>
-
-      </div>
-
-
-      <div class="staff-list-header">
-
-        <span>
-          登録休暇
-        </span>
-
-        <span id="leaveTypeCount">
-          0種類
-        </span>
 
       </div>
 
@@ -498,7 +506,7 @@
 
 
   <!-- =========================
-       勤務選択メニュー
+       勤務選択
   ========================== -->
 
   <div
@@ -509,6 +517,7 @@
       勤務を選択
     </div>
 
+
     <div
       id="shiftMenuButtons"
       class="shift-menu-buttons">
@@ -518,7 +527,7 @@
 
 
   <!-- =========================
-       休暇選択メニュー
+       休暇選択
   ========================== -->
 
   <div
@@ -528,6 +537,7 @@
     <div class="shift-menu-title">
       休暇を選択
     </div>
+
 
     <div
       id="leaveMenuButtons"
@@ -563,12 +573,15 @@
       <div class="confirm-buttons">
 
         <button
+          type="button"
           id="calendarCancelButton"
           class="confirm-cancel">
           やめる
         </button>
 
+
         <button
+          type="button"
           id="calendarOKButton"
           class="confirm-ok">
           カレンダーへ
@@ -583,16 +596,8 @@
 </div>
 
 
-<!-- =========================
-     JavaScript
-========================= -->
-
 <script src="script.js"></script>
 
-
-<!-- =========================
-     Service Worker
-========================= -->
 
 <script>
 
@@ -604,7 +609,6 @@ if ("serviceWorker" in navigator) {
 
       navigator.serviceWorker
         .register("./sw.js")
-
         .then(
           function() {
 
@@ -614,7 +618,6 @@ if ("serviceWorker" in navigator) {
 
           }
         )
-
         .catch(
           function(error) {
 
@@ -632,7 +635,6 @@ if ("serviceWorker" in navigator) {
 }
 
 </script>
-
 
 </body>
 
