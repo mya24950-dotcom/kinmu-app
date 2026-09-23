@@ -1,16 +1,14 @@
 /* =========================================================
-   勤務表アプリ
-   完全版 CSS
-   ========================================================= */
-
-
-/* =========================================================
-   基本
+   勤務表アプリ CSS
    ========================================================= */
 
 * {
   box-sizing: border-box;
 }
+
+/* =========================================================
+   HTML / BODY
+   ========================================================= */
 
 html,
 body {
@@ -35,19 +33,18 @@ body {
   text-rendering: optimizeLegibility;
 
   /*
-    ページ全体を上下スクロール
+    画面全体を上下スクロール
   */
   overflow-x: hidden;
   overflow-y: auto;
 
   /*
-    基本は上下方向
+    基本は上下スクロール
   */
   touch-action: pan-y;
 
   /*
-    iPhone Safari
-    入力欄タップ時の自動拡大防止
+    iPhoneの文字自動拡大防止
   */
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
@@ -56,7 +53,6 @@ body {
 body {
   min-height: 100vh;
 }
-
 
 /* =========================================================
    アプリ全体
@@ -67,12 +63,11 @@ body {
   min-height: 100vh;
 
   /*
-    内側スクロールを作らない
-    → 画面全体をスクロール
+    内側にスクロール領域を作らない
+    → 画面全体で上下スクロール
   */
   overflow: visible;
 }
-
 
 /* =========================================================
    ヘッダー
@@ -80,7 +75,6 @@ body {
 
 .header {
   position: sticky;
-
   top: 0;
 
   z-index: 1000;
@@ -88,36 +82,20 @@ body {
   min-height: 58px;
 
   display: flex;
-
   align-items: center;
-
   justify-content: space-between;
 
   gap: 12px;
 
   padding: 10px 14px;
 
-  background: rgba(
-    255,
-    255,
-    255,
-    0.96
-  );
+  background: rgba(255, 255, 255, 0.96);
 
-  border-bottom:
-    1px solid
-    rgba(
-      60,
-      60,
-      67,
-      0.12
-    );
+  border-bottom: 1px solid rgba(60, 60, 67, 0.12);
 
   backdrop-filter: blur(12px);
-
   -webkit-backdrop-filter: blur(12px);
 }
-
 
 /* =========================================================
    ヘッダータイトル
@@ -127,20 +105,17 @@ body {
   flex: 1;
 
   font-size: 20px;
-
   font-weight: 700;
 
   white-space: nowrap;
 }
 
-
 /* =========================================================
-   ヘッダー削除ボタン
+   月・年度消去
    ========================================================= */
 
 .header-delete-buttons {
   display: flex;
-
   align-items: center;
 
   gap: 6px;
@@ -151,26 +126,16 @@ body {
 .header-delete-buttons button {
   min-height: 38px;
 
-  padding:
-    7px 10px;
+  padding: 7px 10px;
 
-  border:
-    1px solid
-    rgba(
-      60,
-      60,
-      67,
-      0.15
-    );
+  border: 1px solid rgba(60, 60, 67, 0.15);
 
   border-radius: 9px;
 
   background: #f2f2f7;
-
   color: #1d1d1f;
 
   font-size: 12px;
-
   font-weight: 600;
 
   white-space: nowrap;
@@ -186,37 +151,26 @@ body {
   background: #e5e5ea;
 }
 
-
 /* =========================================================
    ナビゲーション
    ========================================================= */
 
 .nav {
   display: flex;
-
   align-items: center;
 
   gap: 7px;
 
-  padding:
-    9px 10px;
+  padding: 9px 10px;
 
   background: #ffffff;
 
-  border-bottom:
-    1px solid
-    rgba(
-      60,
-      60,
-      67,
-      0.1
-    );
+  border-bottom: 1px solid rgba(60, 60, 67, 0.1);
 
   /*
     ナビだけ横スクロール
   */
   overflow-x: auto;
-
   overflow-y: hidden;
 
   white-space: nowrap;
@@ -232,7 +186,6 @@ body {
   display: none;
 }
 
-
 /* =========================================================
    ナビボタン
    ========================================================= */
@@ -242,19 +195,16 @@ body {
 
   min-height: 42px;
 
-  padding:
-    8px 14px;
+  padding: 8px 14px;
 
   border: none;
 
   border-radius: 10px;
 
   background: #f2f2f7;
-
   color: #555;
 
   font-size: 13px;
-
   font-weight: 600;
 
   white-space: nowrap;
@@ -266,14 +216,12 @@ body {
 
 .nav-button.active {
   background: #007aff;
-
   color: #ffffff;
 }
 
 .nav-button:active {
   transform: scale(0.97);
 }
-
 
 /* =========================================================
    ページ
@@ -285,13 +233,13 @@ body {
   padding: 14px;
 
   /*
-    縦スクロールはBODY
+    ページ内部をスクロールさせない
+    → bodyがスクロール
   */
   overflow: visible;
 
   touch-action: pan-y;
 }
-
 
 /* =========================================================
    月バー
@@ -299,9 +247,7 @@ body {
 
 .month-bar {
   display: flex;
-
   align-items: center;
-
   justify-content: center;
 
   gap: 10px;
@@ -309,14 +255,12 @@ body {
   margin-bottom: 10px;
 }
 
-
 /* =========================================================
    月ボタン
    ========================================================= */
 
 .month-button {
   width: 42px;
-
   height: 42px;
 
   padding: 0;
@@ -326,21 +270,13 @@ body {
   border-radius: 10px;
 
   background: #ffffff;
-
   color: #007aff;
 
   font-size: 30px;
-
   line-height: 1;
 
   box-shadow:
-    0 2px 7px
-    rgba(
-      0,
-      0,
-      0,
-      0.08
-    );
+    0 2px 7px rgba(0, 0, 0, 0.08);
 
   cursor: pointer;
 
@@ -353,7 +289,6 @@ body {
   background: #f2f2f7;
 }
 
-
 /* =========================================================
    月タイトル
    ========================================================= */
@@ -364,10 +299,8 @@ body {
   text-align: center;
 
   font-size: 20px;
-
   font-weight: 700;
 }
-
 
 /* =========================================================
    カレンダーヒント
@@ -376,20 +309,16 @@ body {
 .calendar-hint {
   margin-bottom: 10px;
 
-  padding:
-    10px 12px;
+  padding: 10px 12px;
 
   border-radius: 10px;
 
   background: #eaf4ff;
-
   color: #345;
 
   font-size: 13px;
-
   line-height: 1.5;
 }
-
 
 /* =========================================================
    勤務表ラッパー
@@ -399,47 +328,27 @@ body {
   width: 100%;
 
   /*
-    左右だけ表内でスクロール
+    横方向はこの部分でスクロール
   */
   overflow-x: auto;
 
   /*
-    上下は画面全体
+    縦方向はbodyへ
   */
   overflow-y: visible;
 
   background: #ffffff;
 
-  border:
-    1px solid
-    rgba(
-      60,
-      60,
-      67,
-      0.08
-    );
+  border: 1px solid rgba(60, 60, 67, 0.08);
 
   border-radius: 15px;
 
   box-shadow:
-    0 3px 12px
-    rgba(
-      0,
-      0,
-      0,
-      0.045
-    ),
-    0 1px 3px
-    rgba(
-      0,
-      0,
-      0,
-      0.035
-    );
+    0 3px 12px rgba(0, 0, 0, 0.045),
+    0 1px 3px rgba(0, 0, 0, 0.035);
 
   /*
-    上下・左右どちらの
-    スワイプも許可
+    iPhoneで上下・左右両方を許可
   */
   touch-action: pan-x pan-y;
 
@@ -447,7 +356,6 @@ body {
 
   position: relative;
 }
-
 
 /* =========================================================
    勤務表
@@ -459,7 +367,7 @@ body {
   border-spacing: 0;
 
   /*
-    表は内容分だけ横に広がる
+    表自体は横に広がる
   */
   width: max-content;
 
@@ -470,23 +378,17 @@ body {
   table-layout: fixed !important;
 }
 
-
 /* =========================================================
-   セル共通
+   勤務表セル共通
    ========================================================= */
 
 #scheduleTable th,
 #scheduleTable td {
-  border-right:
-    1px solid
-    #e5e5ea;
+  border-right: 1px solid #e5e5ea;
 
-  border-bottom:
-    1px solid
-    #e5e5ea;
+  border-bottom: 1px solid #e5e5ea;
 
-  padding:
-    7px 6px;
+  padding: 7px 6px;
 
   text-align: center;
 
@@ -499,9 +401,8 @@ body {
   -webkit-user-select: none;
 }
 
-
 /* =========================================================
-   日付ヘッダー
+   勤務表ヘッダー
    ========================================================= */
 
 #scheduleTable th {
@@ -511,21 +412,12 @@ body {
 
   font-weight: 700;
 
-  /*
-    日付行を画面上部に固定
-  */
   position: sticky;
 
-  /*
-    ヘッダー 58px
-    ナビ 約60px
-    合計 約118px
-  */
-  top: 118px;
+  top: 0;
 
-  z-index: 100;
+  z-index: 10;
 }
-
 
 /* =========================================================
    職員名列
@@ -537,28 +429,20 @@ body {
 
   left: 0;
 
-  z-index: 200;
+  z-index: 20;
 
   background: #ffffff;
 }
-
 
 /* =========================================================
    左上セル
    ========================================================= */
 
 #scheduleTable thead th:first-child {
-  position: sticky;
-
-  left: 0;
-
-  top: 118px;
-
-  z-index: 300;
+  z-index: 30;
 
   background: #f8f8fa;
 }
-
 
 /* =========================================================
    勤務セル
@@ -578,7 +462,6 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
-
 /* =========================================================
    職員名
    ========================================================= */
@@ -587,7 +470,6 @@ body {
   min-width: 95px;
 
   padding-left: 10px;
-
   padding-right: 10px;
 
   font-size: 14px;
@@ -599,10 +481,14 @@ body {
   cursor: pointer;
 }
 
-
 /* =========================================================
    土曜日
    ========================================================= */
+
+/*
+  JS側で saturday / sat / 土曜 などの
+  クラスを付けている場合に対応
+*/
 
 #scheduleTable .saturday,
 #scheduleTable .sat,
@@ -612,10 +498,8 @@ body {
 #scheduleTable th.sat,
 #scheduleTable td.sat {
   background: #eaf4ff;
-
   color: #1769aa;
 }
-
 
 /* =========================================================
    日曜日
@@ -629,10 +513,8 @@ body {
 #scheduleTable th.sun,
 #scheduleTable td.sun {
   background: #fff0f0;
-
   color: #d32f2f;
 }
-
 
 /* =========================================================
    祝日
@@ -646,10 +528,8 @@ body {
 #scheduleTable th.national-holiday,
 #scheduleTable td.national-holiday {
   background: #fff0f0;
-
   color: #d32f2f;
 }
-
 
 /* =========================================================
    休業日
@@ -661,61 +541,42 @@ body {
 #scheduleTable th.company-holiday,
 #scheduleTable td.company-holiday {
   background: #f3f3f3;
-
   color: #666666;
 }
 
-
 /* =========================================================
-   土曜日の職員名列
-   ========================================================= */
-
-#scheduleTable td:first-child.saturday,
-#scheduleTable td:first-child.sat {
-  background: #eaf4ff;
-
-  color: #1769aa;
-}
-
-
-/* =========================================================
-   日曜日の職員名列
-   ========================================================= */
-
-#scheduleTable td:first-child.sunday,
-#scheduleTable td:first-child.sun {
-  background: #fff0f0;
-
-  color: #d32f2f;
-}
-
-
-/* =========================================================
-   祝日の職員名列
-   ========================================================= */
-
-#scheduleTable td:first-child.holiday,
-#scheduleTable td:first-child.national-holiday {
-  background: #fff0f0;
-
-  color: #d32f2f;
-}
-
-
-/* =========================================================
-   休暇設定セル
+   土日祝の職員名列
    ========================================================= */
 
 /*
-  JSで休暇色を
-  style.backgroundColor
-  として設定している場合は、
-  インラインカラーを優先する。
+  職員名列は固定するため、
+  土日祝の色を維持
+*/
+
+#scheduleTable td:first-child.saturday {
+  background: #eaf4ff;
+}
+
+#scheduleTable td:first-child.sunday,
+#scheduleTable td:first-child.holiday {
+  background: #fff0f0;
+}
+
+/* =========================================================
+   休暇色
+   ========================================================= */
+
+/*
+  JS側でstyle.backgroundColorを設定している場合は
+  インラインスタイルを優先するため、
+  ここでは!importantを使わない
 */
 
 #scheduleTable td[style*="background"] {
+  /*
+    休暇色を優先
+  */
 }
-
 
 /* =========================================================
    設定カード
@@ -733,30 +594,16 @@ body {
   border-radius: 16px;
 
   box-shadow:
-    0 3px 12px
-    rgba(
-      0,
-      0,
-      0,
-      0.045
-    ),
-    0 1px 3px
-    rgba(
-      0,
-      0,
-      0,
-      0.035
-    );
+    0 3px 12px rgba(0, 0, 0, 0.045),
+    0 1px 3px rgba(0, 0, 0, 0.035);
 }
 
-
 /* =========================================================
-   設定見出し
+   見出し
    ========================================================= */
 
 .settings-card h2 {
-  margin:
-    0 0 14px;
+  margin: 0 0 14px;
 
   font-size: 19px;
 
@@ -765,14 +612,12 @@ body {
   line-height: 1.4;
 }
 
-
 /* =========================================================
    説明
    ========================================================= */
 
 .info {
-  margin:
-    0 0 14px;
+  margin: 0 0 14px;
 
   color: #666;
 
@@ -785,17 +630,15 @@ body {
   margin-bottom: 12px;
 }
 
-
 /* =========================================================
-   入力
+   入力欄
    ========================================================= */
 
 input,
 select,
 textarea {
   /*
-    iPhone Safari
-    自動ズーム防止
+    iPhone Safariの自動ズーム防止
   */
   font-size: 16px !important;
 
@@ -805,9 +648,7 @@ textarea {
 
   background: #ffffff;
 
-  border:
-    1px solid
-    #d2d2d7;
+  border: 1px solid #d2d2d7;
 
   border-radius: 10px;
 
@@ -824,18 +665,11 @@ textarea:focus {
   border-color: #007aff;
 
   box-shadow:
-    0 0 0 3px
-    rgba(
-      0,
-      122,
-      255,
-      0.12
-    );
+    0 0 0 3px rgba(0, 122, 255, 0.12);
 }
 
-
 /* =========================================================
-   通常入力
+   テキスト・数値・時間・日付
    ========================================================= */
 
 input[type="text"],
@@ -846,10 +680,8 @@ input[type="date"] {
 
   min-height: 44px;
 
-  padding:
-    9px 11px;
+  padding: 9px 11px;
 }
-
 
 /* =========================================================
    入力行
@@ -873,7 +705,6 @@ input[type="date"] {
   flex: 0 0 auto;
 }
 
-
 /* =========================================================
    追加ボタン
    ========================================================= */
@@ -881,8 +712,7 @@ input[type="date"] {
 .add-button {
   min-height: 44px;
 
-  padding:
-    9px 16px;
+  padding: 9px 16px;
 
   border: none;
 
@@ -909,9 +739,8 @@ input[type="date"] {
   background: #006ee6;
 }
 
-
 /* =========================================================
-   職員数
+   職員リストヘッダー
    ========================================================= */
 
 .staff-list-header {
@@ -923,8 +752,7 @@ input[type="date"] {
 
   margin-bottom: 8px;
 
-  padding:
-    8px 2px;
+  padding: 8px 2px;
 
   color: #666;
 
@@ -932,7 +760,6 @@ input[type="date"] {
 
   font-weight: 600;
 }
-
 
 /* =========================================================
    リスト
@@ -945,7 +772,6 @@ input[type="date"] {
 
   gap: 8px;
 }
-
 
 /* =========================================================
    リスト項目
@@ -962,23 +788,14 @@ input[type="date"] {
 
   min-height: 52px;
 
-  padding:
-    10px 12px;
+  padding: 10px 12px;
 
   background: #f8f8fa;
 
-  border:
-    1px solid
-    rgba(
-      60,
-      60,
-      67,
-      0.08
-    );
+  border: 1px solid rgba(60, 60, 67, 0.08);
 
   border-radius: 11px;
 }
-
 
 /* =========================================================
    リスト情報
@@ -989,7 +806,6 @@ input[type="date"] {
 
   min-width: 0;
 }
-
 
 /* =========================================================
    リストタイトル
@@ -1007,7 +823,6 @@ input[type="date"] {
   white-space: nowrap;
 }
 
-
 /* =========================================================
    リストサブ
    ========================================================= */
@@ -1020,7 +835,6 @@ input[type="date"] {
   font-size: 12px;
 }
 
-
 /* =========================================================
    削除ボタン
    ========================================================= */
@@ -1032,8 +846,7 @@ input[type="date"] {
 
   min-height: 38px;
 
-  padding:
-    7px 10px;
+  padding: 7px 10px;
 
   border: none;
 
@@ -1058,7 +871,6 @@ input[type="date"] {
   background: #e52f25;
 }
 
-
 /* =========================================================
    勤務形態レイアウト
    ========================================================= */
@@ -1075,7 +887,6 @@ input[type="date"] {
   align-items: start;
 }
 
-
 /* =========================================================
    勤務形態フォーム
    ========================================================= */
@@ -1087,7 +898,6 @@ input[type="date"] {
 
   gap: 10px;
 }
-
 
 /* =========================================================
    時間
@@ -1115,7 +925,6 @@ input[type="date"] {
   font-weight: 600;
 }
 
-
 /* =========================================================
    明け時間
    ========================================================= */
@@ -1124,7 +933,6 @@ input[type="date"] {
   margin-bottom: 12px;
 }
 
-
 /* =========================================================
    勤務リスト
    ========================================================= */
@@ -1132,7 +940,6 @@ input[type="date"] {
 .shift-list-card {
   min-height: 200px;
 }
-
 
 /* =========================================================
    休業設定
@@ -1145,7 +952,6 @@ input[type="date"] {
 
   gap: 12px;
 }
-
 
 /* =========================================================
    日付
@@ -1189,9 +995,8 @@ input[type="date"] {
   font-weight: 600;
 }
 
-
 /* =========================================================
-   カラー入力
+   休暇カラー
    ========================================================= */
 
 input[type="color"] {
@@ -1206,7 +1011,6 @@ input[type="color"] {
   cursor: pointer;
 }
 
-
 /* =========================================================
    勤務選択メニュー
    ========================================================= */
@@ -1218,51 +1022,44 @@ input[type="color"] {
 
   z-index: 5000;
 
-  width:
-    min(
-      340px,
-      calc(100vw - 20px)
-    );
+  width: min(
+    340px,
+    calc(100vw - 20px)
+  );
 
-  max-height:
-    min(
-      70vh,
-      520px
-    );
+  max-height: min(
+    70vh,
+    520px
+  );
 
   overflow-y: auto;
 
   padding: 12px;
 
-  background:
-    rgba(
-      255,
-      255,
-      255,
-      0.98
-    );
+  background: rgba(
+    255,
+    255,
+    255,
+    0.98
+  );
 
-  border:
-    1px solid
-    rgba(
-      60,
-      60,
-      67,
-      0.12
-    );
+  border: 1px solid rgba(
+    60,
+    60,
+    67,
+    0.12
+  );
 
   border-radius: 15px;
 
   box-shadow:
-    0 12px 35px
-    rgba(
+    0 12px 35px rgba(
       0,
       0,
       0,
       0.18
     ),
-    0 3px 10px
-    rgba(
+    0 3px 10px rgba(
       0,
       0,
       0,
@@ -1276,14 +1073,12 @@ input[type="color"] {
   touch-action: pan-y;
 }
 
-
 /* =========================================================
    勤務選択タイトル
    ========================================================= */
 
 .shift-menu-title {
-  padding:
-    4px 4px 10px;
+  padding: 4px 4px 10px;
 
   font-size: 14px;
 
@@ -1292,9 +1087,8 @@ input[type="color"] {
   text-align: center;
 }
 
-
 /* =========================================================
-   勤務ボタンエリア
+   勤務ボタン
    ========================================================= */
 
 .shift-menu-buttons {
@@ -1303,18 +1097,14 @@ input[type="color"] {
   grid-template-columns:
     repeat(
       2,
-      minmax(
-        0,
-        1fr
-      )
+      minmax(0, 1fr)
     );
 
   gap: 7px;
 }
 
-
 /* =========================================================
-   勤務ボタン
+   勤務選択ボタン
    ========================================================= */
 
 .shift-menu-button {
@@ -1324,8 +1114,7 @@ input[type="color"] {
 
   min-height: 44px;
 
-  padding:
-    9px 7px;
+  padding: 9px 7px;
 
   border: none;
 
@@ -1352,9 +1141,8 @@ input[type="color"] {
   background: #e5e5ea;
 }
 
-
 /* =========================================================
-   休暇ボタン
+   休暇
    ========================================================= */
 
 .shift-leave {
@@ -1370,7 +1158,6 @@ input[type="color"] {
 
   font-weight: 700 !important;
 }
-
 
 /* =========================================================
    キャンセル
@@ -1389,7 +1176,6 @@ input[type="color"] {
 
   font-weight: 700 !important;
 }
-
 
 /* =========================================================
    モーダル
@@ -1410,30 +1196,27 @@ input[type="color"] {
 
   padding: 20px;
 
-  background:
-    rgba(
-      0,
-      0,
-      0,
-      0.35
-    );
+  background: rgba(
+    0,
+    0,
+    0,
+    0.35
+  );
 
   backdrop-filter: blur(4px);
 
   -webkit-backdrop-filter: blur(4px);
 }
 
-
 /* =========================================================
    確認カード
    ========================================================= */
 
 .confirm-card {
-  width:
-    min(
-      420px,
-      100%
-    );
+  width: min(
+    420px,
+    100%
+  );
 
   padding: 20px;
 
@@ -1442,15 +1225,13 @@ input[type="color"] {
   border-radius: 17px;
 
   box-shadow:
-    0 15px 45px
-    rgba(
+    0 15px 45px rgba(
       0,
       0,
       0,
       0.2
     );
 }
-
 
 /* =========================================================
    確認タイトル
@@ -1465,7 +1246,6 @@ input[type="color"] {
 
   text-align: center;
 }
-
 
 /* =========================================================
    確認本文
@@ -1483,7 +1263,6 @@ input[type="color"] {
   text-align: center;
 }
 
-
 /* =========================================================
    確認ボタン
    ========================================================= */
@@ -1492,7 +1271,8 @@ input[type="color"] {
   display: grid;
 
   grid-template-columns:
-    1fr 1fr;
+    1fr
+    1fr;
 
   gap: 8px;
 }
@@ -1531,7 +1311,6 @@ input[type="color"] {
   transform: scale(0.97);
 }
 
-
 /* =========================================================
    表の横スクロールバー
    ========================================================= */
@@ -1552,7 +1331,6 @@ input[type="color"] {
   border-radius: 10px;
 }
 
-
 /* =========================================================
    スマートフォン
    ========================================================= */
@@ -1571,7 +1349,6 @@ input[type="color"] {
     touch-action: pan-y;
   }
 
-
   /* -------------------------------------------------------
      ヘッダー
      ------------------------------------------------------- */
@@ -1579,8 +1356,7 @@ input[type="color"] {
   .header {
     min-height: 54px;
 
-    padding:
-      8px 10px;
+    padding: 8px 10px;
   }
 
   .header-title {
@@ -1594,12 +1370,10 @@ input[type="color"] {
   .header-delete-buttons button {
     min-height: 36px;
 
-    padding:
-      6px 8px;
+    padding: 6px 8px;
 
     font-size: 11px;
   }
-
 
   /* -------------------------------------------------------
      ナビ
@@ -1614,45 +1388,10 @@ input[type="color"] {
   .nav-button {
     min-height: 42px;
 
-    padding:
-      8px 12px;
+    padding: 8px 12px;
 
     font-size: 13px;
   }
-
-
-  /* -------------------------------------------------------
-     スマホの日付固定位置
-     ------------------------------------------------------- */
-
-  #scheduleTable th {
-    position: sticky;
-
-    /*
-      ヘッダー 約54px
-      ナビ 約58px
-      合計 約112px
-    */
-    top: 112px;
-
-    z-index: 100;
-  }
-
-
-  /* -------------------------------------------------------
-     左上セル
-     ------------------------------------------------------- */
-
-  #scheduleTable thead th:first-child {
-    position: sticky;
-
-    left: 0;
-
-    top: 112px;
-
-    z-index: 300;
-  }
-
 
   /* -------------------------------------------------------
      月
@@ -1670,7 +1409,6 @@ input[type="color"] {
     height: 40px;
   }
 
-
   /* -------------------------------------------------------
      ヒント
      ------------------------------------------------------- */
@@ -1678,10 +1416,8 @@ input[type="color"] {
   .calendar-hint {
     font-size: 12px;
 
-    padding:
-      9px 10px;
+    padding: 9px 10px;
   }
-
 
   /* -------------------------------------------------------
      勤務表
@@ -1693,11 +1429,10 @@ input[type="color"] {
     overflow-y: visible;
 
     /*
-      上下・左右どちらも
-      スワイプ可能
+      勤務表上でも
+      上下・左右のジェスチャーを許可
     */
-    touch-action:
-      pan-x pan-y;
+    touch-action: pan-x pan-y;
 
     -webkit-overflow-scrolling: touch;
 
@@ -1710,8 +1445,7 @@ input[type="color"] {
 
   #scheduleTable th,
   #scheduleTable td {
-    padding:
-      7px 6px;
+    padding: 7px 6px;
   }
 
   #scheduleTable td {
@@ -1728,7 +1462,6 @@ input[type="color"] {
     font-size: 14px;
   }
 
-
   /* -------------------------------------------------------
      設定カード
      ------------------------------------------------------- */
@@ -1742,7 +1475,6 @@ input[type="color"] {
   .settings-card h2 {
     font-size: 18px;
   }
-
 
   /* -------------------------------------------------------
      入力
@@ -1761,7 +1493,6 @@ input[type="color"] {
     min-height: 46px;
   }
 
-
   /* -------------------------------------------------------
      追加ボタン
      ------------------------------------------------------- */
@@ -1771,7 +1502,6 @@ input[type="color"] {
 
     font-size: 14px;
   }
-
 
   /* -------------------------------------------------------
      職員入力
@@ -1789,7 +1519,6 @@ input[type="color"] {
     padding-right: 12px;
   }
 
-
   /* -------------------------------------------------------
      勤務形態
      ------------------------------------------------------- */
@@ -1802,7 +1531,6 @@ input[type="color"] {
     width: 100%;
   }
 
-
   /* -------------------------------------------------------
      時間
      ------------------------------------------------------- */
@@ -1810,7 +1538,6 @@ input[type="color"] {
   .time-row {
     gap: 7px;
   }
-
 
   /* -------------------------------------------------------
      日付
@@ -1824,16 +1551,12 @@ input[type="color"] {
     font-size: 16px;
   }
 
-
   /* -------------------------------------------------------
      勤務メニュー
      ------------------------------------------------------- */
 
   .shift-menu {
-    width:
-      calc(
-        100vw - 20px
-      );
+    width: calc(100vw - 20px);
 
     max-height: 70vh;
 
@@ -1846,10 +1569,7 @@ input[type="color"] {
     grid-template-columns:
       repeat(
         2,
-        minmax(
-          0,
-          1fr
-        )
+        minmax(0, 1fr)
       );
 
     gap: 6px;
@@ -1858,12 +1578,10 @@ input[type="color"] {
   .shift-menu-button {
     min-height: 46px;
 
-    padding:
-      9px 6px;
+    padding: 9px 6px;
 
     font-size: 13px;
   }
-
 
   /* -------------------------------------------------------
      モーダル
@@ -1885,7 +1603,6 @@ input[type="color"] {
   }
 }
 
-
 /* =========================================================
    小さいスマホ
    ========================================================= */
@@ -1903,8 +1620,7 @@ input[type="color"] {
   }
 
   .nav-button {
-    padding:
-      8px 10px;
+    padding: 8px 10px;
 
     font-size: 12px;
   }
@@ -1928,7 +1644,6 @@ input[type="color"] {
   }
 }
 
-
 /* =========================================================
    iPhone セーフエリア
    ========================================================= */
@@ -1936,35 +1651,25 @@ input[type="color"] {
 @supports (padding: max(0px)) {
 
   .header {
-    padding-left:
-      max(
-        14px,
-        env(
-          safe-area-inset-left
-        )
-      );
+    padding-left: max(
+      14px,
+      env(safe-area-inset-left)
+    );
 
-    padding-right:
-      max(
-        14px,
-        env(
-          safe-area-inset-right
-        )
-      );
+    padding-right: max(
+      14px,
+      env(safe-area-inset-right)
+    );
   }
 
   .page {
-    padding-bottom:
-      max(
-        14px,
-        env(
-          safe-area-inset-bottom
-        )
-      );
+    padding-bottom: max(
+      14px,
+      env(safe-area-inset-bottom)
+    );
   }
 
 }
-
 
 /* =========================================================
    タップハイライト
@@ -1977,7 +1682,6 @@ textarea {
   -webkit-tap-highlight-color: transparent;
 }
 
-
 /* =========================================================
    ボタンフォント
    ========================================================= */
@@ -1985,7 +1689,6 @@ textarea {
 button {
   font-family: inherit;
 }
-
 
 /* =========================================================
    disabled
@@ -1996,7 +1699,6 @@ button:disabled {
 
   cursor: default;
 }
-
 
 /* =========================================================
    印刷
