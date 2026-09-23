@@ -3072,12 +3072,6 @@ async function saveWorkShift(
         : null;
 
 
-    /*
-      勤務を削除する場合
-      → 勤務だけ消す
-      → 休暇も一緒に消す
-    */
-
     if (!shiftName) {
 
       if (existingRow) {
@@ -3113,11 +3107,6 @@ async function saveWorkShift(
 
     }
 
-
-    /*
-      勤務変更の場合
-      leave_type はそのまま維持する
-    */
 
     const leaveType =
       existingRow
@@ -3279,10 +3268,6 @@ async function saveLeave(
         : null;
 
 
-    /*
-      休暇解除
-    */
-
     if (!leaveName) {
 
       if (row) {
@@ -3324,12 +3309,6 @@ async function saveLeave(
 
     }
 
-
-    /*
-      勤務が存在しない場合
-      休暇だけでは勤務値を作らず、
-      空の勤務値で保存する
-    */
 
     if (row) {
 
@@ -3485,6 +3464,143 @@ function getTextColorForBackground(
 
 
 /* ==================================================
+   ★★★ 集計用勤務形態正規化 ★★★
+   
+   ここが今回の変更部分です。
+
+   例：
+
+   A      → A
+   A★     → A
+   A▲     → A
+   A◆     → A
+
+   夜勤   → 夜勤
+   夜勤★  → 夜勤
+
+   宿直   → 宿直
+   宿直▲  → 宿直
+
+   画面に表示される文字は変更しません。
+   集計するときだけこの関数を使用します。
+================================================== */
+
+function normalizeShiftNameForTotal(
+  value
+) {
+
+  const text =
+    String(
+      value ?? ""
+    ).trim();
+
+
+  if (!text) {
+    return "";
+  }
+
+
+  /*
+    「明」は勤務形態として集計しない
+  */
+
+  if (
+    text === "明"
+  ) {
+
+    return "明";
+
+  }
+
+
+  /*
+    登録されている勤務形態名を取得
+
+    長い名前を先にすることで、
+
+    「夜」
+    「夜勤」
+
+    のような勤務形態があった場合も
+    「夜勤★」を「夜勤」と正しく判定できる
+  */
+
+  const shiftNames =
+    Array.isArray(
+      appData.shiftTypes
+    )
+
+      ? appData.shiftTypes
+          .map(
+            shift =>
+              String(
+                shift.name || ""
+              ).trim()
+          )
+          .filter(
+            name =>
+              name &&
+              name !== "明"
+          )
+          .sort(
+            (a, b) =>
+              b.length -
+              a.length
+          )
+
+      : [];
+
+
+  /*
+    まず完全一致を確認
+  */
+
+  const exact =
+    shiftNames.find(
+      name =>
+        name === text
+    );
+
+
+  if (exact) {
+
+    return exact;
+
+  }
+
+
+  /*
+    登録勤務形態名で始まっていれば
+    後ろについている記号などを無視する
+  */
+
+  const matched =
+    shiftNames.find(
+      name =>
+        text.startsWith(
+          name
+        )
+    );
+
+
+  if (matched) {
+
+    return matched;
+
+  }
+
+
+  /*
+    登録されていない文字列の場合は
+    そのまま返す
+  */
+
+  return text;
+
+}
+
+
+/* ==================================================
    月間集計
 ================================================== */
 
@@ -3503,6 +3619,16 @@ function calculateMonthlyTotal(
 
 
   let total = 0;
+
+
+  /*
+    集計対象の勤務形態も正規化
+  */
+
+  const targetShift =
+    normalizeShiftNameForTotal(
+      shiftName
+    );
 
 
   for (
@@ -3526,9 +3652,27 @@ function calculateMonthlyTotal(
       );
 
 
+    /*
+      表示は「A★」のまま。
+
+      集計時だけ
+
+      A★ → A
+
+      として比較する
+    */
+
+    const normalizedDisplay =
+      normalizeShiftNameForTotal(
+        display
+      );
+
+
     if (
-      display === shiftName &&
-      display !== "明"
+      normalizedDisplay ===
+        targetShift &&
+      normalizedDisplay !==
+        "明"
     ) {
 
       total++;
@@ -3554,132 +3698,131 @@ function calculateFiscalTotal(
   month
 ) {
 
-  let startYear =
-    year;
-
-
-  if (month < 4) {
-    startYear--;
-  }
-
-
   let total = 0;
 
 
-  for (
-    let y = startYear;
-    y <= year;
-    y++
+  /*
+    現在表示している年月が
+
+    4月～12月
+      → その年の4月から
+
+    1月～3月
+      → 前年4月から
+
+    を年度の開始とする
+  */
+
+  const fiscalStartYear =
+    month >= 4
+      ? year
+      : year - 1;
+
+
+  /*
+    集計対象勤務形態を正規化
+  */
+
+  const targetShift =
+    normalizeShiftNameForTotal(
+      shiftName
+    );
+
+
+  /*
+    4月～現在年月までを
+    1日ずつ確認する
+
+    例：
+    2026年9月表示
+
+    2026/4/1
+    ↓
+    2026/9/30
+
+    例：
+    2027年2月表示
+
+    2026/4/1
+    ↓
+    2027/2/28
+  */
+
+  const startDate =
+    new Date(
+      fiscalStartYear,
+      3,
+      1
+    );
+
+
+  const endDate =
+    new Date(
+      year,
+      month - 1,
+      getDaysInMonth(
+        year,
+        month
+      )
+    );
+
+
+  const current =
+    new Date(
+      startDate
+    );
+
+
+  while (
+    current <=
+    endDate
   ) {
 
-    const startMonth =
-      4;
+    const dateKey =
+      getDateKey(
+        current.getFullYear(),
+        current.getMonth() + 1,
+        current.getDate()
+      );
 
 
-    const endMonth =
-      y === year
-        ? month
-        : 12;
+    const display =
+      getDisplayShift(
+        staffName,
+        dateKey
+      );
 
 
-    for (
-      let m = startMonth;
-      m <= endMonth;
-      m++
+    /*
+      ここでも
+
+      A★ → A
+      A▲ → A
+
+      として集計
+    */
+
+    const normalizedDisplay =
+      normalizeShiftNameForTotal(
+        display
+      );
+
+
+    if (
+      normalizedDisplay ===
+        targetShift &&
+      normalizedDisplay !==
+        "明"
     ) {
 
-      const days =
-        getDaysInMonth(
-          y,
-          m
-        );
-
-
-      for (
-        let day = 1;
-        day <= days;
-        day++
-      ) {
-
-        const dateKey =
-          getDateKey(
-            y,
-            m,
-            day
-          );
-
-
-        const display =
-          getDisplayShift(
-            staffName,
-            dateKey
-          );
-
-
-        if (
-          display === shiftName &&
-          display !== "明"
-        ) {
-
-          total++;
-
-        }
-
-      }
+      total++;
 
     }
 
-  }
 
-
-  if (month < 4) {
-
-    for (
-      let m = 1;
-      m <= month;
-      m++
-    ) {
-
-      const days =
-        getDaysInMonth(
-          year,
-          m
-        );
-
-
-      for (
-        let day = 1;
-        day <= days;
-        day++
-      ) {
-
-        const dateKey =
-          getDateKey(
-            year,
-            m,
-            day
-          );
-
-
-        const display =
-          getDisplayShift(
-            staffName,
-            dateKey
-          );
-
-
-        if (
-          display === shiftName &&
-          display !== "明"
-        ) {
-
-          total++;
-
-        }
-
-      }
-
-    }
+    current.setDate(
+      current.getDate() + 1
+    );
 
   }
 
@@ -4913,13 +5056,6 @@ async function addOrUpdateLeave() {
       }
 
 
-      /*
-        既に勤務表で使用している休暇名を
-        編集した場合でも、
-        leave_type は名前を保存しているため
-        全勤務データを新しい名前へ変更する
-      */
-
       const oldLeave =
         appData.leaveTypes.find(
           leave =>
@@ -5215,10 +5351,6 @@ function renderLeaveList() {
 
 
             try {
-
-              /*
-                先に勤務表の休暇情報を解除
-              */
 
               const workResult =
                 await supabaseClient
