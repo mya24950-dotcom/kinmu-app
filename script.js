@@ -29,6 +29,7 @@ let appData = {
   leaveTypes: [],
   companyHolidays: [],
   shifts: {},
+  leaves: {},
   akeTime: { start: "05:30", end: "11:15" }
 };
 
