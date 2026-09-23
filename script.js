@@ -2061,58 +2061,6 @@ function getLeaveColor(
    ★ 集計用勤務形態正規化
 ================================================== */
 
-/*
-  ここが今回の重要部分です。
-
-  例：
-
-    登録勤務形態
-      A
-      B
-      C
-
-    表示
-      A
-      A★
-      A▲
-      B
-      B★
-      C▲
-
-    集計では
-
-      A★ → A
-      A▲ → A
-      B★ → B
-      C▲ → C
-
-    とします。
-
-
-  さらに、
-
-    夜
-    夜勤
-
-  のように登録名が重なっている場合は、
-
-    夜勤▲ → 夜勤
-
-  のように一番長く一致する
-  登録勤務形態を優先します。
-
-
-  重要なのは、
-
-    A★が「A★」という勤務形態として
-    登録されていたとしても、
-
-    A
-
-  が登録されているなら
-  A★をAに統合することです。
-*/
-
 function normalizeShiftNameForTotal(
   value
 ) {
@@ -2138,10 +2086,6 @@ function normalizeShiftNameForTotal(
 
   }
 
-
-  /*
-    登録されている勤務形態名を取得
-  */
 
   const shiftNames =
     Array.isArray(
@@ -2178,11 +2122,6 @@ function normalizeShiftNameForTotal(
   }
 
 
-  /*
-    textで始まる登録勤務形態を
-    全部取得
-  */
-
   const candidates =
     shiftNames
       .filter(
@@ -2207,30 +2146,6 @@ function normalizeShiftNameForTotal(
   }
 
 
-  /*
-    textより短い候補があれば、
-    それが「基本勤務形態」。
-
-    例：
-
-      登録：
-        A
-        A★
-
-      text：
-        A★
-
-      候補：
-        A★
-        A
-
-      A★はtextと同じなので除外。
-
-      Aが残る。
-
-      → A
-  */
-
   const shorterCandidates =
     candidates.filter(
       name =>
@@ -2242,21 +2157,6 @@ function normalizeShiftNameForTotal(
   if (
     shorterCandidates.length > 0
   ) {
-
-    /*
-      複数の短い候補がある場合は
-      一番長いもの。
-
-      例：
-
-        夜
-        夜勤
-        夜勤▲
-
-      夜勤▲
-      ↓
-      夜勤
-    */
 
     shorterCandidates.sort(
       (a, b) =>
@@ -2270,20 +2170,6 @@ function normalizeShiftNameForTotal(
   }
 
 
-  /*
-    短い登録名がない場合。
-
-    つまり、
-
-      A
-
-    自体が登録されている場合は
-
-      A → A
-
-    とします。
-  */
-
   return candidates[0];
 
 }
@@ -2292,20 +2178,6 @@ function normalizeShiftNameForTotal(
 /* ==================================================
    ★ 合計列用勤務形態一覧
 ================================================== */
-
-/*
-  合計・累計列では、
-
-    A
-    A★
-    A▲
-
-  を別々の列にしません。
-
-
-  「A」という基本勤務形態が登録されている場合、
-  A系統を1つにまとめます。
-*/
 
 function getTotalShiftTypes() {
 
@@ -2386,14 +2258,6 @@ function getTotalShiftTypes() {
       );
 
 
-      /*
-        基本勤務形態を代表として使用。
-
-        可能なら、
-        「A」というように
-        完全一致する登録を優先。
-      */
-
       const exactBase =
         appData.shiftTypes.find(
           item =>
@@ -2419,6 +2283,236 @@ function getTotalShiftTypes() {
 
 
   return result;
+
+}
+
+
+/* ==================================================
+   ★ 休暇一覧表示
+================================================== */
+
+function renderLeaveLegend() {
+
+  const table =
+    document.getElementById(
+      "scheduleTable"
+    );
+
+
+  if (!table) {
+
+    return;
+
+  }
+
+
+  /*
+    既に作成されている場合は再利用。
+  */
+
+  let legend =
+    document.getElementById(
+      "leaveLegend"
+    );
+
+
+  /*
+    なければ勤務表の直後に自動作成。
+  */
+
+  if (!legend) {
+
+    legend =
+      document.createElement(
+        "div"
+      );
+
+
+    legend.id =
+      "leaveLegend";
+
+
+    legend.style.marginTop =
+      "10px";
+
+
+    legend.style.marginBottom =
+      "10px";
+
+
+    legend.style.padding =
+      "10px 12px";
+
+
+    legend.style.border =
+      "1px solid #d1d1d6";
+
+
+    legend.style.borderRadius =
+      "10px";
+
+
+    legend.style.background =
+      "#ffffff";
+
+
+    legend.style.boxSizing =
+      "border-box";
+
+
+    /*
+      tableの直後に配置
+    */
+
+    if (
+      table.parentElement
+    ) {
+
+      table.parentElement.insertBefore(
+        legend,
+        table.nextSibling
+      );
+
+    }
+
+  }
+
+
+  /*
+    休暇が登録されていない場合
+  */
+
+  if (
+    !Array.isArray(
+      appData.leaveTypes
+    ) ||
+    appData.leaveTypes.length ===
+      0
+  ) {
+
+    legend.style.display =
+      "none";
+
+
+    legend.innerHTML =
+      "";
+
+
+    return;
+
+  }
+
+
+  legend.style.display =
+    "flex";
+
+
+  legend.style.flexWrap =
+    "wrap";
+
+
+  legend.style.alignItems =
+    "center";
+
+
+  legend.style.gap =
+    "8px 14px";
+
+
+  let html =
+    `
+      <div
+        style="
+          width:100%;
+          font-weight:700;
+          font-size:14px;
+          margin-bottom:2px;
+        "
+      >
+        🏖️ 休暇一覧
+      </div>
+    `;
+
+
+  appData.leaveTypes.forEach(
+    leave => {
+
+      const color =
+        leave.color ||
+        "#FFD54F";
+
+
+      const textColor =
+        getTextColorForBackground(
+          color
+        );
+
+
+      html += `
+        <div
+          style="
+            display:flex;
+            align-items:center;
+            gap:6px;
+            min-height:28px;
+          "
+        >
+
+          <span
+            style="
+              display:inline-flex;
+              align-items:center;
+              justify-content:center;
+              min-width:20px;
+              width:20px;
+              height:20px;
+              border-radius:5px;
+              background:${escapeHtml(
+                color
+              )};
+              border:1px solid rgba(0,0,0,.18);
+              box-sizing:border-box;
+              flex-shrink:0;
+            "
+            title="${escapeHtml(
+              color
+            )}"
+          ></span>
+
+          <span
+            style="
+              font-size:13px;
+              line-height:1.3;
+              color:#222;
+              white-space:nowrap;
+            "
+          >
+            ${escapeHtml(
+              leave.name
+            )}
+          </span>
+
+          <span
+            style="
+              font-size:11px;
+              color:#777;
+              white-space:nowrap;
+            "
+          >
+            ${escapeHtml(
+              color
+            )}
+          </span>
+
+        </div>
+      `;
+
+    }
+  );
+
+
+  legend.innerHTML =
+    html;
 
 }
 
@@ -2487,10 +2581,6 @@ function renderSchedule() {
       ? 52
       : 58;
 
-
-  /*
-    ★統合済み勤務形態
-  */
 
   const totalShiftTypes =
     getTotalShiftTypes();
@@ -3028,6 +3118,13 @@ function renderSchedule() {
 
   bindStaffNameCells();
 
+
+  /*
+    ★勤務表の下に休暇一覧を表示
+  */
+
+  renderLeaveLegend();
+
 }
 
 
@@ -3204,6 +3301,8 @@ function showShiftMenu(
 
     /* ==================================================
        キャンセル
+       ★休暇と同じく横幅いっぱい
+       ★赤色
     ================================================== */
 
     const cancelButton =
@@ -3222,6 +3321,38 @@ function showShiftMenu(
 
     cancelButton.className =
       "shift-menu-button";
+
+
+    cancelButton.style.width =
+      "100%";
+
+
+    cancelButton.style.minWidth =
+      "100%";
+
+
+    cancelButton.style.gridColumn =
+      "1 / -1";
+
+
+    cancelButton.style.boxSizing =
+      "border-box";
+
+
+    cancelButton.style.background =
+      "#dc3545";
+
+
+    cancelButton.style.color =
+      "#ffffff";
+
+
+    cancelButton.style.borderColor =
+      "#c82333";
+
+
+    cancelButton.style.fontWeight =
+      "700";
 
 
     cancelButton.addEventListener(
@@ -3245,6 +3376,7 @@ function showShiftMenu(
        休暇
        ★必ず一番下
        ★横幅いっぱい
+       ★緑色
     ================================================== */
 
     const leaveButton =
@@ -3279,6 +3411,22 @@ function showShiftMenu(
 
     leaveButton.style.boxSizing =
       "border-box";
+
+
+    leaveButton.style.background =
+      "#28a745";
+
+
+    leaveButton.style.color =
+      "#ffffff";
+
+
+    leaveButton.style.borderColor =
+      "#218838";
+
+
+    leaveButton.style.fontWeight =
+      "700";
 
 
     leaveButton.addEventListener(
@@ -3499,6 +3647,8 @@ function showShiftMenu(
 
     /* -----------------------------------------------
        キャンセル
+       ★横幅いっぱい
+       ★赤色
     ------------------------------------------------ */
 
     const cancelButton =
@@ -3517,6 +3667,38 @@ function showShiftMenu(
 
     cancelButton.className =
       "shift-menu-button";
+
+
+    cancelButton.style.width =
+      "100%";
+
+
+    cancelButton.style.minWidth =
+      "100%";
+
+
+    cancelButton.style.gridColumn =
+      "1 / -1";
+
+
+    cancelButton.style.boxSizing =
+      "border-box";
+
+
+    cancelButton.style.background =
+      "#dc3545";
+
+
+    cancelButton.style.color =
+      "#ffffff";
+
+
+    cancelButton.style.borderColor =
+      "#c82333";
+
+
+    cancelButton.style.fontWeight =
+      "700";
 
 
     cancelButton.addEventListener(
@@ -3744,11 +3926,6 @@ async function saveWorkShift(
         : null;
 
 
-    /*
-      勤務を空にした場合は
-      レコード自体を削除。
-    */
-
     if (!shiftName) {
 
       if (existingRow) {
@@ -3789,11 +3966,6 @@ async function saveWorkShift(
 
     }
 
-
-    /*
-      休暇は維持して
-      勤務形態だけ変更する。
-    */
 
     const leaveType =
       existingRow
@@ -3968,9 +4140,9 @@ async function saveLeave(
         : null;
 
 
-    /*
-      休暇解除
-    */
+    /* -----------------------------------------------
+       休暇解除
+    ------------------------------------------------ */
 
     if (!leaveName) {
 
@@ -4019,12 +4191,10 @@ async function saveLeave(
     }
 
 
-    /*
-      既存勤務がある場合は
-      勤務形態を絶対に変更しない。
-
-      leave_typeだけ変更。
-    */
+    /* -----------------------------------------------
+       既存勤務がある場合
+       勤務形態は変更しない
+    ------------------------------------------------ */
 
     if (row) {
 
@@ -4061,13 +4231,6 @@ async function saveLeave(
       );
 
     } else {
-
-      /*
-        勤務がまだないセルに
-        休暇だけ登録する場合。
-
-        shift_nameは空。
-      */
 
       const result =
         await supabaseClient
@@ -4223,11 +4386,6 @@ function calculateMonthlyTotal(
     0;
 
 
-  /*
-    ここでも必ず
-    基本勤務形態に変換。
-  */
-
   const targetShift =
     normalizeShiftNameForTotal(
       shiftName
@@ -4294,14 +4452,6 @@ function calculateFiscalTotal(
   let total =
     0;
 
-
-  /*
-    4～12月
-      → その年の4月から
-
-    1～3月
-      → 前年4月から
-  */
 
   const fiscalStartYear =
     month >= 4
