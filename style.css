@@ -1,6 +1,6 @@
-/* ========================================
-   基本
-======================================== */
+/* =========================================================
+   勤務表アプリ CSS
+   ========================================================= */
 
 * {
   box-sizing: border-box;
@@ -11,17 +11,6 @@ body {
   margin: 0;
   padding: 0;
 
-  /*
-    通常画面は上下スクロール
-    ピンチズームを抑制
-  */
-  touch-action: pan-y;
-
-  -webkit-text-size-adjust: 100%;
-  text-size-adjust: 100%;
-}
-
-body {
   background: #f5f5f7;
   color: #1d1d1f;
 
@@ -29,316 +18,318 @@ body {
     -apple-system,
     BlinkMacSystemFont,
     "Helvetica Neue",
+    "Hiragino Kaku Gothic ProN",
+    "Yu Gothic",
+    Meiryo,
     sans-serif;
 
   -webkit-font-smoothing: antialiased;
-
   text-rendering: optimizeLegibility;
+
+  /*
+    画面全体を上下スクロール
+  */
+  overflow-x: hidden;
+  overflow-y: auto;
+
+  /*
+    縦スクロールを基本にする
+  */
+  touch-action: pan-y;
+
+  /*
+    iPhoneの文字自動拡大防止
+  */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
-button,
-input,
-select,
-textarea {
-  font-family: inherit;
+body {
+  min-height: 100vh;
 }
 
-button {
-  cursor: pointer;
-
-  -webkit-tap-highlight-color: transparent;
-
-  touch-action: manipulation;
-}
-
-
-/*
-  iPhone Safariで
-  入力欄をタップしたときの自動ズーム防止
-*/
-input,
-select,
-textarea {
-  font-size: 16px !important;
-}
-
+/* =========================================================
+   アプリ全体
+   ========================================================= */
 
 .app {
   width: 100%;
   min-height: 100vh;
+
+  /*
+    内側でスクロールさせない
+    → body / 画面全体で上下スクロール
+  */
+  overflow: visible;
 }
 
-
-/* ========================================
+/* =========================================================
    ヘッダー
-======================================== */
+   ========================================================= */
 
 .header {
   position: sticky;
-
   top: 0;
+  z-index: 1000;
 
-  z-index: 100;
-
-  height: 58px;
+  min-height: 58px;
 
   display: flex;
-
   align-items: center;
-
   justify-content: space-between;
 
-  padding: 0 16px;
+  gap: 12px;
 
-  background:
-    rgba(255, 255, 255, 0.94);
+  padding:
+    10px
+    14px;
 
-  backdrop-filter:
-    blur(20px);
+  background: rgba(255, 255, 255, 0.96);
 
-  -webkit-backdrop-filter:
-    blur(20px);
+  border-bottom: 1px solid rgba(60, 60, 67, 0.12);
 
-  border-bottom:
-    1px solid rgba(60, 60, 67, 0.12);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
+/* =========================================================
+   ヘッダータイトル
+   ========================================================= */
 
 .header-title {
+  flex: 1;
+
   font-size: 20px;
-
-  font-weight: 700;
-
-  letter-spacing: -0.3px;
-}
-
-
-.header-delete-buttons {
-  display: flex;
-
-  gap: 6px;
-}
-
-
-.header-delete-buttons button {
-  border:
-    1px solid rgba(255, 59, 48, 0.08);
-
-  border-radius: 9px;
-
-  padding: 7px 9px;
-
-  background: #fff5f5;
-
-  color: #d93025;
-
-  font-size: 11px;
-
   font-weight: 700;
 
   white-space: nowrap;
 }
 
+/* =========================================================
+   月・年度消去ボタン
+   ========================================================= */
 
-.header-delete-buttons button:active {
-  transform: scale(0.96);
-
-  background: #ffeaea;
-}
-
-
-/* ========================================
-   ナビ
-======================================== */
-
-.nav {
+.header-delete-buttons {
   display: flex;
+  align-items: center;
 
   gap: 6px;
 
-  padding: 8px;
+  flex-shrink: 0;
+}
 
-  background:
-    rgba(255, 255, 255, 0.96);
+.header-delete-buttons button {
+  min-height: 38px;
 
-  border-bottom:
-    1px solid rgba(60, 60, 67, 0.12);
+  padding: 7px 10px;
 
+  border: 1px solid rgba(60, 60, 67, 0.15);
+  border-radius: 9px;
+
+  background: #f2f2f7;
+  color: #1d1d1f;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  white-space: nowrap;
+
+  cursor: pointer;
+
+  -webkit-tap-highlight-color: transparent;
+}
+
+.header-delete-buttons button:active {
+  transform: scale(0.97);
+  background: #e5e5ea;
+}
+
+/* =========================================================
+   ナビゲーション
+   ========================================================= */
+
+.nav {
+  display: flex;
+  align-items: center;
+
+  gap: 7px;
+
+  padding: 9px 10px;
+
+  background: #ffffff;
+
+  border-bottom: 1px solid rgba(60, 60, 67, 0.1);
+
+  /*
+    ナビだけ左右スクロール可能
+  */
   overflow-x: auto;
+  overflow-y: hidden;
+
+  white-space: nowrap;
 
   -webkit-overflow-scrolling: touch;
 
-  scrollbar-width: none;
-
-  /*
-    ナビは左右スクロール
-  */
   touch-action: pan-x;
-}
 
+  scrollbar-width: none;
+}
 
 .nav::-webkit-scrollbar {
   display: none;
 }
 
+/* =========================================================
+   ナビボタン
+   ========================================================= */
 
 .nav-button {
-  border: 0;
+  flex: 0 0 auto;
 
-  background: transparent;
+  min-height: 42px;
 
-  color: #6e6e73;
+  padding: 8px 14px;
 
-  padding: 10px 14px;
+  border: none;
+  border-radius: 10px;
 
-  border-radius: 11px;
+  background: #f2f2f7;
+  color: #555;
 
-  font-size: 14px;
-
-  font-weight: 500;
+  font-size: 13px;
+  font-weight: 600;
 
   white-space: nowrap;
 
-  flex-shrink: 0;
+  cursor: pointer;
 
-  transition:
-    background 0.15s ease,
-    color 0.15s ease,
-    transform 0.1s ease;
+  -webkit-tap-highlight-color: transparent;
 }
-
 
 .nav-button.active {
   background: #007aff;
-
-  color: #fff;
-
-  font-weight: 600;
-
-  box-shadow:
-    0 1px 3px
-    rgba(0, 122, 255, 0.2);
+  color: #ffffff;
 }
-
 
 .nav-button:active {
   transform: scale(0.97);
 }
 
-
-/* ========================================
+/* =========================================================
    ページ
-======================================== */
+   ========================================================= */
 
 .page {
+  width: 100%;
+
   padding: 14px;
 
   /*
-    登録画面は上下スクロール
+    ページ自体は縦スクロールをbodyに任せる
   */
+  overflow: visible;
+
   touch-action: pan-y;
 }
 
-
-/* ========================================
-   月切り替え
-======================================== */
+/* =========================================================
+   月バー
+   ========================================================= */
 
 .month-bar {
   display: flex;
-
   align-items: center;
-
   justify-content: center;
 
-  gap: 20px;
+  gap: 10px;
 
   margin-bottom: 10px;
 }
 
+/* =========================================================
+   月ボタン
+   ========================================================= */
+
+.month-button {
+  width: 42px;
+  height: 42px;
+
+  padding: 0;
+
+  border: none;
+  border-radius: 10px;
+
+  background: #ffffff;
+  color: #007aff;
+
+  font-size: 30px;
+  line-height: 1;
+
+  box-shadow:
+    0 2px 7px rgba(0, 0, 0, 0.08);
+
+  cursor: pointer;
+
+  -webkit-tap-highlight-color: transparent;
+}
+
+.month-button:active {
+  transform: scale(0.94);
+  background: #f2f2f7;
+}
+
+/* =========================================================
+   月タイトル
+   ========================================================= */
 
 .month-title {
-  min-width: 140px;
+  min-width: 150px;
 
   text-align: center;
 
   font-size: 20px;
-
   font-weight: 700;
-
-  letter-spacing: -0.3px;
 }
 
-
-.month-button {
-  width: 42px;
-
-  height: 42px;
-
-  border:
-    1px solid rgba(60, 60, 67, 0.08);
-
-  border-radius: 50%;
-
-  background: #fff;
-
-  color: #1d1d1f;
-
-  font-size: 27px;
-
-  line-height: 1;
-
-  box-shadow:
-    0 2px 8px rgba(0, 0, 0, 0.06),
-    0 1px 2px rgba(0, 0, 0, 0.04);
-}
-
-
-.month-button:active {
-  transform: scale(0.94);
-
-  background: #f2f2f7;
-}
-
+/* =========================================================
+   カレンダーヒント
+   ========================================================= */
 
 .calendar-hint {
   margin-bottom: 10px;
 
-  padding: 10px 13px;
+  padding: 10px 12px;
 
-  border:
-    1px solid rgba(0, 122, 255, 0.08);
+  border-radius: 10px;
 
-  border-radius: 11px;
+  background: #eaf4ff;
+  color: #345;
 
-  background: #eef6ff;
-
-  color: #0066cc;
-
-  font-size: 14px;
-
+  font-size: 13px;
   line-height: 1.5;
 }
 
-
-/* ========================================
-   勤務表
-======================================== */
+/* =========================================================
+   勤務表ラッパー
+   ========================================================= */
 
 .table-wrapper {
-
   width: 100%;
 
   /*
-    勤務表は上下左右スクロール
+    横スクロールはここだけ
   */
   overflow-x: auto;
-  overflow-y: auto;
 
-  background: #fff;
+  /*
+    縦スクロールはさせない
+    → 画面全体が上下スクロール
+  */
+  overflow-y: visible;
 
-  border:
-    1px solid rgba(60, 60, 67, 0.08);
+  background: #ffffff;
+
+  border: 1px solid rgba(60, 60, 67, 0.08);
 
   border-radius: 15px;
 
@@ -348,23 +339,24 @@ textarea {
 
   -webkit-overflow-scrolling: touch;
 
-  position: relative;
+  touch-action: pan-x;
 
-  /*
-    上下左右に指で動かせる
-  */
-  touch-action: pan-x pan-y;
+  position: relative;
 }
 
+/* =========================================================
+   勤務表本体
+   ========================================================= */
 
 #scheduleTable {
-
   border-collapse: separate;
-
   border-spacing: 0;
 
+  /*
+    横幅は内容に合わせる
+    → 横スクロール可能
+  */
   width: max-content;
-
   min-width: max-content;
 
   font-size: 14px;
@@ -372,640 +364,330 @@ textarea {
   table-layout: fixed !important;
 }
 
-
-/* ========================================
-   テーブル共通
-======================================== */
+/* =========================================================
+   勤務表セル
+   ========================================================= */
 
 #scheduleTable th,
 #scheduleTable td {
+  border-right: 1px solid #e5e5ea;
+  border-bottom: 1px solid #e5e5ea;
 
-  border-right:
-    1px solid #e3e3e8;
-
-  border-bottom:
-    1px solid #e3e3e8;
+  padding: 7px 6px;
 
   text-align: center;
 
-  padding: 0;
-}
-
-
-/* ========================================
-   職員列
-======================================== */
-
-#scheduleTable .staff-header {
-
-  position: sticky !important;
-
-  left: 0 !important;
-
-  width: 90px !important;
-
-  min-width: 90px !important;
-
-  max-width: 90px !important;
-
-  height: 70px;
-
-  z-index: 100 !important;
-
-  background:
-    #f5f5f7 !important;
-
-  font-size: 16px;
-
-  font-weight: 700;
-
-  box-sizing: border-box !important;
-
-  border-right:
-    1px solid #d8d8de !important;
-}
-
-
-#scheduleTable .staff-cell {
-
-  position: sticky !important;
-
-  left: 0 !important;
-
-  width: 90px !important;
-
-  min-width: 90px !important;
-
-  max-width: 90px !important;
-
-  height: 46px;
-
-  z-index: 90 !important;
-
-  background:
-    #fff !important;
-
-  font-size: 16px;
-
-  font-weight: 600;
-
-  cursor: pointer;
-
-  user-select: none;
-
-  white-space: nowrap;
-
-  overflow: hidden;
-
-  text-overflow: ellipsis;
-
-  box-sizing: border-box !important;
-
-  border-right:
-    1px solid #d8d8de !important;
-}
-
-
-#scheduleTable .staff-cell:active {
-
-  background:
-    #f0f0f3 !important;
-}
-
-
-#scheduleTable .staff-name-cell {
-
-  width: 90px !important;
-
-  min-width: 90px !important;
-
-  max-width: 90px !important;
-
-  font-size: 16px;
-
-  overflow: hidden;
-
-  text-overflow: ellipsis;
-
-  white-space: nowrap;
-}
-
-
-/* ========================================
-   日付
-======================================== */
-
-.date-header {
-
-  width: 46px;
-
-  min-width: 46px;
-
-  height: 70px;
-
-  background: #fff;
-
-  font-size: 16px;
-
-  font-weight: 600;
-
   vertical-align: middle;
+
+  white-space: nowrap;
 }
 
+/* =========================================================
+   勤務表ヘッダー
+   ========================================================= */
 
-.day-number {
-
-  font-size: 16px;
-
-  font-weight: 700;
-}
-
-
-.day-week {
-
-  margin-top: 3px;
-
-  color: #6e6e73;
-
-  font-size: 13px;
-}
-
-
-/* ========================================
-   曜日・休日
-======================================== */
-
-.saturday {
-  background:
-    #edf7ff !important;
-}
-
-
-.sunday,
-.holiday {
-  background:
-    #fff2f2 !important;
-}
-
-
-.company-holiday {
-  background:
-    #fff8df !important;
-}
-
-
-/* ========================================
-   勤務セル
-======================================== */
-
-.shift-cell {
-
-  width: 46px;
-
-  min-width: 46px;
-
-  height: 46px;
-
-  background: #fff;
-
-  cursor: pointer;
-
-  user-select: none;
-
-  -webkit-tap-highlight-color:
-    transparent;
-
-  font-size: 13px;
-
-  font-weight: 600;
-
-  color: #1d1d1f;
-}
-
-
-.shift-cell:active {
-
-  background:
-    #f0f0f3;
-}
-
-
-/* ========================================
-   勤務形態ヘッダー
-======================================== */
-
-#scheduleTable
-thead
-tr:first-child
-th:not(.staff-header):not(.date-header) {
-
-  width: 110px;
-
-  min-width: 110px;
-
-  height: 35px;
-
-  background: #f5f5f7;
-
-  color: #3a3a3c;
+#scheduleTable th {
+  background: #f8f8fa;
 
   font-size: 14px;
-
   font-weight: 700;
 
-  white-space: nowrap;
+  position: sticky;
+  top: 0;
 
-  border-left:
-    1px solid #dedee3;
+  z-index: 10;
 }
 
+/* =========================================================
+   職員名列
+   ========================================================= */
 
-/* ========================================
-   合計
-======================================== */
+#scheduleTable th:first-child,
+#scheduleTable td:first-child {
+  position: sticky;
+  left: 0;
 
-.total-header {
+  z-index: 20;
 
-  width: 48px;
+  background: #ffffff;
+}
 
-  min-width: 48px;
+/*
+  左上セル
+*/
+#scheduleTable thead th:first-child {
+  z-index: 30;
+  background: #f8f8fa;
+}
 
-  height: 35px;
+/* =========================================================
+   勤務セル
+   ========================================================= */
 
-  background: #f5f5f7;
+#scheduleTable td {
+  min-width: 62px;
 
-  color: #3a3a3c;
+  height: 48px;
 
-  font-size: 13px;
+  font-size: 14px;
+  font-weight: 600;
 
+  cursor: pointer;
+
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* =========================================================
+   職員名
+   ========================================================= */
+
+#scheduleTable td:first-child {
+  min-width: 95px;
+
+  padding-left: 10px;
+  padding-right: 10px;
+
+  font-size: 14px;
   font-weight: 700;
 
-  white-space: nowrap;
+  text-align: left;
 
-  border-left:
-    1px solid #dedee3;
+  cursor: pointer;
 }
 
+/* =========================================================
+   土日・曜日など
+   ========================================================= */
 
-.total-cell {
-
-  width: 48px;
-
-  min-width: 48px;
-
-  height: 46px;
-
-  background: #fafafa;
-
-  color: #1d1d1f;
-
-  font-size: 15px;
-
-  font-weight: 700;
-
-  white-space: nowrap;
-
-  border-left:
-    1px solid #dedee3;
+#scheduleTable th,
+#scheduleTable td {
+  user-select: none;
+  -webkit-user-select: none;
 }
 
-
-.shift-group-start {
-
-  border-left:
-    1px solid #dedee3;
-}
-
-
-/* ========================================
-   設定画面
-======================================== */
+/* =========================================================
+   設定カード
+   ========================================================= */
 
 .settings-card {
+  width: 100%;
 
-  background: #fff;
+  margin-bottom: 14px;
 
-  border:
-    1px solid rgba(60, 60, 67, 0.06);
+  padding: 16px;
+
+  background: #ffffff;
 
   border-radius: 16px;
 
-  padding: 18px;
-
   box-shadow:
     0 3px 12px rgba(0, 0, 0, 0.045),
-    0 1px 3px rgba(0, 0, 0, 0.03);
+    0 1px 3px rgba(0, 0, 0, 0.035);
+}
+
+/* =========================================================
+   見出し
+   ========================================================= */
+
+.settings-card h2 {
+  margin: 0 0 14px;
+
+  font-size: 19px;
+  font-weight: 700;
+
+  line-height: 1.4;
+}
+
+/* =========================================================
+   説明文
+   ========================================================= */
+
+.info {
+  margin: 0 0 14px;
+
+  color: #666;
+
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.ake-info {
+  margin-bottom: 12px;
+}
+
+/* =========================================================
+   入力欄
+   ========================================================= */
+
+input,
+select,
+textarea {
+  /*
+    iPhone Safariの自動ズーム防止
+  */
+  font-size: 16px !important;
+
+  font-family: inherit;
+
+  color: #1d1d1f;
+
+  background: #ffffff;
+
+  border: 1px solid #d2d2d7;
+
+  border-radius: 10px;
+
+  outline: none;
+
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: #007aff;
+
+  box-shadow:
+    0 0 0 3px rgba(0, 122, 255, 0.12);
+}
+
+/* =========================================================
+   通常入力
+   ========================================================= */
+
+input[type="text"],
+input[type="number"],
+input[type="time"],
+input[type="date"] {
+  width: 100%;
+
+  min-height: 44px;
+
+  padding: 9px 11px;
+}
+
+/* =========================================================
+   入力行
+   ========================================================= */
+
+.input-row {
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
 
   margin-bottom: 14px;
 }
 
-
-.settings-card h2 {
-
-  margin: 0 0 16px;
-
-  font-size: 20px;
-
-  line-height: 1.4;
-
-  letter-spacing: -0.2px;
+.input-row input {
+  flex: 1;
 }
 
-
-input {
-
-  width: 100%;
-
-  height: 42px;
-
-  min-height: 42px;
-
-  padding: 8px 12px;
-
-  margin: 0;
-
-  border:
-    1px solid #d2d2d7;
-
-  border-radius: 10px;
-
-  background: #fff;
-
-  color: #1d1d1f;
-
-  /*
-    iPhoneズーム防止
-  */
-  font-size: 16px !important;
-
-  outline: none;
-
-  box-sizing: border-box;
-
-  -webkit-appearance: none;
-
-  appearance: none;
-
-  transition:
-    border-color 0.15s ease,
-    box-shadow 0.15s ease;
+.input-row .add-button {
+  flex: 0 0 auto;
 }
 
-
-input:focus {
-
-  border-color: #007aff;
-
-  box-shadow:
-    0 0 0 3px
-    rgba(0, 122, 255, 0.13);
-}
-
-
-.input-row {
-
-  display: flex;
-
-  align-items: center;
-
-  gap: 8px;
-}
-
-
-.shift-form {
-
-  display: flex;
-
-  flex-direction: column;
-
-  gap: 8px;
-}
-
-
-/* ========================================
-   時間
-======================================== */
-
-.time-row {
-
-  width: 100%;
-
-  height: 36px;
-
-  display: flex;
-
-  flex-direction: row;
-
-  align-items: center;
-
-  gap: 6px;
-
-  margin: 0;
-
-  padding: 0;
-}
-
-
-.time-row input[type="time"] {
-
-  flex: 1 1 0;
-
-  width: 0;
-
-  min-width: 0;
-
-  height: 36px;
-
-  min-height: 36px;
-
-  margin: 0;
-
-  padding: 4px 7px;
-
-  border:
-    1px solid #d2d2d7;
-
-  border-radius: 9px;
-
-  background: #fff;
-
-  color: #1d1d1f;
-
-  font-size: 16px !important;
-
-  font-weight: 400;
-
-  line-height: 26px;
-
-  text-align: center;
-
-  vertical-align: middle;
-
-  box-shadow: none;
-
-  -webkit-appearance: auto;
-
-  appearance: auto;
-}
-
-
-.time-row input[type="time"]
-::-webkit-date-and-time-value {
-
-  height: 26px;
-
-  line-height: 26px;
-
-  text-align: center;
-}
-
-
-.time-separator {
-
-  flex:
-    0 0 18px;
-
-  width: 18px;
-
-  height: 36px;
-
-  display: flex;
-
-  align-items: center;
-
-  justify-content: center;
-
-  margin: 0;
-
-  padding: 0;
-
-  color: #8e8e93;
-
-  font-size: 16px;
-
-  font-weight: 600;
-
-  line-height: 1;
-
-  text-align: center;
-
-  white-space: nowrap;
-}
-
-
-.ake-info {
-
-  margin-top: -6px;
-
-  margin-bottom: 12px;
-}
-
-
-.ake-time-row {
-
-  margin-bottom: 10px;
-}
-
-
-/* ========================================
-   ボタン
-======================================== */
+/* =========================================================
+   追加ボタン
+   ========================================================= */
 
 .add-button {
+  min-height: 44px;
 
-  width: 100%;
-
-  height: 42px;
-
-  min-height: 42px;
+  padding: 9px 16px;
 
   border: none;
-
   border-radius: 10px;
 
-  padding: 8px 16px;
-
   background: #007aff;
+  color: #ffffff;
 
-  color: #fff;
-
-  font-size: 16px;
-
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 700;
 
   white-space: nowrap;
 
-  box-shadow:
-    0 1px 2px
-    rgba(0, 122, 255, 0.16);
+  cursor: pointer;
 
-  transition:
-    transform 0.1s ease,
-    background 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
 }
-
 
 .add-button:active {
+  transform: scale(0.97);
 
-  transform: scale(0.98);
-
-  background: #006fe6;
+  background: #006ee6;
 }
 
+/* =========================================================
+   職員数ヘッダー
+   ========================================================= */
 
-/* ========================================
+.staff-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom: 8px;
+
+  padding: 8px 2px;
+
+  color: #666;
+
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* =========================================================
    リスト
-======================================== */
+   ========================================================= */
 
 .list {
-
   display: flex;
-
   flex-direction: column;
 
   gap: 8px;
-
-  margin-top: 14px;
 }
 
+/* =========================================================
+   リスト項目
+   ========================================================= */
 
 .list-item {
-
   display: flex;
-
   align-items: center;
-
   justify-content: space-between;
 
   gap: 10px;
 
-  padding: 12px 13px;
+  min-height: 52px;
 
-  background: #fff;
+  padding: 10px 12px;
 
-  border:
-    1px solid rgba(60, 60, 67, 0.08);
+  background: #f8f8fa;
 
-  border-radius: 12px;
+  border: 1px solid rgba(60, 60, 67, 0.08);
 
-  box-shadow:
-    0 1px 3px
-    rgba(0, 0, 0, 0.035);
+  border-radius: 11px;
 }
 
+/* =========================================================
+   リスト項目左側
+   ========================================================= */
 
-.list-item-main {
+.list-item-info {
+  flex: 1;
+
   min-width: 0;
 }
 
+/* =========================================================
+   リスト項目タイトル
+   ========================================================= */
 
 .list-item-title {
-
-  color: #1d1d1f;
-
-  font-size: 17px;
-
-  font-weight: 700;
+  font-size: 15px;
+  font-weight: 600;
 
   overflow: hidden;
 
@@ -1014,842 +696,839 @@ input:focus {
   white-space: nowrap;
 }
 
+/* =========================================================
+   リスト項目サブ
+   ========================================================= */
 
 .list-item-sub {
-
   margin-top: 3px;
 
-  color: #8e8e93;
+  color: #777;
 
-  font-size: 14px;
+  font-size: 12px;
 }
 
+/* =========================================================
+   削除ボタン
+   ========================================================= */
 
-.list-item-buttons {
+.delete-button {
+  flex: 0 0 auto;
 
-  display: flex;
+  min-width: 60px;
+  min-height: 38px;
 
-  gap: 4px;
+  padding: 7px 10px;
 
-  flex-shrink: 0;
+  border: none;
+  border-radius: 9px;
+
+  background: #ff3b30;
+  color: #ffffff;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  -webkit-tap-highlight-color: transparent;
 }
 
-
-.list-button {
-
-  border:
-    1px solid rgba(60, 60, 67, 0.08);
-
-  border-radius: 8px;
-
-  padding: 7px 9px;
-
-  background: #f5f5f7;
-
-  color: #1d1d1f;
-
-  font-size: 14px;
-
-  font-weight: 500;
-}
-
-
-.list-button:active {
-
+.delete-button:active {
   transform: scale(0.96);
 
-  background: #e5e5ea;
+  background: #e52f25;
 }
 
-
-.list-button.delete {
-
-  color: #d93025;
-
-  background: #fff5f5;
-
-  border-color:
-    rgba(255, 59, 48, 0.08);
-}
-
-
-/* ========================================
+/* =========================================================
    勤務形態レイアウト
-======================================== */
+   ========================================================= */
 
 .shift-layout {
-
   display: grid;
 
-  grid-template-columns:
-    minmax(320px, 1fr)
-    minmax(320px, 1fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 
-  gap: 16px;
+  gap: 14px;
 
   align-items: start;
 }
 
+/* =========================================================
+   勤務形態フォーム
+   ========================================================= */
 
-.shift-list-card {
-  min-width: 0;
-}
-
-
-.shift-list-card .list {
-
-  max-height: 600px;
-
-  overflow-y: auto;
-
-  padding-right: 2px;
-}
-
-
-.info {
-
-  margin-top: 12px;
-
-  color: #8e8e93;
-
-  font-size: 14px;
-
-  line-height: 1.6;
-}
-
-
-/* ========================================
-   休業日
-======================================== */
-
-.holiday-form {
-
+.shift-form {
   display: flex;
-
   flex-direction: column;
 
   gap: 10px;
 }
 
+/* =========================================================
+   時間入力
+   ========================================================= */
+
+.time-row {
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+}
+
+.time-row input {
+  flex: 1;
+}
+
+.time-separator {
+  flex: 0 0 auto;
+
+  color: #666;
+
+  font-size: 16px;
+  font-weight: 600;
+}
+
+/* =========================================================
+   明け時間
+   ========================================================= */
+
+.ake-time-row {
+  margin-bottom: 12px;
+}
+
+/* =========================================================
+   勤務リストカード
+   ========================================================= */
+
+.shift-list-card {
+  min-height: 200px;
+}
+
+/* =========================================================
+   休業設定
+   ========================================================= */
+
+.holiday-form {
+  display: flex;
+  flex-direction: column;
+
+  gap: 12px;
+}
+
+/* =========================================================
+   日付入力
+   ========================================================= */
 
 .date-row {
-
   display: flex;
-
   align-items: flex-end;
 
   gap: 8px;
 }
 
-
 .date-box {
   flex: 1;
+
+  min-width: 0;
 }
 
-
 .date-box label {
-
   display: block;
 
   margin-bottom: 5px;
 
-  color: #8e8e93;
+  color: #666;
 
-  font-size: 14px;
+  font-size: 12px;
+  font-weight: 600;
 }
 
-
 .date-arrow {
+  flex: 0 0 auto;
 
   padding-bottom: 11px;
 
-  color: #8e8e93;
+  color: #777;
+
+  font-size: 18px;
+  font-weight: 600;
 }
 
+/* =========================================================
+   休暇カラー入力
+   ========================================================= */
 
-/* ========================================
+input[type="color"] {
+  width: 60px !important;
+  height: 40px !important;
+
+  padding: 2px;
+
+  border-radius: 8px;
+
+  cursor: pointer;
+}
+
+/* =========================================================
    勤務選択メニュー
-======================================== */
+   ========================================================= */
 
 .shift-menu {
+  display: none;
 
   position: fixed;
 
-  z-index: 1000;
+  z-index: 5000;
 
-  display: none;
+  width: min(340px, calc(100vw - 20px));
 
-  width: 230px;
-
-  max-height: 70vh;
+  max-height: min(70vh, 520px);
 
   overflow-y: auto;
 
-  padding: 10px;
+  padding: 12px;
 
-  background:
-    rgba(255, 255, 255, 0.97);
+  background: rgba(255, 255, 255, 0.98);
 
-  border:
-    1px solid rgba(60, 60, 67, 0.12);
+  border: 1px solid rgba(60, 60, 67, 0.12);
 
   border-radius: 15px;
 
   box-shadow:
-    0 12px 35px
-    rgba(0, 0, 0, 0.16),
+    0 12px 35px rgba(0, 0, 0, 0.18),
+    0 3px 10px rgba(0, 0, 0, 0.08);
 
-    0 2px 8px
-    rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
 
-  backdrop-filter:
-    blur(20px);
-
-  -webkit-backdrop-filter:
-    blur(20px);
+  touch-action: pan-y;
 }
 
+/* =========================================================
+   勤務選択タイトル
+   ========================================================= */
 
 .shift-menu-title {
-
-  padding: 7px;
-
-  color: #8e8e93;
+  padding: 4px 4px 10px;
 
   font-size: 14px;
-
   font-weight: 700;
+
+  text-align: center;
 }
 
+/* =========================================================
+   勤務ボタンエリア
+   ========================================================= */
 
 .shift-menu-buttons {
-
   display: grid;
 
-  grid-template-columns:
-    1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 
-  gap: 6px;
+  gap: 7px;
 }
 
+/* =========================================================
+   勤務ボタン
+   ========================================================= */
 
 .shift-menu-button {
-
   width: 100%;
+  min-width: 0;
 
   min-height: 44px;
+
+  padding: 9px 7px;
 
   border: none;
 
   border-radius: 9px;
 
-  padding: 9px 7px;
-
   background: #f2f2f7;
-
   color: #1d1d1f;
 
   text-align: center;
 
-  font-size: 15px;
-
+  font-size: 13px;
   font-weight: 600;
-}
 
+  cursor: pointer;
+
+  -webkit-tap-highlight-color: transparent;
+}
 
 .shift-menu-button:active {
+  transform: scale(0.97);
 
   background: #e5e5ea;
-
-  transform: scale(0.98);
 }
 
+/* =========================================================
+   勤務削除
+   ========================================================= */
 
-.shift-menu-button.shift-delete {
-
-  grid-column: 1 / -1;
-
-  color: #d93025;
-
-  background: #fff2f2;
+.shift-menu-button[style*="background"] {
+  font-weight: 700;
 }
 
+/* =========================================================
+   休暇ボタン
+   ========================================================= */
 
 .shift-leave {
-
   grid-column: 1 / -1;
+
+  width: 100% !important;
+  min-width: 100% !important;
 
   color: #2e8b57 !important;
 
   background: #e8f5e9 !important;
+
+  font-weight: 700 !important;
 }
 
+/* =========================================================
+   キャンセル
+   ========================================================= */
 
 .shift-cancel {
-
   grid-column: 1 / -1;
+
+  width: 100% !important;
+  min-width: 100% !important;
 
   color: #1d1d1f !important;
 
   background: #f2f2f7 !important;
+
+  font-weight: 700 !important;
 }
 
-
-/* ========================================
-   確認ダイアログ
-======================================== */
+/* =========================================================
+   モーダル
+   ========================================================= */
 
 .modal-overlay {
-
   position: fixed;
 
   inset: 0;
 
-  z-index: 2000;
+  z-index: 10000;
 
   display: flex;
 
   align-items: center;
-
   justify-content: center;
 
   padding: 20px;
 
-  background:
-    rgba(0, 0, 0, 0.32);
+  background: rgba(0, 0, 0, 0.35);
 
-  backdrop-filter:
-    blur(5px);
-
-  -webkit-backdrop-filter:
-    blur(5px);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
 
+/* =========================================================
+   確認カード
+   ========================================================= */
 
 .confirm-card {
+  width: min(420px, 100%);
 
-  width: 100%;
+  padding: 20px;
 
-  max-width: 360px;
+  background: #ffffff;
 
-  padding: 22px;
-
-  background: #fff;
-
-  border:
-    1px solid rgba(60, 60, 67, 0.08);
-
-  border-radius: 20px;
+  border-radius: 17px;
 
   box-shadow:
-    0 18px 55px
-    rgba(0, 0, 0, 0.18),
-
-    0 3px 12px
-    rgba(0, 0, 0, 0.08);
+    0 15px 45px rgba(0, 0, 0, 0.2);
 }
 
+/* =========================================================
+   確認タイトル
+   ========================================================= */
 
 .confirm-title {
+  margin-bottom: 10px;
 
-  margin-bottom: 12px;
+  font-size: 18px;
+  font-weight: 700;
 
   text-align: center;
-
-  font-size: 19px;
-
-  font-weight: 700;
 }
 
+/* =========================================================
+   確認本文
+   ========================================================= */
 
 .confirm-text {
+  margin-bottom: 18px;
 
-  margin-bottom: 20px;
+  color: #555;
 
-  color: #6e6e73;
+  font-size: 14px;
+
+  line-height: 1.6;
 
   text-align: center;
-
-  font-size: 16px;
-
-  line-height: 1.7;
 }
 
+/* =========================================================
+   確認ボタン
+   ========================================================= */
 
 .confirm-buttons {
-
   display: grid;
 
-  grid-template-columns:
-    1fr 1fr;
+  grid-template-columns: 1fr 1fr;
 
   gap: 8px;
 }
 
+/* =========================================================
+   確認キャンセル
+   ========================================================= */
 
 .confirm-cancel,
 .confirm-ok {
+  min-height: 46px;
 
   border: none;
 
-  border-radius: 12px;
+  border-radius: 10px;
 
-  padding: 13px;
+  font-size: 14px;
+  font-weight: 700;
 
-  font-size: 16px;
+  cursor: pointer;
 
-  font-weight: 600;
+  -webkit-tap-highlight-color: transparent;
 }
-
 
 .confirm-cancel {
-
   background: #f2f2f7;
 
-  color: #3a3a3c;
+  color: #1d1d1f;
 }
-
 
 .confirm-ok {
-
   background: #007aff;
 
-  color: #fff;
+  color: #ffffff;
 }
 
-
-/* ========================================
-   タブレット
-======================================== */
-
-@media (max-width: 900px) {
-
-  .shift-layout {
-
-    grid-template-columns:
-      minmax(280px, 1fr)
-      minmax(280px, 1fr);
-
-  }
-
+.confirm-cancel:active,
+.confirm-ok:active {
+  transform: scale(0.97);
 }
 
+/* =========================================================
+   スクロールバー
+   ========================================================= */
 
-/* ========================================
+.table-wrapper::-webkit-scrollbar {
+  height: 8px;
+}
+
+.table-wrapper::-webkit-scrollbar-track {
+  background: #f2f2f7;
+
+  border-radius: 10px;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb {
+  background: #b8b8bd;
+
+  border-radius: 10px;
+}
+
+/* =========================================================
    スマートフォン
-======================================== */
+   ========================================================= */
 
 @media (max-width: 700px) {
 
-  .page {
+  /* -------------------------------------------------------
+     ページ
+     ------------------------------------------------------- */
 
+  .page {
     padding: 10px;
 
-    /*
-      登録画面は上下のみ
-    */
+    overflow: visible;
+
     touch-action: pan-y;
   }
 
-
-  .shift-layout {
-
-    grid-template-columns: 1fr;
-  }
-
-
-  .input-row {
-
-    flex-direction: column;
-  }
-
-
-  .input-row .add-button {
-
-    width: 100%;
-  }
-
-
-  .shift-list-card .list {
-
-    max-height: none;
-  }
-
-
-  .time-row {
-
-    display: flex;
-
-    flex-direction: row;
-
-    flex-wrap: nowrap;
-
-    align-items: center;
-
-    width: 100%;
-
-    height: 36px;
-
-    gap: 5px;
-  }
-
-
-  .time-row input[type="time"] {
-
-    flex: 1 1 0;
-
-    width: 0;
-
-    min-width: 0;
-
-    height: 36px;
-
-    min-height: 36px;
-
-    padding: 4px 5px;
-
-    font-size: 16px !important;
-
-    line-height: 26px;
-
-    text-align: center;
-  }
-
-
-  .time-row input[type="time"]
-  ::-webkit-date-and-time-value {
-
-    height: 26px;
-
-    line-height: 26px;
-
-    text-align: center;
-  }
-
-
-  .time-separator {
-
-    flex:
-      0 0 18px;
-
-    width: 18px;
-
-    height: 36px;
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    font-size: 16px;
-
-    line-height: 1;
-  }
-
-}
-
-
-/* ========================================
-   スマートフォン詳細
-======================================== */
-
-@media (max-width: 600px) {
+  /* -------------------------------------------------------
+     ヘッダー
+     ------------------------------------------------------- */
 
   .header {
+    min-height: 54px;
 
-    padding: 0 10px;
+    padding:
+      8px
+      10px;
   }
-
 
   .header-title {
-
-    font-size: 17px;
+    font-size: 18px;
   }
 
-
   .header-delete-buttons {
-
     gap: 4px;
   }
 
-
   .header-delete-buttons button {
+    min-height: 36px;
 
-    padding: 6px 7px;
+    padding: 6px 8px;
 
-    font-size: 10px;
+    font-size: 11px;
   }
 
+  /* -------------------------------------------------------
+     ナビ
+     ------------------------------------------------------- */
 
-  #scheduleTable .staff-header,
-  #scheduleTable .staff-cell,
-  #scheduleTable .staff-name-cell {
+  .nav {
+    gap: 6px;
 
-    width: 90px !important;
-
-    min-width: 90px !important;
-
-    max-width: 90px !important;
-
-    position: sticky !important;
-
-    left: 0 !important;
-
-    box-sizing: border-box !important;
+    padding: 8px;
   }
 
+  .nav-button {
+    min-height: 42px;
 
-  #scheduleTable .staff-header {
-
-    z-index: 100 !important;
-
-    background:
-      #f5f5f7 !important;
-  }
-
-
-  #scheduleTable .staff-cell {
-
-    z-index: 90 !important;
-
-    background:
-      #fff !important;
-  }
-
-
-  .date-header {
-
-    width: 42px;
-
-    min-width: 42px;
-
-    font-size: 16px;
-  }
-
-
-  .shift-cell {
-
-    width: 42px;
-
-    min-width: 42px;
+    padding: 8px 12px;
 
     font-size: 13px;
   }
 
+  /* -------------------------------------------------------
+     月
+     ------------------------------------------------------- */
 
-  .total-header,
-  .total-cell {
+  .month-title {
+    min-width: 140px;
 
-    width: 42px;
-
-    min-width: 42px;
+    font-size: 19px;
   }
 
-
-  #scheduleTable
-  thead
-  tr:first-child
-  th:not(.staff-header):not(.date-header) {
-
-    width: 100px;
-
-    min-width: 100px;
+  .month-button {
+    width: 40px;
+    height: 40px;
   }
 
+  /* -------------------------------------------------------
+     ヒント
+     ------------------------------------------------------- */
 
-  .date-row {
+  .calendar-hint {
+    font-size: 12px;
 
-    flex-direction: column;
-
-    align-items: stretch;
+    padding: 9px 10px;
   }
 
+  /* -------------------------------------------------------
+     勤務表
+     ------------------------------------------------------- */
 
-  .date-arrow {
+  .table-wrapper {
+    overflow-x: auto;
+    overflow-y: visible;
 
-    display: none;
+    touch-action: pan-x;
+
+    border-radius: 12px;
   }
 
-
-  .shift-menu {
-
-    width: 220px;
+  #scheduleTable {
+    font-size: 14px;
   }
 
+  #scheduleTable th,
+  #scheduleTable td {
+    padding: 7px 6px;
+  }
 
-  .shift-menu-button {
+  #scheduleTable td {
+    min-width: 60px;
 
+    height: 48px;
+
+    font-size: 14px;
+  }
+
+  #scheduleTable td:first-child {
+    min-width: 90px;
+
+    font-size: 14px;
+  }
+
+  /* -------------------------------------------------------
+     設定カード
+     ------------------------------------------------------- */
+
+  .settings-card {
+    padding: 14px;
+
+    border-radius: 14px;
+  }
+
+  .settings-card h2 {
+    font-size: 18px;
+  }
+
+  /* -------------------------------------------------------
+     入力
+     ------------------------------------------------------- */
+
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+
+  input[type="text"],
+  input[type="number"],
+  input[type="time"],
+  input[type="date"] {
+    min-height: 46px;
+  }
+
+  /* -------------------------------------------------------
+     追加ボタン
+     ------------------------------------------------------- */
+
+  .add-button {
     min-height: 46px;
 
-    font-size: 15px;
+    font-size: 14px;
   }
 
+  /* -------------------------------------------------------
+     職員入力
+     ------------------------------------------------------- */
+
+  .input-row {
+    gap: 7px;
+  }
+
+  .input-row .add-button {
+    min-width: 64px;
+
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  /* -------------------------------------------------------
+     勤務形態
+     ------------------------------------------------------- */
+
+  .shift-layout {
+    display: block;
+  }
+
+  .shift-layout > div {
+    width: 100%;
+  }
+
+  /* -------------------------------------------------------
+     時間
+     ------------------------------------------------------- */
 
   .time-row {
-
-    display: flex;
-
-    flex-direction: row;
-
-    flex-wrap: nowrap;
-
-    align-items: center;
-
-    width: 100%;
-
-    height: 36px;
-
-    gap: 5px;
+    gap: 7px;
   }
 
+  /* -------------------------------------------------------
+     日付
+     ------------------------------------------------------- */
 
-  .time-row input[type="time"] {
-
-    flex: 1 1 0;
-
-    width: 0;
-
-    min-width: 0;
-
-    height: 36px;
-
-    min-height: 36px;
-
-    padding: 4px 5px;
-
-    font-size: 16px !important;
-
-    line-height: 26px;
-
-    text-align: center;
+  .date-row {
+    gap: 6px;
   }
 
-
-  .time-separator {
-
-    flex:
-      0 0 18px;
-
-    width: 18px;
-
-    height: 36px;
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
+  .date-arrow {
     font-size: 16px;
   }
 
-}
+  /* -------------------------------------------------------
+     勤務メニュー
+     ------------------------------------------------------- */
 
+  .shift-menu {
+    width: calc(100vw - 20px);
 
-/* ========================================
-   勤務表の行幅をテーブル全体に固定
-======================================== */
+    max-height: 70vh;
 
-#scheduleTable {
+    padding: 10px;
 
-  table-layout: fixed !important;
-}
-
-
-#scheduleTable tbody {
-
-  width: 100%;
-}
-
-
-#scheduleTable tbody tr.staff-row {
-
-  width: 100% !important;
-
-  min-width: 100% !important;
-
-  max-width: none !important;
-
-  display: table-row !important;
-}
-
-
-#scheduleTable tbody tr.staff-row > th,
-#scheduleTable tbody tr.staff-row > td {
-
-  box-sizing: border-box;
-}
-
-
-/* ========================================
-   職員管理
-======================================== */
-
-.staff-list-header {
-
-  display: flex;
-
-  align-items: center;
-
-  justify-content: space-between;
-
-  margin-top: 18px;
-
-  margin-bottom: 8px;
-
-  padding: 0 2px;
-
-  font-size: 16px;
-
-  font-weight: 700;
-}
-
-
-#staffCount {
-
-  color: #8e8e93;
-
-  font-size: 14px;
-
-  font-weight: 600;
-}
-
-
-.staff-list-header + .list {
-
-  margin-top: 0;
-}
-
-
-/* ========================================
-   Safari / iOS
-======================================== */
-
-@supports (-webkit-touch-callout: none) {
-
-  input,
-  button {
-
-    -webkit-appearance: none;
+    border-radius: 14px;
   }
 
+  .shift-menu-buttons {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
 
-  .header,
+    gap: 6px;
+  }
+
+  .shift-menu-button {
+    min-height: 46px;
+
+    padding: 9px 6px;
+
+    font-size: 13px;
+  }
+
+  /* -------------------------------------------------------
+     モーダル
+     ------------------------------------------------------- */
+
+  .confirm-card {
+    padding: 18px;
+
+    border-radius: 15px;
+  }
+
+  .confirm-buttons {
+    gap: 7px;
+  }
+
+  .confirm-cancel,
+  .confirm-ok {
+    min-height: 48px;
+  }
+}
+
+/* =========================================================
+   さらに小さいスマホ
+   ========================================================= */
+
+@media (max-width: 390px) {
+
+  .header-title {
+    font-size: 17px;
+  }
+
+  .header-delete-buttons button {
+    padding: 6px;
+
+    font-size: 10px;
+  }
+
+  .nav-button {
+    padding: 8px 10px;
+
+    font-size: 12px;
+  }
+
+  .month-title {
+    min-width: 125px;
+
+    font-size: 18px;
+  }
+
+  #scheduleTable td {
+    min-width: 58px;
+  }
+
+  #scheduleTable td:first-child {
+    min-width: 84px;
+  }
+
+  .shift-menu-button {
+    font-size: 12px;
+  }
+}
+
+/* =========================================================
+   iPhone セーフエリア
+   ========================================================= */
+
+@supports (padding: max(0px)) {
+
+  .header {
+    padding-left: max(
+      14px,
+      env(safe-area-inset-left)
+    );
+
+    padding-right: max(
+      14px,
+      env(safe-area-inset-right)
+    );
+  }
+
+  .page {
+    padding-bottom: max(
+      14px,
+      env(safe-area-inset-bottom)
+    );
+  }
+
+}
+
+/* =========================================================
+   タップ時のハイライトを抑える
+   ========================================================= */
+
+button,
+input,
+select,
+textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* =========================================================
+   ボタン選択時
+   ========================================================= */
+
+button {
+  font-family: inherit;
+}
+
+/* =========================================================
+   disabled
+   ========================================================= */
+
+button:disabled {
+  opacity: 0.5;
+
+  cursor: default;
+}
+
+/* =========================================================
+   印刷
+   ========================================================= */
+
+@media print {
+
+  .header-delete-buttons,
   .nav,
-  .shift-menu,
-  .modal-overlay {
-
-    -webkit-backdrop-filter:
-      blur(20px);
+  .calendar-hint,
+  .month-button,
+  .shift-menu {
+    display: none !important;
   }
 
-
-  #scheduleTable .staff-header,
-  #scheduleTable .staff-cell {
-
-    -webkit-transform:
-      translateZ(0);
+  .page {
+    padding: 0;
   }
 
+  .table-wrapper {
+    overflow: visible;
+    box-shadow: none;
+    border: none;
+  }
+
+  #scheduleTable {
+    width: 100%;
+  }
 }
