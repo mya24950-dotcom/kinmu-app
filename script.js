@@ -3637,11 +3637,15 @@ function syncScheduleFixedLayers() {
       /*
        * 左上の「職員」だけ固定
        */
-      if (
-        fixedCell.classList.contains(
-          "staff-header"
-        )
-      ) {
+     if (
+  fixedCell.classList.contains(
+    "staff-header"
+  )
+) {
+
+  fixedCell.style.visibility =
+    "hidden";
+}
 
         fixedCell.style.position =
           "sticky";
@@ -3828,6 +3832,11 @@ function updateScheduleFixedLayers() {
   scheduleFixedHeader.style.display =
     "block";
 
+   if (scheduleFixedStaffHeader) {
+  scheduleFixedStaffHeader.style.display =
+    "block";
+}
+
   scheduleFixedHeader.style.left =
     wrapperRect.left + "px";
 
@@ -3862,6 +3871,11 @@ function hideScheduleFixedLayers() {
 
     scheduleFixedHeader.style.display =
       "none";
+
+     if (scheduleFixedStaffHeader) {
+  scheduleFixedStaffHeader.style.display =
+    "none";
+}
   }
 }
 
