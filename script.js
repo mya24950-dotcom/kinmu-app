@@ -4694,10 +4694,9 @@ if (
       box-sizing: border-box;
     }
 
-    #scheduleFixedHeader {
-      box-sizing: border-box;
-      overflow: hidden;
-    }
+  #scheduleFixedStaffColumn {
+  display: none !important;
+}
 
     #scheduleFixedHeader table {
       border-collapse: separate;
