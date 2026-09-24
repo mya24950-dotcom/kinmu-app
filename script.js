@@ -195,10 +195,7 @@ async function init() {
     loadLocalData();
 
 
-    bindEvents();
-
-
-    renderAll();
+   renderAll();
 
 
     loadPublicHolidays();
