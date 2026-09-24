@@ -92,19 +92,6 @@ let realtimeUpdating =
 let cloudOperationBusy =
   false;
 
-
-/*
-   保存中にRealtime通知が来た場合、
-
-   以前：
-   「保存中だからreturn」
-   → 通知を捨てる
-
-   今回：
-   「保存後に再読み込みする」
-   → 通知を取りこぼさない
-*/
-
 let realtimeReloadPending =
   false;
 
@@ -118,7 +105,7 @@ let shiftMenuMode =
 
 
 /* ==================================================
-   固定ヘッダー
+   固定レイヤー
 ================================================== */
 
 let scheduleFixedHeader =
@@ -175,7 +162,6 @@ async function init() {
 
     loadLocalData();
 
-
     bindEvents();
 
 
@@ -199,15 +185,11 @@ async function init() {
 
     renderAll();
 
-
     loadPublicHolidays();
-
 
     setupRealtime();
 
-
     startAutoSync();
-
 
     setupVisibilitySync();
 
@@ -227,9 +209,7 @@ async function init() {
 
     loadLocalData();
 
-
     renderAll();
-
 
     loadPublicHolidays();
 
@@ -360,7 +340,7 @@ function saveLocalData() {
 
 
 /* ==================================================
-   Supabaseから全データ取得
+   Supabase全データ取得
 ================================================== */
 
 async function loadAllFromSupabase() {
@@ -373,10 +353,6 @@ async function loadAllFromSupabase() {
 
   }
 
-
-  /* ==================================================
-     職員
-  ================================================== */
 
   const staffResult =
     await supabaseClient
@@ -392,10 +368,6 @@ async function loadAllFromSupabase() {
 
   }
 
-
-  /* ==================================================
-     勤務形態
-  ================================================== */
 
   const shiftResult =
     await supabaseClient
@@ -418,10 +390,6 @@ async function loadAllFromSupabase() {
   }
 
 
-  /* ==================================================
-     勤務
-  ================================================== */
-
   const workResult =
     await supabaseClient
       .from("work_shifts")
@@ -436,10 +404,6 @@ async function loadAllFromSupabase() {
 
   }
 
-
-  /* ==================================================
-     休暇
-  ================================================== */
 
   const leaveResult =
     await supabaseClient
@@ -465,10 +429,6 @@ async function loadAllFromSupabase() {
   }
 
 
-  /* ==================================================
-     休業
-  ================================================== */
-
   const holidayResult =
     await supabaseClient
       .from("company_holidays")
@@ -493,10 +453,6 @@ async function loadAllFromSupabase() {
   }
 
 
-  /* ==================================================
-     職員
-  ================================================== */
-
   const rawStaff =
     (staffResult.data || [])
       .map(
@@ -513,11 +469,9 @@ async function loadAllFromSupabase() {
           sort_order:
             row.sort_order !== null &&
             row.sort_order !== undefined
-
               ? Number(
                   row.sort_order
                 )
-
               : null,
 
           calendar_token:
@@ -555,20 +509,15 @@ async function loadAllFromSupabase() {
 
       if (
         aHas &&
-        bHas
+        bHas &&
+        a.sort_order !==
+          b.sort_order
       ) {
 
-        if (
-          a.sort_order !==
+        return (
+          a.sort_order -
           b.sort_order
-        ) {
-
-          return (
-            a.sort_order -
-            b.sort_order
-          );
-
-        }
+        );
 
       }
 
@@ -648,10 +597,6 @@ async function loadAllFromSupabase() {
     );
 
 
-  /* ==================================================
-     勤務形態
-  ================================================== */
-
   appData.shiftTypes =
     (shiftResult.data || [])
       .map(
@@ -689,10 +634,6 @@ async function loadAllFromSupabase() {
       );
 
 
-  /* ==================================================
-     休暇
-  ================================================== */
-
   if (
     !leaveResult.error
   ) {
@@ -728,10 +669,6 @@ async function loadAllFromSupabase() {
 
   }
 
-
-  /* ==================================================
-     勤務データ
-  ================================================== */
 
   appData.shifts =
     {};
@@ -793,10 +730,6 @@ async function loadAllFromSupabase() {
     );
 
 
-  /* ==================================================
-     休業
-  ================================================== */
-
   if (
     !holidayResult.error
   ) {
@@ -841,10 +774,6 @@ async function loadAllFromSupabase() {
 
   }
 
-
-  /* ==================================================
-     明け時間
-  ================================================== */
 
   const akeResult =
     await supabaseClient
@@ -946,7 +875,6 @@ function setupRealtime() {
 
     }
 
-
     realtimeChannel =
       null;
 
@@ -959,10 +887,6 @@ function setupRealtime() {
         "kinmu-app-realtime"
       )
 
-
-      /* -----------------------------------------------
-         職員
-      ------------------------------------------------ */
 
       .on(
         "postgres_changes",
@@ -978,16 +902,11 @@ function setupRealtime() {
             payload
           );
 
-
           scheduleRealtimeReload();
 
         }
       )
 
-
-      /* -----------------------------------------------
-         勤務
-      ------------------------------------------------ */
 
       .on(
         "postgres_changes",
@@ -1003,16 +922,11 @@ function setupRealtime() {
             payload
           );
 
-
           scheduleRealtimeReload();
 
         }
       )
 
-
-      /* -----------------------------------------------
-         勤務形態
-      ------------------------------------------------ */
 
       .on(
         "postgres_changes",
@@ -1028,16 +942,11 @@ function setupRealtime() {
             payload
           );
 
-
           scheduleRealtimeReload();
 
         }
       )
 
-
-      /* -----------------------------------------------
-         休暇
-      ------------------------------------------------ */
 
       .on(
         "postgres_changes",
@@ -1053,16 +962,11 @@ function setupRealtime() {
             payload
           );
 
-
           scheduleRealtimeReload();
 
         }
       )
 
-
-      /* -----------------------------------------------
-         休業
-      ------------------------------------------------ */
 
       .on(
         "postgres_changes",
@@ -1078,16 +982,11 @@ function setupRealtime() {
             payload
           );
 
-
           scheduleRealtimeReload();
 
         }
       )
 
-
-      /* -----------------------------------------------
-         明け時間
-      ------------------------------------------------ */
 
       .on(
         "postgres_changes",
@@ -1102,7 +1001,6 @@ function setupRealtime() {
             "Realtime app_settings:",
             payload
           );
-
 
           scheduleRealtimeReload();
 
@@ -1140,11 +1038,6 @@ function setupRealtime() {
               "CLOSED"
           ) {
 
-            console.warn(
-              "Realtime接続エラー。再接続します。"
-            );
-
-
             setTimeout(
               () => {
 
@@ -1175,20 +1068,12 @@ function setupRealtime() {
 
 function scheduleRealtimeReload() {
 
-  /*
-    保存中でも通知を捨てない
-  */
-
   if (
     cloudOperationBusy
   ) {
 
     realtimeReloadPending =
       true;
-
-    console.log(
-      "Realtime更新を保留しました"
-    );
 
     return;
 
@@ -1226,10 +1111,6 @@ async function reloadFromSupabase() {
   }
 
 
-  /*
-    保存中の場合は保留
-  */
-
   if (
     cloudOperationBusy
   ) {
@@ -1262,13 +1143,8 @@ async function reloadFromSupabase() {
 
     await loadAllFromSupabase();
 
-
     renderAll();
 
-
-    console.log(
-      "★ Supabaseデータを画面へ反映しました"
-    );
 
   } catch (error) {
 
@@ -1283,10 +1159,6 @@ async function reloadFromSupabase() {
       false;
 
 
-    /*
-      更新中にさらに通知が来た場合
-    */
-
     if (
       realtimeReloadPending &&
       !cloudOperationBusy
@@ -1294,7 +1166,6 @@ async function reloadFromSupabase() {
 
       realtimeReloadPending =
         false;
-
 
       scheduleRealtimeReload();
 
@@ -1306,7 +1177,7 @@ async function reloadFromSupabase() {
 
 
 /* ==================================================
-   保存完了後のRealtime処理
+   保存完了後
 ================================================== */
 
 function finishCloudOperation() {
@@ -1322,23 +1193,6 @@ function finishCloudOperation() {
     realtimeReloadPending =
       false;
 
-
-    /*
-      自分自身の保存後にも
-      Supabaseから最新状態を取得する。
-
-      これにより
-
-      端末Aで保存
-      ↓
-      Supabase保存
-      ↓
-      端末AもSupabaseから再取得
-      ↓
-      他端末もRealtimeで取得
-
-      という流れになる。
-    */
 
     setTimeout(
       () => {
@@ -1388,11 +1242,6 @@ function startAutoSync() {
           cloudOperationBusy
         ) {
 
-          /*
-            10秒同期でも保存中は
-            次回に回す
-          */
-
           realtimeReloadPending =
             true;
 
@@ -1421,7 +1270,7 @@ function startAutoSync() {
 
 
 /* ==================================================
-   画面復帰時同期
+   画面復帰
 ================================================== */
 
 function setupVisibilitySync() {
@@ -1444,7 +1293,6 @@ function setupVisibilitySync() {
         async () => {
 
           await reloadFromSupabase();
-
 
           setupRealtime();
 
@@ -1486,15 +1334,11 @@ function bindEvents() {
     );
 
 
-  const prev =
-    document.getElementById(
+  document
+    .getElementById(
       "prevMonth"
-    );
-
-
-  if (prev) {
-
-    prev.addEventListener(
+    )
+    ?.addEventListener(
       "click",
       () => {
 
@@ -1502,24 +1346,17 @@ function bindEvents() {
           currentDate.getMonth() - 1
         );
 
-
         renderSchedule();
 
       }
     );
 
-  }
 
-
-  const next =
-    document.getElementById(
+  document
+    .getElementById(
       "nextMonth"
-    );
-
-
-  if (next) {
-
-    next.addEventListener(
+    )
+    ?.addEventListener(
       "click",
       () => {
 
@@ -1527,157 +1364,100 @@ function bindEvents() {
           currentDate.getMonth() + 1
         );
 
-
         renderSchedule();
 
       }
     );
 
-  }
 
-
-  const addStaff =
-    document.getElementById(
+  document
+    .getElementById(
       "addStaffButton"
-    );
-
-
-  if (addStaff) {
-
-    addStaff.addEventListener(
+    )
+    ?.addEventListener(
       "click",
       addOrUpdateStaff
     );
 
-  }
 
-
-  const addShift =
-    document.getElementById(
+  document
+    .getElementById(
       "addShiftButton"
-    );
-
-
-  if (addShift) {
-
-    addShift.addEventListener(
+    )
+    ?.addEventListener(
       "click",
       addOrUpdateShift
     );
 
-  }
 
-
-  const addLeave =
-    document.getElementById(
+  document
+    .getElementById(
       "addLeaveButton"
-    );
-
-
-  if (addLeave) {
-
-    addLeave.addEventListener(
+    )
+    ?.addEventListener(
       "click",
       addOrUpdateLeave
     );
 
-  }
 
-
-  const addHoliday =
-    document.getElementById(
+  document
+    .getElementById(
       "addCompanyHolidayButton"
-    );
-
-
-  if (addHoliday) {
-
-    addHoliday.addEventListener(
+    )
+    ?.addEventListener(
       "click",
       addCompanyHoliday
     );
 
-  }
 
-
-  const saveAke =
-    document.getElementById(
+  document
+    .getElementById(
       "saveAkeTimeButton"
-    );
-
-
-  if (saveAke) {
-
-    saveAke.addEventListener(
+    )
+    ?.addEventListener(
       "click",
       saveAkeTime
     );
 
-  }
 
-
-  const calendarCancel =
-    document.getElementById(
+  document
+    .getElementById(
       "calendarCancelButton"
-    );
-
-
-  if (calendarCancel) {
-
-    calendarCancel.addEventListener(
+    )
+    ?.addEventListener(
       "click",
       closeCalendarModal
     );
 
-  }
 
-
-  const calendarOK =
-    document.getElementById(
+  document
+    .getElementById(
       "calendarOKButton"
-    );
-
-
-  if (calendarOK) {
-
-    calendarOK.addEventListener(
+    )
+    ?.addEventListener(
       "click",
       subscribeStaffCalendar
     );
 
-  }
 
-
-  const deleteMonth =
-    document.getElementById(
+  document
+    .getElementById(
       "deleteMonthButton"
-    );
-
-
-  if (deleteMonth) {
-
-    deleteMonth.addEventListener(
+    )
+    ?.addEventListener(
       "click",
       deleteCurrentMonth
     );
 
-  }
 
-
-  const deleteFiscal =
-    document.getElementById(
+  document
+    .getElementById(
       "deleteFiscalYearButton"
-    );
-
-
-  if (deleteFiscal) {
-
-    deleteFiscal.addEventListener(
+    )
+    ?.addEventListener(
       "click",
       deleteFiscalYear
     );
-
-  }
 
 
   document.addEventListener(
@@ -1717,7 +1497,7 @@ function bindEvents() {
 
 
 /* ==================================================
-   ページ切り替え
+   ページ
 ================================================== */
 
 function showPage(
@@ -1963,7 +1743,46 @@ function isPublicHoliday(
 
 
 /* ==================================================
-   勤務データ取得
+   職員名
+================================================== */
+
+function getStaffName(
+  staff
+) {
+
+  if (
+    typeof staff ===
+    "string"
+  ) {
+
+    return staff;
+
+  }
+
+
+  if (
+    staff &&
+    typeof staff ===
+      "object" &&
+    staff.name
+  ) {
+
+    return String(
+      staff.name
+    );
+
+  }
+
+
+  return String(
+    staff ?? ""
+  );
+
+}
+
+
+/* ==================================================
+   勤務データ
 ================================================== */
 
 function getStoredShift(
@@ -2094,45 +1913,6 @@ function setStoredShift(
 
 
 /* ==================================================
-   職員名
-================================================== */
-
-function getStaffName(
-  staff
-) {
-
-  if (
-    typeof staff ===
-    "string"
-  ) {
-
-    return staff;
-
-  }
-
-
-  if (
-    staff &&
-    typeof staff ===
-      "object" &&
-    staff.name
-  ) {
-
-    return String(
-      staff.name
-    );
-
-  }
-
-
-  return String(
-    staff ?? ""
-  );
-
-}
-
-
-/* ==================================================
    自動「明」
 ================================================== */
 
@@ -2244,23 +2024,18 @@ function getLeaveColor(
     );
 
 
-  if (
+  return (
     leave &&
     leave.color
-  ) {
-
-    return leave.color;
-
-  }
-
-
-  return "";
+  )
+    ? leave.color
+    : "";
 
 }
 
 
 /* ==================================================
-   集計用勤務形態正規化
+   集計用正規化
 ================================================== */
 
 function normalizeShiftNameForTotal(
@@ -2293,7 +2068,6 @@ function normalizeShiftNameForTotal(
     Array.isArray(
       appData.shiftTypes
     )
-
       ? [
           ...new Set(
             appData.shiftTypes
@@ -2311,12 +2085,12 @@ function normalizeShiftNameForTotal(
               )
           )
         ]
-
       : [];
 
 
   if (
-    shiftNames.length === 0
+    shiftNames.length ===
+    0
   ) {
 
     return text;
@@ -2340,7 +2114,8 @@ function normalizeShiftNameForTotal(
 
 
   if (
-    candidates.length === 0
+    candidates.length ===
+    0
   ) {
 
     return text;
@@ -2348,7 +2123,7 @@ function normalizeShiftNameForTotal(
   }
 
 
-  const shorterCandidates =
+  const shorter =
     candidates.filter(
       name =>
         name.length <
@@ -2357,17 +2132,17 @@ function normalizeShiftNameForTotal(
 
 
   if (
-    shorterCandidates.length > 0
+    shorter.length
   ) {
 
-    shorterCandidates.sort(
+    shorter.sort(
       (a, b) =>
         b.length -
         a.length
     );
 
 
-    return shorterCandidates[0];
+    return shorter[0];
 
   }
 
@@ -2378,7 +2153,7 @@ function normalizeShiftNameForTotal(
 
 
 /* ==================================================
-   合計列用勤務形態一覧
+   合計対象
 ================================================== */
 
 function getTotalShiftTypes() {
@@ -2436,18 +2211,8 @@ function getTotalShiftTypes() {
 
       if (
         !baseName ||
-        baseName === "明"
-      ) {
-
-        return;
-
-      }
-
-
-      if (
-        seen.has(
-          baseName
-        )
+        baseName === "明" ||
+        seen.has(baseName)
       ) {
 
         return;
@@ -2460,7 +2225,7 @@ function getTotalShiftTypes() {
       );
 
 
-      const exactBase =
+      const exact =
         appData.shiftTypes.find(
           item =>
             String(
@@ -2472,7 +2237,7 @@ function getTotalShiftTypes() {
 
 
       result.push(
-        exactBase ||
+        exact ||
         {
           ...shift,
           name:
@@ -2485,199 +2250,6 @@ function getTotalShiftTypes() {
 
 
   return result;
-
-}
-
-
-/* ==================================================
-   休暇一覧表示
-================================================== */
-
-function renderLeaveLegend() {
-
-  const table =
-    document.getElementById(
-      "scheduleTable"
-    );
-
-
-  if (!table) {
-
-    return;
-
-  }
-
-
-  let legend =
-    document.getElementById(
-      "leaveLegend"
-    );
-
-
-  if (!legend) {
-
-    legend =
-      document.createElement(
-        "div"
-      );
-
-
-    legend.id =
-      "leaveLegend";
-
-
-    legend.style.marginTop =
-      "10px";
-
-
-    legend.style.marginBottom =
-      "10px";
-
-
-    legend.style.padding =
-      "10px 12px";
-
-
-    legend.style.border =
-      "1px solid #d1d1d6";
-
-
-    legend.style.borderRadius =
-      "10px";
-
-
-    legend.style.background =
-      "#ffffff";
-
-
-    legend.style.boxSizing =
-      "border-box";
-
-
-    if (
-      table.parentElement
-    ) {
-
-      table.parentElement.insertBefore(
-        legend,
-        table.nextSibling
-      );
-
-    }
-
-  }
-
-
-  if (
-    !Array.isArray(
-      appData.leaveTypes
-    ) ||
-    appData.leaveTypes.length ===
-      0
-  ) {
-
-    legend.style.display =
-      "none";
-
-
-    legend.innerHTML =
-      "";
-
-
-    return;
-
-  }
-
-
-  legend.style.display =
-    "flex";
-
-
-  legend.style.flexWrap =
-    "wrap";
-
-
-  legend.style.alignItems =
-    "center";
-
-
-  legend.style.gap =
-    "8px 14px";
-
-
-  let html =
-    `
-      <div
-        style="
-          width:100%;
-          font-weight:700;
-          font-size:14px;
-          margin-bottom:2px;
-        "
-      >
-        🏖️ 休暇一覧
-      </div>
-    `;
-
-
-  appData.leaveTypes.forEach(
-    leave => {
-
-      const color =
-        leave.color ||
-        "#FFD54F";
-
-
-      html += `
-        <div
-          style="
-            display:flex;
-            align-items:center;
-            gap:6px;
-            min-height:28px;
-          "
-        >
-
-          <span
-            style="
-              display:inline-flex;
-              align-items:center;
-              justify-content:center;
-              min-width:20px;
-              width:20px;
-              height:20px;
-              border-radius:5px;
-              background:${escapeHtml(
-                color
-              )};
-              border:1px solid rgba(0,0,0,.18);
-              box-sizing:border-box;
-              flex-shrink:0;
-            "
-          ></span>
-
-          <span
-            style="
-              font-size:13px;
-              line-height:1.3;
-              color:#222;
-              white-space:nowrap;
-            "
-          >
-            ${escapeHtml(
-              leave.name
-            )}
-          </span>
-
-        </div>
-      `;
-
-    }
-  );
-
-
-  legend.innerHTML =
-    html;
 
 }
 
@@ -2730,10 +2302,6 @@ function renderSchedule() {
   }
 
 
-  /* ==================================================
-     列幅
-  ================================================== */
-
   const staffColumnWidth =
     90;
 
@@ -2759,7 +2327,7 @@ function renderSchedule() {
 
 
   /* ==================================================
-     colgroup
+     列
   ================================================== */
 
   html +=
@@ -2845,16 +2413,11 @@ function renderSchedule() {
         width:${staffColumnWidth}px;
         min-width:${staffColumnWidth}px;
         max-width:${staffColumnWidth}px;
-
         position:sticky;
         left:0;
-
         z-index:300;
-
         background:#f2f2f7;
-
         box-sizing:border-box;
-
         border-right:1px solid #d1d1d6;
       "
     >
@@ -2926,16 +2489,13 @@ function renderSchedule() {
           width:${dateColumnWidth}px;
           min-width:${dateColumnWidth}px;
           max-width:${dateColumnWidth}px;
-
           box-sizing:border-box;
         "
       >
         <span class="day-number">
           ${day}
         </span>
-
         <br>
-
         <span class="day-week">
           ${
             [
@@ -2987,7 +2547,6 @@ function renderSchedule() {
             width:${totalColumnWidth}px;
             min-width:${totalColumnWidth}px;
             max-width:${totalColumnWidth}px;
-
             box-sizing:border-box;
           "
         >
@@ -3000,7 +2559,6 @@ function renderSchedule() {
             width:${totalColumnWidth}px;
             min-width:${totalColumnWidth}px;
             max-width:${totalColumnWidth}px;
-
             box-sizing:border-box;
           "
         >
@@ -3049,16 +2607,11 @@ function renderSchedule() {
             width:${staffColumnWidth}px;
             min-width:${staffColumnWidth}px;
             max-width:${staffColumnWidth}px;
-
             position:sticky;
             left:0;
-
             z-index:200;
-
             background:#ffffff;
-
             box-sizing:border-box;
-
             border-right:1px solid #d1d1d6;
           "
         >
@@ -3163,14 +2716,11 @@ function renderSchedule() {
               staffName
             )}"
             data-date="${dateKey}"
-
             style="
               width:${dateColumnWidth}px;
               min-width:${dateColumnWidth}px;
               max-width:${dateColumnWidth}px;
-
               box-sizing:border-box;
-
               ${backgroundStyle}
             "
           >
@@ -3215,7 +2765,6 @@ function renderSchedule() {
                 width:${totalColumnWidth}px;
                 min-width:${totalColumnWidth}px;
                 max-width:${totalColumnWidth}px;
-
                 box-sizing:border-box;
               "
             >
@@ -3228,7 +2777,6 @@ function renderSchedule() {
                 width:${totalColumnWidth}px;
                 min-width:${totalColumnWidth}px;
                 max-width:${totalColumnWidth}px;
-
                 box-sizing:border-box;
               "
             >
@@ -3252,16 +2800,14 @@ function renderSchedule() {
 
 
   /* ==================================================
-     テーブル設定
+     テーブル幅
   ================================================== */
 
   table.style.borderCollapse =
     "separate";
 
-
   table.style.borderSpacing =
     "0";
-
 
   table.style.tableLayout =
     "fixed";
@@ -3290,41 +2836,212 @@ function renderSchedule() {
     "none";
 
 
-  /* ==================================================
-     HTML反映
-  ================================================== */
-
   table.innerHTML =
     html;
 
-
-  /* ==================================================
-     イベント
-  ================================================== */
 
   bindScheduleCells();
 
   bindStaffNameCells();
 
-
-  /* ==================================================
-     休暇一覧
-  ================================================== */
-
   renderLeaveLegend();
 
 
-  /* ==================================================
-     固定ヘッダー
-  ================================================== */
+  /*
+    既存の固定レイヤーを完全に作り直す。
+    これが今回の重要部分。
+  */
 
   updateScheduleFixedLayers();
 
 }
 
 
+/* ==================================================
+   休暇一覧
+================================================== */
+
+function renderLeaveLegend() {
+
+  const table =
+    document.getElementById(
+      "scheduleTable"
+    );
+
+
+  if (!table) {
+
+    return;
+
+  }
+
+
+  let legend =
+    document.getElementById(
+      "leaveLegend"
+    );
+
+
+  if (!legend) {
+
+    legend =
+      document.createElement(
+        "div"
+      );
+
+
+    legend.id =
+      "leaveLegend";
+
+
+    legend.style.marginTop =
+      "10px";
+
+
+    legend.style.marginBottom =
+      "10px";
+
+
+    legend.style.padding =
+      "10px 12px";
+
+
+    legend.style.border =
+      "1px solid #d1d1d6";
+
+
+    legend.style.borderRadius =
+      "10px";
+
+
+    legend.style.background =
+      "#ffffff";
+
+
+    legend.style.boxSizing =
+      "border-box";
+
+
+    if (
+      table.parentElement
+    ) {
+
+      table.parentElement.insertBefore(
+        legend,
+        table.nextSibling
+      );
+
+    }
+
+  }
+
+
+  if (
+    !Array.isArray(
+      appData.leaveTypes
+    ) ||
+    appData.leaveTypes.length ===
+      0
+  ) {
+
+    legend.style.display =
+      "none";
+
+    legend.innerHTML =
+      "";
+
+    return;
+
+  }
+
+
+  legend.style.display =
+    "flex";
+
+  legend.style.flexWrap =
+    "wrap";
+
+  legend.style.alignItems =
+    "center";
+
+  legend.style.gap =
+    "8px 14px";
+
+
+  let html =
+    `
+      <div
+        style="
+          width:100%;
+          font-weight:700;
+          font-size:14px;
+          margin-bottom:2px;
+        "
+      >
+        🏖️ 休暇一覧
+      </div>
+    `;
+
+
+  appData.leaveTypes.forEach(
+    leave => {
+
+      const color =
+        leave.color ||
+        "#FFD54F";
+
+
+      html += `
+        <div
+          style="
+            display:flex;
+            align-items:center;
+            gap:6px;
+            min-height:28px;
+          "
+        >
+          <span
+            style="
+              display:inline-flex;
+              width:20px;
+              height:20px;
+              border-radius:5px;
+              background:${escapeHtml(
+                color
+              )};
+              border:1px solid rgba(0,0,0,.18);
+              box-sizing:border-box;
+              flex-shrink:0;
+            "
+          ></span>
+
+          <span
+            style="
+              font-size:13px;
+              line-height:1.3;
+              color:#222;
+              white-space:nowrap;
+            "
+          >
+            ${escapeHtml(
+              leave.name
+            )}
+          </span>
+        </div>
+      `;
+
+    }
+  );
+
+
+  legend.innerHTML =
+    html;
+
+}
+
+
 /* =========================================================
-   固定レイヤー作成
+   ★ 固定レイヤー作成
 ========================================================= */
 
 function createScheduleFixedLayers() {
@@ -3362,6 +3079,7 @@ function createScheduleFixedLayers() {
 
   if (
     !thead ||
+    !tbody ||
     !wrapper
   ) {
 
@@ -3371,7 +3089,7 @@ function createScheduleFixedLayers() {
 
 
   /* ==================================================
-     既存削除
+     既存レイヤー削除
   ================================================== */
 
   if (
@@ -3379,12 +3097,6 @@ function createScheduleFixedLayers() {
   ) {
 
     scheduleFixedHeader.remove();
-
-    scheduleFixedHeader =
-      null;
-
-    scheduleFixedHeaderTable =
-      null;
 
   }
 
@@ -3395,17 +3107,30 @@ function createScheduleFixedLayers() {
 
     scheduleFixedStaffColumn.remove();
 
-    scheduleFixedStaffColumn =
-      null;
-
-    scheduleFixedStaffTable =
-      null;
-
   }
+
+
+  scheduleFixedHeader =
+    null;
+
+  scheduleFixedHeaderTable =
+    null;
+
+  scheduleFixedStaffColumn =
+    null;
+
+  scheduleFixedStaffTable =
+    null;
 
 
   /* ==================================================
      固定ヘッダー
+     
+     ★重要
+     職員列をここには入れない。
+     
+     日付・合計・累計だけを
+     固定ヘッダーとして表示する。
   ================================================== */
 
   const fixedHeader =
@@ -3421,34 +3146,26 @@ function createScheduleFixedLayers() {
   fixedHeader.style.position =
     "fixed";
 
-
   fixedHeader.style.display =
     "none";
-
 
   fixedHeader.style.overflow =
     "hidden";
 
-
   fixedHeader.style.margin =
     "0";
-
 
   fixedHeader.style.padding =
     "0";
 
-
   fixedHeader.style.background =
-    "#f8f8fa";
-
+    "#f2f2f7";
 
   fixedHeader.style.zIndex =
     "999";
 
-
   fixedHeader.style.pointerEvents =
     "none";
-
 
   fixedHeader.style.boxSizing =
     "border-box";
@@ -3460,29 +3177,29 @@ function createScheduleFixedLayers() {
     );
 
 
+  fixedHeaderTable.className =
+    "schedule-fixed-header-table";
+
+
   fixedHeaderTable.style.borderCollapse =
     "separate";
-
 
   fixedHeaderTable.style.borderSpacing =
     "0";
 
-
   fixedHeaderTable.style.tableLayout =
     "fixed";
 
-
   fixedHeaderTable.style.margin =
     "0";
-
 
   fixedHeaderTable.style.padding =
     "0";
 
 
-  fixedHeaderTable.style.position =
-    "relative";
-
+  /* ==================================================
+     colgroupから職員列を除外
+  ================================================== */
 
   const originalColgroup =
     table.querySelector(
@@ -3492,19 +3209,53 @@ function createScheduleFixedLayers() {
 
   if (originalColgroup) {
 
-    fixedHeaderTable.appendChild(
+    const newColgroup =
       originalColgroup.cloneNode(
         true
-      )
+      );
+
+
+    const firstCol =
+      newColgroup.querySelector(
+        "col"
+      );
+
+
+    if (firstCol) {
+
+      firstCol.remove();
+
+    }
+
+
+    fixedHeaderTable.appendChild(
+      newColgroup
     );
 
   }
 
 
+  /* ==================================================
+     theadから職員セルを除外
+  ================================================== */
+
   const fixedThead =
     thead.cloneNode(
       true
     );
+
+
+  const fixedStaffHeader =
+    fixedThead.querySelector(
+      ".staff-header"
+    );
+
+
+  if (fixedStaffHeader) {
+
+    fixedStaffHeader.remove();
+
+  }
 
 
   fixedHeaderTable.appendChild(
@@ -3524,7 +3275,6 @@ function createScheduleFixedLayers() {
 
   scheduleFixedHeader =
     fixedHeader;
-
 
   scheduleFixedHeaderTable =
     fixedHeaderTable;
@@ -3547,141 +3297,117 @@ function createScheduleFixedLayers() {
   fixedStaff.style.position =
     "fixed";
 
-
   fixedStaff.style.display =
     "none";
-
 
   fixedStaff.style.overflow =
     "hidden";
 
-
   fixedStaff.style.margin =
     "0";
-
 
   fixedStaff.style.padding =
     "0";
 
-
   fixedStaff.style.background =
     "#ffffff";
-
 
   fixedStaff.style.zIndex =
     "1000";
 
-
   fixedStaff.style.pointerEvents =
     "none";
 
-
   fixedStaff.style.boxSizing =
     "border-box";
-
-
-  const fixedStaffTable =
-    document.createElement(
-      "table"
-    );
-
-
-  fixedStaffTable.style.borderCollapse =
-    "separate";
-
-
-  fixedStaffTable.style.borderSpacing =
-    "0";
-
-
-  fixedStaffTable.style.tableLayout =
-    "fixed";
-
-
-  fixedStaffTable.style.margin =
-    "0";
-
-
-  fixedStaffTable.style.padding =
-    "0";
-
-
-  fixedStaffTable.style.position =
-    "relative";
 
 
   /* ==================================================
      職員ヘッダー
   ================================================== */
 
-  const fixedStaffThead =
+  const fixedStaffHeaderTable =
+    document.createElement(
+      "table"
+    );
+
+
+  fixedStaffHeaderTable.className =
+    "schedule-fixed-staff-header";
+
+
+  fixedStaffHeaderTable.style.borderCollapse =
+    "separate";
+
+  fixedStaffHeaderTable.style.borderSpacing =
+    "0";
+
+  fixedStaffHeaderTable.style.tableLayout =
+    "fixed";
+
+  fixedStaffHeaderTable.style.margin =
+    "0";
+
+  fixedStaffHeaderTable.style.padding =
+    "0";
+
+
+  const headerRow =
+    document.createElement(
+      "tr"
+    );
+
+
+  const originalStaffHeader =
+    thead.querySelector(
+      ".staff-header"
+    );
+
+
+  if (originalStaffHeader) {
+
+    const cloned =
+      originalStaffHeader.cloneNode(
+        true
+      );
+
+
+    cloned.style.position =
+      "static";
+
+    cloned.style.left =
+      "auto";
+
+    cloned.style.top =
+      "auto";
+
+    cloned.style.zIndex =
+      "1";
+
+    cloned.style.visibility =
+      "visible";
+
+
+    headerRow.appendChild(
+      cloned
+    );
+
+  }
+
+
+  const headerThead =
     document.createElement(
       "thead"
     );
 
 
-  const headerRows =
-    Array.from(
-      thead.querySelectorAll(
-        "tr"
-      )
-    );
+  headerThead.appendChild(
+    headerRow
+  );
 
 
-  headerRows.forEach(
-    (originalRow, rowIndex) => {
-
-      const newRow =
-        document.createElement(
-          "tr"
-        );
-
-
-      const staffCell =
-        originalRow.querySelector(
-          ".staff-header"
-        );
-
-
-      if (
-        rowIndex === 0 &&
-        staffCell
-      ) {
-
-        const cloned =
-          staffCell.cloneNode(
-            true
-          );
-
-
-        cloned.style.position =
-          "static";
-
-
-        cloned.style.left =
-          "auto";
-
-
-        cloned.style.top =
-          "auto";
-
-
-        cloned.style.zIndex =
-          "1";
-
-
-        newRow.appendChild(
-          cloned
-        );
-
-      }
-
-
-      fixedStaffThead.appendChild(
-        newRow
-      );
-
-    }
+  fixedStaffHeaderTable.appendChild(
+    headerThead
   );
 
 
@@ -3689,91 +3415,108 @@ function createScheduleFixedLayers() {
      職員名
   ================================================== */
 
-  const fixedStaffTbody =
+  const fixedStaffBodyTable =
+    document.createElement(
+      "table"
+    );
+
+
+  fixedStaffBodyTable.className =
+    "schedule-fixed-staff-body";
+
+
+  fixedStaffBodyTable.style.borderCollapse =
+    "separate";
+
+  fixedStaffBodyTable.style.borderSpacing =
+    "0";
+
+  fixedStaffBodyTable.style.tableLayout =
+    "fixed";
+
+  fixedStaffBodyTable.style.margin =
+    "0";
+
+  fixedStaffBodyTable.style.padding =
+    "0";
+
+
+  const fixedStaffBody =
     document.createElement(
       "tbody"
     );
 
 
-  if (tbody) {
-
-    const staffRows =
-      tbody.querySelectorAll(
-        "tr"
-      );
-
-
-    staffRows.forEach(
+  tbody
+    .querySelectorAll(
+      "tr"
+    )
+    .forEach(
       originalRow => {
 
-        const staffCell =
+        const originalCell =
           originalRow.querySelector(
             ".staff-name-cell"
           );
 
 
-        if (!staffCell) {
+        if (!originalCell) {
 
           return;
 
         }
 
 
-        const newRow =
+        const row =
           document.createElement(
             "tr"
           );
 
 
-        const cloned =
-          staffCell.cloneNode(
+        const cell =
+          originalCell.cloneNode(
             true
           );
 
 
-        cloned.style.position =
+        cell.style.position =
           "static";
 
-
-        cloned.style.left =
+        cell.style.left =
           "auto";
 
-
-        cloned.style.top =
+        cell.style.top =
           "auto";
 
-
-        cloned.style.zIndex =
+        cell.style.zIndex =
           "1";
 
 
-        newRow.appendChild(
-          cloned
+        row.appendChild(
+          cell
         );
 
 
-        fixedStaffTbody.appendChild(
-          newRow
+        fixedStaffBody.appendChild(
+          row
         );
 
       }
     );
 
-  }
 
-
-  fixedStaffTable.appendChild(
-    fixedStaffThead
-  );
-
-
-  fixedStaffTable.appendChild(
-    fixedStaffTbody
+  fixedStaffBodyTable.appendChild(
+    fixedStaffBody
   );
 
 
   fixedStaff.appendChild(
-    fixedStaffTable
+    fixedStaffHeaderTable
+  );
+
+
+  fixedStaff.appendChild(
+    fixedStaffBodyTable
   );
 
 
@@ -3786,8 +3529,18 @@ function createScheduleFixedLayers() {
     fixedStaff;
 
 
-  scheduleFixedStaffTable =
-    fixedStaffTable;
+  scheduleFixedStaffTable = {
+
+    container:
+      fixedStaff,
+
+    headerTable:
+      fixedStaffHeaderTable,
+
+    bodyTable:
+      fixedStaffBodyTable
+
+  };
 
 
   syncScheduleFixedLayers();
@@ -3796,7 +3549,7 @@ function createScheduleFixedLayers() {
 
 
 /* =========================================================
-   固定レイヤーサイズ同期
+   ★ 固定レイヤーサイズ同期
 ========================================================= */
 
 function syncScheduleFixedLayers() {
@@ -3814,6 +3567,43 @@ function syncScheduleFixedLayers() {
   }
 
 
+  const originalStaffHeader =
+    table.querySelector(
+      "thead .staff-header"
+    );
+
+
+  const originalStaffCells =
+    table.querySelectorAll(
+      "tbody .staff-name-cell"
+    );
+
+
+  let staffWidth =
+    0;
+
+
+  if (
+    originalStaffHeader
+  ) {
+
+    staffWidth =
+      originalStaffHeader
+        .getBoundingClientRect()
+        .width;
+
+  } else if (
+    originalStaffCells.length
+  ) {
+
+    staffWidth =
+      originalStaffCells[0]
+        .getBoundingClientRect()
+        .width;
+
+  }
+
+
   /* ==================================================
      固定ヘッダー
   ================================================== */
@@ -3822,25 +3612,6 @@ function syncScheduleFixedLayers() {
     scheduleFixedHeaderTable
   ) {
 
-    const tableRect =
-      table.getBoundingClientRect();
-
-
-    scheduleFixedHeaderTable.style.width =
-      tableRect.width +
-      "px";
-
-
-    scheduleFixedHeaderTable.style.minWidth =
-      tableRect.width +
-      "px";
-
-
-    scheduleFixedHeaderTable.style.maxWidth =
-      tableRect.width +
-      "px";
-
-
     const originalCols =
       table.querySelectorAll(
         "colgroup col"
@@ -3848,16 +3619,32 @@ function syncScheduleFixedLayers() {
 
 
     const fixedCols =
-      scheduleFixedHeaderTable.querySelectorAll(
-        "colgroup col"
-      );
+      scheduleFixedHeaderTable
+        .querySelectorAll(
+          "colgroup col"
+        );
 
+
+    /*
+      固定ヘッダーは
+      最初の職員列を持たないため
+      1つずらしてコピーする。
+    */
 
     originalCols.forEach(
       (originalCol, index) => {
 
+        if (
+          index === 0
+        ) {
+
+          return;
+
+        }
+
+
         const fixedCol =
-          fixedCols[index];
+          fixedCols[index - 1];
 
 
         if (!fixedCol) {
@@ -3877,11 +3664,9 @@ function syncScheduleFixedLayers() {
           width +
           "px";
 
-
         fixedCol.style.minWidth =
           width +
           "px";
-
 
         fixedCol.style.maxWidth =
           width +
@@ -3891,23 +3676,33 @@ function syncScheduleFixedLayers() {
     );
 
 
-    const originalCells =
-      table.querySelectorAll(
-        "thead th"
+    const originalHeaderCells =
+      Array.from(
+        table.querySelectorAll(
+          "thead th"
+        )
+      )
+      .filter(
+        cell =>
+          !cell.classList.contains(
+            "staff-header"
+          )
       );
 
 
-    const fixedCells =
-      scheduleFixedHeaderTable.querySelectorAll(
-        "thead th"
+    const fixedHeaderCells =
+      Array.from(
+        scheduleFixedHeaderTable.querySelectorAll(
+          "thead th"
+        )
       );
 
 
-    originalCells.forEach(
+    originalHeaderCells.forEach(
       (originalCell, index) => {
 
         const fixedCell =
-          fixedCells[index];
+          fixedHeaderCells[index];
 
 
         if (!fixedCell) {
@@ -3932,84 +3727,56 @@ function syncScheduleFixedLayers() {
           rect.width +
           "px";
 
-
         fixedCell.style.minWidth =
           rect.width +
           "px";
-
 
         fixedCell.style.maxWidth =
           rect.width +
           "px";
 
-
         fixedCell.style.height =
           rect.height +
           "px";
 
-
         fixedCell.style.boxSizing =
           "border-box";
-
 
         fixedCell.style.padding =
           style.padding;
 
-
         fixedCell.style.borderTop =
           style.borderTop;
-
 
         fixedCell.style.borderRight =
           style.borderRight;
 
-
         fixedCell.style.borderBottom =
           style.borderBottom;
-
 
         fixedCell.style.borderLeft =
           style.borderLeft;
 
-
         fixedCell.style.background =
           style.background;
-
 
         fixedCell.style.font =
           style.font;
 
-
         fixedCell.style.fontSize =
           style.fontSize;
-
 
         fixedCell.style.fontWeight =
           style.fontWeight;
 
-
         fixedCell.style.color =
           style.color;
-
 
         fixedCell.style.textAlign =
           style.textAlign;
 
-
         fixedCell.style.verticalAlign =
           style.verticalAlign;
-
-
-        if (
-          fixedCell.classList.contains(
-            "staff-header"
-          )
-        ) {
-
-          fixedCell.style.visibility =
-            "hidden";
-
-        }
 
       }
     );
@@ -4022,164 +3789,126 @@ function syncScheduleFixedLayers() {
   ================================================== */
 
   if (
-    scheduleFixedStaffTable
+    scheduleFixedStaffTable &&
+    scheduleFixedStaffTable.headerTable
   ) {
 
-    const originalStaffHeader =
-      table.querySelector(
-        "thead .staff-header"
-      );
+    const headerTable =
+      scheduleFixedStaffTable.headerTable;
+
+    const bodyTable =
+      scheduleFixedStaffTable.bodyTable;
 
 
-    const originalStaffCells =
-      table.querySelectorAll(
-        "tbody .staff-name-cell"
-      );
+    headerTable.style.width =
+      staffWidth +
+      "px";
 
+    headerTable.style.minWidth =
+      staffWidth +
+      "px";
 
-    let staffWidth =
-      0;
-
-
-    if (
-      originalStaffHeader
-    ) {
-
-      staffWidth =
-        originalStaffHeader
-          .getBoundingClientRect()
-          .width;
-
-    } else if (
-      originalStaffCells.length > 0
-    ) {
-
-      staffWidth =
-        originalStaffCells[0]
-          .getBoundingClientRect()
-          .width;
-
-    }
-
-
-    scheduleFixedStaffTable.style.width =
+    headerTable.style.maxWidth =
       staffWidth +
       "px";
 
 
-    scheduleFixedStaffTable.style.minWidth =
+    bodyTable.style.width =
+      staffWidth +
+      "px";
+
+    bodyTable.style.minWidth =
+      staffWidth +
+      "px";
+
+    bodyTable.style.maxWidth =
       staffWidth +
       "px";
 
 
-    scheduleFixedStaffTable.style.maxWidth =
-      staffWidth +
-      "px";
-
-
-    const fixedStaffHeader =
-      scheduleFixedStaffTable.querySelector(
-        "thead .staff-header"
+    const fixedHeaderCell =
+      headerTable.querySelector(
+        ".staff-header"
       );
 
 
     if (
-      fixedStaffHeader &&
+      fixedHeaderCell &&
       originalStaffHeader
     ) {
 
-      const originalRect =
+      const rect =
         originalStaffHeader
           .getBoundingClientRect();
 
 
-      const originalStyle =
+      const style =
         window.getComputedStyle(
           originalStaffHeader
         );
 
 
-      fixedStaffHeader.style.width =
-        originalRect.width +
+      fixedHeaderCell.style.width =
+        rect.width +
         "px";
 
-
-      fixedStaffHeader.style.minWidth =
-        originalRect.width +
+      fixedHeaderCell.style.minWidth =
+        rect.width +
         "px";
 
-
-      fixedStaffHeader.style.maxWidth =
-        originalRect.width +
+      fixedHeaderCell.style.maxWidth =
+        rect.width +
         "px";
 
-
-      fixedStaffHeader.style.height =
-        originalRect.height +
+      fixedHeaderCell.style.height =
+        rect.height +
         "px";
 
-
-      fixedStaffHeader.style.boxSizing =
+      fixedHeaderCell.style.boxSizing =
         "border-box";
 
+      fixedHeaderCell.style.padding =
+        style.padding;
 
-      fixedStaffHeader.style.padding =
-        originalStyle.padding;
+      fixedHeaderCell.style.borderTop =
+        style.borderTop;
 
+      fixedHeaderCell.style.borderRight =
+        style.borderRight;
 
-      fixedStaffHeader.style.borderTop =
-        originalStyle.borderTop;
+      fixedHeaderCell.style.borderBottom =
+        style.borderBottom;
 
+      fixedHeaderCell.style.borderLeft =
+        style.borderLeft;
 
-      fixedStaffHeader.style.borderRight =
-        originalStyle.borderRight;
+      fixedHeaderCell.style.background =
+        style.background;
 
+      fixedHeaderCell.style.font =
+        style.font;
 
-      fixedStaffHeader.style.borderBottom =
-        originalStyle.borderBottom;
+      fixedHeaderCell.style.fontSize =
+        style.fontSize;
 
+      fixedHeaderCell.style.fontWeight =
+        style.fontWeight;
 
-      fixedStaffHeader.style.borderLeft =
-        originalStyle.borderLeft;
+      fixedHeaderCell.style.color =
+        style.color;
 
+      fixedHeaderCell.style.textAlign =
+        style.textAlign;
 
-      fixedStaffHeader.style.background =
-        originalStyle.background;
-
-
-      fixedStaffHeader.style.font =
-        originalStyle.font;
-
-
-      fixedStaffHeader.style.fontSize =
-        originalStyle.fontSize;
-
-
-      fixedStaffHeader.style.fontWeight =
-        originalStyle.fontWeight;
-
-
-      fixedStaffHeader.style.color =
-        originalStyle.color;
-
-
-      fixedStaffHeader.style.textAlign =
-        originalStyle.textAlign;
-
-
-      fixedStaffHeader.style.verticalAlign =
-        originalStyle.verticalAlign;
-
-
-      fixedStaffHeader.style.visibility =
-        "visible";
+      fixedHeaderCell.style.verticalAlign =
+        style.verticalAlign;
 
     }
 
 
-    const fixedStaffCells =
-      scheduleFixedStaffTable.querySelectorAll(
-        "tbody .staff-name-cell"
+    const fixedBodyCells =
+      bodyTable.querySelectorAll(
+        ".staff-name-cell"
       );
 
 
@@ -4187,7 +3916,7 @@ function syncScheduleFixedLayers() {
       (originalCell, index) => {
 
         const fixedCell =
-          fixedStaffCells[index];
+          fixedBodyCells[index];
 
 
         if (!fixedCell) {
@@ -4212,69 +3941,53 @@ function syncScheduleFixedLayers() {
           staffWidth +
           "px";
 
-
         fixedCell.style.minWidth =
           staffWidth +
           "px";
-
 
         fixedCell.style.maxWidth =
           staffWidth +
           "px";
 
-
         fixedCell.style.height =
           rect.height +
           "px";
 
-
         fixedCell.style.boxSizing =
           "border-box";
-
 
         fixedCell.style.padding =
           style.padding;
 
-
         fixedCell.style.borderTop =
           style.borderTop;
-
 
         fixedCell.style.borderRight =
           style.borderRight;
 
-
         fixedCell.style.borderBottom =
           style.borderBottom;
-
 
         fixedCell.style.borderLeft =
           style.borderLeft;
 
-
         fixedCell.style.background =
           style.background;
-
 
         fixedCell.style.font =
           style.font;
 
-
         fixedCell.style.fontSize =
           style.fontSize;
-
 
         fixedCell.style.fontWeight =
           style.fontWeight;
 
-
         fixedCell.style.color =
           style.color;
 
-
         fixedCell.style.textAlign =
           style.textAlign;
-
 
         fixedCell.style.verticalAlign =
           style.verticalAlign;
@@ -4290,7 +4003,7 @@ function syncScheduleFixedLayers() {
 
 
     const fixedRows =
-      scheduleFixedStaffTable.querySelectorAll(
+      bodyTable.querySelectorAll(
         "tbody tr"
       );
 
@@ -4309,14 +4022,10 @@ function syncScheduleFixedLayers() {
         }
 
 
-        const height =
+        fixedRow.style.height =
           originalRow
             .getBoundingClientRect()
-            .height;
-
-
-        fixedRow.style.height =
-          height +
+            .height +
           "px";
 
       }
@@ -4328,7 +4037,7 @@ function syncScheduleFixedLayers() {
 
 
 /* =========================================================
-   固定レイヤー位置更新
+   ★ 固定レイヤー位置更新
 ========================================================= */
 
 function updateScheduleFixedLayers() {
@@ -4374,7 +4083,8 @@ function updateScheduleFixedLayers() {
 
   if (
     !scheduleFixedHeader ||
-    !scheduleFixedStaffColumn
+    !scheduleFixedStaffColumn ||
+    !scheduleFixedStaffTable
   ) {
 
     createScheduleFixedLayers();
@@ -4384,7 +4094,8 @@ function updateScheduleFixedLayers() {
 
   if (
     !scheduleFixedHeader ||
-    !scheduleFixedStaffColumn
+    !scheduleFixedStaffColumn ||
+    !scheduleFixedStaffTable
   ) {
 
     return;
@@ -4404,14 +4115,10 @@ function updateScheduleFixedLayers() {
 
   if (appHeader) {
 
-    const headerRect =
-      appHeader.getBoundingClientRect();
-
-
     topOffset =
       Math.max(
         0,
-        headerRect.bottom
+        appHeader.getBoundingClientRect().bottom
       );
 
   }
@@ -4444,6 +4151,10 @@ function updateScheduleFixedLayers() {
   }
 
 
+  /*
+    テーブルがまだ上に到達していない
+  */
+
   if (
     tableRect.top >=
     topOffset
@@ -4455,6 +4166,10 @@ function updateScheduleFixedLayers() {
 
   }
 
+
+  /*
+    テーブルの最後まで通過した
+  */
 
   if (
     tableRect.bottom <=
@@ -4469,49 +4184,9 @@ function updateScheduleFixedLayers() {
   }
 
 
-  scheduleFixedHeader.style.display =
-    "block";
-
-
-  scheduleFixedHeader.style.left =
-    wrapperRect.left +
-    "px";
-
-
-  scheduleFixedHeader.style.top =
-    topOffset +
-    "px";
-
-
-  scheduleFixedHeader.style.width =
-    wrapperRect.width +
-    "px";
-
-
-  scheduleFixedHeader.style.height =
-    headerHeight +
-    "px";
-
-
-  scheduleFixedHeaderTable.style.transform =
-    "translate3d(" +
-    (-wrapper.scrollLeft) +
-    "px, 0, 0)";
-
-
-  scheduleFixedStaffColumn.style.display =
-    "block";
-
-
-  scheduleFixedStaffColumn.style.left =
-    wrapperRect.left +
-    "px";
-
-
-  scheduleFixedStaffColumn.style.top =
-    topOffset +
-    "px";
-
+  /* ==================================================
+     職員幅
+  ================================================== */
 
   const originalStaffHeader =
     table.querySelector(
@@ -4533,6 +4208,77 @@ function updateScheduleFixedLayers() {
         .width;
 
   }
+
+
+  /* ==================================================
+     固定ヘッダー
+  ================================================== */
+
+  scheduleFixedHeader.style.display =
+    "block";
+
+
+  scheduleFixedHeader.style.left =
+    (
+      wrapperRect.left +
+      staffWidth
+    ) +
+    "px";
+
+
+  scheduleFixedHeader.style.top =
+    topOffset +
+    "px";
+
+
+  const fixedHeaderWidth =
+    Math.max(
+      0,
+      wrapperRect.width -
+      staffWidth
+    );
+
+
+  scheduleFixedHeader.style.width =
+    fixedHeaderWidth +
+    "px";
+
+
+  scheduleFixedHeader.style.height =
+    headerHeight +
+    "px";
+
+
+  /*
+    ★重要
+
+    職員列を除いたヘッダーだけを
+    横スクロールさせる。
+
+    これで最初の合計列が
+    職員固定レイヤーに巻き込まれない。
+  */
+
+  scheduleFixedHeaderTable.style.transform =
+    `translate3d(${-wrapper.scrollLeft}px,0,0)`;
+
+
+  /* ==================================================
+     固定職員列
+  ================================================== */
+
+  scheduleFixedStaffColumn.style.display =
+    "block";
+
+
+  scheduleFixedStaffColumn.style.left =
+    wrapperRect.left +
+    "px";
+
+
+  scheduleFixedStaffColumn.style.top =
+    topOffset +
+    "px";
 
 
   scheduleFixedStaffColumn.style.width =
@@ -4557,9 +4303,70 @@ function updateScheduleFixedLayers() {
     "px";
 
 
-  scheduleFixedStaffTable.style.transform =
-    "translate3d(0, 0, 0)";
+  /* ==================================================
+     職員ヘッダー
+  ================================================== */
 
+  const staffHeaderTable =
+    scheduleFixedStaffTable
+      .headerTable;
+
+
+  const staffBodyTable =
+    scheduleFixedStaffTable
+      .bodyTable;
+
+
+  staffHeaderTable.style.position =
+    "absolute";
+
+  staffHeaderTable.style.left =
+    "0px";
+
+  staffHeaderTable.style.top =
+    "0px";
+
+
+  /*
+    ヘッダーは絶対固定。
+    職員だけはここで常に残す。
+  */
+
+
+  /* ==================================================
+     職員名
+
+     ★ここが重要
+
+     元のテーブルのtop位置に合わせて
+     職員名だけ縦方向へ動かす。
+  ================================================== */
+
+  const bodyOffset =
+    tableRect.top -
+    topOffset;
+
+
+  staffBodyTable.style.position =
+    "absolute";
+
+
+  staffBodyTable.style.left =
+    "0px";
+
+
+  staffBodyTable.style.top =
+    headerHeight +
+    "px";
+
+
+  staffBodyTable.style.transform =
+    `translate3d(0,${bodyOffset}px,0)`;
+
+
+  /*
+    最後にサイズを同期。
+  */
 
   syncScheduleFixedLayers();
 
@@ -4594,9 +4401,9 @@ function hideScheduleFixedLayers() {
 }
 
 
-/* =========================================================
+/* ==================================================
    スクロール監視
-========================================================= */
+================================================== */
 
 window.addEventListener(
   "scroll",
@@ -4621,8 +4428,7 @@ document.addEventListener(
 
 
     if (
-      wrapper &&
-      scheduleFixedHeader
+      wrapper
     ) {
 
       updateScheduleFixedLayers();
@@ -4651,7 +4457,7 @@ window.addEventListener(
 
 
 /* ==================================================
-   固定レイヤー用CSS
+   ★ 固定レイヤーCSS
 ================================================== */
 
 if (
@@ -4676,6 +4482,13 @@ if (
       position: relative;
       overflow-x: auto;
       overflow-y: visible;
+      width: 100%;
+    }
+
+    #scheduleTable {
+      border-collapse: separate !important;
+      border-spacing: 0 !important;
+      table-layout: fixed !important;
     }
 
     #scheduleTable .staff-header {
@@ -4683,7 +4496,7 @@ if (
       left: 0 !important;
       z-index: 300 !important;
       background: #f2f2f7 !important;
-      box-sizing: border-box;
+      box-sizing: border-box !important;
     }
 
     #scheduleTable .staff-name-cell {
@@ -4691,34 +4504,51 @@ if (
       left: 0 !important;
       z-index: 200 !important;
       background: #ffffff !important;
+      box-sizing: border-box !important;
+    }
+
+    #scheduleTable thead th {
       box-sizing: border-box;
     }
 
     #scheduleFixedHeader {
       box-sizing: border-box;
       overflow: hidden;
+      background: #f2f2f7;
     }
 
     #scheduleFixedHeader table {
       border-collapse: separate;
       border-spacing: 0;
       table-layout: fixed;
+      margin: 0;
+      padding: 0;
+    }
+
+    #scheduleFixedHeader th {
+      box-sizing: border-box;
+      background: #f2f2f7;
     }
 
     #scheduleFixedStaffColumn {
       box-sizing: border-box;
       overflow: hidden;
+      background: #ffffff;
     }
 
     #scheduleFixedStaffColumn table {
       border-collapse: separate;
       border-spacing: 0;
       table-layout: fixed;
+      margin: 0;
+      padding: 0;
     }
 
     #scheduleFixedStaffColumn .staff-header,
     #scheduleFixedStaffColumn .staff-name-cell {
       box-sizing: border-box;
+      white-space: nowrap;
+      overflow: hidden;
     }
 
   `;
@@ -4805,7 +4635,7 @@ function bindStaffNameCells() {
 
 
 /* ==================================================
-   勤務メニュー表示
+   勤務メニュー
 ================================================== */
 
 function showShiftMenu(
@@ -4840,10 +4670,6 @@ function showShiftMenu(
     "";
 
 
-  /* ==================================================
-     勤務形態モード
-  ================================================== */
-
   if (
     shiftMenuMode ===
     "shift"
@@ -4861,10 +4687,8 @@ function showShiftMenu(
         button.type =
           "button";
 
-
         button.textContent =
           shift.name;
-
 
         button.className =
           "shift-menu-button";
@@ -4898,10 +4722,6 @@ function showShiftMenu(
     );
 
 
-    /* ==================================================
-       勤務削除
-    ================================================== */
-
     const deleteShiftButton =
       document.createElement(
         "button"
@@ -4911,42 +4731,32 @@ function showShiftMenu(
     deleteShiftButton.type =
       "button";
 
-
     deleteShiftButton.textContent =
       "🗑️ 勤務削除";
-
 
     deleteShiftButton.className =
       "shift-menu-button";
 
-
     deleteShiftButton.style.width =
       "100%";
-
 
     deleteShiftButton.style.minWidth =
       "100%";
 
-
     deleteShiftButton.style.gridColumn =
       "1 / -1";
-
 
     deleteShiftButton.style.boxSizing =
       "border-box";
 
-
     deleteShiftButton.style.background =
       "#6f42c1";
-
 
     deleteShiftButton.style.color =
       "#ffffff";
 
-
     deleteShiftButton.style.borderColor =
       "#59339d";
-
 
     deleteShiftButton.style.fontWeight =
       "700";
@@ -4981,10 +4791,6 @@ function showShiftMenu(
     );
 
 
-    /* ==================================================
-       キャンセル
-    ================================================== */
-
     const cancelButton =
       document.createElement(
         "button"
@@ -4994,42 +4800,32 @@ function showShiftMenu(
     cancelButton.type =
       "button";
 
-
     cancelButton.textContent =
       "キャンセル";
-
 
     cancelButton.className =
       "shift-menu-button";
 
-
     cancelButton.style.width =
       "100%";
-
 
     cancelButton.style.minWidth =
       "100%";
 
-
     cancelButton.style.gridColumn =
       "1 / -1";
-
 
     cancelButton.style.boxSizing =
       "border-box";
 
-
     cancelButton.style.background =
       "#dc3545";
-
 
     cancelButton.style.color =
       "#ffffff";
 
-
     cancelButton.style.borderColor =
       "#c82333";
-
 
     cancelButton.style.fontWeight =
       "700";
@@ -5052,10 +4848,6 @@ function showShiftMenu(
     );
 
 
-    /* ==================================================
-       休暇
-    ================================================== */
-
     const leaveButton =
       document.createElement(
         "button"
@@ -5065,42 +4857,32 @@ function showShiftMenu(
     leaveButton.type =
       "button";
 
-
     leaveButton.textContent =
       "🏖️ 休暇";
-
 
     leaveButton.className =
       "shift-menu-button";
 
-
     leaveButton.style.width =
       "100%";
-
 
     leaveButton.style.minWidth =
       "100%";
 
-
     leaveButton.style.gridColumn =
       "1 / -1";
-
 
     leaveButton.style.boxSizing =
       "border-box";
 
-
     leaveButton.style.background =
       "#28a745";
-
 
     leaveButton.style.color =
       "#ffffff";
 
-
     leaveButton.style.borderColor =
       "#218838";
-
 
     leaveButton.style.fontWeight =
       "700";
@@ -5148,10 +4930,6 @@ function showShiftMenu(
   }
 
 
-  /* ==================================================
-     休暇モード
-  ================================================== */
-
   else {
 
     const title =
@@ -5168,10 +4946,6 @@ function showShiftMenu(
     }
 
 
-    /* -----------------------------------------------
-       休暇なし
-    ------------------------------------------------ */
-
     if (
       appData.leaveTypes.length ===
       0
@@ -5186,14 +4960,11 @@ function showShiftMenu(
       empty.textContent =
         "登録された休暇がありません";
 
-
       empty.style.padding =
         "12px";
 
-
       empty.style.textAlign =
         "center";
-
 
       empty.style.color =
         "#666";
@@ -5205,10 +4976,6 @@ function showShiftMenu(
 
     }
 
-
-    /* -----------------------------------------------
-       休暇一覧
-    ------------------------------------------------ */
 
     appData.leaveTypes.forEach(
       leave => {
@@ -5222,26 +4989,21 @@ function showShiftMenu(
         button.type =
           "button";
 
-
         button.className =
           "shift-menu-button";
-
 
         button.textContent =
           leave.name;
 
-
         button.style.background =
           leave.color ||
           "#FFD54F";
-
 
         button.style.color =
           getTextColorForBackground(
             leave.color ||
             "#FFD54F"
           );
-
 
         button.style.boxSizing =
           "border-box";
@@ -5275,10 +5037,6 @@ function showShiftMenu(
     );
 
 
-    /* -----------------------------------------------
-       休暇解除
-    ------------------------------------------------ */
-
     const removeLeaveButton =
       document.createElement(
         "button"
@@ -5288,10 +5046,8 @@ function showShiftMenu(
     removeLeaveButton.type =
       "button";
 
-
     removeLeaveButton.textContent =
       "休暇を解除";
-
 
     removeLeaveButton.className =
       "shift-menu-button";
@@ -5322,10 +5078,6 @@ function showShiftMenu(
     );
 
 
-    /* -----------------------------------------------
-       キャンセル
-    ------------------------------------------------ */
-
     const cancelButton =
       document.createElement(
         "button"
@@ -5335,42 +5087,32 @@ function showShiftMenu(
     cancelButton.type =
       "button";
 
-
     cancelButton.textContent =
       "キャンセル";
-
 
     cancelButton.className =
       "shift-menu-button";
 
-
     cancelButton.style.width =
       "100%";
-
 
     cancelButton.style.minWidth =
       "100%";
 
-
     cancelButton.style.gridColumn =
       "1 / -1";
-
 
     cancelButton.style.boxSizing =
       "border-box";
 
-
     cancelButton.style.background =
       "#dc3545";
-
 
     cancelButton.style.color =
       "#ffffff";
 
-
     cancelButton.style.borderColor =
       "#c82333";
-
 
     cancelButton.style.fontWeight =
       "700";
@@ -5381,7 +5123,6 @@ function showShiftMenu(
       e => {
 
         e.stopPropagation();
-
 
         hideShiftMenu();
 
@@ -5395,10 +5136,6 @@ function showShiftMenu(
 
   }
 
-
-  /* ==================================================
-     メニュー位置
-  ================================================== */
 
   menu.style.display =
     "grid";
@@ -5484,16 +5221,13 @@ function showShiftMenu(
   menu.style.position =
     "fixed";
 
-
   menu.style.left =
     left +
     "px";
 
-
   menu.style.top =
     top +
     "px";
-
 
   menu.style.zIndex =
     "9999";
@@ -5502,7 +5236,7 @@ function showShiftMenu(
 
 
 /* ==================================================
-   メニューを閉じる
+   メニュー閉じる
 ================================================== */
 
 function hideShiftMenu() {
@@ -5603,19 +5337,9 @@ async function saveWorkShift(
         : null;
 
 
-    /* ==================================================
-       勤務削除
-    ================================================== */
-
     if (!shiftName) {
 
       if (existingRow) {
-
-        /*
-          仕様：
-          「勤務削除」は勤務形態だけ削除。
-          休暇は残す。
-        */
 
         if (
           existingRow.leave_type
@@ -5690,7 +5414,6 @@ async function saveWorkShift(
 
       renderSchedule();
 
-
       return;
 
     }
@@ -5702,10 +5425,6 @@ async function saveWorkShift(
           ""
         : "";
 
-
-    /* ==================================================
-       既存勤務更新
-    ================================================== */
 
     if (existingRow) {
 
@@ -5735,14 +5454,7 @@ async function saveWorkShift(
 
       }
 
-    }
-
-
-    /* ==================================================
-       新規勤務
-    ================================================== */
-
-    else {
+    } else {
 
       const result =
         await supabaseClient
@@ -5879,17 +5591,9 @@ async function saveLeave(
         : null;
 
 
-    /* ==================================================
-       休暇解除
-    ================================================== */
-
     if (!leaveName) {
 
       if (row) {
-
-        /*
-          勤務形態は絶対に変更しない
-        */
 
         const result =
           await supabaseClient
@@ -5928,16 +5632,10 @@ async function saveLeave(
 
       renderSchedule();
 
-
       return;
 
     }
 
-
-    /* ==================================================
-       既存勤務がある場合
-       勤務形態は変更しない
-    ================================================== */
 
     if (row) {
 
@@ -5973,15 +5671,7 @@ async function saveLeave(
         leaveName
       );
 
-    }
-
-
-    /* ==================================================
-       勤務がない場合
-       休暇だけ登録
-    ================================================== */
-
-    else {
+    } else {
 
       const result =
         await supabaseClient
@@ -6047,7 +5737,7 @@ async function saveLeave(
 
 
 /* ==================================================
-   背景色から文字色
+   背景色文字色
 ================================================== */
 
 function getTextColorForBackground(
@@ -6172,16 +5862,16 @@ function calculateMonthlyTotal(
       );
 
 
-    const normalizedDisplay =
+    const normalized =
       normalizeShiftNameForTotal(
         display
       );
 
 
     if (
-      normalizedDisplay ===
+      normalized ===
         targetShift &&
-      normalizedDisplay !==
+      normalized !==
         "明"
     ) {
 
@@ -6269,16 +5959,16 @@ function calculateFiscalTotal(
       );
 
 
-    const normalizedDisplay =
+    const normalized =
       normalizeShiftNameForTotal(
         display
       );
 
 
     if (
-      normalizedDisplay ===
+      normalized ===
         targetShift &&
-      normalizedDisplay !==
+      normalized !==
         "明"
     ) {
 
@@ -6423,9 +6113,7 @@ async function addOrUpdateStaff() {
         await supabaseClient
           .from("staff")
           .update({
-
             name
-
           })
           .eq(
             "id",
@@ -6460,12 +6148,10 @@ async function addOrUpdateStaff() {
             return Number.isFinite(
               value
             )
-
               ? Math.max(
                   max,
                   value
                 )
-
               : max;
 
           },
@@ -6517,7 +6203,6 @@ async function addOrUpdateStaff() {
 
     await loadAllFromSupabase();
 
-
     renderStaffList();
 
     renderSchedule();
@@ -6545,7 +6230,7 @@ async function addOrUpdateStaff() {
 
 
 /* ==================================================
-   職員並び順保存
+   職員並び順
 ================================================== */
 
 async function saveStaffOrder() {
@@ -6695,7 +6380,6 @@ async function moveStaff(
 
 
     await loadAllFromSupabase();
-
 
     renderStaffList();
 
@@ -6945,7 +6629,6 @@ function renderStaffList() {
 
 
               await loadAllFromSupabase();
-
 
               renderStaffList();
 
@@ -7255,7 +6938,6 @@ async function addOrUpdateShift() {
 
     await loadAllFromSupabase();
 
-
     renderShiftList();
 
     renderSchedule();
@@ -7321,9 +7003,7 @@ function renderShiftList() {
       const timeText =
         shift.start &&
         shift.end
-
           ? `${shift.start} ～ ${shift.end}`
-
           : "";
 
 
@@ -7480,7 +7160,6 @@ function renderShiftList() {
 
 
               await loadAllFromSupabase();
-
 
               renderShiftList();
 
@@ -7724,7 +7403,6 @@ async function addOrUpdateLeave() {
 
 
     await loadAllFromSupabase();
-
 
     renderLeaveList();
 
@@ -8009,7 +7687,6 @@ function renderLeaveList() {
 
               await loadAllFromSupabase();
 
-
               renderLeaveList();
 
               renderSchedule();
@@ -8256,7 +7933,6 @@ async function addCompanyHoliday() {
 
     await loadAllFromSupabase();
 
-
     renderHolidayList();
 
     renderSchedule();
@@ -8469,7 +8145,6 @@ function renderHolidayList() {
 
               await loadAllFromSupabase();
 
-
               renderHolidayList();
 
               renderSchedule();
@@ -8584,7 +8259,6 @@ async function saveAkeTime() {
           .from("app_settings")
           .upsert(
             [
-
               {
                 setting_name:
                   "ake_start",
@@ -8600,7 +8274,6 @@ async function saveAkeTime() {
                 setting_value:
                   end.value
               }
-
             ],
             {
               onConflict:
@@ -8620,7 +8293,6 @@ async function saveAkeTime() {
         return;
 
       }
-
 
     } finally {
 
@@ -8704,7 +8376,7 @@ function openCalendarConfirm(
 
 
 /* ==================================================
-   webcal登録
+   webcal
 ================================================== */
 
 function subscribeStaffCalendar() {
@@ -8747,10 +8419,6 @@ function subscribeStaffCalendar() {
 
   }
 
-
-  /*
-    ★ webcalを維持
-  */
 
   const webcalUrl =
     "webcal://" +
@@ -8871,7 +8539,6 @@ async function deleteCurrentMonth() {
 
     await loadAllFromSupabase();
 
-
     renderSchedule();
 
 
@@ -8966,7 +8633,6 @@ async function deleteFiscalYear() {
 
 
     await loadAllFromSupabase();
-
 
     renderSchedule();
 
@@ -9308,9 +8974,7 @@ function exportCalendar() {
 
   a.click();
 
-
   a.remove();
-
 
   URL.revokeObjectURL(
     url
@@ -9323,7 +8987,7 @@ function exportCalendar() {
 
 
 /* ==================================================
-   ICS 全日イベント
+   ICS全日
 ================================================== */
 
 function createAllDayEvent(
@@ -9394,7 +9058,7 @@ function createAllDayEvent(
 
 
 /* ==================================================
-   ICS 時間指定イベント
+   ICS時間指定
 ================================================== */
 
 function createTimedEvent(
@@ -9488,7 +9152,7 @@ function createTimedEvent(
 
 
 /* ==================================================
-   日時作成
+   日時
 ================================================== */
 
 function makeDateTime(
@@ -9528,7 +9192,7 @@ function makeDateTime(
 
 
 /* ==================================================
-   UTC変換
+   UTC
 ================================================== */
 
 function formatUTC(
@@ -9580,10 +9244,6 @@ function formatUTC(
 
 }
 
-
-/* ==================================================
-   現在時刻UTC
-================================================== */
 
 function utcNow() {
 
