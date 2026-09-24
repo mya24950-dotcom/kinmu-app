@@ -5612,6 +5612,10 @@ async function saveWorkShift(
 
   try {
 
+    /* ==================================================
+       既存データ取得
+    ================================================== */
+
     const existing =
       await supabaseClient
         .from("work_shifts")
@@ -5651,6 +5655,10 @@ async function saveWorkShift(
         : null;
 
 
+    /* ==================================================
+       勤務削除
+    ================================================== */
+
     if (!shiftName) {
 
       if (existingRow) {
@@ -5680,11 +5688,30 @@ async function saveWorkShift(
         name,
         dateKey,
         "",
-        ""
+        existingRow
+          ? existingRow.leave_type || ""
+          : ""
       );
 
 
-      renderSchedule();
+      /*
+        Supabase保存が成功したので、
+        ここから先の画面更新エラーで
+        「保存失敗」と表示しない
+      */
+
+      try {
+
+        renderSchedule();
+
+      } catch (renderError) {
+
+        console.error(
+          "勤務表再描画エラー",
+          renderError
+        );
+
+      }
 
 
       return;
@@ -5692,12 +5719,20 @@ async function saveWorkShift(
     }
 
 
+    /* ==================================================
+       既存休暇を保持
+    ================================================== */
+
     const leaveType =
       existingRow
         ? existingRow.leave_type ||
           ""
         : "";
 
+
+    /* ==================================================
+       更新
+    ================================================== */
 
     if (existingRow) {
 
@@ -5727,7 +5762,14 @@ async function saveWorkShift(
 
       }
 
-    } else {
+    }
+
+
+    /* ==================================================
+       新規登録
+    ================================================== */
+
+    else {
 
       const result =
         await supabaseClient
@@ -5760,6 +5802,10 @@ async function saveWorkShift(
     }
 
 
+    /* ==================================================
+       ローカルデータ更新
+    ================================================== */
+
     setStoredShift(
       name,
       dateKey,
@@ -5768,7 +5814,22 @@ async function saveWorkShift(
     );
 
 
-    renderSchedule();
+    /* ==================================================
+       勤務表再描画
+    ================================================== */
+
+    try {
+
+      renderSchedule();
+
+    } catch (renderError) {
+
+      console.error(
+        "勤務表再描画エラー",
+        renderError
+      );
+
+    }
 
 
   } catch (error) {
@@ -5780,8 +5841,13 @@ async function saveWorkShift(
 
 
     alert(
-      "勤務の保存に失敗しました。"
+      "勤務の保存に失敗しました。\n\n" +
+      (
+        error?.message ||
+        error
+      )
     );
+
 
   } finally {
 
