@@ -3753,20 +3753,15 @@ function renderSchedule() {
     "none";
 
 
-  table.innerHTML =
-    html;
+  table.innerHTML = html;
 
+bindScheduleCells();
 
-  bindScheduleCells();
+bindStaffNameCells();
 
-  bindStaffNameCells();
+renderLeaveLegend();
 
-
-  /*
-    ★勤務表の下に休暇一覧を表示
-  */
-
-  renderLeaveLegend();
+createScheduleStickyHeader();
 
 }
 
