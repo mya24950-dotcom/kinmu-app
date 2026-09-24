@@ -411,12 +411,42 @@ body {
   font-size: 14px;
 
   font-weight: 700;
+}
 
+/* =========================================================
+   勤務表ヘッダー2行を上部に固定
+   1行目：職員・1日・2日・3日……
+   2行目：合計・累計……
+   ========================================================= */
+
+#scheduleTable thead tr:first-child th {
   position: sticky;
-
   top: 0;
+  z-index: 50;
+  background: #f8f8fa;
+}
 
-  z-index: 10;
+#scheduleTable thead tr:nth-child(2) th {
+  position: sticky;
+  top: 43px;
+  z-index: 49;
+  background: #f8f8fa;
+}
+
+#scheduleTable thead tr:first-child th:first-child {
+  position: sticky;
+  top: 0;
+  left: 0;
+  z-index: 70;
+  background: #f8f8fa;
+}
+
+#scheduleTable thead tr:nth-child(2) th:first-child {
+  position: sticky;
+  top: 43px;
+  left: 0;
+  z-index: 69;
+  background: #f8f8fa;
 }
 
 /* =========================================================
