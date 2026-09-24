@@ -430,7 +430,7 @@ body {
 
 #scheduleTable th:first-child,
 #scheduleTable td:first-child {
-  position: sticky;
+  position: Fixed;
 
   left: 0;
 
