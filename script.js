@@ -127,6 +127,8 @@ let scheduleFixedHeader =
 let scheduleFixedHeaderTable =
   null;
 
+let scheduleFixedStaffHeader = null;
+
 /* ==================================================
    初期化
 ================================================== */
@@ -3455,6 +3457,43 @@ function createScheduleFixedLayers() {
   syncScheduleFixedLayers();
 }
 
+/* =========================================================
+   左上「職員」専用固定セル
+========================================================= */
+
+const originalStaffHeader =
+  table.querySelector(
+    "thead .staff-header"
+  );
+
+if (originalStaffHeader) {
+
+  const fixedStaffHeader =
+    originalStaffHeader.cloneNode(true);
+
+  fixedStaffHeader.id =
+    "scheduleFixedStaffHeader";
+
+  fixedStaffHeader.style.position =
+    "fixed";
+
+  fixedStaffHeader.style.zIndex =
+    "2000";
+
+  fixedStaffHeader.style.pointerEvents =
+    "none";
+
+  fixedStaffHeader.style.boxSizing =
+    "border-box";
+
+  document.body.appendChild(
+    fixedStaffHeader
+  );
+
+  scheduleFixedStaffHeader =
+    fixedStaffHeader;
+}
+
 
 /* =========================================================
    固定ヘッダーサイズ同期
@@ -3615,6 +3654,71 @@ function syncScheduleFixedLayers() {
       }
     }
   );
+}
+
+/* =========================================================
+   左上「職員」セルのサイズ・位置同期
+========================================================= */
+
+if (
+  scheduleFixedStaffHeader
+) {
+
+  const originalStaffHeader =
+    table.querySelector(
+      "thead .staff-header"
+    );
+
+  if (originalStaffHeader) {
+
+    const rect =
+      originalStaffHeader
+        .getBoundingClientRect();
+
+    const style =
+      window.getComputedStyle(
+        originalStaffHeader
+      );
+
+    scheduleFixedStaffHeader.style.left =
+      wrapper.getBoundingClientRect().left +
+      "px";
+
+    scheduleFixedStaffHeader.style.width =
+      rect.width +
+      "px";
+
+    scheduleFixedStaffHeader.style.height =
+      rect.height +
+      "px";
+
+    scheduleFixedStaffHeader.style.top =
+      scheduleFixedHeader
+        ? scheduleFixedHeader.getBoundingClientRect().top +
+          "px"
+        : "0px";
+
+    scheduleFixedStaffHeader.style.padding =
+      style.padding;
+
+    scheduleFixedStaffHeader.style.border =
+      style.border;
+
+    scheduleFixedStaffHeader.style.background =
+      style.background;
+
+    scheduleFixedStaffHeader.style.font =
+      style.font;
+
+    scheduleFixedStaffHeader.style.color =
+      style.color;
+
+    scheduleFixedStaffHeader.style.textAlign =
+      style.textAlign;
+
+    scheduleFixedStaffHeader.style.verticalAlign =
+      style.verticalAlign;
+  }
 }
 
 
