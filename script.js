@@ -9032,24 +9032,58 @@ async function loadPublicHolidays() {
 
   try {
 
+    console.log(
+      "祝日データ取得開始"
+    );
+
+
     const response =
       await fetch(
-        "https://holidays-jp.github.io/api/v1/date.json"
+        "https://holidays-jp.github.io/api/v1/date.json",
+        {
+          cache: "no-store"
+        }
       );
 
 
     if (!response.ok) {
 
       throw new Error(
-        "祝日データ取得失敗"
+        `祝日データ取得失敗: ${response.status}`
       );
 
     }
 
 
-    publicHolidays =
+    const data =
       await response.json();
 
+
+    publicHolidays =
+      data;
+
+
+    console.log(
+      "祝日データ取得成功",
+      publicHolidays
+    );
+
+
+    console.log(
+      "2026-09-21:",
+      publicHolidays["2026-09-21"]
+    );
+
+
+    console.log(
+      "2026-09-23:",
+      publicHolidays["2026-09-23"]
+    );
+
+
+    /* ----------------------------------------------
+       祝日データ取得後に勤務表を再描画
+    ---------------------------------------------- */
 
     renderSchedule();
 
