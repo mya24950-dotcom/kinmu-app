@@ -1,6 +1,10 @@
-/* ==================================================
+/* =========================================================
+   勤務表アプリ 完全版JS
+   ========================================================= */
+
+/* =========================================================
    Supabase
-================================================== */
+========================================================= */
 
 const SUPABASE_URL =
   "https://pyfdhlqvnponaczmbuot.supabase.co";
@@ -11,17 +15,17 @@ const SUPABASE_KEY =
 let supabaseClient = null;
 
 
-/* ==================================================
-   ローカル保存
-================================================== */
+/* =========================================================
+   Local Storage
+========================================================= */
 
 const STORAGE_KEY =
   "workScheduleAppData";
 
 
-/* ==================================================
+/* =========================================================
    アプリデータ
-================================================== */
+========================================================= */
 
 let appData = {
 
@@ -46,11 +50,14 @@ let appData = {
 };
 
 
+/* =========================================================
+   状態
+========================================================= */
+
 let currentDate =
   new Date();
 
 currentDate.setDate(1);
-
 
 let editingStaffIndex =
   -1;
@@ -64,18 +71,11 @@ let editingLeaveId =
 let editingHolidayId =
   null;
 
-
 let selectedCell =
   null;
 
-
 let publicHolidays =
   {};
-
-
-/* ==================================================
-   同期管理
-================================================== */
 
 let realtimeChannel =
   null;
@@ -95,64 +95,13 @@ let cloudOperationBusy =
 let realtimeReloadPending =
   false;
 
-
-/* ==================================================
-   メニュー状態
-================================================== */
-
 let shiftMenuMode =
   "shift";
 
 
-/* ==================================================
-   固定ヘッダー管理
-================================================== */
-
-/*
-  今回は固定レイヤーを2つだけ使用します。
-
-  ① scheduleFixedHeader
-     → 日付・合計・累計のヘッダー
-     → 縦方向だけ固定
-     → 横方向は勤務表と一緒に動く
-
-  ② scheduleFixedStaffColumn
-     → 左上の「職員」だけ
-     → 縦・横どちらでも固定
-
-  職員名の行は固定レイヤーには入れません。
-  通常テーブルの sticky left だけで横方向を固定します。
-
-  これにより、
-
-  横スクロール
-    ↓
-  職員名だけ左に残る
-
-  縦スクロール
-    ↓
-  職員名は普通に上へ流れる
-  ヘッダーだけ残る
-
-  というExcelの「ウィンドウ枠の固定 B2」に近い動きになります。
-*/
-
-let scheduleFixedHeader =
-  null;
-
-let scheduleFixedHeaderTable =
-  null;
-
-let scheduleFixedStaffColumn =
-  null;
-
-let scheduleFixedStaffTable =
-  null;
-
-
-/* ==================================================
-   初期化
-================================================== */
+/* =========================================================
+   起動
+========================================================= */
 
 document.addEventListener(
   "DOMContentLoaded",
@@ -160,40 +109,44 @@ document.addEventListener(
 );
 
 
+/* =========================================================
+   初期化
+========================================================= */
+
 async function init() {
+
+  loadLocalData();
+
+  bindEvents();
+
+  injectScheduleStyles();
 
   try {
 
-    console.log(
-      "★ 勤務表アプリ起動"
-    );
-
-
     if (
-      !window.supabase ||
-      typeof window.supabase.createClient !==
+      window.supabase &&
+      typeof window.supabase.createClient ===
         "function"
     ) {
 
-      throw new Error(
-        "Supabaseライブラリが読み込まれていません"
-      );
+      supabaseClient =
+        window.supabase.createClient(
+          SUPABASE_URL,
+          SUPABASE_KEY
+        );
 
     }
 
+  } catch (error) {
 
-    supabaseClient =
-      window.supabase.createClient(
-        SUPABASE_URL,
-        SUPABASE_KEY
-      );
+    console.error(
+      "Supabase初期化エラー",
+      error
+    );
 
+  }
 
-    loadLocalData();
-
-
-    bindEvents();
-
+  if (supabaseClient) {
 
     try {
 
@@ -202,66 +155,32 @@ async function init() {
     } catch (error) {
 
       console.error(
-        "Supabaseデータ取得失敗",
+        "Supabase読み込みエラー",
         error
-      );
-
-      alert(
-        "Supabaseからデータを取得できませんでした。\n現在の画面を表示します。"
       );
 
     }
 
-
-    renderAll();
-
-
-    loadPublicHolidays();
-
-
-    setupRealtime();
-
-
-    startAutoSync();
-
-
-    setupVisibilitySync();
-
-
-    console.log(
-      "★ 勤務表アプリ起動完了"
-    );
-
-
-  } catch (error) {
-
-    console.error(
-      "★ 初期化エラー",
-      error
-    );
-
-
-    loadLocalData();
-
-
-    renderAll();
-
-
-    loadPublicHolidays();
-
-
-    alert(
-      "Supabaseへの接続に失敗しました。\nアプリ自体は起動します。"
-    );
-
   }
+
+  renderAll();
+
+  loadPublicHolidays();
+
+  setupRealtime();
+
+  startAutoSync();
+
+  setupVisibilitySync();
+
+  updateScheduleStickyVariables();
 
 }
 
 
-/* ==================================================
-   ローカルデータ読み込み
-================================================== */
+/* =========================================================
+   Local Storage読み込み
+========================================================= */
 
 function loadLocalData() {
 
@@ -272,64 +191,59 @@ function loadLocalData() {
         STORAGE_KEY
       );
 
-
     if (!saved) {
 
       return;
 
     }
 
-
-    const parsed =
+    const data =
       JSON.parse(saved);
 
-
-    appData.companyHolidays =
+    if (
       Array.isArray(
-        parsed.companyHolidays
+        data.companyHolidays
       )
-        ? parsed.companyHolidays
-        : [];
+    ) {
 
+      appData.companyHolidays =
+        data.companyHolidays;
 
-    appData.leaveTypes =
+    }
+
+    if (
       Array.isArray(
-        parsed.leaveTypes
+        data.leaveTypes
       )
-        ? parsed.leaveTypes
-        : [];
+    ) {
 
+      appData.leaveTypes =
+        data.leaveTypes;
 
-    appData.akeTime =
-      parsed.akeTime &&
-      typeof parsed.akeTime ===
-        "object"
+    }
 
-        ? {
+    if (
+      data.akeTime
+    ) {
 
-            start:
-              parsed.akeTime.start ||
-              "05:30",
+      appData.akeTime = {
 
-            end:
-              parsed.akeTime.end ||
-              "11:15"
+        start:
+          data.akeTime.start ||
+          "05:30",
 
-          }
+        end:
+          data.akeTime.end ||
+          "11:15"
 
-        : {
+      };
 
-            start: "05:30",
-
-            end: "11:15"
-
-          };
-
+    }
 
   } catch (error) {
 
-    console.error(
-      "ローカルデータ読み込みエラー",
+    console.warn(
+      "LocalStorage読み込みエラー",
       error
     );
 
@@ -338,9 +252,9 @@ function loadLocalData() {
 }
 
 
-/* ==================================================
-   ローカル保存
-================================================== */
+/* =========================================================
+   Local Storage保存
+========================================================= */
 
 function saveLocalData() {
 
@@ -362,11 +276,10 @@ function saveLocalData() {
       })
     );
 
-
   } catch (error) {
 
-    console.error(
-      "ローカル保存エラー",
+    console.warn(
+      "LocalStorage保存エラー",
       error
     );
 
@@ -375,20 +288,22 @@ function saveLocalData() {
 }
 
 
-/* ==================================================
-   Supabaseから全データ取得
-================================================== */
+/* =========================================================
+   Supabase 全データ読み込み
+========================================================= */
 
 async function loadAllFromSupabase() {
 
   if (!supabaseClient) {
 
-    throw new Error(
-      "Supabaseクライアントがありません"
-    );
+    return;
 
   }
 
+
+  /* -------------------------------------------------------
+     職員
+  ------------------------------------------------------- */
 
   const staffResult =
     await supabaseClient
@@ -397,34 +312,141 @@ async function loadAllFromSupabase() {
         "id,name,created_at,sort_order,calendar_token"
       );
 
-
-  if (staffResult.error) {
+  if (
+    staffResult.error
+  ) {
 
     throw staffResult.error;
 
   }
 
+  const staffData =
+    (staffResult.data || [])
+      .map(
+        (staff, index) => ({
+
+          ...staff,
+
+          originalIndex:
+            index
+
+        })
+      )
+      .filter(
+        staff =>
+          staff.name &&
+          staff.name !== "明"
+      )
+      .sort(
+        (a, b) => {
+
+          const ao =
+            Number(a.sort_order);
+
+          const bo =
+            Number(b.sort_order);
+
+          const av =
+            Number.isFinite(ao)
+              ? ao
+              : 999999;
+
+          const bv =
+            Number.isFinite(bo)
+              ? bo
+              : 999999;
+
+          if (
+            av !== bv
+          ) {
+
+            return av - bv;
+
+          }
+
+          const ac =
+            a.created_at || "";
+
+          const bc =
+            b.created_at || "";
+
+          if (
+            ac !== bc
+          ) {
+
+            return ac.localeCompare(bc);
+
+          }
+
+          return (
+            a.originalIndex -
+            b.originalIndex
+          );
+
+        }
+      );
+
+  appData.staff =
+    staffData;
+
+
+  /* -------------------------------------------------------
+     勤務形態
+  ------------------------------------------------------- */
 
   const shiftResult =
     await supabaseClient
       .from("shift_types")
       .select(
         "id,name,created_at,start_time,end_time,break_time"
-      )
-      .order(
-        "created_at",
-        {
-          ascending: true
-        }
       );
 
-
-  if (shiftResult.error) {
+  if (
+    shiftResult.error
+  ) {
 
     throw shiftResult.error;
 
   }
 
+  appData.shiftTypes =
+    (shiftResult.data || [])
+      .filter(
+        shift =>
+          shift.name &&
+          shift.name !== "明"
+      )
+      .map(
+        shift => ({
+
+          id:
+            shift.id,
+
+          name:
+            shift.name,
+
+          start:
+            shift.start_time ||
+            "",
+
+          end:
+            shift.end_time ||
+            "",
+
+          break:
+            shift.break_time ||
+            "",
+
+          created_at:
+            shift.created_at
+
+        })
+      );
+
+
+  /* -------------------------------------------------------
+     勤務データ
+  ------------------------------------------------------- */
 
   const workResult =
     await supabaseClient
@@ -433,300 +455,16 @@ async function loadAllFromSupabase() {
         "id,staff_name,work_date,shift_name,leave_type"
       );
 
-
-  if (workResult.error) {
+  if (
+    workResult.error
+  ) {
 
     throw workResult.error;
 
   }
 
-
-  const leaveResult =
-    await supabaseClient
-      .from("leave_types")
-      .select(
-        "id,name,color,created_at"
-      )
-      .order(
-        "created_at",
-        {
-          ascending: true
-        }
-      );
-
-
-  if (leaveResult.error) {
-
-    console.error(
-      "leave_types取得エラー:",
-      leaveResult.error
-    );
-
-  }
-
-
-  const holidayResult =
-    await supabaseClient
-      .from("company_holidays")
-      .select(
-        "id,name,start_date,end_date,created_at"
-      )
-      .order(
-        "start_date",
-        {
-          ascending: true
-        }
-      );
-
-
-  if (holidayResult.error) {
-
-    console.error(
-      "company_holidays取得エラー:",
-      holidayResult.error
-    );
-
-  }
-
-
-  const rawStaff =
-    (staffResult.data || [])
-      .map(
-        (row, index) => ({
-
-          id:
-            row.id,
-
-          name:
-            String(
-              row.name || ""
-            ),
-
-          sort_order:
-            row.sort_order !== null &&
-            row.sort_order !== undefined
-
-              ? Number(
-                  row.sort_order
-                )
-
-              : null,
-
-          calendar_token:
-            row.calendar_token || "",
-
-          created_at:
-            row.created_at || "",
-
-          originalIndex:
-            index
-
-        })
-      )
-      .filter(
-        row =>
-          row.name &&
-          row.name !== "明"
-      );
-
-
-  rawStaff.sort(
-    (a, b) => {
-
-      const aHas =
-        Number.isFinite(
-          a.sort_order
-        );
-
-
-      const bHas =
-        Number.isFinite(
-          b.sort_order
-        );
-
-
-      if (
-        aHas &&
-        bHas
-      ) {
-
-        if (
-          a.sort_order !==
-          b.sort_order
-        ) {
-
-          return (
-            a.sort_order -
-            b.sort_order
-          );
-
-        }
-
-      }
-
-
-      if (
-        aHas &&
-        !bHas
-      ) {
-
-        return -1;
-
-      }
-
-
-      if (
-        !aHas &&
-        bHas
-      ) {
-
-        return 1;
-
-      }
-
-
-      if (
-        a.created_at &&
-        b.created_at
-      ) {
-
-        const result =
-          String(
-            a.created_at
-          ).localeCompare(
-            String(
-              b.created_at
-            )
-          );
-
-
-        if (
-          result !== 0
-        ) {
-
-          return result;
-
-        }
-
-      }
-
-
-      return (
-        a.originalIndex -
-        b.originalIndex
-      );
-
-    }
-  );
-
-
-  appData.staff =
-    rawStaff.map(
-      row => ({
-
-        id:
-          row.id,
-
-        name:
-          row.name,
-
-        sort_order:
-          row.sort_order,
-
-        calendar_token:
-          row.calendar_token || ""
-
-      })
-    );
-
-
-  appData.shiftTypes =
-    (shiftResult.data || [])
-      .map(
-        row => ({
-
-          id:
-            row.id,
-
-          name:
-            String(
-              row.name || ""
-            ),
-
-          start:
-            String(
-              row.start_time || ""
-            ),
-
-          end:
-            String(
-              row.end_time || ""
-            ),
-
-          break:
-            String(
-              row.break_time || ""
-            )
-
-        })
-      )
-      .filter(
-        row =>
-          row.name &&
-          row.name !== "明"
-      );
-
-
-  if (
-    !leaveResult.error
-  ) {
-
-    appData.leaveTypes =
-      (leaveResult.data || [])
-        .map(
-          row => ({
-
-            id:
-              row.id,
-
-            name:
-              String(
-                row.name || ""
-              ),
-
-            color:
-              String(
-                row.color ||
-                "#FFD54F"
-              ),
-
-            created_at:
-              row.created_at || ""
-
-          })
-        )
-        .filter(
-          row =>
-            row.name
-        );
-
-  }
-
-
   appData.shifts =
     {};
-
-
-  appData.staff.forEach(
-    staff => {
-
-      appData.shifts[
-        staff.name
-      ] = {};
-
-    }
-  );
-
 
   (workResult.data || [])
     .forEach(
@@ -741,7 +479,6 @@ async function loadAllFromSupabase() {
 
         }
 
-
         if (
           !appData.shifts[
             row.staff_name
@@ -754,7 +491,6 @@ async function loadAllFromSupabase() {
 
         }
 
-
         appData.shifts[
           row.staff_name
         ][
@@ -762,10 +498,12 @@ async function loadAllFromSupabase() {
         ] = {
 
           shiftName:
-            row.shift_name || "",
+            row.shift_name ||
+            "",
 
           leaveType:
-            row.leave_type || ""
+            row.leave_type ||
+            ""
 
         };
 
@@ -773,93 +511,132 @@ async function loadAllFromSupabase() {
     );
 
 
+  /* -------------------------------------------------------
+     休暇
+  ------------------------------------------------------- */
+
+  const leaveResult =
+    await supabaseClient
+      .from("leave_types")
+      .select(
+        "id,name,color,created_at"
+      );
+
   if (
-    !holidayResult.error
+    leaveResult.error
   ) {
 
-    appData.companyHolidays =
-      (holidayResult.data || [])
-        .map(
-          row => ({
-
-            id:
-              row.id,
-
-            name:
-              String(
-                row.name || ""
-              ),
-
-            start:
-              String(
-                row.start_date || ""
-              ),
-
-            end:
-              String(
-                row.end_date || ""
-              )
-
-          })
-        )
-        .filter(
-          row =>
-            row.name &&
-            row.start &&
-            row.end
-        )
-        .sort(
-          (a, b) =>
-            a.start.localeCompare(
-              b.start
-            )
-        );
+    throw leaveResult.error;
 
   }
 
+  appData.leaveTypes =
+    (leaveResult.data || [])
+      .filter(
+        leave =>
+          leave.name
+      )
+      .map(
+        leave => ({
 
-  const akeResult =
+          id:
+            leave.id,
+
+          name:
+            leave.name,
+
+          color:
+            leave.color ||
+            "#FFD54F",
+
+          created_at:
+            leave.created_at
+
+        })
+      );
+
+
+  /* -------------------------------------------------------
+     休業日
+  ------------------------------------------------------- */
+
+  const holidayResult =
+    await supabaseClient
+      .from("company_holidays")
+      .select(
+        "id,name,start_date,end_date,created_at"
+      );
+
+  if (
+    holidayResult.error
+  ) {
+
+    throw holidayResult.error;
+
+  }
+
+  appData.companyHolidays =
+    (holidayResult.data || [])
+      .map(
+        holiday => ({
+
+          id:
+            holiday.id,
+
+          name:
+            holiday.name,
+
+          start:
+            holiday.start_date,
+
+          end:
+            holiday.end_date ||
+            holiday.start_date,
+
+          created_at:
+            holiday.created_at
+
+        })
+      );
+
+
+  /* -------------------------------------------------------
+     明け時間
+  ------------------------------------------------------- */
+
+  const settingResult =
     await supabaseClient
       .from("app_settings")
       .select(
         "setting_name,setting_value"
       );
 
-
   if (
-    !akeResult.error
+    !settingResult.error
   ) {
 
-    let akeStart =
-      "05:30";
-
-    let akeEnd =
-      "11:15";
-
-
-    (akeResult.data || [])
+    (settingResult.data || [])
       .forEach(
-        row => {
+        setting => {
 
           if (
-            row.setting_name ===
+            setting.setting_name ===
             "ake_start"
           ) {
 
-            akeStart =
-              row.setting_value ||
+            appData.akeTime.start =
+              setting.setting_value ||
               "05:30";
 
           }
 
-
           if (
-            row.setting_name ===
+            setting.setting_name ===
             "ake_end"
           ) {
 
-            akeEnd =
-              row.setting_value ||
+            appData.akeTime.end =
+              setting.setting_value ||
               "11:15";
 
           }
@@ -867,37 +644,26 @@ async function loadAllFromSupabase() {
         }
       );
 
-
-    appData.akeTime = {
-
-      start:
-        akeStart,
-
-      end:
-        akeEnd
-
-    };
-
   }
-
 
   saveLocalData();
 
 }
 
 
-/* ==================================================
+/* =========================================================
    Realtime
-================================================== */
+========================================================= */
 
 function setupRealtime() {
 
-  if (!supabaseClient) {
+  if (
+    !supabaseClient
+  ) {
 
     return;
 
   }
-
 
   if (
     realtimeChannel
@@ -905,32 +671,26 @@ function setupRealtime() {
 
     try {
 
-      supabaseClient.removeChannel(
-        realtimeChannel
-      );
+      supabaseClient
+        .removeChannel(
+          realtimeChannel
+        );
 
     } catch (error) {
 
       console.warn(
-        "Realtime旧チャンネル削除エラー",
         error
       );
 
     }
 
-
-    realtimeChannel =
-      null;
-
   }
-
 
   realtimeChannel =
     supabaseClient
       .channel(
-        "kinmu-app-realtime"
+        "work-schedule-realtime"
       )
-
       .on(
         "postgres_changes",
         {
@@ -938,37 +698,8 @@ function setupRealtime() {
           schema: "public",
           table: "staff"
         },
-        payload => {
-
-          console.log(
-            "Realtime staff:",
-            payload
-          );
-
-          scheduleRealtimeReload();
-
-        }
+        scheduleRealtimeReload
       )
-
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "work_shifts"
-        },
-        payload => {
-
-          console.log(
-            "Realtime work_shifts:",
-            payload
-          );
-
-          scheduleRealtimeReload();
-
-        }
-      )
-
       .on(
         "postgres_changes",
         {
@@ -976,18 +707,17 @@ function setupRealtime() {
           schema: "public",
           table: "shift_types"
         },
-        payload => {
-
-          console.log(
-            "Realtime shift_types:",
-            payload
-          );
-
-          scheduleRealtimeReload();
-
-        }
+        scheduleRealtimeReload
       )
-
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "work_shifts"
+        },
+        scheduleRealtimeReload
+      )
       .on(
         "postgres_changes",
         {
@@ -995,18 +725,8 @@ function setupRealtime() {
           schema: "public",
           table: "leave_types"
         },
-        payload => {
-
-          console.log(
-            "Realtime leave_types:",
-            payload
-          );
-
-          scheduleRealtimeReload();
-
-        }
+        scheduleRealtimeReload
       )
-
       .on(
         "postgres_changes",
         {
@@ -1014,18 +734,8 @@ function setupRealtime() {
           schema: "public",
           table: "company_holidays"
         },
-        payload => {
-
-          console.log(
-            "Realtime company_holidays:",
-            payload
-          );
-
-          scheduleRealtimeReload();
-
-        }
+        scheduleRealtimeReload
       )
-
       .on(
         "postgres_changes",
         {
@@ -1033,80 +743,16 @@ function setupRealtime() {
           schema: "public",
           table: "app_settings"
         },
-        payload => {
-
-          console.log(
-            "Realtime app_settings:",
-            payload
-          );
-
-          scheduleRealtimeReload();
-
-        }
+        scheduleRealtimeReload
       )
-
-      .subscribe(
-        status => {
-
-          console.log(
-            "Supabase Realtime STATUS:",
-            status
-          );
-
-
-          if (
-            status ===
-            "SUBSCRIBED"
-          ) {
-
-            console.log(
-              "★ Realtime接続成功"
-            );
-
-          }
-
-
-          if (
-            status ===
-              "CHANNEL_ERROR" ||
-            status ===
-              "TIMED_OUT" ||
-            status ===
-              "CLOSED"
-          ) {
-
-            console.warn(
-              "Realtime接続エラー。再接続します。"
-            );
-
-
-            setTimeout(
-              () => {
-
-                if (
-                  document.visibilityState ===
-                  "visible"
-                ) {
-
-                  setupRealtime();
-
-                }
-
-              },
-              3000
-            );
-
-          }
-
-        }
-      );
+      .subscribe();
 
 }
 
 
-/* ==================================================
-   Realtime更新予約
-================================================== */
+/* =========================================================
+   Realtime 更新予約
+========================================================= */
 
 function scheduleRealtimeReload() {
 
@@ -1121,17 +767,21 @@ function scheduleRealtimeReload() {
 
   }
 
-
-  clearTimeout(
+  if (
     realtimeReloadTimer
-  );
+  ) {
 
+    clearTimeout(
+      realtimeReloadTimer
+    );
+
+  }
 
   realtimeReloadTimer =
     setTimeout(
-      async () => {
+      () => {
 
-        await reloadFromSupabase();
+        reloadFromSupabase();
 
       },
       300
@@ -1140,18 +790,20 @@ function scheduleRealtimeReload() {
 }
 
 
-/* ==================================================
-   Supabase再読み込み
-================================================== */
+/* =========================================================
+   Realtime 再読み込み
+========================================================= */
 
 async function reloadFromSupabase() {
 
-  if (!supabaseClient) {
+  if (
+    !supabaseClient ||
+    realtimeUpdating
+  ) {
 
     return;
 
   }
-
 
   if (
     cloudOperationBusy
@@ -1164,39 +816,19 @@ async function reloadFromSupabase() {
 
   }
 
-
-  if (
-    realtimeUpdating
-  ) {
-
-    realtimeReloadPending =
-      true;
-
-    return;
-
-  }
-
-
   realtimeUpdating =
     true;
-
 
   try {
 
     await loadAllFromSupabase();
 
-
     renderAll();
-
-
-    console.log(
-      "★ Supabaseデータを画面へ反映しました"
-    );
 
   } catch (error) {
 
     console.error(
-      "自動更新エラー",
+      "Realtime再読み込みエラー",
       error
     );
 
@@ -1205,34 +837,19 @@ async function reloadFromSupabase() {
     realtimeUpdating =
       false;
 
-
-    if (
-      realtimeReloadPending &&
-      !cloudOperationBusy
-    ) {
-
-      realtimeReloadPending =
-        false;
-
-
-      scheduleRealtimeReload();
-
-    }
-
   }
 
 }
 
 
-/* ==================================================
-   保存完了後のRealtime処理
-================================================== */
+/* =========================================================
+   クラウド操作終了
+========================================================= */
 
 function finishCloudOperation() {
 
   cloudOperationBusy =
     false;
-
 
   if (
     realtimeReloadPending
@@ -1241,24 +858,16 @@ function finishCloudOperation() {
     realtimeReloadPending =
       false;
 
-
-    setTimeout(
-      () => {
-
-        reloadFromSupabase();
-
-      },
-      100
-    );
+    scheduleRealtimeReload();
 
   }
 
 }
 
 
-/* ==================================================
+/* =========================================================
    自動同期
-================================================== */
+========================================================= */
 
 function startAutoSync() {
 
@@ -1272,41 +881,26 @@ function startAutoSync() {
 
   }
 
-
   autoSyncTimer =
     setInterval(
       async () => {
 
         if (
-          !supabaseClient
+          document.hidden
         ) {
 
           return;
 
         }
-
 
         if (
-          cloudOperationBusy
-        ) {
-
-          realtimeReloadPending =
-            true;
-
-          return;
-
-        }
-
-
-        if (
-          document.visibilityState !==
-          "visible"
+          cloudOperationBusy ||
+          realtimeUpdating
         ) {
 
           return;
 
         }
-
 
         await reloadFromSupabase();
 
@@ -1317,9 +911,9 @@ function startAutoSync() {
 }
 
 
-/* ==================================================
-   画面復帰時同期
-================================================== */
+/* =========================================================
+   表示復帰時同期
+========================================================= */
 
 function setupVisibilitySync() {
 
@@ -1328,26 +922,14 @@ function setupVisibilitySync() {
     async () => {
 
       if (
-        document.visibilityState !==
-        "visible"
+        !document.hidden
       ) {
 
-        return;
+        await reloadFromSupabase();
+
+        setupRealtime();
 
       }
-
-
-      setTimeout(
-        async () => {
-
-          await reloadFromSupabase();
-
-
-          setupRealtime();
-
-        },
-        300
-      );
 
     }
   );
@@ -1355,9 +937,9 @@ function setupVisibilitySync() {
 }
 
 
-/* ==================================================
+/* =========================================================
    イベント
-================================================== */
+========================================================= */
 
 function bindEvents() {
 
@@ -1372,9 +954,18 @@ function bindEvents() {
           "click",
           () => {
 
-            showPage(
-              button.dataset.page
-            );
+            const page =
+              button.dataset.page;
+
+            if (
+              page
+            ) {
+
+              showPage(
+                page
+              );
+
+            }
 
           }
         );
@@ -1383,15 +974,11 @@ function bindEvents() {
     );
 
 
-  const prev =
-    document.getElementById(
+  document
+    .getElementById(
       "prevMonth"
-    );
-
-
-  if (prev) {
-
-    prev.addEventListener(
+    )
+    ?.addEventListener(
       "click",
       () => {
 
@@ -1399,24 +986,17 @@ function bindEvents() {
           currentDate.getMonth() - 1
         );
 
-
         renderSchedule();
 
       }
     );
 
-  }
 
-
-  const next =
-    document.getElementById(
+  document
+    .getElementById(
       "nextMonth"
-    );
-
-
-  if (next) {
-
-    next.addEventListener(
+    )
+    ?.addEventListener(
       "click",
       () => {
 
@@ -1424,188 +1004,143 @@ function bindEvents() {
           currentDate.getMonth() + 1
         );
 
-
         renderSchedule();
 
       }
     );
 
-  }
 
-
-  const addStaff =
-    document.getElementById(
+  document
+    .getElementById(
       "addStaffButton"
-    );
-
-
-  if (addStaff) {
-
-    addStaff.addEventListener(
+    )
+    ?.addEventListener(
       "click",
       addOrUpdateStaff
     );
 
-  }
 
-
-  const addShift =
-    document.getElementById(
+  document
+    .getElementById(
       "addShiftButton"
-    );
-
-
-  if (addShift) {
-
-    addShift.addEventListener(
+    )
+    ?.addEventListener(
       "click",
       addOrUpdateShift
     );
 
-  }
 
-
-  const addLeave =
-    document.getElementById(
+  document
+    .getElementById(
       "addLeaveButton"
-    );
-
-
-  if (addLeave) {
-
-    addLeave.addEventListener(
+    )
+    ?.addEventListener(
       "click",
       addOrUpdateLeave
     );
 
-  }
 
-
-  const addHoliday =
-    document.getElementById(
+  document
+    .getElementById(
       "addCompanyHolidayButton"
-    );
-
-
-  if (addHoliday) {
-
-    addHoliday.addEventListener(
+    )
+    ?.addEventListener(
       "click",
       addCompanyHoliday
     );
 
-  }
 
-
-  const saveAke =
-    document.getElementById(
+  document
+    .getElementById(
       "saveAkeTimeButton"
-    );
-
-
-  if (saveAke) {
-
-    saveAke.addEventListener(
+    )
+    ?.addEventListener(
       "click",
       saveAkeTime
     );
 
-  }
 
-
-  const calendarCancel =
-    document.getElementById(
+  document
+    .getElementById(
       "calendarCancelButton"
-    );
-
-
-  if (calendarCancel) {
-
-    calendarCancel.addEventListener(
+    )
+    ?.addEventListener(
       "click",
       closeCalendarModal
     );
 
-  }
 
-
-  const calendarOK =
-    document.getElementById(
+  document
+    .getElementById(
       "calendarOKButton"
-    );
-
-
-  if (calendarOK) {
-
-    calendarOK.addEventListener(
+    )
+    ?.addEventListener(
       "click",
       subscribeStaffCalendar
     );
 
-  }
 
-
-  const deleteMonth =
-    document.getElementById(
+  document
+    .getElementById(
       "deleteMonthButton"
-    );
-
-
-  if (deleteMonth) {
-
-    deleteMonth.addEventListener(
+    )
+    ?.addEventListener(
       "click",
       deleteCurrentMonth
     );
 
-  }
 
-
-  const deleteFiscal =
-    document.getElementById(
+  document
+    .getElementById(
       "deleteFiscalYearButton"
-    );
-
-
-  if (deleteFiscal) {
-
-    deleteFiscal.addEventListener(
+    )
+    ?.addEventListener(
       "click",
       deleteFiscalYear
     );
 
-  }
-
 
   document.addEventListener(
     "click",
-    e => {
+    event => {
 
       const menu =
         document.getElementById(
           "shiftMenu"
         );
 
-
-      if (!menu) {
+      if (
+        !menu ||
+        menu.style.display ===
+          "none"
+      ) {
 
         return;
 
       }
 
-
       if (
-        !menu.contains(
-          e.target
-        ) &&
-        !e.target.closest(
-          ".schedule-cell"
+        menu.contains(
+          event.target
         )
       ) {
 
-        hideShiftMenu();
+        return;
 
       }
+
+      if (
+        selectedCell &&
+        selectedCell.contains(
+          event.target
+        )
+      ) {
+
+        return;
+
+      }
+
+      hideShiftMenu();
 
     }
   );
@@ -1613,9 +1148,9 @@ function bindEvents() {
 }
 
 
-/* ==================================================
-   ページ切り替え
-================================================== */
+/* =========================================================
+   ページ表示
+========================================================= */
 
 function showPage(
   page
@@ -1626,20 +1161,18 @@ function showPage(
       ".page"
     )
     .forEach(
-      p => {
+      element => {
 
-        p.style.display =
+        element.style.display =
           "none";
 
       }
     );
 
-
   const target =
     document.getElementById(
-      page + "Page"
+      `${page}Page`
     );
-
 
   if (target) {
 
@@ -1647,7 +1180,6 @@ function showPage(
       "";
 
   }
-
 
   document
     .querySelectorAll(
@@ -1666,52 +1198,40 @@ function showPage(
     );
 
 
-  hideShiftMenu();
-
-
   if (
-    page ===
-    "schedule"
+    page === "schedule"
   ) {
 
     renderSchedule();
 
   }
 
-
   if (
-    page ===
-    "staff"
+    page === "staff"
   ) {
 
     renderStaffList();
 
   }
 
-
   if (
-    page ===
-    "leave"
-  ) {
-
-    renderLeaveList();
-
-  }
-
-
-  if (
-    page ===
-    "shift"
+    page === "shift"
   ) {
 
     renderShiftList();
 
   }
 
+  if (
+    page === "leave"
+  ) {
+
+    renderLeaveList();
+
+  }
 
   if (
-    page ===
-    "holiday"
+    page === "holiday"
   ) {
 
     renderHolidayList();
@@ -1721,9 +1241,9 @@ function showPage(
 }
 
 
-/* ==================================================
+/* =========================================================
    全体描画
-================================================== */
+========================================================= */
 
 function renderAll() {
 
@@ -1731,24 +1251,21 @@ function renderAll() {
 
   renderStaffList();
 
-  renderLeaveList();
-
   renderShiftList();
 
-  renderHolidayList();
+  renderLeaveList();
 
+  renderHolidayList();
 
   const start =
     document.getElementById(
       "akeStartInput"
     );
 
-
   const end =
     document.getElementById(
       "akeEndInput"
     );
-
 
   if (start) {
 
@@ -1756,7 +1273,6 @@ function renderAll() {
       appData.akeTime.start;
 
   }
-
 
   if (end) {
 
@@ -1768,9 +1284,9 @@ function renderAll() {
 }
 
 
-/* ==================================================
-   日付
-================================================== */
+/* =========================================================
+   日付キー
+========================================================= */
 
 function getDateKey(
   year,
@@ -1779,11 +1295,19 @@ function getDateKey(
 ) {
 
   return (
-    `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`
+    String(year).padStart(4, "0") +
+    "-" +
+    String(month).padStart(2, "0") +
+    "-" +
+    String(day).padStart(2, "0")
   );
 
 }
 
+
+/* =========================================================
+   月の日数
+========================================================= */
 
 function getDaysInMonth(
   year,
@@ -1799,9 +1323,19 @@ function getDaysInMonth(
 }
 
 
+/* =========================================================
+   日付表示
+========================================================= */
+
 function formatDateJP(
   dateKey
 ) {
+
+  if (!dateKey) {
+
+    return "";
+
+  }
 
   const [
     y,
@@ -1812,187 +1346,14 @@ function formatDateJP(
       .split("-")
       .map(Number);
 
-
   return `${y}/${m}/${d}`;
 
 }
 
 
-/* ==================================================
-   休業・祝日
-================================================== */
-
-function isCompanyHoliday(
-  dateKey
-) {
-
-  return appData.companyHolidays.some(
-    h =>
-      dateKey >= h.start &&
-      dateKey <= h.end
-  );
-
-}
-
-
-function getCompanyHoliday(
-  dateKey
-) {
-
-  return appData.companyHolidays.find(
-    h =>
-      dateKey >= h.start &&
-      dateKey <= h.end
-  );
-
-}
-
-
-function isPublicHoliday(
-  dateKey
-) {
-
-  return !!publicHolidays[
-    dateKey
-  ];
-
-}
-
-
-/* ==================================================
-   勤務データ取得
-================================================== */
-
-function getStoredShift(
-  staffName,
-  dateKey
-) {
-
-  const name =
-    getStaffName(
-      staffName
-    );
-
-
-  const data =
-    appData.shifts[name] &&
-    appData.shifts[name][dateKey];
-
-
-  if (!data) {
-
-    return "";
-
-  }
-
-
-  if (
-    typeof data ===
-    "string"
-  ) {
-
-    return data;
-
-  }
-
-
-  return data.shiftName || "";
-
-}
-
-
-function getStoredLeave(
-  staffName,
-  dateKey
-) {
-
-  const name =
-    getStaffName(
-      staffName
-    );
-
-
-  const data =
-    appData.shifts[name] &&
-    appData.shifts[name][dateKey];
-
-
-  if (!data) {
-
-    return "";
-
-  }
-
-
-  if (
-    typeof data ===
-    "string"
-  ) {
-
-    return "";
-
-  }
-
-
-  return data.leaveType || "";
-
-}
-
-
-function setStoredShift(
-  staffName,
-  dateKey,
-  shiftName,
-  leaveType
-) {
-
-  const name =
-    getStaffName(
-      staffName
-    );
-
-
-  if (
-    !appData.shifts[name]
-  ) {
-
-    appData.shifts[name] =
-      {};
-
-  }
-
-
-  if (
-    shiftName ||
-    leaveType
-  ) {
-
-    appData.shifts[name][
-      dateKey
-    ] = {
-
-      shiftName:
-        shiftName || "",
-
-      leaveType:
-        leaveType || ""
-
-    };
-
-  } else {
-
-    delete appData.shifts[
-      name
-    ][dateKey];
-
-  }
-
-}
-
-
-/* ==================================================
-   職員名
-================================================== */
+/* =========================================================
+   職員名取得
+========================================================= */
 
 function getStaffName(
   staff
@@ -2007,31 +1368,105 @@ function getStaffName(
 
   }
 
-
-  if (
-    staff &&
-    typeof staff ===
-      "object" &&
-    staff.name
-  ) {
-
-    return String(
-      staff.name
-    );
-
-  }
-
-
-  return String(
-    staff ?? ""
+  return (
+    staff?.name ||
+    ""
   );
 
 }
 
 
-/* ==================================================
-   自動「明」
-================================================== */
+/* =========================================================
+   勤務取得
+========================================================= */
+
+function getStoredShift(
+  staffName,
+  dateKey
+) {
+
+  const name =
+    getStaffName(
+      staffName
+    );
+
+  return (
+    appData.shifts?.[name]?.[dateKey]
+      ?.shiftName ||
+    ""
+  );
+
+}
+
+
+/* =========================================================
+   休暇取得
+========================================================= */
+
+function getStoredLeave(
+  staffName,
+  dateKey
+) {
+
+  const name =
+    getStaffName(
+      staffName
+    );
+
+  return (
+    appData.shifts?.[name]?.[dateKey]
+      ?.leaveType ||
+    ""
+  );
+
+}
+
+
+/* =========================================================
+   勤務保存（ローカル）
+========================================================= */
+
+function setStoredShift(
+  staffName,
+  dateKey,
+  shiftName,
+  leaveType
+) {
+
+  const name =
+    getStaffName(
+      staffName
+    );
+
+  if (
+    !appData.shifts[name]
+  ) {
+
+    appData.shifts[name] =
+      {};
+
+  }
+
+  appData.shifts[name][
+    dateKey
+  ] = {
+
+    shiftName:
+      shiftName ||
+      "",
+
+    leaveType:
+      leaveType ||
+      ""
+
+  };
+
+}
+
+
+/* =========================================================
+   表示勤務
+========================================================= */
 
 function getDisplayShift(
   staffName,
@@ -2044,56 +1479,52 @@ function getDisplayShift(
       dateKey
     );
 
+  if (
+    stored
+  ) {
+
+    return stored;
+
+  }
 
   const [
-    year,
-    month,
-    day
+    y,
+    m,
+    d
   ] =
     dateKey
       .split("-")
       .map(Number);
 
-
   const current =
     new Date(
-      year,
-      month - 1,
-      day
+      y,
+      m - 1,
+      d
     );
 
-
-  const previous =
-    new Date(
-      current
-    );
-
-
-  previous.setDate(
-    previous.getDate() - 1
+  current.setDate(
+    current.getDate() - 1
   );
 
-
-  const prevKey =
+  const previousKey =
     getDateKey(
-      previous.getFullYear(),
-      previous.getMonth() + 1,
-      previous.getDate()
+      current.getFullYear(),
+      current.getMonth() + 1,
+      current.getDate()
     );
 
-
-  const previousShift =
+  const previous =
     getStoredShift(
       staffName,
-      prevKey
+      previousKey
     );
 
-
   if (
-    previousShift &&
+    previous &&
     (
-      previousShift.includes("宿") ||
-      previousShift.includes("夜")
+      previous.includes("宿") ||
+      previous.includes("夜")
     )
   ) {
 
@@ -2101,64 +1532,58 @@ function getDisplayShift(
 
   }
 
-
-  return stored;
+  return "";
 
 }
 
 
-/* ==================================================
-   休暇色
-================================================== */
+/* =========================================================
+   休暇種類取得
+========================================================= */
 
 function getLeaveType(
   leaveName
 ) {
 
-  if (!leaveName) {
-
-    return null;
-
-  }
-
-
   return appData.leaveTypes.find(
     leave =>
-      String(leave.name) ===
-      String(leaveName)
-  ) || null;
+      leave.name ===
+      leaveName
+  );
 
 }
 
 
+/* =========================================================
+   休暇色
+========================================================= */
+
 function getLeaveColor(
   leaveName
 ) {
+
+  if (!leaveName) {
+
+    return "";
+
+  }
 
   const leave =
     getLeaveType(
       leaveName
     );
 
-
-  if (
-    leave &&
-    leave.color
-  ) {
-
-    return leave.color;
-
-  }
-
-
-  return "";
+  return (
+    leave?.color ||
+    ""
+  );
 
 }
 
 
-/* ==================================================
-   集計用勤務形態正規化
-================================================== */
+/* =========================================================
+   勤務名を集計用に正規化
+========================================================= */
 
 function normalizeShiftNameForTotal(
   value
@@ -2166,16 +1591,15 @@ function normalizeShiftNameForTotal(
 
   const text =
     String(
-      value ?? ""
+      value ||
+      ""
     ).trim();
-
 
   if (!text) {
 
     return "";
 
   }
-
 
   if (
     text === "明"
@@ -2185,49 +1609,16 @@ function normalizeShiftNameForTotal(
 
   }
 
-
-  const shiftNames =
-    Array.isArray(
-      appData.shiftTypes
-    )
-
-      ? [
-          ...new Set(
-            appData.shiftTypes
-              .map(
-                shift =>
-                  String(
-                    shift?.name ??
-                    ""
-                  ).trim()
-              )
-              .filter(
-                name =>
-                  name &&
-                  name !== "明"
-              )
-          )
-        ]
-
-      : [];
-
-
-  if (
-    shiftNames.length === 0
-  ) {
-
-    return text;
-
-  }
-
-
-  const candidates =
-    shiftNames
+  const names =
+    appData.shiftTypes
+      .map(
+        shift =>
+          shift.name
+      )
       .filter(
         name =>
-          text.startsWith(
-            name
-          )
+          name &&
+          name !== "明"
       )
       .sort(
         (a, b) =>
@@ -2235,48 +1626,42 @@ function normalizeShiftNameForTotal(
           a.length
       );
 
-
-  if (
-    candidates.length === 0
+  for (
+    const name of names
   ) {
 
-    return text;
+    if (
+      text === name
+    ) {
+
+      return name;
+
+    }
 
   }
 
-
-  const shorterCandidates =
-    candidates.filter(
-      name =>
-        name.length <
-        text.length
-    );
-
-
-  if (
-    shorterCandidates.length > 0
+  for (
+    const name of names
   ) {
 
-    shorterCandidates.sort(
-      (a, b) =>
-        b.length -
-        a.length
-    );
+    if (
+      text.startsWith(name)
+    ) {
 
+      return name;
 
-    return shorterCandidates[0];
+    }
 
   }
 
-
-  return candidates[0];
+  return text;
 
 }
 
 
-/* ==================================================
-   合計列用勤務形態一覧
-================================================== */
+/* =========================================================
+   集計対象勤務
+========================================================= */
 
 function getTotalShiftTypes() {
 
@@ -2286,132 +1671,68 @@ function getTotalShiftTypes() {
   const seen =
     new Set();
 
-
-  if (
-    !Array.isArray(
-      appData.shiftTypes
-    )
-  ) {
-
-    return result;
-
-  }
-
-
   appData.shiftTypes.forEach(
     shift => {
 
-      if (!shift) {
-
-        return;
-
-      }
-
-
-      const originalName =
-        String(
-          shift.name ??
-          ""
-        ).trim();
-
-
-      if (
-        !originalName ||
-        originalName === "明"
-      ) {
-
-        return;
-
-      }
-
-
-      const baseName =
+      const name =
         normalizeShiftNameForTotal(
-          originalName
+          shift.name
         );
 
-
       if (
-        !baseName ||
-        baseName === "明"
+        !name ||
+        name === "明" ||
+        seen.has(name)
       ) {
 
         return;
 
       }
 
+      seen.add(name);
 
-      if (
-        seen.has(
-          baseName
-        )
-      ) {
+      result.push({
 
-        return;
+        name:
+          name
 
-      }
-
-
-      seen.add(
-        baseName
-      );
-
-
-      const exactBase =
-        appData.shiftTypes.find(
-          item =>
-            String(
-              item?.name ??
-              ""
-            ).trim() ===
-            baseName
-        );
-
-
-      result.push(
-        exactBase ||
-        {
-          ...shift,
-          name:
-            baseName
-        }
-      );
+      });
 
     }
   );
-
 
   return result;
 
 }
 
 
-/* ==================================================
-   休暇一覧表示
-================================================== */
+/* =========================================================
+   休暇凡例
+========================================================= */
 
 function renderLeaveLegend() {
-
-  const table =
-    document.getElementById(
-      "scheduleTable"
-    );
-
-
-  if (!table) {
-
-    return;
-
-  }
-
 
   let legend =
     document.getElementById(
       "leaveLegend"
     );
 
+  const table =
+    document.getElementById(
+      "scheduleTable"
+    );
 
-  if (!legend) {
+  if (
+    !table
+  ) {
+
+    return;
+
+  }
+
+  if (
+    !legend
+  ) {
 
     legend =
       document.createElement(
@@ -2421,47 +1742,18 @@ function renderLeaveLegend() {
     legend.id =
       "leaveLegend";
 
-    table.parentElement?.appendChild(
-      legend
+    table.parentNode.insertBefore(
+      legend,
+      table.nextSibling
     );
 
   }
 
-
-  legend.style.margin =
-    "8px 0";
-
-  legend.style.padding =
-    "8px 10px";
-
-  legend.style.fontSize =
-    "13px";
-
-  legend.style.display =
-    "flex";
-
-  legend.style.flexWrap =
-    "wrap";
-
-  legend.style.alignItems =
-    "center";
-
-  legend.style.gap =
-    "8px";
-
-  legend.style.background =
-    "#f8f8fa";
-
-  legend.style.borderRadius =
-    "10px";
-
+  legend.innerHTML =
+    "";
 
   if (
-    !Array.isArray(
-      appData.leaveTypes
-    ) ||
-    appData.leaveTypes.length ===
-      0
+    !appData.leaveTypes.length
   ) {
 
     legend.style.display =
@@ -2471,45 +1763,45 @@ function renderLeaveLegend() {
 
   }
 
-
   legend.style.display =
     "flex";
 
+  legend.style.flexWrap =
+    "wrap";
 
-  legend.innerHTML =
-    `<strong>🏖️ 休暇一覧</strong>`;
+  legend.style.gap =
+    "8px";
 
+  legend.style.padding =
+    "8px 4px";
 
   appData.leaveTypes.forEach(
     leave => {
 
       const item =
         document.createElement(
-          "span"
+          "div"
         );
 
-
       item.style.display =
-        "inline-flex";
+        "flex";
 
       item.style.alignItems =
         "center";
 
       item.style.gap =
-        "4px";
-
+        "5px";
 
       const swatch =
         document.createElement(
           "span"
         );
 
-
       swatch.style.width =
-        "14px";
+        "16px";
 
       swatch.style.height =
-        "14px";
+        "16px";
 
       swatch.style.borderRadius =
         "4px";
@@ -2519,24 +1811,22 @@ function renderLeaveLegend() {
         "#FFD54F";
 
       swatch.style.border =
-        "1px solid rgba(0,0,0,.12)";
+        "1px solid rgba(0,0,0,.15)";
 
-
-      const text =
+      const label =
         document.createElement(
           "span"
         );
 
-      text.textContent =
+      label.textContent =
         leave.name;
-
 
       item.appendChild(
         swatch
       );
 
       item.appendChild(
-        text
+        label
       );
 
       legend.appendChild(
@@ -2549,9 +1839,10 @@ function renderLeaveLegend() {
 }
 
 
-/* ==================================================
+/* =========================================================
    勤務表描画
-================================================== */
+   ★固定複製テーブルは使用しない
+========================================================= */
 
 function renderSchedule() {
 
@@ -2560,13 +1851,6 @@ function renderSchedule() {
       "scheduleTable"
     );
 
-
-  const monthLabel =
-    document.getElementById(
-      "currentMonth"
-    );
-
-
   if (!table) {
 
     return;
@@ -2574,11 +1858,27 @@ function renderSchedule() {
   }
 
 
+  /*
+    古いバージョンで生成された
+    固定レイヤーを完全削除
+  */
+
+  document
+    .querySelectorAll(
+      "#scheduleFixedHeader, #scheduleFixedStaffColumn"
+    )
+    .forEach(
+      element =>
+        element.remove()
+    );
+
+
   const year =
     currentDate.getFullYear();
 
   const month =
-    currentDate.getMonth() + 1;
+    currentDate.getMonth() +
+    1;
 
   const days =
     getDaysInMonth(
@@ -2587,29 +1887,27 @@ function renderSchedule() {
     );
 
 
-  if (monthLabel) {
-
-    monthLabel.textContent =
-      `${year}年${month}月`;
-
-  }
+  const wrapper =
+    table.closest(
+      ".table-wrapper"
+    );
 
 
-  /*
-    列幅はここで一元管理。
-    固定ヘッダー側も必ず同じ幅を使います。
-  */
+  const isMobile =
+    window.innerWidth <=
+    768;
+
 
   const staffColumnWidth =
     90;
 
   const dateColumnWidth =
-    window.innerWidth <= 600
+    isMobile
       ? 48
       : 52;
 
   const totalColumnWidth =
-    window.innerWidth <= 600
+    isMobile
       ? 52
       : 58;
 
@@ -2622,21 +1920,15 @@ function renderSchedule() {
     "";
 
 
-  /* ==================================================
-     COLGROUP
-  ================================================== */
+  /* -------------------------------------------------------
+     colgroup
+  ------------------------------------------------------- */
 
   html +=
     "<colgroup>";
 
-
   html +=
-    `<col class="staff-column"
-      style="
-        width:${staffColumnWidth}px;
-        min-width:${staffColumnWidth}px;
-        max-width:${staffColumnWidth}px;
-      ">`;
+    `<col style="width:${staffColumnWidth}px">`;
 
 
   for (
@@ -2646,12 +1938,7 @@ function renderSchedule() {
   ) {
 
     html +=
-      `<col class="date-column"
-        style="
-          width:${dateColumnWidth}px;
-          min-width:${dateColumnWidth}px;
-          max-width:${dateColumnWidth}px;
-        ">`;
+      `<col style="width:${dateColumnWidth}px">`;
 
   }
 
@@ -2660,65 +1947,41 @@ function renderSchedule() {
     () => {
 
       html +=
-        `<col class="total-column"
-          style="
-            width:${totalColumnWidth}px;
-            min-width:${totalColumnWidth}px;
-            max-width:${totalColumnWidth}px;
-          ">`;
+        `<col style="width:${totalColumnWidth}px">`;
 
       html +=
-        `<col class="total-column"
-          style="
-            width:${totalColumnWidth}px;
-            min-width:${totalColumnWidth}px;
-            max-width:${totalColumnWidth}px;
-          ">`;
+        `<col style="width:${totalColumnWidth}px">`;
 
     }
   );
-
 
   html +=
     "</colgroup>";
 
 
-  /* ==================================================
-     THEAD
-  ================================================== */
+  /* -------------------------------------------------------
+     thead
+  ------------------------------------------------------- */
 
   html +=
     "<thead>";
 
 
-  /* 1段目 */
+  /* 1行目 */
 
   html +=
     "<tr>";
 
 
-  /*
-    職員ヘッダー
-    横方向だけsticky。
-    縦方向は固定レイヤーで別途処理。
-  */
-
-  html +=
-    `<th
+  html += `
+    <th
       class="staff-header"
       rowspan="2"
-      style="
-        width:${staffColumnWidth}px;
-        min-width:${staffColumnWidth}px;
-        max-width:${staffColumnWidth}px;
-        position:sticky;
-        left:0;
-        z-index:300;
-        background:#f2f2f7;
-        box-sizing:border-box;
-        border-right:1px solid #d1d1d6;
-      "
-    >職員</th>`;
+      scope="col"
+    >
+      職員
+    </th>
+  `;
 
 
   for (
@@ -2734,18 +1997,47 @@ function renderSchedule() {
         day
       );
 
-
-    const week =
+    const date =
       new Date(
         year,
         month - 1,
         day
-      ).getDay();
+      );
 
+    const weekday =
+      date.getDay();
 
     let cls =
       "date-header";
 
+    if (
+      weekday === 0
+    ) {
+
+      cls +=
+        " sunday";
+
+    }
+
+    if (
+      weekday === 6
+    ) {
+
+      cls +=
+        " saturday";
+
+    }
+
+    if (
+      isPublicHoliday(
+        dateKey
+      )
+    ) {
+
+      cls +=
+        " public-holiday";
+
+    }
 
     if (
       isCompanyHoliday(
@@ -2756,50 +2048,22 @@ function renderSchedule() {
       cls +=
         " company-holiday";
 
-    } else if (
-      week === 0 ||
-      isPublicHoliday(
-        dateKey
-      )
-    ) {
-
-      cls +=
-        " sunday";
-
-    } else if (
-      week === 6
-    ) {
-
-      cls +=
-        " saturday";
-
     }
 
-
-    html +=
-      `<th
+    html += `
+      <th
         class="${cls}"
         rowspan="2"
-        style="
-          width:${dateColumnWidth}px;
-          min-width:${dateColumnWidth}px;
-          max-width:${dateColumnWidth}px;
-          box-sizing:border-box;
-        "
+        scope="col"
       >
-        <span class="day-number">${day}</span><br>
-        <span class="day-week">${
-          [
-            "日",
-            "月",
-            "火",
-            "水",
-            "木",
-            "金",
-            "土"
-          ][week]
-        }</span>
-      </th>`;
+        <span class="schedule-day-number">
+          ${day}
+        </span>
+        <span class="schedule-weekday">
+          ${["日","月","火","水","木","金","土"][weekday]}
+        </span>
+      </th>
+    `;
 
   }
 
@@ -2807,13 +2071,17 @@ function renderSchedule() {
   totalShiftTypes.forEach(
     shift => {
 
-      html +=
-        `<th
-          colspan="2"
+      html += `
+        <th
           class="shift-header"
-        >${escapeHtml(
-          shift.name
-        )}</th>`;
+          colspan="2"
+          scope="colgroup"
+        >
+          ${escapeHtml(
+            shift.name
+          )}
+        </th>
+      `;
 
     }
   );
@@ -2823,7 +2091,7 @@ function renderSchedule() {
     "</tr>";
 
 
-  /* 2段目 */
+  /* 2行目 */
 
   html +=
     "<tr>";
@@ -2832,27 +2100,21 @@ function renderSchedule() {
   totalShiftTypes.forEach(
     () => {
 
-      html +=
-        `<th
+      html += `
+        <th
           class="total-header"
-          style="
-            width:${totalColumnWidth}px;
-            min-width:${totalColumnWidth}px;
-            max-width:${totalColumnWidth}px;
-            box-sizing:border-box;
-          "
-        >合計</th>`;
+          scope="col"
+        >
+          合計
+        </th>
 
-      html +=
-        `<th
-          class="total-header"
-          style="
-            width:${totalColumnWidth}px;
-            min-width:${totalColumnWidth}px;
-            max-width:${totalColumnWidth}px;
-            box-sizing:border-box;
-          "
-        >累計</th>`;
+        <th
+          class="total-header cumulative-header"
+          scope="col"
+        >
+          累計
+        </th>
+      `;
 
     }
   );
@@ -2861,14 +2123,13 @@ function renderSchedule() {
   html +=
     "</tr>";
 
-
   html +=
     "</thead>";
 
 
-  /* ==================================================
-     TBODY
-  ================================================== */
+  /* -------------------------------------------------------
+     tbody
+  ------------------------------------------------------- */
 
   html +=
     "<tbody>";
@@ -2882,45 +2143,34 @@ function renderSchedule() {
           staff
         );
 
-
-      html +=
-        `<tr
+      html += `
+        <tr
           class="staff-row"
           data-staff-row="${escapeHtml(
             staffName
           )}"
-        >`;
+        >
+      `;
 
 
-      /*
-        職員名はここだけsticky。
-        top指定をしないことが重要。
+      /* 職員名 */
 
-        これにより縦スクロール時には
-        行と一緒に上へ流れます。
-      */
-
-      html +=
-        `<th
+      html += `
+        <th
           class="staff-cell staff-name-cell"
-          data-staff="${escapeHtml(
+          scope="row"
+          data-staff-name="${escapeHtml(
             staffName
           )}"
-          style="
-            width:${staffColumnWidth}px;
-            min-width:${staffColumnWidth}px;
-            max-width:${staffColumnWidth}px;
-            position:sticky;
-            left:0;
-            z-index:200;
-            background:#ffffff;
-            box-sizing:border-box;
-            border-right:1px solid #d1d1d6;
-          "
-        >${escapeHtml(
-          staffName
-        )}</th>`;
+        >
+          ${escapeHtml(
+            staffName
+          )}
+        </th>
+      `;
 
+
+      /* 日付 */
 
       for (
         let day = 1;
@@ -2935,18 +2185,47 @@ function renderSchedule() {
             day
           );
 
-
-        const week =
+        const date =
           new Date(
             year,
             month - 1,
             day
-          ).getDay();
+          );
 
+        const weekday =
+          date.getDay();
 
-        let cls =
+        let classes =
           "schedule-cell";
 
+        if (
+          weekday === 0
+        ) {
+
+          classes +=
+            " sunday";
+
+        }
+
+        if (
+          weekday === 6
+        ) {
+
+          classes +=
+            " saturday";
+
+        }
+
+        if (
+          isPublicHoliday(
+            dateKey
+          )
+        ) {
+
+          classes +=
+            " public-holiday";
+
+        }
 
         if (
           isCompanyHoliday(
@@ -2954,88 +2233,59 @@ function renderSchedule() {
           )
         ) {
 
-          cls +=
+          classes +=
             " company-holiday";
-
-        } else if (
-          week === 0 ||
-          isPublicHoliday(
-            dateKey
-          )
-        ) {
-
-          cls +=
-            " sunday";
-
-        } else if (
-          week === 6
-        ) {
-
-          cls +=
-            " saturday";
 
         }
 
 
-        const display =
+        const shift =
           getDisplayShift(
             staffName,
             dateKey
           );
 
-
-        const leaveName =
+        const leave =
           getStoredLeave(
             staffName,
             dateKey
           );
 
-
         const leaveColor =
           getLeaveColor(
-            leaveName
+            leave
           );
 
 
-        const backgroundStyle =
+        const style =
           leaveColor
-            ? `background:${escapeHtml(
+            ? `style="background:${escapeHtml(
                 leaveColor
-              )} !important;`
+              )} !important;"`
             : "";
 
 
-        html +=
-          `<td
-            class="${cls}"
+        html += `
+          <td
+            class="${classes}"
             data-staff="${escapeHtml(
               staffName
             )}"
             data-date="${dateKey}"
-            style="
-              width:${dateColumnWidth}px;
-              min-width:${dateColumnWidth}px;
-              max-width:${dateColumnWidth}px;
-              box-sizing:border-box;
-              ${backgroundStyle}
-            "
-          >${escapeHtml(
-            display
-          )}</td>`;
+            ${style}
+          >
+            ${escapeHtml(
+              shift
+            )}
+          </td>
+        `;
 
       }
 
 
-      /*
-        ★ 合計・累計
-
-        ここは必ず全勤務形態分を
-        1セットずつ出します。
-
-        最初の「合計」も通常セルとして
-        必ず生成されるため、
-        固定レイヤーによって消えません。
-      */
+      /* ---------------------------------------------------
+         月間・年度集計
+      --------------------------------------------------- */
 
       totalShiftTypes.forEach(
         shift => {
@@ -3048,7 +2298,6 @@ function renderSchedule() {
               month
             );
 
-
           const fiscal =
             calculateFiscalTotal(
               staffName,
@@ -3057,37 +2306,19 @@ function renderSchedule() {
               month
             );
 
-
-          html +=
-            `<td
+          html += `
+            <td
               class="total-cell"
-              data-total-shift="${escapeHtml(
-                shift.name
-              )}"
-              data-total-type="monthly"
-              style="
-                width:${totalColumnWidth}px;
-                min-width:${totalColumnWidth}px;
-                max-width:${totalColumnWidth}px;
-                box-sizing:border-box;
-              "
-            >${monthly}</td>`;
+            >
+              ${monthly}
+            </td>
 
-
-          html +=
-            `<td
-              class="total-cell"
-              data-total-shift="${escapeHtml(
-                shift.name
-              )}"
-              data-total-type="fiscal"
-              style="
-                width:${totalColumnWidth}px;
-                min-width:${totalColumnWidth}px;
-                max-width:${totalColumnWidth}px;
-                box-sizing:border-box;
-              "
-            >${fiscal}</td>`;
+            <td
+              class="total-cell cumulative-cell"
+            >
+              ${fiscal}
+            </td>
+          `;
 
         }
       );
@@ -3104,42 +2335,44 @@ function renderSchedule() {
     "</tbody>";
 
 
-  /* ==================================================
-     テーブル設定
-  ================================================== */
+  table.innerHTML =
+    html;
+
+
+  /*
+    テーブル幅
+  */
+
+  const requiredWidth =
+    staffColumnWidth +
+    (
+      days *
+      dateColumnWidth
+    ) +
+    (
+      totalShiftTypes.length *
+      2 *
+      totalColumnWidth
+    );
+
+
+  table.style.width =
+    `${requiredWidth}px`;
+
+  table.style.minWidth =
+    `${requiredWidth}px`;
+
+  table.style.maxWidth =
+    `${requiredWidth}px`;
+
+  table.style.tableLayout =
+    "fixed";
 
   table.style.borderCollapse =
     "separate";
 
   table.style.borderSpacing =
     "0";
-
-  table.style.tableLayout =
-    "fixed";
-
-
-  const requiredTableWidth =
-    staffColumnWidth +
-    days * dateColumnWidth +
-    totalShiftTypes.length *
-      2 *
-      totalColumnWidth;
-
-
-  table.style.width =
-    requiredTableWidth +
-    "px";
-
-  table.style.minWidth =
-    requiredTableWidth +
-    "px";
-
-  table.style.maxWidth =
-    "none";
-
-
-  table.innerHTML =
-    html;
 
 
   bindScheduleCells();
@@ -3148,1239 +2381,40 @@ function renderSchedule() {
 
   renderLeaveLegend();
 
-
-  /*
-    DOM完成後に固定レイヤーを
-    完全に作り直します。
-  */
-
-  updateScheduleFixedLayers();
+  updateScheduleStickyVariables();
 
 }
 
 
-/* ==================================================
-   固定レイヤー作成
-================================================== */
-
-function createScheduleFixedLayers() {
-
-  /*
-    既存レイヤーを全部削除。
-    古い職員名固定レイヤーが残らないようにします。
-  */
-
-  if (
-    scheduleFixedHeader
-  ) {
-
-    scheduleFixedHeader.remove();
-
-  }
-
-
-  if (
-    scheduleFixedStaffColumn
-  ) {
-
-    scheduleFixedStaffColumn.remove();
-
-  }
-
-
-  scheduleFixedHeader =
-    null;
-
-  scheduleFixedHeaderTable =
-    null;
-
-  scheduleFixedStaffColumn =
-    null;
-
-  scheduleFixedStaffTable =
-    null;
-
-
-  /* ==================================================
-     日付・合計・累計 固定ヘッダー
-  ================================================== */
-
-  scheduleFixedHeader =
-    document.createElement(
-      "div"
-    );
-
-
-  scheduleFixedHeader.id =
-    "scheduleFixedHeader";
-
-
-  scheduleFixedHeader.style.position =
-    "fixed";
-
-  scheduleFixedHeader.style.display =
-    "none";
-
-  scheduleFixedHeader.style.zIndex =
-    "999";
-
-  scheduleFixedHeader.style.pointerEvents =
-    "none";
-
-  scheduleFixedHeader.style.overflow =
-    "hidden";
-
-  scheduleFixedHeader.style.boxSizing =
-    "border-box";
-
-
-  scheduleFixedHeaderTable =
-    document.createElement(
-      "table"
-    );
-
-
-  scheduleFixedHeaderTable.style.borderCollapse =
-    "separate";
-
-  scheduleFixedHeaderTable.style.borderSpacing =
-    "0";
-
-  scheduleFixedHeaderTable.style.tableLayout =
-    "fixed";
-
-  scheduleFixedHeaderTable.style.margin =
-    "0";
-
-  scheduleFixedHeaderTable.style.padding =
-    "0";
-
-  scheduleFixedHeaderTable.style.position =
-    "relative";
-
-  scheduleFixedHeaderTable.style.left =
-    "0";
-
-  scheduleFixedHeaderTable.style.top =
-    "0";
-
-
-  scheduleFixedHeader.appendChild(
-    scheduleFixedHeaderTable
-  );
-
-
-  document.body.appendChild(
-    scheduleFixedHeader
-  );
-
-
-  /* ==================================================
-     左上「職員」固定
-  ================================================== */
-
-  scheduleFixedStaffColumn =
-    document.createElement(
-      "div"
-    );
-
-
-  scheduleFixedStaffColumn.id =
-    "scheduleFixedStaffColumn";
-
-
-  scheduleFixedStaffColumn.style.position =
-    "fixed";
-
-  scheduleFixedStaffColumn.style.display =
-    "none";
-
-  scheduleFixedStaffColumn.style.zIndex =
-    "1001";
-
-  scheduleFixedStaffColumn.style.pointerEvents =
-    "none";
-
-  scheduleFixedStaffColumn.style.overflow =
-    "hidden";
-
-  scheduleFixedStaffColumn.style.boxSizing =
-    "border-box";
-
-
-  scheduleFixedStaffTable =
-    document.createElement(
-      "table"
-    );
-
-
-  scheduleFixedStaffTable.style.borderCollapse =
-    "separate";
-
-  scheduleFixedStaffTable.style.borderSpacing =
-    "0";
-
-  scheduleFixedStaffTable.style.tableLayout =
-    "fixed";
-
-  scheduleFixedStaffTable.style.margin =
-    "0";
-
-  scheduleFixedStaffTable.style.padding =
-    "0";
-
-  scheduleFixedStaffTable.style.width =
-    "90px";
-
-
-  scheduleFixedStaffColumn.appendChild(
-    scheduleFixedStaffTable
-  );
-
-
-  document.body.appendChild(
-    scheduleFixedStaffColumn
-  );
-
-}
-
-
-/* ==================================================
-   固定ヘッダー同期
-================================================== */
-
-function syncScheduleFixedLayers() {
-
-  const table =
-    document.getElementById(
-      "scheduleTable"
-    );
-
-
-  if (
-    !table ||
-    !scheduleFixedHeaderTable ||
-    !scheduleFixedStaffTable
-  ) {
-
-    return;
-
-  }
-
-
-  const originalColgroup =
-    table.querySelector(
-      "colgroup"
-    );
-
-
-  const originalThead =
-    table.querySelector(
-      "thead"
-    );
-
-
-  const originalStaffHeader =
-    table.querySelector(
-      "thead .staff-header"
-    );
-
-
-  if (
-    !originalColgroup ||
-    !originalThead ||
-    !originalStaffHeader
-  ) {
-
-    return;
-
-  }
-
-
-  /* ==================================================
-     列幅取得
-  ================================================== */
-
-  const originalCols =
-    Array.from(
-      originalColgroup.children
-    );
-
-
-  const colWidths =
-    originalCols.map(
-      col => {
-
-        const rect =
-          col.getBoundingClientRect();
-
-
-        return rect.width;
-
-      }
-    );
-
-
-  const tableRect =
-    table.getBoundingClientRect();
-
-
-  const tableWidth =
-    tableRect.width;
-
-
-  /* ==================================================
-     固定ヘッダーを作り直す
-  ================================================== */
-
-  scheduleFixedHeaderTable.innerHTML =
-    "";
-
-
-  const fixedColgroup =
-    document.createElement(
-      "colgroup"
-    );
-
-
-  originalCols.forEach(
-    (col, index) => {
-
-      const fixedCol =
-        document.createElement(
-          "col"
-        );
-
-
-      const width =
-        colWidths[index] ||
-        parseFloat(
-          col.style.width
-        ) ||
-        0;
-
-
-      fixedCol.style.width =
-        width + "px";
-
-      fixedCol.style.minWidth =
-        width + "px";
-
-      fixedCol.style.maxWidth =
-        width + "px";
-
-
-      fixedColgroup.appendChild(
-        fixedCol
-      );
-
-    }
-  );
-
-
-  scheduleFixedHeaderTable.appendChild(
-    fixedColgroup
-  );
-
-
-  /*
-    元のtheadを完全コピー。
-
-    職員セルだけ透明にしますが、
-    セル自体は残します。
-
-    これが非常に重要です。
-
-    1列目の90pxを残すことで、
-    その後の「1日」「2日」...
-    「最初の合計」までの列位置が
-    元テーブルと完全一致します。
-  */
-
-  const fixedThead =
-    originalThead.cloneNode(
-      true
-    );
-
-
-  const fixedStaffHeader =
-    fixedThead.querySelector(
-      ".staff-header"
-    );
-
-
-  if (
-    fixedStaffHeader
-  ) {
-
-    fixedStaffHeader.style.visibility =
-      "hidden";
-
-    fixedStaffHeader.style.background =
-      "transparent";
-
-    fixedStaffHeader.style.color =
-      "transparent";
-
-    fixedStaffHeader.style.borderColor =
-      "transparent";
-
-    fixedStaffHeader.style.pointerEvents =
-      "none";
-
-  }
-
-
-  /*
-    固定ヘッダー内の職員セル以外は
-    stickyを解除します。
-
-    固定レイヤー自身がfixedなので、
-    stickyは不要です。
-  */
-
-  fixedThead
-    .querySelectorAll(
-      "th"
-    )
-    .forEach(
-      th => {
-
-        th.style.position =
-          "static";
-
-        th.style.left =
-          "auto";
-
-        th.style.top =
-          "auto";
-
-      }
-    );
-
-
-  scheduleFixedHeaderTable.appendChild(
-    fixedThead
-  );
-
-
-  scheduleFixedHeaderTable.style.width =
-    tableWidth + "px";
-
-  scheduleFixedHeaderTable.style.minWidth =
-    tableWidth + "px";
-
-  scheduleFixedHeaderTable.style.maxWidth =
-    "none";
-
-
-  /* ==================================================
-     左上「職員」だけ作成
-  ================================================== */
-
-  scheduleFixedStaffTable.innerHTML =
-    "";
-
-
-  const staffColgroup =
-    document.createElement(
-      "colgroup"
-    );
-
-
-  const staffCol =
-    document.createElement(
-      "col"
-    );
-
-
-  const staffWidth =
-    originalStaffHeader.getBoundingClientRect().width;
-
-
-  staffCol.style.width =
-    staffWidth + "px";
-
-  staffCol.style.minWidth =
-    staffWidth + "px";
-
-  staffCol.style.maxWidth =
-    staffWidth + "px";
-
-
-  staffColgroup.appendChild(
-    staffCol
-  );
-
-
-  scheduleFixedStaffTable.appendChild(
-    staffColgroup
-  );
-
-
-  const staffThead =
-    document.createElement(
-      "thead"
-    );
-
-
-  const staffRow =
-    document.createElement(
-      "tr"
-    );
-
-
-  const staffHeaderClone =
-    originalStaffHeader.cloneNode(
-      true
-    );
-
-
-  staffHeaderClone.style.position =
-    "static";
-
-  staffHeaderClone.style.left =
-    "auto";
-
-  staffHeaderClone.style.top =
-    "auto";
-
-  staffHeaderClone.style.zIndex =
-    "1002";
-
-  staffHeaderClone.style.visibility =
-    "visible";
-
-  staffHeaderClone.style.background =
-    "#f2f2f7";
-
-  staffHeaderClone.style.color =
-    "";
-
-  staffHeaderClone.style.borderRight =
-    "1px solid #d1d1d6";
-
-
-  staffRow.appendChild(
-    staffHeaderClone
-  );
-
-
-  staffThead.appendChild(
-    staffRow
-  );
-
-
-  scheduleFixedStaffTable.appendChild(
-    staffThead
-  );
-
-
-  scheduleFixedStaffTable.style.width =
-    staffWidth + "px";
-
-  scheduleFixedStaffTable.style.minWidth =
-    staffWidth + "px";
-
-  scheduleFixedStaffTable.style.maxWidth =
-    staffWidth + "px";
-
-
-  /* ==================================================
-     行高さ同期
-  ================================================== */
-
-  const originalHeaderRows =
-    Array.from(
-      originalThead.querySelectorAll(
-        "tr"
-      )
-    );
-
-
-  const fixedHeaderRows =
-    Array.from(
-      fixedThead.querySelectorAll(
-        "tr"
-      )
-    );
-
-
-  originalHeaderRows.forEach(
-    (row, index) => {
-
-      const fixedRow =
-        fixedHeaderRows[index];
-
-
-      if (!fixedRow) {
-
-        return;
-
-      }
-
-
-      const height =
-        row.getBoundingClientRect().height;
-
-
-      fixedRow.style.height =
-        height + "px";
-
-
-      Array.from(
-        fixedRow.children
-      ).forEach(
-        cell => {
-
-          cell.style.height =
-            height + "px";
-
-        }
-      );
-
-    }
-  );
-
-
-  /*
-    左上セルは2段分の高さ。
-    元の職員ヘッダーはrowspan=2なので
-    thead全体の高さを使用します。
-  */
-
-  const originalHeaderHeight =
-    originalThead.getBoundingClientRect().height;
-
-
-  staffHeaderClone.style.height =
-    originalHeaderHeight + "px";
-
-  staffHeaderClone.style.minHeight =
-    originalHeaderHeight + "px";
-
-  staffHeaderClone.style.maxHeight =
-    originalHeaderHeight + "px";
-
-
-  staffRow.style.height =
-    originalHeaderHeight + "px";
-
-
-  scheduleFixedStaffTable.style.height =
-    originalHeaderHeight + "px";
-
-}
-
-
-/* ==================================================
-   固定ヘッダー位置更新
-================================================== */
-
-function updateScheduleFixedLayers() {
-
-  const table =
-    document.getElementById(
-      "scheduleTable"
-    );
-
-
-  if (!table) {
-
-    if (
-      scheduleFixedHeader
-    ) {
-
-      scheduleFixedHeader.style.display =
-        "none";
-
-    }
-
-
-    if (
-      scheduleFixedStaffColumn
-    ) {
-
-      scheduleFixedStaffColumn.style.display =
-        "none";
-
-    }
-
-
-    return;
-
-  }
-
-
-  const wrapper =
-    table.closest(
-      ".table-wrapper"
-    );
-
-
-  const thead =
-    table.querySelector(
-      "thead"
-    );
-
-
-  const staffHeader =
-    table.querySelector(
-      "thead .staff-header"
-    );
-
-
-  if (
-    !wrapper ||
-    !thead ||
-    !staffHeader
-  ) {
-
-    return;
-
-  }
-
-
-  if (
-    !scheduleFixedHeader ||
-    !scheduleFixedStaffColumn
-  ) {
-
-    createScheduleFixedLayers();
-
-  }
-
-
-  /*
-    必ず最新DOMと同期
-  */
-
-  syncScheduleFixedLayers();
-
-
-  const wrapperRect =
-    wrapper.getBoundingClientRect();
-
-
-  const tableRect =
-    table.getBoundingClientRect();
-
-
-  const theadRect =
-    thead.getBoundingClientRect();
-
-
-  const staffRect =
-    staffHeader.getBoundingClientRect();
-
-
-  /*
-    ページ上部に固定する位置。
-
-    既存アプリの上部ヘッダーがある場合に
-    その高さを考慮します。
-  */
-
-  let topOffset =
-    0;
-
-
-  const possibleHeaders =
-    [
-      "header",
-      ".app-header",
-      ".top-header",
-      ".navbar",
-      ".header"
-    ];
-
-
-  for (
-    const selector of possibleHeaders
-  ) {
-
-    const element =
-      document.querySelector(
-        selector
-      );
-
-
-    if (
-      !element ||
-      element.id ===
-        "scheduleFixedHeader" ||
-      element.id ===
-        "scheduleFixedStaffColumn"
-    ) {
-
-      continue;
-
-    }
-
-
-    const rect =
-      element.getBoundingClientRect();
-
-
-    if (
-      rect.bottom > 0 &&
-      rect.bottom <= 180
-    ) {
-
-      topOffset =
-        Math.max(
-          topOffset,
-          rect.bottom
-        );
-
-    }
-
-  }
-
-
-  /*
-    ヘッダーが画面内にある間は通常ヘッダー。
-    画面上部を通過したら固定。
-  */
-
-  const originalHeaderTop =
-    theadRect.top;
-
-
-  const originalHeaderHeight =
-    theadRect.height;
-
-
-  const tableBottom =
-    tableRect.bottom;
-
-
-  /*
-    まだ通常ヘッダーが
-    topOffsetより下にある
-  */
-
-  if (
-    originalHeaderTop >=
-    topOffset
-  ) {
-
-    scheduleFixedHeader.style.display =
-      "none";
-
-    scheduleFixedStaffColumn.style.display =
-      "none";
-
-    return;
-
-  }
-
-
-  /*
-    表そのものが固定ヘッダーより上へ
-    完全に抜けたら非表示
-  */
-
-  if (
-    tableBottom <=
-    topOffset
-  ) {
-
-    scheduleFixedHeader.style.display =
-      "none";
-
-    scheduleFixedStaffColumn.style.display =
-      "none";
-
-    return;
-
-  }
-
-
-  /*
-    固定ヘッダーを表示
-  */
-
-  scheduleFixedHeader.style.display =
-    "block";
-
-
-  scheduleFixedStaffColumn.style.display =
-    "block";
-
-
-  scheduleFixedHeader.style.left =
-    wrapperRect.left + "px";
-
-  scheduleFixedHeader.style.top =
-    topOffset + "px";
-
-  scheduleFixedHeader.style.width =
-    wrapperRect.width + "px";
-
-  scheduleFixedHeader.style.height =
-    originalHeaderHeight + "px";
-
-
-  /*
-    ★ 横スクロール同期
-
-    元テーブルが右へ動いた分だけ
-    固定ヘッダーも左へ動かします。
-
-    ただし固定レイヤー自体は
-    wrapperの左端に固定。
-  */
-
-  const scrollLeft =
-    wrapper.scrollLeft || 0;
-
-
-  scheduleFixedHeaderTable.style.transform =
-    `translateX(${-scrollLeft}px)`;
-
-
-  scheduleFixedHeaderTable.style.webkitTransform =
-    `translateX(${-scrollLeft}px)`;
-
-
-  /*
-    左上「職員」
-
-    職員名のtbodyはここに入れません。
-
-    そのため縦スクロールしても
-    職員名が固定されることはありません。
-  */
-
-  scheduleFixedStaffColumn.style.left =
-    wrapperRect.left + "px";
-
-  scheduleFixedStaffColumn.style.top =
-    topOffset + "px";
-
-  scheduleFixedStaffColumn.style.width =
-    staffRect.width + "px";
-
-  scheduleFixedStaffColumn.style.height =
-    originalHeaderHeight + "px";
-
-
-  scheduleFixedStaffTable.style.transform =
-    "translateX(0)";
-
-
-  scheduleFixedStaffTable.style.webkitTransform =
-    "translateX(0)";
-
-}
-
-
-/* ==================================================
-   固定レイヤーイベント
-================================================== */
-
-function setupScheduleFixedScrollEvents() {
-
-  /*
-    二重登録防止
-  */
-
-  if (
-    window.__scheduleFixedEventsInstalled
-  ) {
-
-    return;
-
-  }
-
-
-  window.__scheduleFixedEventsInstalled =
-    true;
-
-
-  /*
-    ページの縦スクロール
-
-    captureを使って、
-    table-wrapper内部のスクロールでも
-    位置を更新します。
-  */
-
-  window.addEventListener(
-    "scroll",
-    () => {
-
-      updateScheduleFixedLayers();
-
-    },
-    {
-      passive: true
-    }
-  );
-
-
-  document.addEventListener(
-    "scroll",
-    e => {
-
-      if (
-        e.target &&
-        e.target.closest &&
-        e.target.closest(
-          ".table-wrapper"
-        )
-      ) {
-
-        updateScheduleFixedLayers();
-
-      }
-
-    },
-    {
-      passive: true,
-      capture: true
-    }
-  );
-
-
-  /*
-    横スクロール
-  */
-
-  document.addEventListener(
-    "scroll",
-    e => {
-
-      const target =
-        e.target;
-
-
-      if (
-        target &&
-        target.classList &&
-        target.classList.contains(
-          "table-wrapper"
-        )
-      ) {
-
-        updateScheduleFixedLayers();
-
-      }
-
-    },
-    {
-      passive: true,
-      capture: true
-    }
-  );
-
-
-  window.addEventListener(
-    "resize",
-    () => {
-
-      updateScheduleFixedLayers();
-
-    },
-    {
-      passive: true
-    }
-  );
-
-}
-
-
-/* ==================================================
-   固定用CSS
-================================================== */
-
-function installScheduleFixedCSS() {
-
-  if (
-    document.getElementById(
-      "scheduleFixedCSS"
-    )
-  ) {
-
-    return;
-
-  }
-
-
-  const style =
-    document.createElement(
-      "style"
-    );
-
-
-  style.id =
-    "scheduleFixedCSS";
-
-
-  style.textContent = `
-
-    /*
-      勤務表横スクロール
-    */
-
-    .table-wrapper {
-      position: relative;
-      overflow-x: auto;
-      overflow-y: visible;
-      -webkit-overflow-scrolling: touch;
-    }
-
-
-    /*
-      職員列
-
-      left:0だけを指定。
-      topは絶対に指定しない。
-
-      これにより、
-      横方向だけ固定され、
-      縦方向には行と一緒に動きます。
-    */
-
-    #scheduleTable .staff-header {
-      position: sticky !important;
-      left: 0 !important;
-      z-index: 300 !important;
-      box-sizing: border-box !important;
-      background: #f2f2f7 !important;
-    }
-
-
-    #scheduleTable .staff-name-cell {
-      position: sticky !important;
-      left: 0 !important;
-      z-index: 200 !important;
-      box-sizing: border-box !important;
-      background: #ffffff !important;
-    }
-
-
-    /*
-      勤務セルは職員列より下。
-    */
-
-    #scheduleTable .schedule-cell {
-      position: relative;
-      z-index: 1;
-    }
-
-
-    /*
-      固定ヘッダー
-    */
-
-    #scheduleFixedHeader {
-      box-sizing: border-box !important;
-      overflow: hidden !important;
-      background: transparent !important;
-    }
-
-
-    #scheduleFixedHeader table {
-      border-collapse: separate !important;
-      border-spacing: 0 !important;
-      table-layout: fixed !important;
-      margin: 0 !important;
-      padding: 0 !important;
-    }
-
-
-    /*
-      左上「職員」
-    */
-
-    #scheduleFixedStaffColumn {
-      box-sizing: border-box !important;
-      overflow: hidden !important;
-      background: transparent !important;
-    }
-
-
-    #scheduleFixedStaffColumn table {
-      border-collapse: separate !important;
-      border-spacing: 0 !important;
-      table-layout: fixed !important;
-      margin: 0 !important;
-      padding: 0 !important;
-    }
-
-
-    #scheduleFixedStaffColumn th {
-      box-sizing: border-box !important;
-    }
-
-
-    /*
-      固定ヘッダー内ではstickyを使わない。
-    */
-
-    #scheduleFixedHeader th {
-      position: static !important;
-    }
-
-  `;
-
-
-  document.head.appendChild(
-    style
-  );
-
-}
-
-
-/* ==================================================
-   勤務表固定機能初期化
-================================================== */
-
-function initScheduleFixedSystem() {
-
-  installScheduleFixedCSS();
-
-  setupScheduleFixedScrollEvents();
-
-  updateScheduleFixedLayers();
-
-}
-
-
-/* ==================================================
+/* =========================================================
    勤務セルイベント
-================================================== */
+========================================================= */
 
 function bindScheduleCells() {
 
   document
     .querySelectorAll(
-      ".schedule-cell"
+      "#scheduleTable .schedule-cell"
     )
     .forEach(
       cell => {
 
         cell.addEventListener(
           "click",
-          e => {
+          event => {
 
-            e.stopPropagation();
+            event.stopPropagation();
 
+            selectedCell =
+              cell;
 
-            const staffName =
-              cell.dataset.staff;
-
-
-            const dateKey =
-              cell.dataset.date;
-
+            shiftMenuMode =
+              "shift";
 
             showShiftMenu(
               cell,
-              staffName,
-              dateKey
+              cell.dataset.staff,
+              cell.dataset.date
             );
 
           }
@@ -4392,32 +2426,27 @@ function bindScheduleCells() {
 }
 
 
-/* ==================================================
-   職員名セル
-================================================== */
+/* =========================================================
+   職員名イベント
+========================================================= */
 
 function bindStaffNameCells() {
 
   document
     .querySelectorAll(
-      ".staff-name-cell"
+      "#scheduleTable .staff-name-cell"
     )
     .forEach(
       cell => {
 
         cell.addEventListener(
           "click",
-          e => {
+          event => {
 
-            e.stopPropagation();
+            event.stopPropagation();
 
-
-            const staffName =
-              cell.dataset.staff;
-
-
-            openCalendarModal(
-              staffName
+            openCalendarConfirm(
+              cell.dataset.staffName
             );
 
           }
@@ -4429,9 +2458,9 @@ function bindStaffNameCells() {
 }
 
 
-/* ==================================================
+/* =========================================================
    勤務メニュー
-================================================== */
+========================================================= */
 
 function showShiftMenu(
   cell,
@@ -4444,31 +2473,16 @@ function showShiftMenu(
       "shiftMenu"
     );
 
-
   if (!menu) {
 
     return;
 
   }
 
-
-  selectedCell =
-    {
-      cell,
-      staffName,
-      dateKey
-    };
-
-
-  shiftMenuMode =
-    "shift";
-
-
   const buttons =
     document.getElementById(
       "shiftMenuButtons"
     );
-
 
   if (!buttons) {
 
@@ -4476,562 +2490,576 @@ function showShiftMenu(
 
   }
 
-
   buttons.innerHTML =
     "";
 
 
-  /*
-    勤務形態
-  */
-
-  appData.shiftTypes.forEach(
-    shift => {
-
-      const button =
-        document.createElement(
-          "button"
-        );
-
-
-      button.type =
-        "button";
-
-
-      button.className =
-        "shift-menu-button";
-
-
-      button.textContent =
-        shift.name;
-
-
-      button.addEventListener(
-        "click",
-        () => {
-
-          saveWorkShift(
-            staffName,
-            dateKey,
-            shift.name
-          );
-
-        }
-      );
-
-
-      buttons.appendChild(
-        button
-      );
-
-    }
-  );
-
-
-  /*
-    削除
-  */
-
-  const deleteButton =
-    document.createElement(
-      "button"
-    );
-
-
-  deleteButton.type =
-    "button";
-
-  deleteButton.textContent =
-    "削除";
-
-
-  deleteButton.style.gridColumn =
-    "1 / -1";
-
-  deleteButton.style.width =
-    "100%";
-
-  deleteButton.style.background =
-    "#f3e5f5";
-
-  deleteButton.style.color =
-    "#7b1fa2";
-
-  deleteButton.style.fontWeight =
-    "700";
-
-
-  deleteButton.addEventListener(
-    "click",
-    () => {
-
-      saveWorkShift(
-        staffName,
-        dateKey,
-        ""
-      );
-
-    }
-  );
-
-
-  buttons.appendChild(
-    deleteButton
-  );
-
-
-  /*
-    休暇
-  */
-
-  const leaveButton =
-    document.createElement(
-      "button"
-    );
-
-
-  leaveButton.type =
-    "button";
-
-  leaveButton.textContent =
-    "休暇";
-
-
-  leaveButton.style.gridColumn =
-    "1 / -1";
-
-  leaveButton.style.width =
-    "100%";
-
-  leaveButton.style.background =
-    "#e8f5e9";
-
-  leaveButton.style.color =
-    "#2e7d32";
-
-  leaveButton.style.fontWeight =
-    "700";
-
-
-  leaveButton.addEventListener(
-    "click",
-    () => {
-
-      showLeaveMenu();
-
-    }
-  );
-
-
-  buttons.appendChild(
-    leaveButton
-  );
-
-
-  /*
-    キャンセル
-  */
-
-  const cancelButton =
-    document.createElement(
-      "button"
-    );
-
-
-  cancelButton.type =
-    "button";
-
-  cancelButton.textContent =
-    "キャンセル";
-
-
-  cancelButton.style.gridColumn =
-    "1 / -1";
-
-  cancelButton.style.width =
-    "100%";
-
-  cancelButton.style.background =
-    "#ffebee";
-
-  cancelButton.style.color =
-    "#c62828";
-
-  cancelButton.style.fontWeight =
-    "700";
-
-
-  cancelButton.addEventListener(
-    "click",
-    hideShiftMenu
-  );
-
-
-  buttons.appendChild(
-    cancelButton
-  );
-
-
-  positionShiftMenu(
-    cell,
-    menu
-  );
-
-
-  menu.style.display =
-    "block";
-
-}
-
-
-/* ==================================================
-   休暇メニュー
-================================================== */
-
-function showLeaveMenu() {
-
-  const menu =
-    document.getElementById(
-      "shiftMenu"
-    );
-
-
-  const buttons =
-    document.getElementById(
-      "shiftMenuButtons"
-    );
-
+  /* =======================================================
+     勤務モード
+  ======================================================= */
 
   if (
-    !menu ||
-    !buttons ||
-    !selectedCell
+    shiftMenuMode ===
+    "shift"
   ) {
 
-    return;
+    const title =
+      menu.querySelector(
+        ".shift-menu-title"
+      );
+
+    if (title) {
+
+      title.textContent =
+        "勤務を選択";
+
+    }
+
+
+    appData.shiftTypes.forEach(
+      shift => {
+
+        const button =
+          document.createElement(
+            "button"
+          );
+
+        button.type =
+          "button";
+
+        button.textContent =
+          shift.name;
+
+        button.className =
+          "shift-menu-button";
+
+        button.addEventListener(
+          "click",
+          async event => {
+
+            event.stopPropagation();
+
+            await saveWorkShift(
+              staffName,
+              dateKey,
+              shift.name
+            );
+
+            hideShiftMenu();
+
+          }
+        );
+
+        buttons.appendChild(
+          button
+        );
+
+      }
+    );
+
+
+    /* -------------------------------------------------------
+       勤務削除
+    ------------------------------------------------------- */
+
+    const deleteButton =
+      document.createElement(
+        "button"
+      );
+
+    deleteButton.type =
+      "button";
+
+    deleteButton.textContent =
+      "勤務を削除";
+
+    deleteButton.className =
+      "shift-menu-button";
+
+    deleteButton.style.gridColumn =
+      "1 / -1";
+
+    deleteButton.style.width =
+      "100%";
+
+    deleteButton.style.background =
+      "#7b61b8";
+
+    deleteButton.style.color =
+      "#ffffff";
+
+    deleteButton.addEventListener(
+      "click",
+      async event => {
+
+        event.stopPropagation();
+
+        await saveWorkShift(
+          staffName,
+          dateKey,
+          ""
+        );
+
+        hideShiftMenu();
+
+      }
+    );
+
+    buttons.appendChild(
+      deleteButton
+    );
+
+
+    /* -------------------------------------------------------
+       休暇
+    ------------------------------------------------------- */
+
+    const leaveButton =
+      document.createElement(
+        "button"
+      );
+
+    leaveButton.type =
+      "button";
+
+    leaveButton.textContent =
+      "休暇";
+
+    leaveButton.className =
+      "shift-menu-button";
+
+    leaveButton.style.gridColumn =
+      "1 / -1";
+
+    leaveButton.style.width =
+      "100%";
+
+    leaveButton.style.background =
+      "#e8f5e9";
+
+    leaveButton.style.color =
+      "#218739";
+
+    leaveButton.style.borderColor =
+      "#a5d6a7";
+
+    leaveButton.style.fontWeight =
+      "700";
+
+    leaveButton.addEventListener(
+      "click",
+      event => {
+
+        event.stopPropagation();
+
+        shiftMenuMode =
+          "leave";
+
+        showShiftMenu(
+          cell,
+          staffName,
+          dateKey
+        );
+
+      }
+    );
+
+    buttons.appendChild(
+      leaveButton
+    );
+
+
+    /* -------------------------------------------------------
+       キャンセル
+    ------------------------------------------------------- */
+
+    const cancelButton =
+      document.createElement(
+        "button"
+      );
+
+    cancelButton.type =
+      "button";
+
+    cancelButton.textContent =
+      "キャンセル";
+
+    cancelButton.className =
+      "shift-menu-button";
+
+    cancelButton.style.gridColumn =
+      "1 / -1";
+
+    cancelButton.style.width =
+      "100%";
+
+    cancelButton.style.background =
+      "#dc3545";
+
+    cancelButton.style.color =
+      "#ffffff";
+
+    cancelButton.style.borderColor =
+      "#c82333";
+
+    cancelButton.style.fontWeight =
+      "700";
+
+    cancelButton.addEventListener(
+      "click",
+      event => {
+
+        event.stopPropagation();
+
+        hideShiftMenu();
+
+      }
+    );
+
+    buttons.appendChild(
+      cancelButton
+    );
 
   }
 
 
-  shiftMenuMode =
-    "leave";
+  /* =======================================================
+     休暇モード
+  ======================================================= */
+
+  else {
+
+    const title =
+      menu.querySelector(
+        ".shift-menu-title"
+      );
+
+    if (title) {
+
+      title.textContent =
+        "🏖️ 休暇を選択";
+
+    }
 
 
-  buttons.innerHTML =
-    "";
+    if (
+      !appData.leaveTypes.length
+    ) {
 
-
-  appData.leaveTypes.forEach(
-    leave => {
-
-      const button =
+      const empty =
         document.createElement(
-          "button"
+          "div"
         );
 
+        empty.textContent =
+          "休暇が登録されていません";
 
-      button.type =
-        "button";
+        empty.style.gridColumn =
+          "1 / -1";
 
+        empty.style.padding =
+          "10px";
 
-      button.className =
-        "shift-menu-button";
-
-
-      button.textContent =
-        leave.name;
-
-
-      button.style.background =
-        leave.color ||
-        "#FFD54F";
-
-
-      button.style.color =
-        getTextColorForBackground(
-          leave.color
+        buttons.appendChild(
+          empty
         );
 
+    }
 
-      button.addEventListener(
-        "click",
-        () => {
 
-          saveLeave(
-            selectedCell.staffName,
-            selectedCell.dateKey,
-            leave.name
+    appData.leaveTypes.forEach(
+      leave => {
+
+        const button =
+          document.createElement(
+            "button"
           );
 
-        }
-      );
+        button.type =
+          "button";
 
+        button.textContent =
+          leave.name;
 
-      buttons.appendChild(
-        button
-      );
+        button.className =
+          "shift-menu-button";
 
-    }
-  );
+        button.style.background =
+          leave.color ||
+          "#FFD54F";
 
+        button.style.color =
+          getTextColorForBackground(
+            leave.color
+          );
 
-  /*
-    休暇解除
-  */
+        button.addEventListener(
+          "click",
+          async event => {
 
-  const clearButton =
-    document.createElement(
-      "button"
-    );
+            event.stopPropagation();
 
+            await saveLeave(
+              staffName,
+              dateKey,
+              leave.name
+            );
 
-  clearButton.type =
-    "button";
+            hideShiftMenu();
 
-  clearButton.textContent =
-    "休暇解除";
+          }
+        );
 
-
-  clearButton.style.gridColumn =
-    "1 / -1";
-
-  clearButton.style.width =
-    "100%";
-
-  clearButton.style.background =
-    "#eeeeee";
-
-  clearButton.style.color =
-    "#333";
-
-  clearButton.style.fontWeight =
-    "700";
-
-
-  clearButton.addEventListener(
-    "click",
-    () => {
-
-      saveLeave(
-        selectedCell.staffName,
-        selectedCell.dateKey,
-        ""
-      );
-
-    }
-  );
-
-
-  buttons.appendChild(
-    clearButton
-  );
-
-
-  /*
-    戻る
-  */
-
-  const backButton =
-    document.createElement(
-      "button"
-    );
-
-
-  backButton.type =
-    "button";
-
-  backButton.textContent =
-    "勤務形態に戻る";
-
-
-  backButton.style.gridColumn =
-    "1 / -1";
-
-  backButton.style.width =
-    "100%";
-
-  backButton.style.background =
-    "#eeeeee";
-
-  backButton.style.color =
-    "#333";
-
-
-  backButton.addEventListener(
-    "click",
-    () => {
-
-      if (
-        selectedCell
-      ) {
-
-        showShiftMenu(
-          selectedCell.cell,
-          selectedCell.staffName,
-          selectedCell.dateKey
+        buttons.appendChild(
+          button
         );
 
       }
-
-    }
-  );
-
-
-  buttons.appendChild(
-    backButton
-  );
-
-
-  /*
-    キャンセル
-  */
-
-  const cancelButton =
-    document.createElement(
-      "button"
     );
 
 
-  cancelButton.type =
-    "button";
+    /* -------------------------------------------------------
+       休暇解除
+    ------------------------------------------------------- */
 
-  cancelButton.textContent =
-    "キャンセル";
+    const removeLeaveButton =
+      document.createElement(
+        "button"
+      );
+
+    removeLeaveButton.type =
+      "button";
+
+    removeLeaveButton.textContent =
+      "休暇を解除";
+
+    removeLeaveButton.className =
+      "shift-menu-button";
+
+    removeLeaveButton.style.gridColumn =
+      "1 / -1";
+
+    removeLeaveButton.style.width =
+      "100%";
+
+    removeLeaveButton.addEventListener(
+      "click",
+      async event => {
+
+        event.stopPropagation();
+
+        await saveLeave(
+          staffName,
+          dateKey,
+          ""
+        );
+
+        hideShiftMenu();
+
+      }
+    );
+
+    buttons.appendChild(
+      removeLeaveButton
+    );
 
 
-  cancelButton.style.gridColumn =
-    "1 / -1";
+    /* -------------------------------------------------------
+       勤務選択へ戻る
+    ------------------------------------------------------- */
 
-  cancelButton.style.width =
-    "100%";
+    const backButton =
+      document.createElement(
+        "button"
+      );
 
-  cancelButton.style.background =
-    "#ffebee";
+    backButton.type =
+      "button";
 
-  cancelButton.style.color =
-    "#c62828";
+    backButton.textContent =
+      "勤務を選択";
+
+    backButton.className =
+      "shift-menu-button";
+
+    backButton.style.gridColumn =
+      "1 / -1";
+
+    backButton.style.width =
+      "100%";
+
+    backButton.addEventListener(
+      "click",
+      event => {
+
+        event.stopPropagation();
+
+        shiftMenuMode =
+          "shift";
+
+        showShiftMenu(
+          cell,
+          staffName,
+          dateKey
+        );
+
+      }
+    );
+
+    buttons.appendChild(
+      backButton
+    );
 
 
-  cancelButton.addEventListener(
-    "click",
-    hideShiftMenu
-  );
+    /* -------------------------------------------------------
+       キャンセル
+    ------------------------------------------------------- */
+
+    const cancelButton =
+      document.createElement(
+        "button"
+      );
+
+    cancelButton.type =
+      "button";
+
+    cancelButton.textContent =
+      "キャンセル";
+
+    cancelButton.className =
+      "shift-menu-button";
+
+    cancelButton.style.gridColumn =
+      "1 / -1";
+
+    cancelButton.style.width =
+      "100%";
+
+    cancelButton.style.background =
+      "#dc3545";
+
+    cancelButton.style.color =
+      "#ffffff";
+
+    cancelButton.style.borderColor =
+      "#c82333";
+
+    cancelButton.style.fontWeight =
+      "700";
+
+    cancelButton.addEventListener(
+      "click",
+      event => {
+
+        event.stopPropagation();
+
+        hideShiftMenu();
+
+      }
+    );
+
+    buttons.appendChild(
+      cancelButton
+    );
+
+  }
 
 
-  buttons.appendChild(
-    cancelButton
-  );
-
-
-  positionShiftMenu(
-    selectedCell.cell,
-    menu
-  );
-
+  /* =======================================================
+     メニュー位置
+  ======================================================= */
 
   menu.style.display =
-    "block";
-
-}
-
-
-/* ==================================================
-   メニュー位置
-================================================== */
-
-function positionShiftMenu(
-  cell,
-  menu
-) {
-
-  const rect =
-    cell.getBoundingClientRect();
-
+    "grid";
 
   menu.style.position =
     "fixed";
 
-
-  menu.style.visibility =
-    "hidden";
-
-  menu.style.display =
-    "block";
+  menu.style.zIndex =
+    "9999";
 
 
-  const menuRect =
-    menu.getBoundingClientRect();
+  const rect =
+    cell.getBoundingClientRect();
+
+  const menuWidth =
+    Math.min(
+      190,
+      window.innerWidth - 20
+    );
+
+  menu.style.width =
+    `${menuWidth}px`;
 
 
   let left =
-    rect.left;
+    rect.right + 6;
+
+  if (
+    left +
+      menuWidth >
+    window.innerWidth - 10
+  ) {
+
+    left =
+      rect.left -
+      menuWidth -
+      6;
+
+  }
+
+  if (
+    left < 10
+  ) {
+
+    left =
+      10;
+
+  }
 
 
   let top =
-    rect.bottom + 4;
+    rect.top;
 
-
-  if (
-    left + menuRect.width >
-    window.innerWidth - 8
-  ) {
-
-    left =
-      window.innerWidth -
-      menuRect.width -
-      8;
-
-  }
-
+  const menuHeight =
+    menu.offsetHeight ||
+    250;
 
   if (
-    left < 8
-  ) {
-
-    left =
-      8;
-
-  }
-
-
-  if (
-    top + menuRect.height >
-    window.innerHeight - 8
+    top +
+      menuHeight >
+    window.innerHeight - 10
   ) {
 
     top =
-      rect.top -
-      menuRect.height -
-      4;
+      window.innerHeight -
+      menuHeight -
+      10;
 
   }
 
-
   if (
-    top < 8
+    top < 10
   ) {
 
     top =
-      8;
+      10;
 
   }
 
 
   menu.style.left =
-    left + "px";
+    `${left}px`;
 
   menu.style.top =
-    top + "px";
-
-  menu.style.visibility =
-    "visible";
+    `${top}px`;
 
 }
 
 
-/* ==================================================
-   メニュー非表示
-================================================== */
+/* =========================================================
+   メニュー閉じる
+========================================================= */
 
 function hideShiftMenu() {
 
@@ -5040,7 +3068,6 @@ function hideShiftMenu() {
       "shiftMenu"
     );
 
-
   if (menu) {
 
     menu.style.display =
@@ -5048,10 +3075,8 @@ function hideShiftMenu() {
 
   }
 
-
   selectedCell =
     null;
-
 
   shiftMenuMode =
     "shift";
@@ -5059,9 +3084,9 @@ function hideShiftMenu() {
 }
 
 
-/* ==================================================
+/* =========================================================
    勤務保存
-================================================== */
+========================================================= */
 
 async function saveWorkShift(
   staffName,
@@ -5069,66 +3094,75 @@ async function saveWorkShift(
   shiftName
 ) {
 
-  if (
-    !supabaseClient
-  ) {
+  if (!supabaseClient) {
+
+    alert(
+      "Supabaseに接続されていません。"
+    );
 
     return;
 
   }
 
+  const name =
+    getStaffName(
+      staffName
+    );
 
   cloudOperationBusy =
     true;
 
-
   try {
 
-    const existingResult =
+    const existing =
       await supabaseClient
         .from("work_shifts")
         .select(
-          "id,shift_name,leave_type"
+          "id,leave_type"
         )
         .eq(
           "staff_name",
-          staffName
+          name
         )
         .eq(
           "work_date",
           dateKey
         )
-        .maybeSingle();
-
+        .order(
+          "id",
+          {
+            ascending: true
+          }
+        )
+        .limit(1);
 
     if (
-      existingResult.error
+      existing.error
     ) {
 
-      throw existingResult.error;
+      throw existing.error;
 
     }
 
+    const existingRow =
+      existing.data &&
+      existing.data.length
+        ? existing.data[0]
+        : null;
 
-    const existing =
-      existingResult.data;
 
+    /* -------------------------------------------------------
+       勤務削除
+    ------------------------------------------------------- */
 
-    /*
-      勤務削除
+    if (!shiftName) {
 
-      休暇がある場合は、
-      勤務だけ消して休暇は残す。
-    */
-
-    if (
-      !shiftName
-    ) {
-
-      if (existing) {
+      if (
+        existingRow
+      ) {
 
         if (
-          existing.leave_type
+          existingRow.leave_type
         ) {
 
           const result =
@@ -5137,20 +3171,31 @@ async function saveWorkShift(
               .update({
 
                 shift_name:
-                  ""
+                  "",
+
+                leave_type:
+                  existingRow.leave_type
 
               })
               .eq(
                 "id",
-                existing.id
+                existingRow.id
               );
 
-
-          if (result.error) {
+          if (
+            result.error
+          ) {
 
             throw result.error;
 
           }
+
+          setStoredShift(
+            name,
+            dateKey,
+            "",
+            existingRow.leave_type
+          );
 
         } else {
 
@@ -5160,30 +3205,27 @@ async function saveWorkShift(
               .delete()
               .eq(
                 "id",
-                existing.id
+                existingRow.id
               );
 
-
-          if (result.error) {
+          if (
+            result.error
+          ) {
 
             throw result.error;
 
           }
 
+          setStoredShift(
+            name,
+            dateKey,
+            "",
+            ""
+          );
+
         }
 
       }
-
-
-      setStoredShift(
-        staffName,
-        dateKey,
-        "",
-        existing?.leave_type || ""
-      );
-
-
-      hideShiftMenu();
 
       renderSchedule();
 
@@ -5192,13 +3234,20 @@ async function saveWorkShift(
     }
 
 
-    /*
-      勤務変更
+    const leaveType =
+      existingRow
+        ? existingRow.leave_type ||
+          ""
+        : "";
 
-      既存休暇はそのまま残す。
-    */
 
-    if (existing) {
+    /* -------------------------------------------------------
+       更新
+    ------------------------------------------------------- */
+
+    if (
+      existingRow
+    ) {
 
       const result =
         await supabaseClient
@@ -5206,30 +3255,34 @@ async function saveWorkShift(
           .update({
 
             shift_name:
-              shiftName
+              shiftName,
+
+            leave_type:
+              leaveType ||
+              null
 
           })
           .eq(
             "id",
-            existing.id
+            existingRow.id
           );
 
-
-      if (result.error) {
+      if (
+        result.error
+      ) {
 
         throw result.error;
 
       }
 
+    }
 
-      setStoredShift(
-        staffName,
-        dateKey,
-        shiftName,
-        existing.leave_type || ""
-      );
 
-    } else {
+    /* -------------------------------------------------------
+       新規
+    ------------------------------------------------------- */
+
+    else {
 
       const result =
         await supabaseClient
@@ -5237,7 +3290,7 @@ async function saveWorkShift(
           .insert({
 
             staff_name:
-              staffName,
+              name,
 
             work_date:
               dateKey,
@@ -5250,30 +3303,25 @@ async function saveWorkShift(
 
           });
 
-
-      if (result.error) {
+      if (
+        result.error
+      ) {
 
         throw result.error;
 
       }
 
-
-      setStoredShift(
-        staffName,
-        dateKey,
-        shiftName,
-        ""
-      );
-
     }
 
 
-    saveLocalData();
-
-    hideShiftMenu();
+    setStoredShift(
+      name,
+      dateKey,
+      shiftName,
+      leaveType
+    );
 
     renderSchedule();
-
 
   } catch (error) {
 
@@ -5282,9 +3330,8 @@ async function saveWorkShift(
       error
     );
 
-
     alert(
-      "勤務を保存できませんでした。"
+      "勤務の保存に失敗しました。"
     );
 
   } finally {
@@ -5296,9 +3343,9 @@ async function saveWorkShift(
 }
 
 
-/* ==================================================
+/* =========================================================
    休暇保存
-================================================== */
+========================================================= */
 
 async function saveLeave(
   staffName,
@@ -5306,22 +3353,27 @@ async function saveLeave(
   leaveName
 ) {
 
-  if (
-    !supabaseClient
-  ) {
+  if (!supabaseClient) {
+
+    alert(
+      "Supabaseに接続されていません。"
+    );
 
     return;
 
   }
 
+  const name =
+    getStaffName(
+      staffName
+    );
 
   cloudOperationBusy =
     true;
 
-
   try {
 
-    const existingResult =
+    const existing =
       await supabaseClient
         .from("work_shifts")
         .select(
@@ -5329,93 +3381,44 @@ async function saveLeave(
         )
         .eq(
           "staff_name",
-          staffName
+          name
         )
         .eq(
           "work_date",
           dateKey
         )
-        .maybeSingle();
-
+        .order(
+          "id",
+          {
+            ascending: true
+          }
+        )
+        .limit(1);
 
     if (
-      existingResult.error
+      existing.error
     ) {
 
-      throw existingResult.error;
+      throw existing.error;
 
     }
 
-
-    const existing =
-      existingResult.data;
-
-
-    if (
-      !leaveName
-    ) {
-
-      if (existing) {
-
-        if (
-          existing.shift_name
-        ) {
-
-          const result =
-            await supabaseClient
-              .from("work_shifts")
-              .update({
-
-                leave_type:
-                  null
-
-              })
-              .eq(
-                "id",
-                existing.id
-              );
+    const row =
+      existing.data &&
+      existing.data.length
+        ? existing.data[0]
+        : null;
 
 
-          if (result.error) {
+    /* -------------------------------------------------------
+       休暇解除
+    ------------------------------------------------------- */
 
-            throw result.error;
+    if (!leaveName) {
 
-          }
-
-        } else {
-
-          const result =
-            await supabaseClient
-              .from("work_shifts")
-              .delete()
-              .eq(
-                "id",
-                existing.id
-              );
-
-
-          if (result.error) {
-
-            throw result.error;
-
-          }
-
-        }
-
-      }
-
-
-      setStoredShift(
-        staffName,
-        dateKey,
-        existing?.shift_name || "",
-        ""
-      );
-
-
-    } else {
-
-      if (existing) {
+      if (
+        row
+      ) {
 
         const result =
           await supabaseClient
@@ -5423,76 +3426,124 @@ async function saveLeave(
             .update({
 
               leave_type:
-                leaveName
+                null
 
             })
             .eq(
               "id",
-              existing.id
+              row.id
             );
 
-
-        if (result.error) {
-
-          throw result.error;
-
-        }
-
-
-        setStoredShift(
-          staffName,
-          dateKey,
-          existing.shift_name || "",
-          leaveName
-        );
-
-      } else {
-
-        const result =
-          await supabaseClient
-            .from("work_shifts")
-            .insert({
-
-              staff_name:
-                staffName,
-
-              work_date:
-                dateKey,
-
-              shift_name:
-                "",
-
-              leave_type:
-                leaveName
-
-            });
-
-
-        if (result.error) {
+        if (
+          result.error
+        ) {
 
           throw result.error;
 
         }
 
-
         setStoredShift(
-          staffName,
+          name,
           dateKey,
-          "",
-          leaveName
+          row.shift_name ||
+            "",
+          ""
         );
 
       }
 
+      renderSchedule();
+
+      return;
+
     }
 
 
-    saveLocalData();
+    /* -------------------------------------------------------
+       既存勤務あり
+    ------------------------------------------------------- */
 
-    hideShiftMenu();
+    if (
+      row
+    ) {
+
+      const result =
+        await supabaseClient
+          .from("work_shifts")
+          .update({
+
+            leave_type:
+              leaveName
+
+          })
+          .eq(
+            "id",
+            row.id
+          );
+
+      if (
+        result.error
+      ) {
+
+        throw result.error;
+
+      }
+
+      setStoredShift(
+        name,
+        dateKey,
+        row.shift_name ||
+          "",
+        leaveName
+      );
+
+    }
+
+
+    /* -------------------------------------------------------
+       勤務なし
+    ------------------------------------------------------- */
+
+    else {
+
+      const result =
+        await supabaseClient
+          .from("work_shifts")
+          .insert({
+
+            staff_name:
+              name,
+
+            work_date:
+              dateKey,
+
+            shift_name:
+              "",
+
+            leave_type:
+              leaveName
+
+          });
+
+      if (
+        result.error
+      ) {
+
+        throw result.error;
+
+      }
+
+      setStoredShift(
+        name,
+        dateKey,
+        "",
+        leaveName
+      );
+
+    }
+
 
     renderSchedule();
-
 
   } catch (error) {
 
@@ -5501,9 +3552,8 @@ async function saveLeave(
       error
     );
 
-
     alert(
-      "休暇を保存できませんでした。"
+      "休暇の保存に失敗しました。"
     );
 
   } finally {
@@ -5515,9 +3565,9 @@ async function saveLeave(
 }
 
 
-/* ==================================================
-   背景色に対する文字色
-================================================== */
+/* =========================================================
+   背景色から文字色
+========================================================= */
 
 function getTextColorForBackground(
   color
@@ -5529,31 +3579,12 @@ function getTextColorForBackground(
 
   }
 
-
-  let hex =
-    String(
-      color
-    ).replace(
-      "#",
-      ""
-    );
-
-
-  if (
-    hex.length === 3
-  ) {
-
-    hex =
-      hex
-        .split("")
-        .map(
-          c =>
-            c + c
-        )
-        .join("");
-
-  }
-
+  const hex =
+    String(color)
+      .replace(
+        "#",
+        ""
+      );
 
   if (
     hex.length !== 6
@@ -5563,13 +3594,11 @@ function getTextColorForBackground(
 
   }
 
-
   const r =
     parseInt(
       hex.substring(0, 2),
       16
     );
-
 
   const g =
     parseInt(
@@ -5577,13 +3606,11 @@ function getTextColorForBackground(
       16
     );
 
-
   const b =
     parseInt(
       hex.substring(4, 6),
       16
     );
-
 
   const brightness =
     (
@@ -5592,7 +3619,6 @@ function getTextColorForBackground(
       b * 114
     ) / 1000;
 
-
   return brightness > 155
     ? "#000000"
     : "#ffffff";
@@ -5600,9 +3626,9 @@ function getTextColorForBackground(
 }
 
 
-/* ==================================================
+/* =========================================================
    月間集計
-================================================== */
+========================================================= */
 
 function calculateMonthlyTotal(
   staffName,
@@ -5617,10 +3643,13 @@ function calculateMonthlyTotal(
       month
     );
 
-
-  let count =
+  let total =
     0;
 
+  const targetShift =
+    normalizeShiftNameForTotal(
+      shiftName
+    );
 
   for (
     let day = 1;
@@ -5635,40 +3664,38 @@ function calculateMonthlyTotal(
         day
       );
 
-
-    const stored =
-      getStoredShift(
+    const display =
+      getDisplayShift(
         staffName,
         dateKey
       );
 
-
     const normalized =
       normalizeShiftNameForTotal(
-        stored
+        display
       );
-
 
     if (
       normalized ===
-      shiftName
+        targetShift &&
+      normalized !==
+        "明"
     ) {
 
-      count++;
+      total++;
 
     }
 
   }
 
-
-  return count;
+  return total;
 
 }
 
 
-/* ==================================================
-   年度集計
-================================================== */
+/* =========================================================
+   年度累計
+========================================================= */
 
 function calculateFiscalTotal(
   staffName,
@@ -5677,100 +3704,89 @@ function calculateFiscalTotal(
   month
 ) {
 
-  /*
-    4月始まり。
-
-    1～3月なら前年4月～当年3月。
-    4～12月なら当年4月～翌年3月。
-  */
+  let total =
+    0;
 
   const fiscalStartYear =
     month >= 4
       ? year
       : year - 1;
 
+  const targetShift =
+    normalizeShiftNameForTotal(
+      shiftName
+    );
 
-  let count =
-    0;
+  const startDate =
+    new Date(
+      fiscalStartYear,
+      3,
+      1
+    );
 
+  const endDate =
+    new Date(
+      year,
+      month - 1,
+      getDaysInMonth(
+        year,
+        month
+      )
+    );
 
-  for (
-    let offset = 0;
-    offset < 12;
-    offset++
+  const current =
+    new Date(
+      startDate
+    );
+
+  while (
+    current <=
+    endDate
   ) {
 
-    const date =
-      new Date(
-        fiscalStartYear,
-        3 + offset,
-        1
+    const dateKey =
+      getDateKey(
+        current.getFullYear(),
+        current.getMonth() + 1,
+        current.getDate()
       );
 
-
-    const targetYear =
-      date.getFullYear();
-
-    const targetMonth =
-      date.getMonth() + 1;
-
-
-    const days =
-      getDaysInMonth(
-        targetYear,
-        targetMonth
+    const display =
+      getDisplayShift(
+        staffName,
+        dateKey
       );
 
+    const normalized =
+      normalizeShiftNameForTotal(
+        display
+      );
 
-    for (
-      let day = 1;
-      day <= days;
-      day++
+    if (
+      normalized ===
+        targetShift &&
+      normalized !==
+        "明"
     ) {
 
-      const dateKey =
-        getDateKey(
-          targetYear,
-          targetMonth,
-          day
-        );
-
-
-      const stored =
-        getStoredShift(
-          staffName,
-          dateKey
-        );
-
-
-      const normalized =
-        normalizeShiftNameForTotal(
-          stored
-        );
-
-
-      if (
-        normalized ===
-        shiftName
-      ) {
-
-        count++;
-
-      }
+      total++;
 
     }
 
+    current.setDate(
+      current.getDate() + 1
+    );
+
   }
 
-
-  return count;
+  return total;
 
 }
 
 
-/* ==================================================
-   職員追加・更新
-================================================== */
+/* =========================================================
+   職員追加・編集
+========================================================= */
 
 async function addOrUpdateStaff() {
 
@@ -5779,108 +3795,82 @@ async function addOrUpdateStaff() {
       "staffNameInput"
     );
 
-
   if (!input) {
 
     return;
 
   }
 
-
   const name =
     input.value.trim();
-
 
   if (!name) {
 
     alert(
-      "職員名を入力してください。"
+      "職員名を入力してください"
     );
 
     return;
 
   }
 
+  if (
+    name === "明"
+  ) {
 
-  if (!supabaseClient) {
+    alert(
+      "「明」は登録できません"
+    );
 
     return;
 
   }
 
+  const duplicate =
+    appData.staff.some(
+      (staff, index) =>
+        getStaffName(staff) ===
+          name &&
+        index !==
+          editingStaffIndex
+    );
+
+  if (
+    duplicate
+  ) {
+
+    alert(
+      "同じ職員名は登録できません"
+    );
+
+    return;
+
+  }
 
   cloudOperationBusy =
     true;
 
-
   try {
 
     if (
-      editingStaffIndex >= 0 &&
-      appData.staff[
-        editingStaffIndex
-      ]
+      editingStaffIndex >= 0
     ) {
 
-      const staff =
+      const oldStaff =
         appData.staff[
           editingStaffIndex
         ];
 
-
       const oldName =
-        staff.name;
-
-
-      const result =
-        await supabaseClient
-          .from("staff")
-          .update({
-
-            name:
-              name
-
-          })
-          .eq(
-            "id",
-            staff.id
-          );
-
-
-      if (result.error) {
-
-        throw result.error;
-
-      }
-
-
-      /*
-        勤務データ側の職員名も変更
-      */
-
-      const shiftData =
-        appData.shifts[
-          oldName
-        ] || {};
-
-
-      const dates =
-        Object.keys(
-          shiftData
+        getStaffName(
+          oldStaff
         );
 
-
-      for (
-        const dateKey of dates
+      if (
+        oldName !== name
       ) {
 
-        const data =
-          shiftData[
-            dateKey
-          ];
-
-
-        const result2 =
+        const workResult =
           await supabaseClient
             .from("work_shifts")
             .update({
@@ -5892,58 +3882,84 @@ async function addOrUpdateStaff() {
             .eq(
               "staff_name",
               oldName
-            )
-            .eq(
-              "work_date",
-              dateKey
             );
 
+        if (
+          workResult.error
+        ) {
 
-        if (result2.error) {
-
-          throw result2.error;
+          throw workResult.error;
 
         }
 
       }
 
+      const result =
+        await supabaseClient
+          .from("staff")
+          .update({
+
+            name
+
+          })
+          .eq(
+            "id",
+            oldStaff.id
+          );
+
+      if (
+        result.error
+      ) {
+
+        throw result.error;
+
+      }
+
+      editingStaffIndex =
+        -1;
 
     } else {
 
-      const maxSort =
+      const maxOrder =
         appData.staff.reduce(
-          (max, staff) =>
-            Math.max(
-              max,
-              Number.isFinite(
-                Number(
-                  staff.sort_order
-                )
-              )
-                ? Number(
-                    staff.sort_order
-                  )
-                : 0
-            ),
-          0
-        );
+          (
+            max,
+            staff
+          ) => {
 
+            const value =
+              Number(
+                staff.sort_order
+              );
+
+            return Number.isFinite(
+              value
+            )
+              ? Math.max(
+                  max,
+                  value
+                )
+              : max;
+
+          },
+          -1
+        );
 
       const result =
         await supabaseClient
           .from("staff")
           .insert({
 
-            name:
-              name,
+            name,
 
             sort_order:
-              maxSort + 1
+              maxOrder + 1
 
           });
 
-
-      if (result.error) {
+      if (
+        result.error
+      ) {
 
         throw result.error;
 
@@ -5951,19 +3967,26 @@ async function addOrUpdateStaff() {
 
     }
 
-
-    editingStaffIndex =
-      -1;
-
-
     input.value =
       "";
 
+    const button =
+      document.getElementById(
+        "addStaffButton"
+      );
+
+    if (button) {
+
+      button.textContent =
+        "追加";
+
+    }
 
     await loadAllFromSupabase();
 
-    renderAll();
+    renderStaffList();
 
+    renderSchedule();
 
   } catch (error) {
 
@@ -5972,9 +3995,8 @@ async function addOrUpdateStaff() {
       error
     );
 
-
     alert(
-      "職員を保存できませんでした。"
+      "職員の保存に失敗しました。"
     );
 
   } finally {
@@ -5986,118 +4008,80 @@ async function addOrUpdateStaff() {
 }
 
 
-/* ==================================================
-   職員削除
-================================================== */
+/* =========================================================
+   職員並び順保存
+========================================================= */
 
-async function deleteStaff(
-  index
-) {
-
-  const staff =
-    appData.staff[index];
-
-
-  if (!staff) {
-
-    return;
-
-  }
-
-
-  if (
-    !confirm(
-      `${staff.name}を削除しますか？`
-    )
-  ) {
-
-    return;
-
-  }
-
-
-  if (!supabaseClient) {
-
-    return;
-
-  }
-
-
-  cloudOperationBusy =
-    true;
-
+async function saveStaffOrder() {
 
   try {
 
-    const result =
-      await supabaseClient
-        .from("staff")
-        .delete()
-        .eq(
-          "id",
-          staff.id
-        );
+    for (
+      let i = 0;
+      i < appData.staff.length;
+      i++
+    ) {
 
+      const result =
+        await supabaseClient
+          .from("staff")
+          .update({
 
-    if (result.error) {
+            sort_order:
+              i
 
-      throw result.error;
+          })
+          .eq(
+            "id",
+            appData.staff[i].id
+          );
+
+      if (
+        result.error
+      ) {
+
+        throw result.error;
+
+      }
+
+      appData.staff[i]
+        .sort_order =
+        i;
 
     }
 
-
-    await supabaseClient
-      .from("work_shifts")
-      .delete()
-      .eq(
-        "staff_name",
-        staff.name
-      );
-
-
-    await loadAllFromSupabase();
-
-    renderAll();
-
+    return true;
 
   } catch (error) {
 
     console.error(
-      "職員削除エラー",
+      "職員並び順保存エラー",
       error
     );
 
-
-    alert(
-      "職員を削除できませんでした。"
-    );
-
-  } finally {
-
-    finishCloudOperation();
+    return false;
 
   }
 
 }
 
 
-/* ==================================================
-   職員並び替え
-================================================== */
+/* =========================================================
+   職員移動
+========================================================= */
 
 async function moveStaff(
   index,
   direction
 ) {
 
-  const targetIndex =
-    index + direction;
-
+  const newIndex =
+    index +
+    direction;
 
   if (
-    index < 0 ||
-    targetIndex < 0 ||
-    targetIndex >=
+    newIndex < 0 ||
+    newIndex >=
       appData.staff.length
   ) {
 
@@ -6105,124 +4089,71 @@ async function moveStaff(
 
   }
 
-
-  const current =
-    appData.staff[index];
-
-
-  const target =
-    appData.staff[targetIndex];
-
-
   if (
-    !current ||
-    !target
+    cloudOperationBusy
   ) {
 
     return;
 
   }
 
+  [
+    appData.staff[index],
+    appData.staff[newIndex]
+  ] = [
+    appData.staff[newIndex],
+    appData.staff[index]
+  ];
 
-  if (!supabaseClient) {
+  appData.staff =
+    appData.staff.map(
+      (
+        staff,
+        i
+      ) => ({
 
-    return;
+        ...staff,
 
-  }
+        sort_order:
+          i
 
+      })
+    );
+
+  renderStaffList();
+
+  renderSchedule();
 
   cloudOperationBusy =
     true;
 
-
   try {
 
-    const currentSort =
-      Number.isFinite(
-        Number(
-          current.sort_order
-        )
-      )
-        ? Number(
-            current.sort_order
-          )
-        : index + 1;
+    if (
+      !await saveStaffOrder()
+    ) {
 
-
-    const targetSort =
-      Number.isFinite(
-        Number(
-          target.sort_order
-        )
-      )
-        ? Number(
-            target.sort_order
-          )
-        : targetIndex + 1;
-
-
-    const r1 =
-      await supabaseClient
-        .from("staff")
-        .update({
-
-          sort_order:
-            targetSort
-
-        })
-        .eq(
-          "id",
-          current.id
-        );
-
-
-    if (r1.error) {
-
-      throw r1.error;
+      throw new Error(
+        "並び順保存失敗"
+      );
 
     }
 
+  } catch (error) {
 
-    const r2 =
-      await supabaseClient
-        .from("staff")
-        .update({
+    console.error(
+      error
+    );
 
-          sort_order:
-            currentSort
-
-        })
-        .eq(
-          "id",
-          target.id
-        );
-
-
-    if (r2.error) {
-
-      throw r2.error;
-
-    }
-
+    alert(
+      "職員の並び順の保存に失敗しました。"
+    );
 
     await loadAllFromSupabase();
 
     renderStaffList();
 
     renderSchedule();
-
-
-  } catch (error) {
-
-    console.error(
-      "職員並び替えエラー",
-      error
-    );
-
-
-    alert(
-      "並び替えに失敗しました。"
-    );
 
   } finally {
 
@@ -6233,130 +4164,272 @@ async function moveStaff(
 }
 
 
-/* ==================================================
+/* =========================================================
    職員一覧
-================================================== */
+========================================================= */
 
 function renderStaffList() {
 
-  const container =
+  const list =
     document.getElementById(
       "staffList"
     );
 
-
-  if (!container) {
+  if (!list) {
 
     return;
 
   }
 
-
-  container.innerHTML =
+  list.innerHTML =
     "";
 
-
   appData.staff.forEach(
-    (staff, index) => {
+    (
+      staff,
+      index
+    ) => {
 
-      const row =
+      const name =
+        getStaffName(
+          staff
+        );
+
+      const item =
         document.createElement(
           "div"
         );
 
+      item.className =
+        "list-item";
 
-      row.className =
-        "staff-list-row";
+      item.innerHTML = `
+        <div class="list-item-main">
 
+          <div class="list-item-title">
+            ${escapeHtml(name)}
+          </div>
 
-      row.innerHTML =
-        `
-          <span class="staff-list-name">
-            ${escapeHtml(
-              staff.name
-            )}
-          </span>
+        </div>
 
-          <button
-            type="button"
-            onclick="moveStaff(${index}, -1)"
-          >↑</button>
+        <div class="list-item-buttons">
 
           <button
             type="button"
-            onclick="moveStaff(${index}, 1)"
-          >↓</button>
+            class="list-button move-staff-up-button"
+            ${index === 0 ? "disabled" : ""}
+          >
+            ↑
+          </button>
 
           <button
             type="button"
-            onclick="editStaff(${index})"
-          >編集</button>
+            class="list-button move-staff-down-button"
+            ${index === appData.staff.length - 1 ? "disabled" : ""}
+          >
+            ↓
+          </button>
 
           <button
             type="button"
-            onclick="deleteStaff(${index})"
-          >削除</button>
-        `;
+            class="list-button edit-staff-button"
+          >
+            編集
+          </button>
+
+          <button
+            type="button"
+            class="list-button delete delete-staff-button"
+          >
+            削除
+          </button>
+
+        </div>
+      `;
 
 
-      container.appendChild(
-        row
+      item
+        .querySelector(
+          ".move-staff-up-button"
+        )
+        ?.addEventListener(
+          "click",
+          () =>
+            moveStaff(
+              index,
+              -1
+            )
+        );
+
+
+      item
+        .querySelector(
+          ".move-staff-down-button"
+        )
+        ?.addEventListener(
+          "click",
+          () =>
+            moveStaff(
+              index,
+              1
+            )
+        );
+
+
+      item
+        .querySelector(
+          ".edit-staff-button"
+        )
+        ?.addEventListener(
+          "click",
+          () => {
+
+            editingStaffIndex =
+              index;
+
+            const input =
+              document.getElementById(
+                "staffNameInput"
+              );
+
+            if (input) {
+
+              input.value =
+                name;
+
+              input.focus();
+
+            }
+
+            const button =
+              document.getElementById(
+                "addStaffButton"
+              );
+
+            if (button) {
+
+              button.textContent =
+                "職員を更新";
+
+            }
+
+          }
+        );
+
+
+      item
+        .querySelector(
+          ".delete-staff-button"
+        )
+        ?.addEventListener(
+          "click",
+          async () => {
+
+            if (
+              !confirm(
+                `${name}を削除しますか？`
+              )
+            ) {
+
+              return;
+
+            }
+
+            cloudOperationBusy =
+              true;
+
+            try {
+
+              const workResult =
+                await supabaseClient
+                  .from("work_shifts")
+                  .delete()
+                  .eq(
+                    "staff_name",
+                    name
+                  );
+
+              if (
+                workResult.error
+              ) {
+
+                throw workResult.error;
+
+              }
+
+              const result =
+                await supabaseClient
+                  .from("staff")
+                  .delete()
+                  .eq(
+                    "id",
+                    staff.id
+                  );
+
+              if (
+                result.error
+              ) {
+
+                throw result.error;
+
+              }
+
+              editingStaffIndex =
+                -1;
+
+              await loadAllFromSupabase();
+
+              renderStaffList();
+
+              renderSchedule();
+
+            } catch (error) {
+
+              console.error(
+                "職員削除エラー",
+                error
+              );
+
+              alert(
+                "職員の削除に失敗しました。"
+              );
+
+            } finally {
+
+              finishCloudOperation();
+
+            }
+
+          }
+        );
+
+
+      list.appendChild(
+        item
       );
 
     }
   );
 
-}
 
-
-/* ==================================================
-   職員編集
-================================================== */
-
-function editStaff(
-  index
-) {
-
-  const staff =
-    appData.staff[index];
-
-
-  if (!staff) {
-
-    return;
-
-  }
-
-
-  const input =
+  const count =
     document.getElementById(
-      "staffNameInput"
+      "staffCount"
     );
 
+  if (count) {
 
-  if (!input) {
-
-    return;
+    count.textContent =
+      `${appData.staff.length}人`;
 
   }
-
-
-  editingStaffIndex =
-    index;
-
-
-  input.value =
-    staff.name;
-
-
-  input.focus();
 
 }
 
 
-/* ==================================================
-   勤務形態追加・更新
-================================================== */
+/* =========================================================
+   勤務形態追加・編集
+========================================================= */
 
 async function addOrUpdateShift() {
 
@@ -6365,24 +4438,20 @@ async function addOrUpdateShift() {
       "shiftNameInput"
     );
 
-
   const startInput =
     document.getElementById(
       "shiftStartInput"
     );
-
 
   const endInput =
     document.getElementById(
       "shiftEndInput"
     );
 
-
   const breakInput =
     document.getElementById(
       "shiftBreakInput"
     );
-
 
   if (!nameInput) {
 
@@ -6390,28 +4459,38 @@ async function addOrUpdateShift() {
 
   }
 
-
   const name =
     nameInput.value.trim();
+
+  const start =
+    startInput?.value ||
+    "";
+
+  const end =
+    endInput?.value ||
+    "";
+
+  const breakTime =
+    breakInput?.value ||
+    "";
 
 
   if (!name) {
 
     alert(
-      "勤務形態名を入力してください。"
+      "勤務形態名を入力してください"
     );
 
     return;
 
   }
-
 
   if (
     name === "明"
   ) {
 
     alert(
-      "「明」は自動表示用のため登録できません。"
+      "「明」は登録できません"
     );
 
     return;
@@ -6419,7 +4498,24 @@ async function addOrUpdateShift() {
   }
 
 
-  if (!supabaseClient) {
+  const duplicate =
+    appData.shiftTypes.some(
+      (
+        shift,
+        index
+      ) =>
+        shift.name === name &&
+        index !==
+          editingShiftIndex
+    );
+
+  if (
+    duplicate
+  ) {
+
+    alert(
+      "同じ勤務形態名を登録できません"
+    );
 
     return;
 
@@ -6429,71 +4525,108 @@ async function addOrUpdateShift() {
   cloudOperationBusy =
     true;
 
-
   try {
 
-    const payload = {
-
-      name:
-        name,
-
-      start_time:
-        startInput?.value ||
-        null,
-
-      end_time:
-        endInput?.value ||
-        null,
-
-      break_time:
-        breakInput?.value ||
-        null
-
-    };
-
-
     if (
-      editingShiftIndex >= 0 &&
-      appData.shiftTypes[
-        editingShiftIndex
-      ]
+      editingShiftIndex >= 0
     ) {
 
-      const shift =
+      const oldShift =
         appData.shiftTypes[
           editingShiftIndex
         ];
+
+      if (
+        oldShift.name !== name
+      ) {
+
+        const workResult =
+          await supabaseClient
+            .from("work_shifts")
+            .update({
+
+              shift_name:
+                name
+
+            })
+            .eq(
+              "shift_name",
+              oldShift.name
+            );
+
+        if (
+          workResult.error
+        ) {
+
+          throw workResult.error;
+
+        }
+
+      }
 
 
       const result =
         await supabaseClient
           .from("shift_types")
-          .update(
-            payload
-          )
+          .update({
+
+            name,
+
+            start_time:
+              start ||
+              null,
+
+            end_time:
+              end ||
+              null,
+
+            break_time:
+              breakTime ||
+              null
+
+          })
           .eq(
             "id",
-            shift.id
+            oldShift.id
           );
 
-
-      if (result.error) {
+      if (
+        result.error
+      ) {
 
         throw result.error;
 
       }
+
+      editingShiftIndex =
+        -1;
 
     } else {
 
       const result =
         await supabaseClient
           .from("shift_types")
-          .insert(
-            payload
-          );
+          .insert({
 
+            name,
 
-      if (result.error) {
+            start_time:
+              start ||
+              null,
+
+            end_time:
+              end ||
+              null,
+
+            break_time:
+              breakTime ||
+              null
+
+          });
+
+      if (
+        result.error
+      ) {
 
         throw result.error;
 
@@ -6502,13 +4635,8 @@ async function addOrUpdateShift() {
     }
 
 
-    editingShiftIndex =
-      -1;
-
-
     nameInput.value =
       "";
-
 
     if (startInput) {
 
@@ -6517,14 +4645,12 @@ async function addOrUpdateShift() {
 
     }
 
-
     if (endInput) {
 
       endInput.value =
         "";
 
     }
-
 
     if (breakInput) {
 
@@ -6534,10 +4660,24 @@ async function addOrUpdateShift() {
     }
 
 
+    const button =
+      document.getElementById(
+        "addShiftButton"
+      );
+
+    if (button) {
+
+      button.textContent =
+        "勤務形態を追加";
+
+    }
+
+
     await loadAllFromSupabase();
 
-    renderAll();
+    renderShiftList();
 
+    renderSchedule();
 
   } catch (error) {
 
@@ -6546,9 +4686,8 @@ async function addOrUpdateShift() {
       error
     );
 
-
     alert(
-      "勤務形態を保存できませんでした。"
+      "勤務形態の保存に失敗しました。"
     );
 
   } finally {
@@ -6560,241 +4699,252 @@ async function addOrUpdateShift() {
 }
 
 
-/* ==================================================
-   勤務形態編集
-================================================== */
-
-function editShift(
-  index
-) {
-
-  const shift =
-    appData.shiftTypes[index];
-
-
-  if (!shift) {
-
-    return;
-
-  }
-
-
-  const nameInput =
-    document.getElementById(
-      "shiftNameInput"
-    );
-
-
-  const startInput =
-    document.getElementById(
-      "shiftStartInput"
-    );
-
-
-  const endInput =
-    document.getElementById(
-      "shiftEndInput"
-    );
-
-
-  const breakInput =
-    document.getElementById(
-      "shiftBreakInput"
-    );
-
-
-  editingShiftIndex =
-    index;
-
-
-  if (nameInput) {
-
-    nameInput.value =
-      shift.name;
-
-  }
-
-
-  if (startInput) {
-
-    startInput.value =
-      shift.start || "";
-
-  }
-
-
-  if (endInput) {
-
-    endInput.value =
-      shift.end || "";
-
-  }
-
-
-  if (breakInput) {
-
-    breakInput.value =
-      shift.break || "";
-
-  }
-
-}
-
-
-/* ==================================================
-   勤務形態削除
-================================================== */
-
-async function deleteShift(
-  index
-) {
-
-  const shift =
-    appData.shiftTypes[index];
-
-
-  if (!shift) {
-
-    return;
-
-  }
-
-
-  if (
-    !confirm(
-      `${shift.name}を削除しますか？`
-    )
-  ) {
-
-    return;
-
-  }
-
-
-  if (!supabaseClient) {
-
-    return;
-
-  }
-
-
-  cloudOperationBusy =
-    true;
-
-
-  try {
-
-    const result =
-      await supabaseClient
-        .from("shift_types")
-        .delete()
-        .eq(
-          "id",
-          shift.id
-        );
-
-
-    if (result.error) {
-
-      throw result.error;
-
-    }
-
-
-    await loadAllFromSupabase();
-
-    renderAll();
-
-
-  } catch (error) {
-
-    console.error(
-      "勤務形態削除エラー",
-      error
-    );
-
-
-    alert(
-      "勤務形態を削除できませんでした。"
-    );
-
-  } finally {
-
-    finishCloudOperation();
-
-  }
-
-}
-
-
-/* ==================================================
+/* =========================================================
    勤務形態一覧
-================================================== */
+========================================================= */
 
 function renderShiftList() {
 
-  const container =
+  const list =
     document.getElementById(
       "shiftList"
     );
 
-
-  if (!container) {
+  if (!list) {
 
     return;
 
   }
 
-
-  container.innerHTML =
+  list.innerHTML =
     "";
 
-
   appData.shiftTypes.forEach(
-    (shift, index) => {
+    (
+      shift,
+      index
+    ) => {
 
-      const row =
+      const item =
         document.createElement(
           "div"
         );
 
+      item.className =
+        "list-item";
 
-      row.className =
-        "shift-list-row";
+      const timeText =
+        shift.start &&
+        shift.end
+          ? `${shift.start} ～ ${shift.end}`
+          : "";
 
+      item.innerHTML = `
+        <div class="list-item-main">
 
-      row.innerHTML =
-        `
-          <span>
+          <div class="list-item-title">
             ${escapeHtml(
               shift.name
             )}
-          </span>
+          </div>
 
-          <span>
+          <div class="list-item-sub">
             ${escapeHtml(
-              shift.start || ""
+              timeText
             )}
-            ～ 
-            ${escapeHtml(
-              shift.end || ""
-            )}
-          </span>
+          </div>
+
+        </div>
+
+        <div class="list-item-buttons">
 
           <button
             type="button"
-            onclick="editShift(${index})"
-          >編集</button>
+            class="list-button edit-shift-button"
+          >
+            編集
+          </button>
 
           <button
             type="button"
-            onclick="deleteShift(${index})"
-          >削除</button>
-        `;
+            class="list-button delete delete-shift-button"
+          >
+            削除
+          </button>
+
+        </div>
+      `;
 
 
-      container.appendChild(
-        row
+      item
+        .querySelector(
+          ".edit-shift-button"
+        )
+        ?.addEventListener(
+          "click",
+          () => {
+
+            const name =
+              document.getElementById(
+                "shiftNameInput"
+              );
+
+            const start =
+              document.getElementById(
+                "shiftStartInput"
+              );
+
+            const end =
+              document.getElementById(
+                "shiftEndInput"
+              );
+
+            const breakInput =
+              document.getElementById(
+                "shiftBreakInput"
+              );
+
+            if (name) {
+
+              name.value =
+                shift.name;
+
+            }
+
+            if (start) {
+
+              start.value =
+                shift.start ||
+                "";
+
+            }
+
+            if (end) {
+
+              end.value =
+                shift.end ||
+                "";
+
+            }
+
+            if (breakInput) {
+
+              breakInput.value =
+                shift.break ||
+                "";
+
+            }
+
+            editingShiftIndex =
+              index;
+
+            const button =
+              document.getElementById(
+                "addShiftButton"
+              );
+
+            if (button) {
+
+              button.textContent =
+                "勤務形態を更新";
+
+            }
+
+          }
+        );
+
+
+      item
+        .querySelector(
+          ".delete-shift-button"
+        )
+        ?.addEventListener(
+          "click",
+          async () => {
+
+            if (
+              !confirm(
+                `${shift.name}を削除しますか？`
+              )
+            ) {
+
+              return;
+
+            }
+
+            cloudOperationBusy =
+              true;
+
+            try {
+
+              const workResult =
+                await supabaseClient
+                  .from("work_shifts")
+                  .delete()
+                  .eq(
+                    "shift_name",
+                    shift.name
+                  );
+
+              if (
+                workResult.error
+              ) {
+
+                throw workResult.error;
+
+              }
+
+
+              const result =
+                await supabaseClient
+                  .from("shift_types")
+                  .delete()
+                  .eq(
+                    "id",
+                    shift.id
+                  );
+
+              if (
+                result.error
+              ) {
+
+                throw result.error;
+
+              }
+
+
+              editingShiftIndex =
+                -1;
+
+              await loadAllFromSupabase();
+
+              renderShiftList();
+
+              renderSchedule();
+
+            } catch (error) {
+
+              console.error(
+                "勤務形態削除エラー",
+                error
+              );
+
+              alert(
+                "勤務形態の削除に失敗しました。"
+              );
+
+            } finally {
+
+              finishCloudOperation();
+
+            }
+
+          }
+        );
+
+
+      list.appendChild(
+        item
       );
 
     }
@@ -6803,9 +4953,9 @@ function renderShiftList() {
 }
 
 
-/* ==================================================
-   休暇追加・更新
-================================================== */
+/* =========================================================
+   休暇追加・編集
+========================================================= */
 
 async function addOrUpdateLeave() {
 
@@ -6814,12 +4964,10 @@ async function addOrUpdateLeave() {
       "leaveNameInput"
     );
 
-
   const colorInput =
     document.getElementById(
       "leaveColorInput"
     );
-
 
   if (!nameInput) {
 
@@ -6827,10 +4975,8 @@ async function addOrUpdateLeave() {
 
   }
 
-
   const name =
     nameInput.value.trim();
-
 
   const color =
     colorInput?.value ||
@@ -6840,7 +4986,28 @@ async function addOrUpdateLeave() {
   if (!name) {
 
     alert(
-      "休暇名を入力してください。"
+      "休暇名を入力してください"
+    );
+
+    return;
+
+  }
+
+
+  const duplicate =
+    appData.leaveTypes.some(
+      leave =>
+        leave.name === name &&
+        String(leave.id) !==
+          String(editingLeaveId)
+    );
+
+  if (
+    duplicate
+  ) {
+
+    alert(
+      "同じ休暇名は登録できません"
     );
 
     return;
@@ -6850,6 +5017,10 @@ async function addOrUpdateLeave() {
 
   if (!supabaseClient) {
 
+    alert(
+      "Supabaseに接続されていません。"
+    );
+
     return;
 
   }
@@ -6858,23 +5029,28 @@ async function addOrUpdateLeave() {
   cloudOperationBusy =
     true;
 
-
   try {
 
     if (
       editingLeaveId
     ) {
 
+      const oldLeave =
+        appData.leaveTypes.find(
+          leave =>
+            String(leave.id) ===
+            String(editingLeaveId)
+        );
+
+
       const result =
         await supabaseClient
           .from("leave_types")
           .update({
 
-            name:
-              name,
+            name,
 
-            color:
-              color
+            color
 
           })
           .eq(
@@ -6882,12 +5058,47 @@ async function addOrUpdateLeave() {
             editingLeaveId
           );
 
-
-      if (result.error) {
+      if (
+        result.error
+      ) {
 
         throw result.error;
 
       }
+
+
+      if (
+        oldLeave &&
+        oldLeave.name !== name
+      ) {
+
+        const workResult =
+          await supabaseClient
+            .from("work_shifts")
+            .update({
+
+              leave_type:
+                name
+
+            })
+            .eq(
+              "leave_type",
+              oldLeave.name
+            );
+
+        if (
+          workResult.error
+        ) {
+
+          throw workResult.error;
+
+        }
+
+      }
+
+
+      editingLeaveId =
+        null;
 
     } else {
 
@@ -6896,16 +5107,15 @@ async function addOrUpdateLeave() {
           .from("leave_types")
           .insert({
 
-            name:
-              name,
+            name,
 
-            color:
-              color
+            color
 
           });
 
-
-      if (result.error) {
+      if (
+        result.error
+      ) {
 
         throw result.error;
 
@@ -6914,13 +5124,8 @@ async function addOrUpdateLeave() {
     }
 
 
-    editingLeaveId =
-      null;
-
-
     nameInput.value =
       "";
-
 
     if (colorInput) {
 
@@ -6930,10 +5135,24 @@ async function addOrUpdateLeave() {
     }
 
 
+    const button =
+      document.getElementById(
+        "addLeaveButton"
+      );
+
+    if (button) {
+
+      button.textContent =
+        "休暇を追加";
+
+    }
+
+
     await loadAllFromSupabase();
 
-    renderAll();
+    renderLeaveList();
 
+    renderSchedule();
 
   } catch (error) {
 
@@ -6942,9 +5161,8 @@ async function addOrUpdateLeave() {
       error
     );
 
-
     alert(
-      "休暇を保存できませんでした。"
+      "休暇の保存に失敗しました。"
     );
 
   } finally {
@@ -6956,237 +5174,274 @@ async function addOrUpdateLeave() {
 }
 
 
-/* ==================================================
-   休暇編集
-================================================== */
-
-function editLeave(
-  id
-) {
-
-  const leave =
-    appData.leaveTypes.find(
-      item =>
-        String(item.id) ===
-        String(id)
-    );
-
-
-  if (!leave) {
-
-    return;
-
-  }
-
-
-  const nameInput =
-    document.getElementById(
-      "leaveNameInput"
-    );
-
-
-  const colorInput =
-    document.getElementById(
-      "leaveColorInput"
-    );
-
-
-  editingLeaveId =
-    leave.id;
-
-
-  if (nameInput) {
-
-    nameInput.value =
-      leave.name;
-
-  }
-
-
-  if (colorInput) {
-
-    colorInput.value =
-      leave.color ||
-      "#FFD54F";
-
-  }
-
-}
-
-
-/* ==================================================
-   休暇削除
-================================================== */
-
-async function deleteLeave(
-  id
-) {
-
-  const leave =
-    appData.leaveTypes.find(
-      item =>
-        String(item.id) ===
-        String(id)
-    );
-
-
-  if (!leave) {
-
-    return;
-
-  }
-
-
-  if (
-    !confirm(
-      `${leave.name}を削除しますか？`
-    )
-  ) {
-
-    return;
-
-  }
-
-
-  if (!supabaseClient) {
-
-    return;
-
-  }
-
-
-  cloudOperationBusy =
-    true;
-
-
-  try {
-
-    const result =
-      await supabaseClient
-        .from("leave_types")
-        .delete()
-        .eq(
-          "id",
-          leave.id
-        );
-
-
-    if (result.error) {
-
-      throw result.error;
-
-    }
-
-
-    await loadAllFromSupabase();
-
-    renderAll();
-
-
-  } catch (error) {
-
-    console.error(
-      "休暇削除エラー",
-      error
-    );
-
-
-    alert(
-      "休暇を削除できませんでした。"
-    );
-
-  } finally {
-
-    finishCloudOperation();
-
-  }
-
-}
-
-
-/* ==================================================
+/* =========================================================
    休暇一覧
-================================================== */
+========================================================= */
 
 function renderLeaveList() {
 
-  const container =
+  const list =
     document.getElementById(
       "leaveList"
     );
 
-
-  if (!container) {
+  if (!list) {
 
     return;
 
   }
 
-
-  container.innerHTML =
+  list.innerHTML =
     "";
-
 
   appData.leaveTypes.forEach(
     leave => {
 
-      const row =
+      const item =
         document.createElement(
           "div"
         );
 
+      item.className =
+        "list-item";
 
-      row.className =
-        "leave-list-row";
+      item.innerHTML = `
+        <div
+          class="list-item-main"
+          style="
+            display:flex;
+            align-items:center;
+            gap:10px;
+          "
+        >
 
-
-      row.innerHTML =
-        `
           <span
             style="
-              display:inline-flex;
-              align-items:center;
-              gap:8px;
+              display:inline-block;
+              width:28px;
+              height:28px;
+              border-radius:7px;
+              background:${escapeHtml(
+                leave.color
+              )};
+              border:1px solid rgba(0,0,0,.15);
+              flex-shrink:0;
             "
-          >
-            <span
-              style="
-                width:18px;
-                height:18px;
-                border-radius:4px;
-                background:${escapeHtml(
-                  leave.color ||
-                  "#FFD54F"
-                )};
-                border:1px solid rgba(0,0,0,.15);
-              "
-            ></span>
+          ></span>
 
-            <span>
+          <div>
+
+            <div class="list-item-title">
               ${escapeHtml(
                 leave.name
               )}
-            </span>
-          </span>
+            </div>
+
+            <div class="list-item-sub">
+              ${escapeHtml(
+                leave.color
+              )}
+            </div>
+
+          </div>
+
+        </div>
+
+        <div class="list-item-buttons">
 
           <button
             type="button"
-            onclick="editLeave('${escapeHtml(
-              leave.id
-            )}')"
-          >編集</button>
+            class="list-button edit-leave-button"
+          >
+            編集
+          </button>
 
           <button
             type="button"
-            onclick="deleteLeave('${escapeHtml(
-              leave.id
-            )}')"
-          >削除</button>
-        `;
+            class="list-button delete delete-leave-button"
+          >
+            削除
+          </button>
+
+        </div>
+      `;
 
 
-      container.appendChild(
-        row
+      item
+        .querySelector(
+          ".edit-leave-button"
+        )
+        ?.addEventListener(
+          "click",
+          () => {
+
+            const nameInput =
+              document.getElementById(
+                "leaveNameInput"
+              );
+
+            const colorInput =
+              document.getElementById(
+                "leaveColorInput"
+              );
+
+            if (nameInput) {
+
+              nameInput.value =
+                leave.name;
+
+              nameInput.focus();
+
+            }
+
+            if (colorInput) {
+
+              colorInput.value =
+                leave.color ||
+                "#FFD54F";
+
+            }
+
+            editingLeaveId =
+              leave.id;
+
+            const button =
+              document.getElementById(
+                "addLeaveButton"
+              );
+
+            if (button) {
+
+              button.textContent =
+                "休暇を更新";
+
+            }
+
+          }
+        );
+
+
+      item
+        .querySelector(
+          ".delete-leave-button"
+        )
+        ?.addEventListener(
+          "click",
+          async () => {
+
+            if (
+              !confirm(
+                `${leave.name}を削除しますか？\nこの休暇を使用している勤務表からも休暇情報が解除されます。`
+              )
+            ) {
+
+              return;
+
+            }
+
+            cloudOperationBusy =
+              true;
+
+            try {
+
+              const workResult =
+                await supabaseClient
+                  .from("work_shifts")
+                  .update({
+
+                    leave_type:
+                      null
+
+                  })
+                  .eq(
+                    "leave_type",
+                    leave.name
+                  );
+
+              if (
+                workResult.error
+              ) {
+
+                throw workResult.error;
+
+              }
+
+
+              const result =
+                await supabaseClient
+                  .from("leave_types")
+                  .delete()
+                  .eq(
+                    "id",
+                    leave.id
+                  );
+
+              if (
+                result.error
+              ) {
+
+                throw result.error;
+
+              }
+
+
+              if (
+                String(
+                  editingLeaveId
+                ) ===
+                String(
+                  leave.id
+                )
+              ) {
+
+                editingLeaveId =
+                  null;
+
+              }
+
+
+              const button =
+                document.getElementById(
+                  "addLeaveButton"
+                );
+
+              if (button) {
+
+                button.textContent =
+                  "休暇を追加";
+
+              }
+
+
+              await loadAllFromSupabase();
+
+              renderLeaveList();
+
+              renderSchedule();
+
+            } catch (error) {
+
+              console.error(
+                "休暇削除エラー",
+                error
+              );
+
+              alert(
+                "休暇の削除に失敗しました。"
+              );
+
+            } finally {
+
+              finishCloudOperation();
+
+            }
+
+          }
+        );
+
+
+      list.appendChild(
+        item
       );
 
     }
@@ -7195,29 +5450,26 @@ function renderLeaveList() {
 }
 
 
-/* ==================================================
-   会社休業日追加
-================================================== */
+/* =========================================================
+   休業設定
+========================================================= */
 
 async function addCompanyHoliday() {
 
   const nameInput =
     document.getElementById(
-      "companyHolidayNameInput"
+      "companyHolidayName"
     );
-
 
   const startInput =
     document.getElementById(
-      "companyHolidayStartInput"
+      "companyHolidayStart"
     );
-
 
   const endInput =
     document.getElementById(
-      "companyHolidayEndInput"
+      "companyHolidayEnd"
     );
-
 
   if (
     !nameInput ||
@@ -7228,27 +5480,43 @@ async function addCompanyHoliday() {
 
   }
 
-
   const name =
     nameInput.value.trim();
 
-
   const start =
     startInput.value;
-
 
   const end =
     endInput?.value ||
     start;
 
 
+  if (!name) {
+
+    alert(
+      "休業名を入力してください"
+    );
+
+    return;
+
+  }
+
+  if (!start) {
+
+    alert(
+      "開始日を入力してください"
+    );
+
+    return;
+
+  }
+
   if (
-    !name ||
-    !start
+    start > end
   ) {
 
     alert(
-      "休業日名と開始日を入力してください。"
+      "終了日は開始日以降にしてください"
     );
 
     return;
@@ -7256,20 +5524,26 @@ async function addCompanyHoliday() {
   }
 
 
+  const overlap =
+    appData.companyHolidays.some(
+      holiday =>
+        (
+          !editingHolidayId ||
+          String(holiday.id) !==
+            String(editingHolidayId)
+        ) &&
+        start <= holiday.end &&
+        end >= holiday.start
+    );
+
+
   if (
-    end < start
+    overlap
   ) {
 
     alert(
-      "終了日は開始日以降にしてください。"
+      "既に登録されている休業期間と重複しています"
     );
-
-    return;
-
-  }
-
-
-  if (!supabaseClient) {
 
     return;
 
@@ -7279,22 +5553,7 @@ async function addCompanyHoliday() {
   cloudOperationBusy =
     true;
 
-
   try {
-
-    const payload = {
-
-      name:
-        name,
-
-      start_date:
-        start,
-
-      end_date:
-        end
-
-    };
-
 
     if (
       editingHolidayId
@@ -7303,42 +5562,59 @@ async function addCompanyHoliday() {
       const result =
         await supabaseClient
           .from("company_holidays")
-          .update(
-            payload
-          )
+          .update({
+
+            name,
+
+            start_date:
+              start,
+
+            end_date:
+              end
+
+          })
           .eq(
             "id",
             editingHolidayId
           );
 
-
-      if (result.error) {
+      if (
+        result.error
+      ) {
 
         throw result.error;
 
       }
+
+      editingHolidayId =
+        null;
 
     } else {
 
       const result =
         await supabaseClient
           .from("company_holidays")
-          .insert(
-            payload
-          );
+          .insert({
 
+            name,
 
-      if (result.error) {
+            start_date:
+              start,
+
+            end_date:
+              end
+
+          });
+
+      if (
+        result.error
+      ) {
 
         throw result.error;
 
       }
 
     }
-
-
-    editingHolidayId =
-      null;
 
 
     nameInput.value =
@@ -7355,182 +5631,34 @@ async function addCompanyHoliday() {
     }
 
 
-    await loadAllFromSupabase();
+    const button =
+      document.getElementById(
+        "addCompanyHolidayButton"
+      );
 
-    renderAll();
+    if (button) {
 
-
-  } catch (error) {
-
-    console.error(
-      "会社休業日保存エラー",
-      error
-    );
-
-
-    alert(
-      "会社休業日を保存できませんでした。"
-    );
-
-  } finally {
-
-    finishCloudOperation();
-
-  }
-
-}
-
-
-/* ==================================================
-   会社休業日編集
-================================================== */
-
-function editCompanyHoliday(
-  id
-) {
-
-  const holiday =
-    appData.companyHolidays.find(
-      item =>
-        String(item.id) ===
-        String(id)
-    );
-
-
-  if (!holiday) {
-
-    return;
-
-  }
-
-
-  const nameInput =
-    document.getElementById(
-      "companyHolidayNameInput"
-    );
-
-
-  const startInput =
-    document.getElementById(
-      "companyHolidayStartInput"
-    );
-
-
-  const endInput =
-    document.getElementById(
-      "companyHolidayEndInput"
-    );
-
-
-  editingHolidayId =
-    holiday.id;
-
-
-  if (nameInput) {
-
-    nameInput.value =
-      holiday.name;
-
-  }
-
-
-  if (startInput) {
-
-    startInput.value =
-      holiday.start;
-
-  }
-
-
-  if (endInput) {
-
-    endInput.value =
-      holiday.end;
-
-  }
-
-}
-
-
-/* ==================================================
-   会社休業日削除
-================================================== */
-
-async function deleteCompanyHoliday(
-  id
-) {
-
-  const holiday =
-    appData.companyHolidays.find(
-      item =>
-        String(item.id) ===
-        String(id)
-    );
-
-
-  if (!holiday) {
-
-    return;
-
-  }
-
-
-  if (
-    !confirm(
-      `${holiday.name}を削除しますか？`
-    )
-  ) {
-
-    return;
-
-  }
-
-
-  if (!supabaseClient) {
-
-    return;
-
-  }
-
-
-  cloudOperationBusy =
-    true;
-
-
-  try {
-
-    const result =
-      await supabaseClient
-        .from("company_holidays")
-        .delete()
-        .eq(
-          "id",
-          holiday.id
-        );
-
-
-    if (result.error) {
-
-      throw result.error;
+      button.textContent =
+        "休業を登録";
 
     }
 
 
     await loadAllFromSupabase();
 
-    renderAll();
+    renderHolidayList();
 
+    renderSchedule();
 
   } catch (error) {
 
     console.error(
-      "会社休業日削除エラー",
+      "休業設定保存エラー",
       error
     );
 
-
     alert(
-      "会社休業日を削除できませんでした。"
+      "休業設定の保存に失敗しました。"
     );
 
   } finally {
@@ -7542,78 +5670,227 @@ async function deleteCompanyHoliday(
 }
 
 
-/* ==================================================
-   会社休業日一覧
-================================================== */
+/* =========================================================
+   休業一覧
+========================================================= */
 
 function renderHolidayList() {
 
-  const container =
+  const list =
     document.getElementById(
-      "holidayList"
+      "companyHolidayList"
     );
 
-
-  if (!container) {
+  if (!list) {
 
     return;
 
   }
 
-
-  container.innerHTML =
+  list.innerHTML =
     "";
-
 
   appData.companyHolidays.forEach(
     holiday => {
 
-      const row =
+      const item =
         document.createElement(
           "div"
         );
 
+      item.className =
+        "list-item";
 
-      row.className =
-        "holiday-list-row";
+
+      const dateText =
+        holiday.start ===
+        holiday.end
+
+          ? formatDateJP(
+              holiday.start
+            )
+
+          : `${formatDateJP(
+              holiday.start
+            )} ～ ${formatDateJP(
+              holiday.end
+            )}`;
 
 
-      row.innerHTML =
-        `
-          <span>
+      item.innerHTML = `
+        <div class="list-item-main">
+
+          <div class="list-item-title">
             ${escapeHtml(
               holiday.name
             )}
-          </span>
+          </div>
 
-          <span>
+          <div class="list-item-sub">
             ${escapeHtml(
-              holiday.start
+              dateText
             )}
-            ～ 
-            ${escapeHtml(
-              holiday.end
-            )}
-          </span>
+          </div>
+
+        </div>
+
+        <div class="list-item-buttons">
 
           <button
             type="button"
-            onclick="editCompanyHoliday('${escapeHtml(
-              holiday.id
-            )}')"
-          >編集</button>
+            class="list-button edit-holiday-button"
+          >
+            編集
+          </button>
 
           <button
             type="button"
-            onclick="deleteCompanyHoliday('${escapeHtml(
-              holiday.id
-            )}')"
-          >削除</button>
-        `;
+            class="list-button delete delete-holiday-button"
+          >
+            削除
+          </button>
+
+        </div>
+      `;
 
 
-      container.appendChild(
-        row
+      item
+        .querySelector(
+          ".edit-holiday-button"
+        )
+        ?.addEventListener(
+          "click",
+          () => {
+
+            const name =
+              document.getElementById(
+                "companyHolidayName"
+              );
+
+            const start =
+              document.getElementById(
+                "companyHolidayStart"
+              );
+
+            const end =
+              document.getElementById(
+                "companyHolidayEnd"
+              );
+
+            if (name) {
+
+              name.value =
+                holiday.name;
+
+            }
+
+            if (start) {
+
+              start.value =
+                holiday.start;
+
+            }
+
+            if (end) {
+
+              end.value =
+                holiday.start ===
+                holiday.end
+                  ? ""
+                  : holiday.end;
+
+            }
+
+            editingHolidayId =
+              holiday.id;
+
+            const button =
+              document.getElementById(
+                "addCompanyHolidayButton"
+              );
+
+            if (button) {
+
+              button.textContent =
+                "休業を更新";
+
+            }
+
+          }
+        );
+
+
+      item
+        .querySelector(
+          ".delete-holiday-button"
+        )
+        ?.addEventListener(
+          "click",
+          async () => {
+
+            if (
+              !confirm(
+                `${holiday.name}を削除しますか？`
+              )
+            ) {
+
+              return;
+
+            }
+
+            cloudOperationBusy =
+              true;
+
+            try {
+
+              const result =
+                await supabaseClient
+                  .from(
+                    "company_holidays"
+                  )
+                  .delete()
+                  .eq(
+                    "id",
+                    holiday.id
+                  );
+
+              if (
+                result.error
+              ) {
+
+                throw result.error;
+
+              }
+
+              await loadAllFromSupabase();
+
+              renderHolidayList();
+
+              renderSchedule();
+
+            } catch (error) {
+
+              console.error(
+                "休業削除エラー",
+                error
+              );
+
+              alert(
+                "休業設定の削除に失敗しました。"
+              );
+
+            } finally {
+
+              finishCloudOperation();
+
+            }
+
+          }
+        );
+
+
+      list.appendChild(
+        item
       );
 
     }
@@ -7622,170 +5899,150 @@ function renderHolidayList() {
 }
 
 
-/* ==================================================
-   明の時間設定保存
-================================================== */
+/* =========================================================
+   明け時間
+========================================================= */
 
 async function saveAkeTime() {
 
-  const startInput =
+  const start =
     document.getElementById(
       "akeStartInput"
     );
 
-
-  const endInput =
+  const end =
     document.getElementById(
       "akeEndInput"
     );
 
-
   if (
-    !startInput ||
-    !endInput
+    !start ||
+    !end ||
+    !start.value ||
+    !end.value
   ) {
 
-    return;
-
-  }
-
-
-  const start =
-    startInput.value ||
-    "05:30";
-
-
-  const end =
-    endInput.value ||
-    "11:15";
-
-
-  if (!supabaseClient) {
+    alert(
+      "開始時間と終了時間を入力してください"
+    );
 
     return;
 
   }
 
 
-  cloudOperationBusy =
-    true;
-
-
-  try {
-
-    const startResult =
-      await supabaseClient
-        .from("app_settings")
-        .upsert(
-          {
-            setting_name:
-              "ake_start",
-
-            setting_value:
-              start
-          },
-          {
-            onConflict:
-              "setting_name"
-          }
-        );
-
-
-    if (
-      startResult.error
-    ) {
-
-      throw startResult.error;
-
-    }
-
-
-    const endResult =
-      await supabaseClient
-        .from("app_settings")
-        .upsert(
-          {
-            setting_name:
-              "ake_end",
-
-            setting_value:
-              end
-          },
-          {
-            onConflict:
-              "setting_name"
-          }
-        );
-
-
-    if (
-      endResult.error
-    ) {
-
-      throw endResult.error;
-
-    }
-
-
-    appData.akeTime = {
-
-      start:
-        start,
-
-      end:
-        end
-
-    };
-
-
-    saveLocalData();
-
+  if (
+    start.value >=
+    end.value
+  ) {
 
     alert(
-      "明の時間を保存しました。"
+      "明け時間の終了は開始より後にしてください"
     );
 
-
-  } catch (error) {
-
-    console.error(
-      "明時間保存エラー",
-      error
-    );
-
-
-    alert(
-      "明の時間を保存できませんでした。"
-    );
-
-  } finally {
-
-    finishCloudOperation();
+    return;
 
   }
+
+
+  appData.akeTime = {
+
+    start:
+      start.value,
+
+    end:
+      end.value
+
+  };
+
+  saveLocalData();
+
+
+  if (
+    supabaseClient
+  ) {
+
+    cloudOperationBusy =
+      true;
+
+    try {
+
+      const result =
+        await supabaseClient
+          .from("app_settings")
+          .upsert(
+            [
+
+              {
+                setting_name:
+                  "ake_start",
+
+                setting_value:
+                  start.value
+
+              },
+
+              {
+                setting_name:
+                  "ake_end",
+
+                setting_value:
+                  end.value
+
+              }
+
+            ],
+            {
+              onConflict:
+                "setting_name"
+            }
+          );
+
+      if (
+        result.error
+      ) {
+
+        alert(
+          "明け時間をクラウドに保存できませんでした"
+        );
+
+        return;
+
+      }
+
+    } finally {
+
+      finishCloudOperation();
+
+    }
+
+  }
+
+
+  alert(
+    "明け時間を保存しました"
+  );
 
 }
 
 
-/* ==================================================
-   カレンダーモーダル
-================================================== */
+/* =========================================================
+   カレンダー確認
+========================================================= */
 
-function openCalendarModal(
+function openCalendarConfirm(
   staffName
 ) {
 
+  const name =
+    getStaffName(
+      staffName
+    );
+
   const modal =
     document.getElementById(
-      "calendarModal"
+      "calendarConfirm"
     );
-
-
-  const nameElement =
-    document.getElementById(
-      "calendarStaffName"
-    );
-
 
   if (!modal) {
 
@@ -7793,15 +6050,32 @@ function openCalendarModal(
 
   }
 
+  modal.dataset.staff =
+    name;
 
-  modal.dataset.staffName =
-    staffName;
+
+  const title =
+    document.getElementById(
+      "calendarConfirmTitle"
+    );
+
+  const text =
+    document.getElementById(
+      "calendarConfirmText"
+    );
 
 
-  if (nameElement) {
+  if (title) {
 
-    nameElement.textContent =
-      staffName;
+    title.textContent =
+      `${name}の勤務表`;
+
+  }
+
+  if (text) {
+
+    text.textContent =
+      `${name}の勤務カレンダーを登録しますか？`;
 
   }
 
@@ -7812,17 +6086,16 @@ function openCalendarModal(
 }
 
 
-/* ==================================================
-   webcal登録
-================================================== */
+/* =========================================================
+   Webcal
+========================================================= */
 
 function subscribeStaffCalendar() {
 
   const modal =
     document.getElementById(
-      "calendarModal"
+      "calendarConfirm"
     );
-
 
   if (!modal) {
 
@@ -7830,22 +6103,13 @@ function subscribeStaffCalendar() {
 
   }
 
-
   const staffName =
-    modal.dataset.staffName;
-
-
-  if (!staffName) {
-
-    return;
-
-  }
-
+    modal.dataset.staff;
 
   const staff =
     appData.staff.find(
       item =>
-        item.name ===
+        getStaffName(item) ===
         staffName
     );
 
@@ -7856,7 +6120,7 @@ function subscribeStaffCalendar() {
   ) {
 
     alert(
-      "この職員のカレンダートークンがありません。"
+      "この職員のカレンダー情報がありません。"
     );
 
     return;
@@ -7865,26 +6129,22 @@ function subscribeStaffCalendar() {
 
 
   /*
-    ★ ICSダウンロードにはしない。
-
-    必ずwebcal://で登録する。
+    ★ ICSではなくWebcal
   */
-
-  const baseUrl =
-    SUPABASE_URL.replace(
-      /^https?:\/\//,
-      ""
-    );
-
 
   const webcalUrl =
     "webcal://" +
-    baseUrl +
+    SUPABASE_URL.replace(
+      "https://",
+      ""
+    ) +
     "/functions/v1/staff-calendar?token=" +
     encodeURIComponent(
       staff.calendar_token
     );
 
+
+  closeCalendarModal();
 
   window.location.href =
     webcalUrl;
@@ -7892,17 +6152,16 @@ function subscribeStaffCalendar() {
 }
 
 
-/* ==================================================
+/* =========================================================
    カレンダーモーダル閉じる
-================================================== */
+========================================================= */
 
 function closeCalendarModal() {
 
   const modal =
     document.getElementById(
-      "calendarModal"
+      "calendarConfirm"
     );
-
 
   if (modal) {
 
@@ -7914,9 +6173,9 @@ function closeCalendarModal() {
 }
 
 
-/* ==================================================
-   今月削除
-================================================== */
+/* =========================================================
+   月削除
+========================================================= */
 
 async function deleteCurrentMonth() {
 
@@ -7924,12 +6183,13 @@ async function deleteCurrentMonth() {
     currentDate.getFullYear();
 
   const month =
-    currentDate.getMonth() + 1;
+    currentDate.getMonth() +
+    1;
 
 
   if (
     !confirm(
-      `${year}年${month}月の勤務を削除しますか？`
+      `${year}年${month}月の勤務データを削除しますか？`
     )
   ) {
 
@@ -7938,37 +6198,28 @@ async function deleteCurrentMonth() {
   }
 
 
-  if (!supabaseClient) {
+  const start =
+    getDateKey(
+      year,
+      month,
+      1
+    );
 
-    return;
-
-  }
+  const end =
+    getDateKey(
+      year,
+      month,
+      getDaysInMonth(
+        year,
+        month
+      )
+    );
 
 
   cloudOperationBusy =
     true;
 
-
   try {
-
-    const start =
-      getDateKey(
-        year,
-        month,
-        1
-      );
-
-
-    const end =
-      getDateKey(
-        year,
-        month,
-        getDaysInMonth(
-          year,
-          month
-        )
-      );
-
 
     const result =
       await supabaseClient
@@ -7984,7 +6235,9 @@ async function deleteCurrentMonth() {
         );
 
 
-    if (result.error) {
+    if (
+      result.error
+    ) {
 
       throw result.error;
 
@@ -7995,17 +6248,15 @@ async function deleteCurrentMonth() {
 
     renderSchedule();
 
-
   } catch (error) {
 
     console.error(
-      "今月削除エラー",
+      "月削除エラー",
       error
     );
 
-
     alert(
-      "今月の勤務を削除できませんでした。"
+      "月の削除に失敗しました。"
     );
 
   } finally {
@@ -8017,44 +6268,28 @@ async function deleteCurrentMonth() {
 }
 
 
-/* ==================================================
+/* =========================================================
    年度削除
-================================================== */
+========================================================= */
 
 async function deleteFiscalYear() {
 
-  const currentYear =
+  const year =
     currentDate.getFullYear();
 
-  const currentMonth =
-    currentDate.getMonth() + 1;
+  const month =
+    currentDate.getMonth() +
+    1;
 
-
-  const fiscalStartYear =
-    currentMonth >= 4
-      ? currentYear
-      : currentYear - 1;
-
-
-  const start =
-    getDateKey(
-      fiscalStartYear,
-      4,
-      1
-    );
-
-
-  const end =
-    getDateKey(
-      fiscalStartYear + 1,
-      3,
-      31
-    );
+  const fiscalStart =
+    month >= 4
+      ? year
+      : year - 1;
 
 
   if (
     !confirm(
-      `${fiscalStartYear}年度の勤務をすべて削除しますか？`
+      `${fiscalStart}年度の勤務データを削除しますか？`
     )
   ) {
 
@@ -8063,16 +6298,15 @@ async function deleteFiscalYear() {
   }
 
 
-  if (!supabaseClient) {
+  const start =
+    `${fiscalStart}-04-01`;
 
-    return;
-
-  }
+  const end =
+    `${fiscalStart + 1}-03-31`;
 
 
   cloudOperationBusy =
     true;
-
 
   try {
 
@@ -8090,7 +6324,9 @@ async function deleteFiscalYear() {
         );
 
 
-    if (result.error) {
+    if (
+      result.error
+    ) {
 
       throw result.error;
 
@@ -8100,7 +6336,6 @@ async function deleteFiscalYear() {
     await loadAllFromSupabase();
 
     renderSchedule();
-
 
   } catch (error) {
 
@@ -8109,9 +6344,8 @@ async function deleteFiscalYear() {
       error
     );
 
-
     alert(
-      "年度の勤務を削除できませんでした。"
+      "年度の削除に失敗しました。"
     );
 
   } finally {
@@ -8123,9 +6357,9 @@ async function deleteFiscalYear() {
 }
 
 
-/* ==================================================
-   日本の祝日読み込み
-================================================== */
+/* =========================================================
+   祝日API
+========================================================= */
 
 async function loadPublicHolidays() {
 
@@ -8136,27 +6370,23 @@ async function loadPublicHolidays() {
         "https://holidays-jp.github.io/api/v1/date.json"
       );
 
-
     if (!response.ok) {
 
       throw new Error(
-        "祝日API取得失敗"
+        "祝日データ取得失敗"
       );
 
     }
 
-
     publicHolidays =
       await response.json();
 
-
     renderSchedule();
-
 
   } catch (error) {
 
-    console.error(
-      "祝日読み込みエラー",
+    console.warn(
+      "祝日データ取得失敗",
       error
     );
 
@@ -8165,9 +6395,59 @@ async function loadPublicHolidays() {
 }
 
 
-/* ==================================================
+/* =========================================================
+   公休日判定
+========================================================= */
+
+function isPublicHoliday(
+  dateKey
+) {
+
+  return Boolean(
+    publicHolidays &&
+    publicHolidays[dateKey]
+  );
+
+}
+
+
+/* =========================================================
+   休業日判定
+========================================================= */
+
+function isCompanyHoliday(
+  dateKey
+) {
+
+  return appData.companyHolidays.some(
+    holiday =>
+      dateKey >= holiday.start &&
+      dateKey <= holiday.end
+  );
+
+}
+
+
+/* =========================================================
+   休業取得
+========================================================= */
+
+function getCompanyHoliday(
+  dateKey
+) {
+
+  return appData.companyHolidays.find(
+    holiday =>
+      dateKey >= holiday.start &&
+      dateKey <= holiday.end
+  );
+
+}
+
+
+/* =========================================================
    HTMLエスケープ
-================================================== */
+========================================================= */
 
 function escapeHtml(
   value
@@ -8200,25 +6480,616 @@ function escapeHtml(
 }
 
 
-/* ==================================================
-   ICS関連
-   ※webcal登録を維持するため、
-   既存機能として残します。
-================================================== */
+/* =========================================================
+   文字列を安全なCSS色として扱う
+========================================================= */
 
-function exportCalendar(
-  staffName
+function escapeCssColor(
+  value
 ) {
 
-  const events =
-    [];
+  const color =
+    String(
+      value ||
+      ""
+    ).trim();
+
+  if (
+    /^#[0-9a-fA-F]{6}$/.test(
+      color
+    )
+  ) {
+
+    return color;
+
+  }
+
+  if (
+    /^#[0-9a-fA-F]{3}$/.test(
+      color
+    )
+  ) {
+
+    return color;
+
+  }
+
+  return "#FFD54F";
+
+}
+
+
+/* =========================================================
+   ========================================================
+   ★ スクロール・固定表示用CSS
+   ========================================================
+========================================================= */
+
+function injectScheduleStyles() {
+
+  const old =
+    document.getElementById(
+      "scheduleStickyStyle"
+    );
+
+  if (old) {
+
+    old.remove();
+
+  }
+
+
+  const style =
+    document.createElement(
+      "style"
+    );
+
+  style.id =
+    "scheduleStickyStyle";
+
+
+  style.textContent = `
+
+    /* =====================================================
+       勤務表横スクロール
+    ===================================================== */
+
+    .table-wrapper {
+      position: relative !important;
+      overflow-x: auto !important;
+      overflow-y: visible !important;
+      -webkit-overflow-scrolling: touch;
+    }
+
+
+    /* =====================================================
+       テーブル
+    ===================================================== */
+
+    #scheduleTable {
+      border-collapse: separate !important;
+      border-spacing: 0 !important;
+      table-layout: fixed !important;
+      position: relative;
+    }
+
+
+    /* =====================================================
+       ★ ヘッダー
+       縦方向だけ固定
+    ===================================================== */
+
+    #scheduleTable thead th {
+      position: sticky !important;
+      opacity: 1 !important;
+      background-clip: padding-box !important;
+      box-sizing: border-box !important;
+    }
+
+
+    /*
+      1行目
+    */
+
+    #scheduleTable thead tr:first-child th {
+      top: var(
+        --schedule-sticky-top,
+        0px
+      ) !important;
+
+      z-index: 300 !important;
+    }
+
+
+    /*
+      2行目
+    */
+
+    #scheduleTable thead tr:nth-child(2) th {
+      top: calc(
+        var(--schedule-sticky-top, 0px)
+        +
+        var(--schedule-head-row1-height, 32px)
+      ) !important;
+
+      z-index: 290 !important;
+    }
+
+
+    /* =====================================================
+       左上「職員」
+       ★縦・横どちらも固定
+    ===================================================== */
+
+    #scheduleTable
+    thead
+    th.staff-header {
+
+      position: sticky !important;
+
+      left: 0 !important;
+
+      top: var(
+        --schedule-sticky-top,
+        0px
+      ) !important;
+
+      z-index: 500 !important;
+
+      background:
+        #f2f2f7 !important;
+
+      opacity: 1 !important;
+
+      isolation: isolate;
+    }
+
+
+    /* =====================================================
+       職員名
+       ★横方向だけ固定
+       ★縦方向には固定しない
+    ===================================================== */
+
+    #scheduleTable
+    tbody
+    th.staff-name-cell {
+
+      position: sticky !important;
+
+      left: 0 !important;
+
+      top: auto !important;
+
+      z-index: 200 !important;
+
+      background:
+        #ffffff !important;
+
+      opacity: 1 !important;
+
+      isolation: isolate;
+
+      box-shadow:
+        2px 0 0 rgba(0,0,0,.08);
+    }
+
+
+    /* =====================================================
+       日付ヘッダー
+    ===================================================== */
+
+    #scheduleTable
+    thead
+    th.date-header {
+
+      background:
+        #f8f8fa !important;
+
+      opacity: 1 !important;
+    }
+
+
+    #scheduleTable
+    thead
+    th.date-header.sunday,
+    #scheduleTable
+    thead
+    th.date-header.public-holiday {
+
+      background:
+        #fff0f0 !important;
+    }
+
+
+    #scheduleTable
+    thead
+    th.date-header.saturday {
+
+      background:
+        #f0f6ff !important;
+    }
+
+
+    #scheduleTable
+    thead
+    th.date-header.company-holiday {
+
+      background:
+        #fff7e6 !important;
+    }
+
+
+    /* =====================================================
+       勤務形態ヘッダー
+    ===================================================== */
+
+    #scheduleTable
+    thead
+    th.shift-header {
+
+      background:
+        #f2f2f7 !important;
+
+      opacity: 1 !important;
+
+      white-space: nowrap;
+    }
+
+
+    /* =====================================================
+       合計・累計ヘッダー
+    ===================================================== */
+
+    #scheduleTable
+    thead
+    th.total-header {
+
+      background:
+        #ffffff !important;
+
+      opacity: 1 !important;
+
+      color:
+        #333333 !important;
+
+      white-space: nowrap;
+    }
+
+
+    /* =====================================================
+       tbody
+    ===================================================== */
+
+    #scheduleTable
+    tbody
+    td,
+    #scheduleTable
+    tbody
+    th {
+
+      background-clip:
+        padding-box !important;
+    }
+
+
+    /* =====================================================
+       通常セル
+    ===================================================== */
+
+    #scheduleTable
+    tbody
+    td.schedule-cell {
+
+      background-color:
+        #ffffff;
+
+      opacity: 1;
+
+    }
+
+
+    #scheduleTable
+    tbody
+    td.schedule-cell.sunday,
+    #scheduleTable
+    tbody
+    td.schedule-cell.public-holiday {
+
+      background-color:
+        #fff7f7;
+    }
+
+
+    #scheduleTable
+    tbody
+    td.schedule-cell.saturday {
+
+      background-color:
+        #f6f9ff;
+    }
+
+
+    #scheduleTable
+    tbody
+    td.schedule-cell.company-holiday {
+
+      background-color:
+        #fffaf0;
+    }
+
+
+    /* =====================================================
+       休暇色は最優先
+    ===================================================== */
+
+    #scheduleTable
+    tbody
+    td.schedule-cell[style*="background"] {
+
+      opacity: 1 !important;
+    }
+
+
+    /* =====================================================
+       合計セル
+    ===================================================== */
+
+    #scheduleTable
+    tbody
+    td.total-cell {
+
+      background:
+        #ffffff !important;
+
+      opacity: 1 !important;
+
+      text-align: center;
+
+      font-weight: 600;
+
+      white-space: nowrap;
+    }
+
+
+    /* =====================================================
+       境界線
+    ===================================================== */
+
+    #scheduleTable
+    th,
+    #scheduleTable
+    td {
+
+      border-right:
+        1px solid #d9d9df;
+
+      border-bottom:
+        1px solid #d9d9df;
+
+      box-sizing:
+        border-box;
+    }
+
+
+    #scheduleTable
+    thead
+    tr:first-child
+    th {
+
+      border-top:
+        1px solid #d9d9df;
+    }
+
+
+    /* =====================================================
+       固定列の右境界
+    ===================================================== */
+
+    #scheduleTable
+    .staff-header,
+    #scheduleTable
+    .staff-name-cell {
+
+      border-right:
+        2px solid #c9c9cf !important;
+    }
+
+
+    /* =====================================================
+       古い固定レイヤーを完全に無効化
+    ===================================================== */
+
+    #scheduleFixedHeader,
+    #scheduleFixedStaffColumn {
+
+      display:
+        none !important;
+
+    }
+
+  `;
+
+
+  document.head.appendChild(
+    style
+  );
+
+}
+
+
+/* =========================================================
+   sticky位置計算
+========================================================= */
+
+function updateScheduleStickyVariables() {
+
+  const table =
+    document.getElementById(
+      "scheduleTable"
+    );
+
+  if (!table) {
+
+    return;
+
+  }
+
+
+  let topOffset =
+    0;
+
+
+  /*
+    アプリ上部ヘッダーが
+    fixed / sticky の場合に対応
+  */
+
+  const header =
+    document.querySelector(
+      ".header"
+    );
+
+  if (header) {
+
+    const rect =
+      header.getBoundingClientRect();
+
+    const style =
+      window.getComputedStyle(
+        header
+      );
+
+    const position =
+      style.position;
+
+
+    if (
+      position === "fixed" ||
+      position === "sticky"
+    ) {
+
+      if (
+        rect.bottom > 0
+      ) {
+
+        topOffset =
+          rect.bottom;
+
+      }
+
+    }
+
+  }
+
+
+  table.style.setProperty(
+    "--schedule-sticky-top",
+    `${topOffset}px`
+  );
+
+
+  const firstRow =
+    table.querySelector(
+      "thead tr:first-child"
+    );
+
+  if (
+    firstRow
+  ) {
+
+    const height =
+      firstRow.getBoundingClientRect()
+        .height;
+
+    table.style.setProperty(
+      "--schedule-head-row1-height",
+      `${height}px`
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   resize
+========================================================= */
+
+window.addEventListener(
+  "resize",
+  () => {
+
+    updateScheduleStickyVariables();
+
+  }
+);
+
+
+/* =========================================================
+   scroll
+========================================================= */
+
+window.addEventListener(
+  "scroll",
+  () => {
+
+    updateScheduleStickyVariables();
+
+  },
+  {
+    passive: true
+  }
+);
+
+
+/* =========================================================
+   ICS関連
+   ※Webcal登録とは別に残しておく
+========================================================= */
+
+function exportCalendar() {
+
+  const modal =
+    document.getElementById(
+      "calendarConfirm"
+    );
+
+  if (!modal) {
+
+    return;
+
+  }
+
+  const staffName =
+    modal.dataset.staff;
+
+  if (!staffName) {
+
+    return;
+
+  }
 
 
   const year =
     currentDate.getFullYear();
 
   const month =
-    currentDate.getMonth() + 1;
+    currentDate.getMonth() +
+    1;
+
+
+  let ics =
+    "BEGIN:VCALENDAR\r\n";
+
+  ics +=
+    "VERSION:2.0\r\n";
+
+  ics +=
+    "PRODID:-//Kinmu App//JP\r\n";
+
+  ics +=
+    "CALSCALE:GREGORIAN\r\n";
 
 
   const days =
@@ -8241,11 +7112,87 @@ function exportCalendar(
         day
       );
 
-
-    const shift =
+    const shiftName =
       getDisplayShift(
         staffName,
         dateKey
+      );
+
+
+    if (!shiftName) {
+
+      continue;
+
+    }
+
+
+    const uid =
+      `${staffName}-${dateKey}-${Date.now()}@kinmu-app`;
+
+
+    const leaveName =
+      getStoredLeave(
+        staffName,
+        dateKey
+      );
+
+
+    let title =
+      shiftName;
+
+    if (
+      leaveName
+    ) {
+
+      title +=
+        ` (${leaveName})`;
+
+    }
+
+
+    if (
+      shiftName ===
+      "休み"
+    ) {
+
+      ics +=
+        createAllDayEvent(
+          uid,
+          dateKey,
+          title,
+          staffName
+        );
+
+      continue;
+
+    }
+
+
+    if (
+      shiftName ===
+      "明"
+    ) {
+
+      ics +=
+        createTimedEvent(
+          uid,
+          dateKey,
+          title,
+          appData.akeTime.start,
+          appData.akeTime.end,
+          staffName
+        );
+
+      continue;
+
+    }
+
+
+    const shift =
+      appData.shiftTypes.find(
+        s =>
+          s.name ===
+          shiftName
       );
 
 
@@ -8256,31 +7203,38 @@ function exportCalendar(
     }
 
 
-    events.push(
-      createAllDayEvent(
-        dateKey,
-        shift,
-        getOtherStaffDescription(
-          staffName,
-          dateKey
-        )
-      )
-    );
+    if (
+      !shift.start ||
+      !shift.end
+    ) {
+
+      ics +=
+        createAllDayEvent(
+          uid,
+          dateKey,
+          title,
+          staffName
+        );
+
+    } else {
+
+      ics +=
+        createTimedEvent(
+          uid,
+          dateKey,
+          title,
+          shift.start,
+          shift.end,
+          staffName
+        );
+
+    }
 
   }
 
 
-  const ics =
-    [
-      "BEGIN:VCALENDAR",
-      "VERSION:2.0",
-      "PRODID:-//WorkScheduleApp//JP//EN",
-      "CALSCALE:GREGORIAN",
-      ...events,
-      "END:VCALENDAR"
-    ].join(
-      "\r\n"
-    );
+  ics +=
+    "END:VCALENDAR\r\n";
 
 
   const blob =
@@ -8304,147 +7258,182 @@ function exportCalendar(
       "a"
     );
 
-
   a.href =
     url;
 
   a.download =
-    `${staffName}-${year}-${String(month).padStart(2, "0")}.ics`;
+    `${staffName}_${year}年${month}月勤務表.ics`;
 
 
   document.body.appendChild(
     a
   );
 
-
   a.click();
 
-
   a.remove();
-
 
   URL.revokeObjectURL(
     url
   );
 
+
+  closeCalendarModal();
+
 }
 
 
-/* ==================================================
-   終日イベント
-================================================== */
+/* =========================================================
+   ICS 全日イベント
+========================================================= */
 
 function createAllDayEvent(
+  uid,
   dateKey,
-  summary,
-  description
+  title,
+  staffName
 ) {
 
-  const nextDate =
+  const date =
+    dateKey.replace(
+      /-/g,
+      ""
+    );
+
+  const next =
     addOneDay(
       dateKey
+    ).replace(
+      /-/g,
+      ""
     );
 
 
-  return [
-    "BEGIN:VEVENT",
+  let text =
+    "BEGIN:VEVENT\r\n";
 
-    "UID:" +
-      escapeICS(
-        `${dateKey}-${summary}-${Math.random()}`
-      ),
+  text +=
+    `UID:${uid}\r\n`;
 
-    "DTSTAMP:" +
-      utcNow(),
+  text +=
+    `DTSTAMP:${utcNow()}\r\n`;
 
-    "DTSTART;VALUE=DATE:" +
-      dateKey.replace(
-        /-/g,
-        ""
-      ),
+  text +=
+    `DTSTART;VALUE=DATE:${date}\r\n`;
 
-    "DTEND;VALUE=DATE:" +
-      nextDate.replace(
-        /-/g,
-        ""
-      ),
+  text +=
+    `DTEND;VALUE=DATE:${next}\r\n`;
 
-    "SUMMARY:" +
-      escapeICS(
-        summary
-      ),
+  text +=
+    `SUMMARY:${escapeICS(
+      title
+    )}\r\n`;
 
-    "DESCRIPTION:" +
-      escapeICS(
-        description || ""
-      ),
+  text +=
+    `DESCRIPTION:${escapeICS(
+      getOtherStaffDescription(
+        staffName,
+        dateKey
+      )
+    )}\r\n`;
 
-    "END:VEVENT"
+  text +=
+    "END:VEVENT\r\n";
 
-  ].join(
-    "\r\n"
-  );
+
+  return text;
 
 }
 
 
-/* ==================================================
-   時間指定イベント
-================================================== */
+/* =========================================================
+   ICS 時間イベント
+========================================================= */
 
 function createTimedEvent(
+  uid,
   dateKey,
-  summary,
-  startTime,
-  endTime,
-  description
+  title,
+  start,
+  end,
+  staffName
 ) {
 
-  return [
-    "BEGIN:VEVENT",
+  const startDate =
+    makeDateTime(
+      dateKey,
+      start
+    );
 
-    "UID:" +
-      escapeICS(
-        `${dateKey}-${summary}-${Math.random()}`
-      ),
+  let endDate =
+    makeDateTime(
+      dateKey,
+      end
+    );
 
-    "DTSTAMP:" +
-      utcNow(),
 
-    "DTSTART:" +
-      makeDateTime(
-        dateKey,
-        startTime
-      ),
+  if (
+    endDate <=
+    startDate
+  ) {
 
-    "DTEND:" +
-      makeDateTime(
-        dateKey,
-        endTime
-      ),
+    endDate =
+      new Date(
+        endDate
+      );
 
-    "SUMMARY:" +
-      escapeICS(
-        summary
-      ),
+    endDate.setDate(
+      endDate.getDate() +
+      1
+    );
 
-    "DESCRIPTION:" +
-      escapeICS(
-        description || ""
-      ),
+  }
 
-    "END:VEVENT"
 
-  ].join(
-    "\r\n"
-  );
+  let text =
+    "BEGIN:VEVENT\r\n";
+
+  text +=
+    `UID:${uid}\r\n`;
+
+  text +=
+    `DTSTAMP:${utcNow()}\r\n`;
+
+  text +=
+    `DTSTART:${formatUTC(
+      startDate
+    )}\r\n`;
+
+  text +=
+    `DTEND:${formatUTC(
+      endDate
+    )}\r\n`;
+
+  text +=
+    `SUMMARY:${escapeICS(
+      title
+    )}\r\n`;
+
+  text +=
+    `DESCRIPTION:${escapeICS(
+      getOtherStaffDescription(
+        staffName,
+        dateKey
+      )
+    )}\r\n`;
+
+  text +=
+    "END:VEVENT\r\n";
+
+
+  return text;
 
 }
 
 
-/* ==================================================
+/* =========================================================
    日時作成
-================================================== */
+========================================================= */
 
 function makeDateTime(
   dateKey,
@@ -8452,111 +7441,92 @@ function makeDateTime(
 ) {
 
   const [
-    hour,
-    minute
-  ] =
-    String(
-      time || "00:00"
-    )
-      .split(":")
-      .map(Number);
-
-
-  const [
-    year,
-    month,
-    day
+    y,
+    m,
+    d
   ] =
     dateKey
       .split("-")
       .map(Number);
 
-
-  const date =
-    new Date(
-      year,
-      month - 1,
-      day,
-      hour,
-      minute,
-      0
-    );
+  const [
+    hh,
+    mm
+  ] =
+    time
+      .split(":")
+      .map(Number);
 
 
-  return formatUTC(
-    date
+  return new Date(
+    y,
+    m - 1,
+    d,
+    hh,
+    mm,
+    0
   );
 
 }
 
 
-/* ==================================================
-   UTCフォーマット
-================================================== */
+/* =========================================================
+   UTC
+========================================================= */
 
 function formatUTC(
   date
 ) {
 
-  const y =
-    date.getUTCFullYear();
+  return (
+    date.getUTCFullYear() +
 
-
-  const m =
     String(
       date.getUTCMonth() + 1
     ).padStart(
       2,
       "0"
-    );
+    ) +
 
-
-  const d =
     String(
       date.getUTCDate()
     ).padStart(
       2,
       "0"
-    );
+    ) +
 
+    "T" +
 
-  const h =
     String(
       date.getUTCHours()
     ).padStart(
       2,
       "0"
-    );
+    ) +
 
-
-  const min =
     String(
       date.getUTCMinutes()
     ).padStart(
       2,
       "0"
-    );
+    ) +
 
-
-  const s =
     String(
       date.getUTCSeconds()
     ).padStart(
       2,
       "0"
-    );
+    ) +
 
-
-  return (
-    `${y}${m}${d}T${h}${min}${s}Z`
+    "Z"
   );
 
 }
 
 
-/* ==================================================
+/* =========================================================
    現在UTC
-================================================== */
+========================================================= */
 
 function utcNow() {
 
@@ -8567,18 +7537,18 @@ function utcNow() {
 }
 
 
-/* ==================================================
-   1日追加
-================================================== */
+/* =========================================================
+   翌日
+========================================================= */
 
 function addOneDay(
   dateKey
 ) {
 
   const [
-    year,
-    month,
-    day
+    y,
+    m,
+    d
   ] =
     dateKey
       .split("-")
@@ -8587,14 +7557,15 @@ function addOneDay(
 
   const date =
     new Date(
-      year,
-      month - 1,
-      day
+      y,
+      m - 1,
+      d
     );
 
 
   date.setDate(
-    date.getDate() + 1
+    date.getDate() +
+    1
   );
 
 
@@ -8607,14 +7578,19 @@ function addOneDay(
 }
 
 
-/* ==================================================
-   他職員の勤務説明
-================================================== */
+/* =========================================================
+   他職員勤務
+========================================================= */
 
 function getOtherStaffDescription(
-  staffName,
+  currentStaff,
   dateKey
 ) {
+
+  const currentName =
+    getStaffName(
+      currentStaff
+    );
 
   const lines =
     [];
@@ -8623,15 +7599,14 @@ function getOtherStaffDescription(
   appData.staff.forEach(
     staff => {
 
-      const name =
+      const staffName =
         getStaffName(
           staff
         );
 
-
       if (
-        name ===
-        staffName
+        staffName ===
+        currentName
       ) {
 
         return;
@@ -8641,15 +7616,24 @@ function getOtherStaffDescription(
 
       const shift =
         getDisplayShift(
-          name,
+          staffName,
           dateKey
         );
 
 
-      if (shift) {
+      if (
+        shift
+      ) {
+
+        const leave =
+          getStoredLeave(
+            staffName,
+            dateKey
+          );
+
 
         lines.push(
-          `${name}: ${shift}`
+          `${staffName}: ${shift}${leave ? ` (${leave})` : ""}`
         );
 
       }
@@ -8665,9 +7649,9 @@ function getOtherStaffDescription(
 }
 
 
-/* ==================================================
+/* =========================================================
    ICSエスケープ
-================================================== */
+========================================================= */
 
 function escapeICS(
   value
@@ -8694,17 +7678,3 @@ function escapeICS(
     );
 
 }
-
-
-/* ==================================================
-   初期化後に固定機能を有効化
-================================================== */
-
-setTimeout(
-  () => {
-
-    initScheduleFixedSystem();
-
-  },
-  0
-);
