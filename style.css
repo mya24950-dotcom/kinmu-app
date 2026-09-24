@@ -32,20 +32,11 @@ body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 
-  /*
-    画面全体を上下スクロール
-  */
   overflow-x: hidden;
   overflow-y: auto;
 
-  /*
-    基本は上下スクロール
-  */
   touch-action: pan-y;
 
-  /*
-    iPhoneの文字自動拡大防止
-  */
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
 }
@@ -62,10 +53,6 @@ body {
   width: 100%;
   min-height: 100vh;
 
-  /*
-    内側にスクロール領域を作らない
-    → 画面全体で上下スクロール
-  */
   overflow: visible;
 }
 
@@ -167,9 +154,6 @@ body {
 
   border-bottom: 1px solid rgba(60, 60, 67, 0.1);
 
-  /*
-    ナビだけ横スクロール
-  */
   overflow-x: auto;
   overflow-y: hidden;
 
@@ -232,10 +216,6 @@ body {
 
   padding: 14px;
 
-  /*
-    ページ内部をスクロールさせない
-    → bodyがスクロール
-  */
   overflow: visible;
 
   touch-action: pan-y;
@@ -328,12 +308,12 @@ body {
   width: 100%;
 
   /*
-    横方向はこの部分でスクロール
+    横方向はここでスクロール
   */
   overflow-x: auto;
 
   /*
-    縦方向はbodyへ
+    縦方向はbodyでスクロール
   */
   overflow-y: visible;
 
@@ -347,9 +327,6 @@ body {
     0 3px 12px rgba(0, 0, 0, 0.045),
     0 1px 3px rgba(0, 0, 0, 0.035);
 
-  /*
-    iPhoneで上下・左右両方を許可
-  */
   touch-action: pan-x pan-y;
 
   -webkit-overflow-scrolling: touch;
@@ -366,9 +343,6 @@ body {
 
   border-spacing: 0;
 
-  /*
-    表自体は横に広がる
-  */
   width: max-content;
 
   min-width: max-content;
@@ -403,6 +377,7 @@ body {
 
 /* =========================================================
    勤務表ヘッダー
+   ★ここを変更
    ========================================================= */
 
 #scheduleTable th {
@@ -420,7 +395,45 @@ body {
 }
 
 /* =========================================================
+   1段目
+   「職員」「1」「2」「3」……
+   
+   ★縦スクロールしても固定
+   ========================================================= */
+
+#scheduleTable thead tr:first-child th {
+  position: sticky;
+
+  top: 0;
+
+  z-index: 40;
+
+  background: #f8f8fa;
+}
+
+/* =========================================================
+   2段目
+   「合計」「累計」
+   
+   ★1段目の下に固定
+   ========================================================= */
+
+#scheduleTable thead tr:nth-child(2) th {
+  position: sticky;
+
+  /*
+    1段目の高さ分
+  */
+  top: 43px;
+
+  z-index: 35;
+
+  background: #f8f8fa;
+}
+
+/* =========================================================
    職員名列
+   左方向固定
    ========================================================= */
 
 #scheduleTable th:first-child,
@@ -435,11 +448,18 @@ body {
 }
 
 /* =========================================================
-   左上セル
+   左上「職員」
+   
+   上＋左の両方を固定
    ========================================================= */
 
 #scheduleTable thead th:first-child {
-  z-index: 30;
+  position: sticky;
+
+  top: 0;
+  left: 0;
+
+  z-index: 60;
 
   background: #f8f8fa;
 }
@@ -484,11 +504,6 @@ body {
 /* =========================================================
    土曜日
    ========================================================= */
-
-/*
-  JS側で saturday / sat / 土曜 などの
-  クラスを付けている場合に対応
-*/
 
 #scheduleTable .saturday,
 #scheduleTable .sat,
@@ -548,11 +563,6 @@ body {
    土日祝の職員名列
    ========================================================= */
 
-/*
-  職員名列は固定するため、
-  土日祝の色を維持
-*/
-
 #scheduleTable td:first-child.saturday {
   background: #eaf4ff;
 }
@@ -566,16 +576,7 @@ body {
    休暇色
    ========================================================= */
 
-/*
-  JS側でstyle.backgroundColorを設定している場合は
-  インラインスタイルを優先するため、
-  ここでは!importantを使わない
-*/
-
 #scheduleTable td[style*="background"] {
-  /*
-    休暇色を優先
-  */
 }
 
 /* =========================================================
@@ -637,9 +638,6 @@ body {
 input,
 select,
 textarea {
-  /*
-    iPhone Safariの自動ズーム防止
-  */
   font-size: 16px !important;
 
   font-family: inherit;
@@ -1428,10 +1426,6 @@ input[type="color"] {
 
     overflow-y: visible;
 
-    /*
-      勤務表上でも
-      上下・左右のジェスチャーを許可
-    */
     touch-action: pan-x pan-y;
 
     -webkit-overflow-scrolling: touch;
@@ -1460,6 +1454,23 @@ input[type="color"] {
     min-width: 90px;
 
     font-size: 14px;
+  }
+
+  /* -------------------------------------------------------
+     ★スマホでもヘッダー固定
+     ------------------------------------------------------- */
+
+  #scheduleTable thead tr:first-child th {
+    top: 0;
+  }
+
+  #scheduleTable thead tr:nth-child(2) th {
+    top: 43px;
+  }
+
+  #scheduleTable thead th:first-child {
+    top: 0;
+    left: 0;
   }
 
   /* -------------------------------------------------------
