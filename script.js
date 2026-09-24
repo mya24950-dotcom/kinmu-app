@@ -2509,6 +2509,10 @@ function renderLeaveLegend() {
    勤務表
 ================================================== */
 
+/* =========================================================
+   勤務表描画
+   ========================================================= */
+
 function renderSchedule() {
 
   const table =
@@ -2516,28 +2520,21 @@ function renderSchedule() {
       "scheduleTable"
     );
 
-
   const monthLabel =
     document.getElementById(
       "currentMonth"
     );
 
-
   if (!table) {
-
     return;
-
   }
 
 
   const year =
     currentDate.getFullYear();
 
-
   const month =
-    currentDate.getMonth() +
-    1;
-
+    currentDate.getMonth() + 1;
 
   const days =
     getDaysInMonth(
@@ -2554,15 +2551,17 @@ function renderSchedule() {
   }
 
 
+  /* ==================================================
+     列幅
+  ================================================== */
+
   const staffColumnWidth =
     90;
-
 
   const dateColumnWidth =
     window.innerWidth <= 600
       ? 48
       : 52;
-
 
   const totalColumnWidth =
     window.innerWidth <= 600
@@ -2574,17 +2573,17 @@ function renderSchedule() {
     getTotalShiftTypes();
 
 
-  let html =
-    "";
+  let html = "";
 
 
   /* ==================================================
      colgroup
   ================================================== */
 
-  html +=
-    "<colgroup>";
+  html += "<colgroup>";
 
+
+  /* 職員列 */
 
   html += `
     <col
@@ -2597,6 +2596,8 @@ function renderSchedule() {
     >
   `;
 
+
+  /* 日付列 */
 
   for (
     let day = 1;
@@ -2617,6 +2618,8 @@ function renderSchedule() {
 
   }
 
+
+  /* 合計・累計 */
 
   totalShiftTypes.forEach(
     () => {
@@ -2645,17 +2648,19 @@ function renderSchedule() {
   );
 
 
-  html +=
-    "</colgroup>";
+  html += "</colgroup>";
 
 
   /* ==================================================
      ヘッダー
   ================================================== */
 
-  html +=
-    "<thead><tr>";
+  html += "<thead><tr>";
 
+
+  /* ----------------------------------------------
+     職員ヘッダー
+  ---------------------------------------------- */
 
   html += `
     <th
@@ -2665,17 +2670,27 @@ function renderSchedule() {
         width:${staffColumnWidth}px;
         min-width:${staffColumnWidth}px;
         max-width:${staffColumnWidth}px;
+
         position:sticky;
         left:0;
-        z-index:200;
+
+        z-index:300;
+
         background:#f2f2f7;
+
         box-sizing:border-box;
+
+        border-right:1px solid #d1d1d6;
       "
     >
       職員
     </th>
   `;
 
+
+  /* ----------------------------------------------
+     日付
+  ---------------------------------------------- */
 
   for (
     let day = 1;
@@ -2740,6 +2755,7 @@ function renderSchedule() {
           width:${dateColumnWidth}px;
           min-width:${dateColumnWidth}px;
           max-width:${dateColumnWidth}px;
+
           box-sizing:border-box;
         "
       >
@@ -2790,8 +2806,7 @@ function renderSchedule() {
   );
 
 
-  html +=
-    "</tr><tr>";
+  html += "</tr><tr>";
 
 
   totalShiftTypes.forEach(
@@ -2804,6 +2819,7 @@ function renderSchedule() {
             width:${totalColumnWidth}px;
             min-width:${totalColumnWidth}px;
             max-width:${totalColumnWidth}px;
+
             box-sizing:border-box;
           "
         >
@@ -2816,6 +2832,7 @@ function renderSchedule() {
             width:${totalColumnWidth}px;
             min-width:${totalColumnWidth}px;
             max-width:${totalColumnWidth}px;
+
             box-sizing:border-box;
           "
         >
@@ -2827,8 +2844,7 @@ function renderSchedule() {
   );
 
 
-  html +=
-    "</tr></thead><tbody>";
+  html += "</tr></thead><tbody>";
 
 
   /* ==================================================
@@ -2854,6 +2870,10 @@ function renderSchedule() {
       `;
 
 
+      /* ----------------------------------------------
+         職員名
+      ---------------------------------------------- */
+
       html += `
         <th
           class="staff-cell staff-name-cell"
@@ -2864,11 +2884,16 @@ function renderSchedule() {
             width:${staffColumnWidth}px;
             min-width:${staffColumnWidth}px;
             max-width:${staffColumnWidth}px;
+
             position:sticky;
             left:0;
-            z-index:150;
+
+            z-index:200;
+
             background:#ffffff;
+
             box-sizing:border-box;
+
             border-right:1px solid #d1d1d6;
           "
         >
@@ -2958,13 +2983,6 @@ function renderSchedule() {
           );
 
 
-        /*
-          ★休暇があっても
-          勤務形態の文字は変更しない。
-
-          背景色だけ変更。
-        */
-
         const backgroundStyle =
           leaveColor
             ? `background:${escapeHtml(
@@ -2980,11 +2998,14 @@ function renderSchedule() {
               staffName
             )}"
             data-date="${dateKey}"
+
             style="
               width:${dateColumnWidth}px;
               min-width:${dateColumnWidth}px;
               max-width:${dateColumnWidth}px;
+
               box-sizing:border-box;
+
               ${backgroundStyle}
             "
           >
@@ -3029,6 +3050,7 @@ function renderSchedule() {
                 width:${totalColumnWidth}px;
                 min-width:${totalColumnWidth}px;
                 max-width:${totalColumnWidth}px;
+
                 box-sizing:border-box;
               "
             >
@@ -3041,6 +3063,7 @@ function renderSchedule() {
                 width:${totalColumnWidth}px;
                 min-width:${totalColumnWidth}px;
                 max-width:${totalColumnWidth}px;
+
                 box-sizing:border-box;
               "
             >
@@ -3052,24 +3075,24 @@ function renderSchedule() {
       );
 
 
-      html +=
-        "</tr>";
+      html += "</tr>";
 
     }
   );
 
 
-  html +=
-    "</tbody>";
+  html += "</tbody>";
 
+
+  /* ==================================================
+     テーブル設定
+  ================================================== */
 
   table.style.borderCollapse =
     "separate";
 
-
   table.style.borderSpacing =
     "0";
-
 
   table.style.tableLayout =
     "fixed";
@@ -3088,34 +3111,39 @@ function renderSchedule() {
     requiredTableWidth +
     "px";
 
-
   table.style.minWidth =
     requiredTableWidth +
     "px";
-
 
   table.style.maxWidth =
     "none";
 
 
+  /* HTML反映 */
+
   table.innerHTML =
     html;
 
+
+  /* イベント */
 
   bindScheduleCells();
 
   bindStaffNameCells();
 
 
-  /*
-    ★勤務表の下に休暇一覧を表示
-  */
+  /* 休暇一覧 */
 
   renderLeaveLegend();
 
-　updateScheduleFixedHeader();
+
+  /* 固定ヘッダー更新 */
+
+  updateScheduleFixedHeader();
 
 }
+
+
 
 /* =========================================================
    勤務表ヘッダー固定
@@ -3125,9 +3153,10 @@ let scheduleFixedHeader = null;
 let scheduleFixedHeaderTable = null;
 
 
-/* ---------------------------------------------------------
-   固定ヘッダーを作成
-   --------------------------------------------------------- */
+
+/* =========================================================
+   固定ヘッダー作成
+   ========================================================= */
 
 function createScheduleFixedHeader() {
 
@@ -3135,6 +3164,7 @@ function createScheduleFixedHeader() {
     document.getElementById(
       "scheduleTable"
     );
+
 
   if (!table) {
     return;
@@ -3146,6 +3176,7 @@ function createScheduleFixedHeader() {
       "thead"
     );
 
+
   if (!thead) {
     return;
   }
@@ -3156,14 +3187,13 @@ function createScheduleFixedHeader() {
       ".table-wrapper"
     );
 
+
   if (!wrapper) {
     return;
   }
 
 
-  /*
-    すでに存在している場合は削除
-  */
+  /* 既存削除 */
 
   if (scheduleFixedHeader) {
 
@@ -3178,9 +3208,9 @@ function createScheduleFixedHeader() {
   }
 
 
-  /*
-    固定用の外枠
-  */
+  /* ==================================================
+     固定ヘッダー外枠
+  ================================================== */
 
   const fixed =
     document.createElement(
@@ -3220,9 +3250,9 @@ function createScheduleFixedHeader() {
     "border-box";
 
 
-  /*
-    固定用テーブル
-  */
+  /* ==================================================
+     固定ヘッダーテーブル
+  ================================================== */
 
   const fixedTable =
     document.createElement(
@@ -3249,9 +3279,7 @@ function createScheduleFixedHeader() {
     "relative";
 
 
-  /*
-    元のcolgroupをコピー
-  */
+  /* colgroup */
 
   const colgroup =
     table.querySelector(
@@ -3270,9 +3298,7 @@ function createScheduleFixedHeader() {
   }
 
 
-  /*
-    ヘッダーをコピー
-  */
+  /* thead */
 
   const fixedThead =
     thead.cloneNode(
@@ -3307,9 +3333,10 @@ function createScheduleFixedHeader() {
 }
 
 
-/* ---------------------------------------------------------
-   固定ヘッダーのサイズを元表に合わせる
-   --------------------------------------------------------- */
+
+/* =========================================================
+   固定ヘッダーサイズ同期
+   ========================================================= */
 
 function syncScheduleFixedHeader() {
 
@@ -3332,9 +3359,9 @@ function syncScheduleFixedHeader() {
   }
 
 
-  /*
-    テーブル全体の幅
-  */
+  /* ==================================================
+     テーブル幅
+  ================================================== */
 
   const tableRect =
     table.getBoundingClientRect();
@@ -3354,9 +3381,9 @@ function syncScheduleFixedHeader() {
     tableWidth + "px";
 
 
-  /*
-    colgroupの幅を同期
-  */
+  /* ==================================================
+     colgroup同期
+  ================================================== */
 
   const originalCols =
     table.querySelectorAll(
@@ -3390,9 +3417,7 @@ function syncScheduleFixedHeader() {
         .width;
 
 
-    if (
-      width > 0
-    ) {
+    if (width > 0) {
 
       fixedCols[i].style.width =
         width + "px";
@@ -3408,9 +3433,9 @@ function syncScheduleFixedHeader() {
   }
 
 
-  /*
-    THのサイズを同期
-  */
+  /* ==================================================
+     TH同期
+  ================================================== */
 
   const originalRows =
     table.querySelectorAll(
@@ -3449,6 +3474,11 @@ function syncScheduleFixedHeader() {
         );
 
 
+    /*
+      colspan / rowspan を考慮して
+      実際のセル順序で同期
+    */
+
     for (
       let col = 0;
       col <
@@ -3472,6 +3502,8 @@ function syncScheduleFixedHeader() {
           .getBoundingClientRect();
 
 
+      /* 幅 */
+
       if (
         rect.width > 0
       ) {
@@ -3488,6 +3520,8 @@ function syncScheduleFixedHeader() {
       }
 
 
+      /* 高さ */
+
       if (
         rect.height > 0
       ) {
@@ -3498,9 +3532,9 @@ function syncScheduleFixedHeader() {
       }
 
 
-      /*
-        元セルの見た目をコピー
-      */
+      /* ==================================================
+         見た目コピー
+      ================================================== */
 
       const style =
         window.getComputedStyle(
@@ -3557,9 +3591,9 @@ function syncScheduleFixedHeader() {
         style.whiteSpace;
 
 
-      /*
-        コピー側ではstickyを無効
-      */
+      /* ==================================================
+         固定ヘッダー側
+      ================================================== */
 
       fixedCell.style.position =
         "static";
@@ -3567,17 +3601,44 @@ function syncScheduleFixedHeader() {
       fixedCell.style.top =
         "auto";
 
-      fixedCell.style.left =
+      fixedCell.style.bottom =
         "auto";
 
       fixedCell.style.right =
         "auto";
 
-      fixedCell.style.bottom =
-        "auto";
 
-      fixedCell.style.zIndex =
-        "1";
+      /*
+        職員ヘッダーは最前面
+      */
+
+      if (
+        fixedCell.classList.contains(
+          "staff-header"
+        )
+      ) {
+
+        fixedCell.style.position =
+          "sticky";
+
+        fixedCell.style.left =
+          "0px";
+
+        fixedCell.style.zIndex =
+          "300";
+
+        fixedCell.style.background =
+          style.background;
+
+      } else {
+
+        fixedCell.style.left =
+          "auto";
+
+        fixedCell.style.zIndex =
+          "1";
+
+      }
 
     }
 
@@ -3586,9 +3647,10 @@ function syncScheduleFixedHeader() {
 }
 
 
-/* ---------------------------------------------------------
-   固定ヘッダーの表示状態を更新
-   --------------------------------------------------------- */
+
+/* =========================================================
+   固定ヘッダー表示状態更新
+   ========================================================= */
 
 function updateScheduleFixedHeader() {
 
@@ -3630,15 +3692,13 @@ function updateScheduleFixedHeader() {
     !thead ||
     !wrapper
   ) {
-
     return;
-
   }
 
 
-  /*
-    固定ヘッダーがまだない場合
-  */
+  /* ==================================================
+     固定ヘッダーがない場合
+  ================================================== */
 
   if (
     !scheduleFixedHeader
@@ -3652,15 +3712,13 @@ function updateScheduleFixedHeader() {
   if (
     !scheduleFixedHeader
   ) {
-
     return;
-
   }
 
 
-  /*
-    アプリ上部ヘッダーの高さ
-  */
+  /* ==================================================
+     アプリ上部ヘッダー
+  ================================================== */
 
   const appHeader =
     document.querySelector(
@@ -3687,9 +3745,9 @@ function updateScheduleFixedHeader() {
   }
 
 
-  /*
-    勤務表とヘッダーの位置
-  */
+  /* ==================================================
+     位置取得
+  ================================================== */
 
   const tableRect =
     table.getBoundingClientRect();
@@ -3719,9 +3777,9 @@ function updateScheduleFixedHeader() {
   }
 
 
-  /*
-    勤務表がまだ画面上部まで来ていない
-  */
+  /* ==================================================
+     勤務表がまだ上に到達していない
+  ================================================== */
 
   if (
     tableRect.top >=
@@ -3736,9 +3794,9 @@ function updateScheduleFixedHeader() {
   }
 
 
-  /*
-    勤務表の下端を越えた
-  */
+  /* ==================================================
+     勤務表下端
+  ================================================== */
 
   if (
     tableRect.bottom <=
@@ -3754,9 +3812,9 @@ function updateScheduleFixedHeader() {
   }
 
 
-  /*
-    固定表示
-  */
+  /* ==================================================
+     固定表示
+  ================================================== */
 
   scheduleFixedHeader.style.display =
     "block";
@@ -3778,8 +3836,17 @@ function updateScheduleFixedHeader() {
     headerHeight + "px";
 
 
+  /* ==================================================
+     横スクロール同期
+  ================================================== */
+
   /*
-    横スクロールを同期
+    固定ヘッダー全体を
+    横方向へ移動させる。
+
+    ただし職員列は
+    sticky + left:0 により
+    左端に残る。
   */
 
   scheduleFixedHeaderTable.style.transform =
@@ -3790,17 +3857,16 @@ function updateScheduleFixedHeader() {
     "px, 0, 0)";
 
 
-  /*
-    念のためサイズを同期
-  */
+  /* サイズ同期 */
 
   syncScheduleFixedHeader();
 
 }
 
 
+
 /* =========================================================
-   スクロール・画面サイズ変更
+   スクロール
    ========================================================= */
 
 window.addEventListener(
@@ -3811,6 +3877,11 @@ window.addEventListener(
   }
 );
 
+
+
+/* =========================================================
+   リサイズ
+   ========================================================= */
 
 window.addEventListener(
   "resize",
@@ -3840,8 +3911,9 @@ window.addEventListener(
 );
 
 
+
 /* =========================================================
-   勤務表の横スクロール
+   勤務表横スクロール
    ========================================================= */
 
 document.addEventListener(
@@ -3849,6 +3921,7 @@ document.addEventListener(
   event => {
 
     const wrapper =
+      event.target &&
       event.target.closest
         ? event.target.closest(
             ".table-wrapper"
@@ -3871,6 +3944,63 @@ document.addEventListener(
     capture: true
   }
 );
+
+
+
+/* =========================================================
+   勤務表のCSS補強
+   ========================================================= */
+
+/*
+  横スクロールはwrapperで行う。
+
+  縦スクロールはページ側で行うため、
+  overflow-y は visible。
+*/
+
+const scheduleWrapperStyle =
+  document.createElement(
+    "style"
+  );
+
+scheduleWrapperStyle.textContent = `
+
+  .table-wrapper {
+    position: relative;
+    overflow-x: auto;
+    overflow-y: visible;
+  }
+
+  #scheduleTable .staff-header {
+    position: sticky !important;
+    left: 0 !important;
+    z-index: 300 !important;
+  }
+
+  #scheduleTable .staff-name-cell {
+    position: sticky !important;
+    left: 0 !important;
+    z-index: 200 !important;
+    background: #ffffff !important;
+  }
+
+  #scheduleTable .staff-header,
+  #scheduleTable .staff-name-cell {
+    box-sizing: border-box;
+  }
+
+  #scheduleFixedHeader .staff-header {
+    position: sticky !important;
+    left: 0 !important;
+    z-index: 300 !important;
+  }
+
+`;
+
+document.head.appendChild(
+  scheduleWrapperStyle
+);
+
 
 /* ==================================================
    勤務セル
