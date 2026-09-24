@@ -2667,7 +2667,7 @@ function renderSchedule() {
         max-width:${staffColumnWidth}px;
         position:sticky;
         left:0;
-        z-index:100;
+        z-index:200;
         background:#f2f2f7;
         box-sizing:border-box;
       "
@@ -2866,7 +2866,7 @@ function renderSchedule() {
             max-width:${staffColumnWidth}px;
             position:sticky;
             left:0;
-            z-index:90;
+            z-index:150;
             background:#ffffff;
             box-sizing:border-box;
             border-right:1px solid #d1d1d6;
