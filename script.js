@@ -193,13 +193,24 @@ async function init() {
        Supabase接続
     ================================================== */
 
-    supabaseClient =
-      window.supabase.createClient(
-        SUPABASE_URL,
-        SUPABASE_KEY
-      );
+    alert("① init開始");
 
-     alert("② Supabase初期化完了");
+try {
+
+  // Supabaseライブラリ確認
+  if (...) {
+    throw new Error(...);
+  }
+
+  // ↓ここ
+  supabaseClient =
+    window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_KEY
+    );
+
+  // ↓ここが出ない
+  alert("② Supabase初期化完了");
 
 
     /* ==================================================
