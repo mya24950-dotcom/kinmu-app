@@ -6068,7 +6068,10 @@ async function saveWorkShift(
               shiftName,
 
             leave_type:
-              null
+              null,
+
+             organization_id:
+        currentOrganization.id
 
           });
 
