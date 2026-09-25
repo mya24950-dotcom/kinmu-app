@@ -355,12 +355,29 @@ async function logout() {
 
   try {
 
+    console.log("★ ログアウト開始");
+
     const { error } =
       await supabaseClient.auth.signOut();
 
     if (error) {
-      throw error;
+
+      console.error(
+        "★ Supabaseログアウトエラー",
+        error
+      );
+
+      alert(
+        "ログアウトに失敗しました。\n\n" +
+        "エラー：" +
+        error.message
+      );
+
+      return;
+
     }
+
+    console.log("★ ログアウト成功");
 
     currentOrganization = null;
 
@@ -368,18 +385,19 @@ async function logout() {
       "ログアウトしました。"
     );
 
-    // ログアウト後もGoogleログインボタンを使えるようにする
     setupGoogleLogin();
 
   } catch (error) {
 
     console.error(
-      "ログアウトエラー",
+      "★ ログアウト処理エラー",
       error
     );
 
     alert(
-      "ログアウトに失敗しました。"
+      "ログアウトに失敗しました。\n\n" +
+      "エラー：" +
+      error.message
     );
 
   }
