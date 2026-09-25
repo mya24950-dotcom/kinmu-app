@@ -4007,7 +4007,7 @@ function syncScheduleFixedLayers() {
         ) {
 
           fixedCell.style.visibility =
-            "hidden";
+            "visible";
 
         }
 
