@@ -127,11 +127,6 @@ let scheduleFixedHeader =
 let scheduleFixedHeaderTable =
   null;
 
-let scheduleFixedStaffColumn =
-  null;
-
-let scheduleFixedStaffTable =
-  null;
 
 
 /* ==================================================
@@ -4002,16 +3997,6 @@ function hideScheduleFixedLayers() {
 
   }
 
-
-  if (
-    scheduleFixedStaffColumn
-  ) {
-
-    scheduleFixedStaffColumn.style.display =
-      "none";
-
-  }
-
 }
 
 
@@ -4071,9 +4056,9 @@ window.addEventListener(
 );
 
 
-/* ==================================================
+/* =========================================================
    固定レイヤー用CSS
-================================================== */
+========================================================= */
 
 if (
   !document.getElementById(
@@ -4099,6 +4084,12 @@ if (
       overflow-y: visible;
     }
 
+
+    /* ---------------------------------------------
+       職員ヘッダー
+       横方向に固定
+       --------------------------------------------- */
+
     #scheduleTable .staff-header {
       position: sticky !important;
       left: 0 !important;
@@ -4106,6 +4097,13 @@ if (
       background: #f2f2f7 !important;
       box-sizing: border-box;
     }
+
+
+    /* ---------------------------------------------
+       職員名
+       横方向だけ固定
+       縦方向には固定しない
+       --------------------------------------------- */
 
     #scheduleTable .staff-name-cell {
       position: sticky !important;
@@ -4115,31 +4113,21 @@ if (
       box-sizing: border-box;
     }
 
+
+    /* ---------------------------------------------
+       画面上部に固定するヘッダー
+       --------------------------------------------- */
+
     #scheduleFixedHeader {
       box-sizing: border-box;
       overflow: hidden;
     }
 
+
     #scheduleFixedHeader table {
       border-collapse: separate;
       border-spacing: 0;
       table-layout: fixed;
-    }
-
-    #scheduleFixedStaffColumn {
-      box-sizing: border-box;
-      overflow: hidden;
-    }
-
-    #scheduleFixedStaffColumn table {
-      border-collapse: separate;
-      border-spacing: 0;
-      table-layout: fixed;
-    }
-
-    #scheduleFixedStaffColumn .staff-header,
-    #scheduleFixedStaffColumn .staff-name-cell {
-      box-sizing: border-box;
     }
 
   `;
@@ -4150,7 +4138,6 @@ if (
   );
 
 }
-
 
 /* ==================================================
    勤務セル
