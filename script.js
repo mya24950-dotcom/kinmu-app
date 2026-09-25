@@ -7464,10 +7464,7 @@ async function addOrUpdateShift() {
               start || null,
 
             end_time:
-              end || null,
-
-            break_time:
-              breakTime || null,
+              end || null
 
           })
           .eq(
