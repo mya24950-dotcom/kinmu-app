@@ -7467,7 +7467,7 @@ async function addOrUpdateShift() {
               end || null,
 
             break_time:
-              breakTime || null
+              breakTime || null,
 
           })
           .eq(
@@ -8488,8 +8488,7 @@ async function addCompanyHoliday() {
             end_date:
               end
 
-             organization_id:
-  currentOrganization.id
+             
 
           })
           .eq(
@@ -8524,6 +8523,9 @@ async function addCompanyHoliday() {
 
             end_date:
               end
+
+             organization_id:
+  currentOrganization.id
 
           });
 
