@@ -8522,7 +8522,7 @@ async function addCompanyHoliday() {
               start,
 
             end_date:
-              end
+              end,
 
              organization_id:
   currentOrganization.id
