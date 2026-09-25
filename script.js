@@ -4499,66 +4499,12 @@ function updateScheduleFixedLayers() {
     "px, 0, 0)";
 
 
-  scheduleFixedStaffColumn.style.display =
-    "block";
-
-
-  scheduleFixedStaffColumn.style.left =
-    wrapperRect.left +
-    "px";
-
-
-  scheduleFixedStaffColumn.style.top =
-    topOffset +
-    "px";
-
-
-  const originalStaffHeader =
-    table.querySelector(
-      "thead .staff-header"
-    );
-
-
-  let staffWidth =
-    0;
-
-
-  if (
-    originalStaffHeader
-  ) {
-
-    staffWidth =
-      originalStaffHeader
-        .getBoundingClientRect()
-        .width;
-
-  }
-
-
-  scheduleFixedStaffColumn.style.width =
-    staffWidth +
-    "px";
-
-
-  const remainingHeight =
-    Math.max(
-      0,
-      Math.min(
-        window.innerHeight -
-          topOffset,
-        tableRect.bottom -
-          topOffset
-      )
-    );
-
-
-  scheduleFixedStaffColumn.style.height =
-    remainingHeight +
-    "px";
-
-
-  scheduleFixedStaffTable.style.transform =
-    "translate3d(0, 0, 0)";
+ // 職員名列は縦方向には固定しない。
+// 元のscheduleTableのsticky(left:0)だけで
+// 横方向のみ固定させる。
+if (scheduleFixedStaffColumn) {
+  scheduleFixedStaffColumn.style.display = "none";
+}
 
 
   syncScheduleFixedLayers();
