@@ -3348,12 +3348,6 @@ function createScheduleFixedLayers() {
     );
 
 
-  const tbody =
-    table.querySelector(
-      "tbody"
-    );
-
-
   const wrapper =
     table.closest(
       ".table-wrapper"
@@ -3371,7 +3365,8 @@ function createScheduleFixedLayers() {
 
 
   /* ==================================================
-     既存削除
+     既存の固定ヘッダーだけ削除
+     ※固定職員列は使用しない
   ================================================== */
 
   if (
@@ -3389,23 +3384,9 @@ function createScheduleFixedLayers() {
   }
 
 
-  if (
-    scheduleFixedStaffColumn
-  ) {
-
-    scheduleFixedStaffColumn.remove();
-
-    scheduleFixedStaffColumn =
-      null;
-
-    scheduleFixedStaffTable =
-      null;
-
-  }
-
-
   /* ==================================================
      固定ヘッダー
+     「職員」＋日付ヘッダーを上部に固定
   ================================================== */
 
   const fixedHeader =
@@ -3484,6 +3465,10 @@ function createScheduleFixedLayers() {
     "relative";
 
 
+  /* ==================================================
+     元の列幅をそのまま使用
+  ================================================== */
+
   const originalColgroup =
     table.querySelector(
       "colgroup"
@@ -3500,6 +3485,10 @@ function createScheduleFixedLayers() {
 
   }
 
+
+  /* ==================================================
+     ヘッダーを複製
+  ================================================== */
 
   const fixedThead =
     thead.cloneNode(
@@ -3531,264 +3520,8 @@ function createScheduleFixedLayers() {
 
 
   /* ==================================================
-     固定職員列
+     固定レイヤー同期
   ================================================== */
-
-  const fixedStaff =
-    document.createElement(
-      "div"
-    );
-
-
-  fixedStaff.id =
-    "scheduleFixedStaffColumn";
-
-
-  fixedStaff.style.position =
-    "fixed";
-
-
-  fixedStaff.style.display =
-    "none";
-
-
-  fixedStaff.style.overflow =
-    "hidden";
-
-
-  fixedStaff.style.margin =
-    "0";
-
-
-  fixedStaff.style.padding =
-    "0";
-
-
-  fixedStaff.style.background =
-    "#ffffff";
-
-
-  fixedStaff.style.zIndex =
-    "1000";
-
-
-  fixedStaff.style.pointerEvents =
-    "none";
-
-
-  fixedStaff.style.boxSizing =
-    "border-box";
-
-
-  const fixedStaffTable =
-    document.createElement(
-      "table"
-    );
-
-
-  fixedStaffTable.style.borderCollapse =
-    "separate";
-
-
-  fixedStaffTable.style.borderSpacing =
-    "0";
-
-
-  fixedStaffTable.style.tableLayout =
-    "fixed";
-
-
-  fixedStaffTable.style.margin =
-    "0";
-
-
-  fixedStaffTable.style.padding =
-    "0";
-
-
-  fixedStaffTable.style.position =
-    "relative";
-
-
-  /* ==================================================
-     職員ヘッダー
-  ================================================== */
-
-  const fixedStaffThead =
-    document.createElement(
-      "thead"
-    );
-
-
-  const headerRows =
-    Array.from(
-      thead.querySelectorAll(
-        "tr"
-      )
-    );
-
-
-  headerRows.forEach(
-    (originalRow, rowIndex) => {
-
-      const newRow =
-        document.createElement(
-          "tr"
-        );
-
-
-      const staffCell =
-        originalRow.querySelector(
-          ".staff-header"
-        );
-
-
-      if (
-        rowIndex === 0 &&
-        staffCell
-      ) {
-
-        const cloned =
-          staffCell.cloneNode(
-            true
-          );
-
-
-        cloned.style.position =
-          "static";
-
-
-        cloned.style.left =
-          "auto";
-
-
-        cloned.style.top =
-          "auto";
-
-
-        cloned.style.zIndex =
-          "1";
-
-
-        newRow.appendChild(
-          cloned
-        );
-
-      }
-
-
-      fixedStaffThead.appendChild(
-        newRow
-      );
-
-    }
-  );
-
-
-  /* ==================================================
-     職員名
-  ================================================== */
-
-  const fixedStaffTbody =
-    document.createElement(
-      "tbody"
-    );
-
-
-  if (tbody) {
-
-    const staffRows =
-      tbody.querySelectorAll(
-        "tr"
-      );
-
-
-    staffRows.forEach(
-      originalRow => {
-
-        const staffCell =
-          originalRow.querySelector(
-            ".staff-name-cell"
-          );
-
-
-        if (!staffCell) {
-
-          return;
-
-        }
-
-
-        const newRow =
-          document.createElement(
-            "tr"
-          );
-
-
-        const cloned =
-          staffCell.cloneNode(
-            true
-          );
-
-
-        cloned.style.position =
-          "static";
-
-
-        cloned.style.left =
-          "auto";
-
-
-        cloned.style.top =
-          "auto";
-
-
-        cloned.style.zIndex =
-          "1";
-
-
-        newRow.appendChild(
-          cloned
-        );
-
-
-        fixedStaffTbody.appendChild(
-          newRow
-        );
-
-      }
-    );
-
-  }
-
-
-  fixedStaffTable.appendChild(
-    fixedStaffThead
-  );
-
-
-  fixedStaffTable.appendChild(
-    fixedStaffTbody
-  );
-
-
-  fixedStaff.appendChild(
-    fixedStaffTable
-  );
-
-
-  document.body.appendChild(
-    fixedStaff
-  );
-
-
-  scheduleFixedStaffColumn =
-    fixedStaff;
-
-
-  scheduleFixedStaffTable =
-    fixedStaffTable;
-
 
   syncScheduleFixedLayers();
 
@@ -3816,7 +3549,7 @@ function syncScheduleFixedLayers() {
 
   /* ==================================================
      固定ヘッダー
-  ================================================== */
+     ================================================== */
 
   if (
     scheduleFixedHeaderTable
@@ -3840,6 +3573,10 @@ function syncScheduleFixedLayers() {
       tableRect.width +
       "px";
 
+
+    /* ----------------------------------------------
+       列幅を元テーブルと同期
+       ---------------------------------------------- */
 
     const originalCols =
       table.querySelectorAll(
@@ -3890,6 +3627,10 @@ function syncScheduleFixedLayers() {
       }
     );
 
+
+    /* ----------------------------------------------
+       ヘッダーセルを元テーブルと同期
+       ---------------------------------------------- */
 
     const originalCells =
       table.querySelectorAll(
@@ -4000,6 +3741,10 @@ function syncScheduleFixedLayers() {
           style.verticalAlign;
 
 
+        /* ------------------------------------------
+           「職員」ヘッダーは表示する
+           ------------------------------------------ */
+
         if (
           fixedCell.classList.contains(
             "staff-header"
@@ -4007,317 +3752,25 @@ function syncScheduleFixedLayers() {
         ) {
 
           fixedCell.style.visibility =
-            "hidden";
+            "visible";
+
+
+          fixedCell.style.position =
+            "sticky";
+
+
+          fixedCell.style.left =
+            "0px";
+
+
+          fixedCell.style.zIndex =
+            "1000";
+
+
+          fixedCell.style.background =
+            style.background;
 
         }
-
-      }
-    );
-
-  }
-
-
-  /* ==================================================
-     固定職員列
-  ================================================== */
-
-  if (
-    scheduleFixedStaffTable
-  ) {
-
-    const originalStaffHeader =
-      table.querySelector(
-        "thead .staff-header"
-      );
-
-
-    const originalStaffCells =
-      table.querySelectorAll(
-        "tbody .staff-name-cell"
-      );
-
-
-    let staffWidth =
-      0;
-
-
-    if (
-      originalStaffHeader
-    ) {
-
-      staffWidth =
-        originalStaffHeader
-          .getBoundingClientRect()
-          .width;
-
-    } else if (
-      originalStaffCells.length > 0
-    ) {
-
-      staffWidth =
-        originalStaffCells[0]
-          .getBoundingClientRect()
-          .width;
-
-    }
-
-
-    scheduleFixedStaffTable.style.width =
-      staffWidth +
-      "px";
-
-
-    scheduleFixedStaffTable.style.minWidth =
-      staffWidth +
-      "px";
-
-
-    scheduleFixedStaffTable.style.maxWidth =
-      staffWidth +
-      "px";
-
-
-    const fixedStaffHeader =
-      scheduleFixedStaffTable.querySelector(
-        "thead .staff-header"
-      );
-
-
-    if (
-      fixedStaffHeader &&
-      originalStaffHeader
-    ) {
-
-      const originalRect =
-        originalStaffHeader
-          .getBoundingClientRect();
-
-
-      const originalStyle =
-        window.getComputedStyle(
-          originalStaffHeader
-        );
-
-
-      fixedStaffHeader.style.width =
-        originalRect.width +
-        "px";
-
-
-      fixedStaffHeader.style.minWidth =
-        originalRect.width +
-        "px";
-
-
-      fixedStaffHeader.style.maxWidth =
-        originalRect.width +
-        "px";
-
-
-      fixedStaffHeader.style.height =
-        originalRect.height +
-        "px";
-
-
-      fixedStaffHeader.style.boxSizing =
-        "border-box";
-
-
-      fixedStaffHeader.style.padding =
-        originalStyle.padding;
-
-
-      fixedStaffHeader.style.borderTop =
-        originalStyle.borderTop;
-
-
-      fixedStaffHeader.style.borderRight =
-        originalStyle.borderRight;
-
-
-      fixedStaffHeader.style.borderBottom =
-        originalStyle.borderBottom;
-
-
-      fixedStaffHeader.style.borderLeft =
-        originalStyle.borderLeft;
-
-
-      fixedStaffHeader.style.background =
-        originalStyle.background;
-
-
-      fixedStaffHeader.style.font =
-        originalStyle.font;
-
-
-      fixedStaffHeader.style.fontSize =
-        originalStyle.fontSize;
-
-
-      fixedStaffHeader.style.fontWeight =
-        originalStyle.fontWeight;
-
-
-      fixedStaffHeader.style.color =
-        originalStyle.color;
-
-
-      fixedStaffHeader.style.textAlign =
-        originalStyle.textAlign;
-
-
-      fixedStaffHeader.style.verticalAlign =
-        originalStyle.verticalAlign;
-
-
-      fixedStaffHeader.style.visibility =
-        "visible";
-
-    }
-
-
-    const fixedStaffCells =
-      scheduleFixedStaffTable.querySelectorAll(
-        "tbody .staff-name-cell"
-      );
-
-
-    originalStaffCells.forEach(
-      (originalCell, index) => {
-
-        const fixedCell =
-          fixedStaffCells[index];
-
-
-        if (!fixedCell) {
-
-          return;
-
-        }
-
-
-        const rect =
-          originalCell
-            .getBoundingClientRect();
-
-
-        const style =
-          window.getComputedStyle(
-            originalCell
-          );
-
-
-        fixedCell.style.width =
-          staffWidth +
-          "px";
-
-
-        fixedCell.style.minWidth =
-          staffWidth +
-          "px";
-
-
-        fixedCell.style.maxWidth =
-          staffWidth +
-          "px";
-
-
-        fixedCell.style.height =
-          rect.height +
-          "px";
-
-
-        fixedCell.style.boxSizing =
-          "border-box";
-
-
-        fixedCell.style.padding =
-          style.padding;
-
-
-        fixedCell.style.borderTop =
-          style.borderTop;
-
-
-        fixedCell.style.borderRight =
-          style.borderRight;
-
-
-        fixedCell.style.borderBottom =
-          style.borderBottom;
-
-
-        fixedCell.style.borderLeft =
-          style.borderLeft;
-
-
-        fixedCell.style.background =
-          style.background;
-
-
-        fixedCell.style.font =
-          style.font;
-
-
-        fixedCell.style.fontSize =
-          style.fontSize;
-
-
-        fixedCell.style.fontWeight =
-          style.fontWeight;
-
-
-        fixedCell.style.color =
-          style.color;
-
-
-        fixedCell.style.textAlign =
-          style.textAlign;
-
-
-        fixedCell.style.verticalAlign =
-          style.verticalAlign;
-
-      }
-    );
-
-
-    const originalRows =
-      table.querySelectorAll(
-        "tbody tr"
-      );
-
-
-    const fixedRows =
-      scheduleFixedStaffTable.querySelectorAll(
-        "tbody tr"
-      );
-
-
-    originalRows.forEach(
-      (originalRow, index) => {
-
-        const fixedRow =
-          fixedRows[index];
-
-
-        if (!fixedRow) {
-
-          return;
-
-        }
-
-
-        const height =
-          originalRow
-            .getBoundingClientRect()
-            .height;
-
-
-        fixedRow.style.height =
-          height +
-          "px";
 
       }
     );
@@ -4372,9 +3825,12 @@ function updateScheduleFixedLayers() {
   }
 
 
+  /* ==================================================
+     固定ヘッダーが存在しなければ作成
+     ================================================== */
+
   if (
-    !scheduleFixedHeader ||
-    !scheduleFixedStaffColumn
+    !scheduleFixedHeader
   ) {
 
     createScheduleFixedLayers();
@@ -4383,14 +3839,17 @@ function updateScheduleFixedLayers() {
 
 
   if (
-    !scheduleFixedHeader ||
-    !scheduleFixedStaffColumn
+    !scheduleFixedHeader
   ) {
 
     return;
 
   }
 
+
+  /* ==================================================
+     アプリ上部ヘッダーの高さ
+     ================================================== */
 
   const appHeader =
     document.querySelector(
@@ -4416,6 +3875,10 @@ function updateScheduleFixedLayers() {
 
   }
 
+
+  /* ==================================================
+     元の勤務表の位置
+     ================================================== */
 
   const tableRect =
     table.getBoundingClientRect();
@@ -4444,6 +3907,10 @@ function updateScheduleFixedLayers() {
   }
 
 
+  /* ==================================================
+     勤務表がまだ上部に到達していない
+     ================================================== */
+
   if (
     tableRect.top >=
     topOffset
@@ -4455,6 +3922,10 @@ function updateScheduleFixedLayers() {
 
   }
 
+
+  /* ==================================================
+     勤務表の下端までスクロールした
+     ================================================== */
 
   if (
     tableRect.bottom <=
@@ -4468,6 +3939,10 @@ function updateScheduleFixedLayers() {
 
   }
 
+
+  /* ==================================================
+     固定ヘッダー表示
+     ================================================== */
 
   scheduleFixedHeader.style.display =
     "block";
@@ -4493,73 +3968,19 @@ function updateScheduleFixedLayers() {
     "px";
 
 
+  /* ==================================================
+     横スクロール位置を同期
+     ================================================== */
+
   scheduleFixedHeaderTable.style.transform =
     "translate3d(" +
     (-wrapper.scrollLeft) +
     "px, 0, 0)";
 
 
-  scheduleFixedStaffColumn.style.display =
-    "block";
-
-
-  scheduleFixedStaffColumn.style.left =
-    wrapperRect.left +
-    "px";
-
-
-  scheduleFixedStaffColumn.style.top =
-    topOffset +
-    "px";
-
-
-  const originalStaffHeader =
-    table.querySelector(
-      "thead .staff-header"
-    );
-
-
-  let staffWidth =
-    0;
-
-
-  if (
-    originalStaffHeader
-  ) {
-
-    staffWidth =
-      originalStaffHeader
-        .getBoundingClientRect()
-        .width;
-
-  }
-
-
-  scheduleFixedStaffColumn.style.width =
-    staffWidth +
-    "px";
-
-
-  const remainingHeight =
-    Math.max(
-      0,
-      Math.min(
-        window.innerHeight -
-          topOffset,
-        tableRect.bottom -
-          topOffset
-      )
-    );
-
-
-  scheduleFixedStaffColumn.style.height =
-    remainingHeight +
-    "px";
-
-
-  scheduleFixedStaffTable.style.transform =
-    "translate3d(0, 0, 0)";
-
+  /* ==================================================
+     ヘッダーのサイズ・スタイルを同期
+     ================================================== */
 
   syncScheduleFixedLayers();
 
