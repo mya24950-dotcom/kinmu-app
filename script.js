@@ -151,16 +151,6 @@ document.addEventListener(
 );
 
 
-/* ==================================================
-   初期化
-================================================== */
-
-document.addEventListener(
-  "DOMContentLoaded",
-  init
-);
-
-
 async function init() {
 
   try {
@@ -191,21 +181,11 @@ async function init() {
        Supabase接続
     ================================================== */
 
-    
-
-try {
-
-  // Supabaseライブラリ確認
-  if (...) {
-    throw new Error(...);
-  }
-
-  // ↓ここ
-  supabaseClient =
-    window.supabase.createClient(
-      SUPABASE_URL,
-      SUPABASE_KEY
-    );
+    supabaseClient =
+      window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+      );
 
 
     /* ==================================================
@@ -220,11 +200,6 @@ try {
     } =
       await supabaseClient.auth.getSession();
 
-     alert(
-  "② getSession完了\n" +
-  "session: " + (session ? "あり" : "なし") +
-  "\nerror: " + (error?.message || "なし")
-);
 
     if (error) {
 
@@ -356,10 +331,18 @@ try {
     );
 
 
-} catch (error) {
-  console.error("★ 初期化エラー", error);
-  showLoginPage("アプリの初期化に失敗しました。");
-}
+  } catch (error) {
+
+    console.error(
+      "★ 初期化エラー",
+      error
+    );
+
+    showLoginPage(
+      "アプリの初期化に失敗しました。"
+    );
+
+  }
 
 }
 
