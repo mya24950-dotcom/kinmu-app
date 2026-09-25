@@ -41,9 +41,132 @@
 
 </head>
 
+
 <body>
 
-<div class="app">
+
+<!-- =====================================================
+     Googleログイン画面
+====================================================== -->
+
+<div
+  id="loginPage"
+  style="
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+    box-sizing:border-box;
+    background:#f2f2f7;
+  "
+>
+
+  <div
+    style="
+      width:100%;
+      max-width:420px;
+      background:#ffffff;
+      border-radius:20px;
+      padding:32px 24px;
+      box-sizing:border-box;
+      text-align:center;
+      box-shadow:0 4px 20px rgba(0,0,0,0.08);
+    "
+  >
+
+    <div
+      style="
+        font-size:48px;
+        margin-bottom:12px;
+      "
+    >
+      🗓️
+    </div>
+
+
+    <h1
+      style="
+        margin:0 0 10px;
+        font-size:28px;
+      "
+    >
+      勤務表
+    </h1>
+
+
+    <p
+      style="
+        margin:0 0 28px;
+        color:#666;
+        line-height:1.7;
+      "
+    >
+      勤務表を利用するには<br>
+      Googleでログインしてください。
+    </p>
+
+
+    <button
+      type="button"
+      id="googleLoginButton"
+      style="
+        width:100%;
+        min-height:52px;
+        border:1px solid #d1d1d6;
+        border-radius:12px;
+        background:#ffffff;
+        color:#222;
+        font-size:16px;
+        font-weight:600;
+        cursor:pointer;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        gap:10px;
+        box-sizing:border-box;
+      "
+    >
+
+      <span
+        style="
+          font-size:20px;
+          font-weight:700;
+        "
+      >
+        G
+      </span>
+
+      Googleでログイン
+
+    </button>
+
+
+    <p
+      id="loginMessage"
+      style="
+        margin:16px 0 0;
+        min-height:24px;
+        color:#666;
+        font-size:14px;
+      "
+    ></p>
+
+  </div>
+
+</div>
+
+
+
+<!-- =====================================================
+     勤務表アプリ本体
+====================================================== -->
+
+<div
+  class="app"
+  id="app"
+  style="display:none;"
+>
 
 
   <!-- ==============================
@@ -636,9 +759,17 @@
 
 
 
+<!-- =====================================================
+     JavaScript
+====================================================== -->
+
 <script src="script.js"></script>
 
 
+
+<!-- =====================================================
+     Service Worker
+====================================================== -->
 
 <script>
 
