@@ -212,6 +212,11 @@ async function init() {
     } =
       await supabaseClient.auth.getSession();
 
+     alert(
+  "② getSession完了\n" +
+  "session: " + (session ? "あり" : "なし") +
+  "\nerror: " + (error?.message || "なし")
+);
 
     if (error) {
 
