@@ -341,19 +341,21 @@ async function init() {
     );
 
 
-  } catch (error) {
+ } catch (error) {
+  console.error("★ 初期化エラー", error);
 
-    console.error(
-      "★ 初期化エラー",
-      error
-    );
+  alert(
+    "初期化エラー\n\n" +
+    "message: " +
+    (error?.message || error) +
+    "\n\ncode: " +
+    (error?.code || "") +
+    "\ndetails: " +
+    (error?.details || "")
+  );
 
-
-    showLoginPage(
-      "アプリの初期化に失敗しました。"
-    );
-
-  }
+  showLoginPage("アプリの初期化に失敗しました。");
+}
 
 }
 
