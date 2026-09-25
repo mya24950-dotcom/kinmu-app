@@ -439,65 +439,35 @@ function setupGoogleLogin() {
 ================================================== */
 
 async function loginWithGoogle() {
-
   const button =
-    document.getElementById(
-      "googleLoginButton"
-    );
-
+    document.getElementById("googleLoginButton");
 
   const message =
-    document.getElementById(
-      "loginMessage"
-    );
-
+    document.getElementById("loginMessage");
 
   if (button) {
-
-    button.disabled =
-      true;
-
-    button.style.opacity =
-      "0.6";
-
+    button.disabled = true;
+    button.style.opacity = "0.6";
   }
-
 
   if (message) {
-
     message.textContent =
       "Googleログイン画面を開いています…";
-
   }
 
-
   try {
-
-    const {
-      error
-    } =
+    const { error } =
       await supabaseClient.auth.signInWithOAuth({
-
-        provider:
-          "google",
-
+        provider: "google",
         options: {
-
           redirectTo:
-            window.location.origin +
-            window.location.pathname
-
+            "https://mya24950-dotcom.github.io/kinmu-app/"
         }
-
       });
 
-
     if (error) {
-
       throw error;
-
     }
-
 
   } catch (error) {
 
@@ -506,27 +476,16 @@ async function loginWithGoogle() {
       error
     );
 
-
     if (message) {
-
       message.textContent =
         "Googleログインに失敗しました。";
-
     }
-
 
     if (button) {
-
-      button.disabled =
-        false;
-
-      button.style.opacity =
-        "1";
-
+      button.disabled = false;
+      button.style.opacity = "1";
     }
-
   }
-
 }
 
 /* ==================================================
