@@ -180,10 +180,6 @@ async function init() {
       data: { session },
       error
     } = await supabaseClient.auth.getSession();
-
-await supabaseClient.auth.signOut();
-location.reload();
-return;
      
     if (error) {
       throw error;
