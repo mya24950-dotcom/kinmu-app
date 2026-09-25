@@ -10,6 +10,13 @@ const SUPABASE_KEY =
 
 let supabaseClient = null;
 
+/* ==================================================
+   現在の職場
+================================================== */
+
+let currentOrganization =
+  null;
+
 
 /* ==================================================
    ローカル保存
@@ -144,6 +151,16 @@ document.addEventListener(
 );
 
 
+/* ==================================================
+   初期化
+================================================== */
+
+document.addEventListener(
+  "DOMContentLoaded",
+  init
+);
+
+
 async function init() {
 
   try {
@@ -152,6 +169,10 @@ async function init() {
       "★ 勤務表アプリ起動"
     );
 
+
+    /* ==================================================
+       Supabase確認
+    ================================================== */
 
     if (
       !window.supabase ||
@@ -166,12 +187,115 @@ async function init() {
     }
 
 
+    /* ==================================================
+       Supabase接続
+    ================================================== */
+
     supabaseClient =
       window.supabase.createClient(
         SUPABASE_URL,
         SUPABASE_KEY
       );
 
+
+    /* ==================================================
+       Googleログイン状態確認
+    ================================================== */
+
+    const {
+      data: {
+        session
+      },
+      error
+    } =
+      await supabaseClient.auth.getSession();
+
+
+    if (error) {
+
+      throw error;
+
+    }
+
+
+    /* ==================================================
+       ログインしていない
+    ================================================== */
+
+    if (!session) {
+
+      console.log(
+        "Googleログインが必要です"
+      );
+
+
+      showLoginPage();
+
+
+      setupGoogleLogin();
+
+
+      return;
+
+    }
+
+
+    /* ==================================================
+       ログイン済み
+    ================================================== */
+
+    console.log(
+      "Googleログイン済み",
+      session.user.email
+    );
+
+
+    /* ==================================================
+       所属職場確認
+    ================================================== */
+
+    const organization =
+      await getCurrentOrganization(
+        session.user.id
+      );
+
+
+    if (!organization) {
+
+      showLoginPage(
+        "ログインしましたが、職場への所属がありません。"
+      );
+
+
+      return;
+
+    }
+
+
+    /* ==================================================
+       職場情報保存
+    ================================================== */
+
+    currentOrganization =
+      organization;
+
+
+    console.log(
+      "所属職場",
+      organization
+    );
+
+
+    /* ==================================================
+       ログイン画面を隠す
+    ================================================== */
+
+    showApp();
+
+
+    /* ==================================================
+       通常のアプリ初期化
+    ================================================== */
 
     loadLocalData();
 
@@ -225,23 +349,346 @@ async function init() {
     );
 
 
-    loadLocalData();
-
-
-    renderAll();
-
-
-    loadPublicHolidays();
-
-
-    alert(
-      "Supabaseへの接続に失敗しました。\nアプリ自体は起動します。"
+    showLoginPage(
+      "アプリの初期化に失敗しました。"
     );
 
   }
 
 }
 
+/* ==================================================
+   ログイン画面表示
+================================================== */
+
+function showLoginPage(
+  message = ""
+) {
+
+  const loginPage =
+    document.getElementById(
+      "loginPage"
+    );
+
+
+  const app =
+    document.getElementById(
+      "app"
+    );
+
+
+  const loginMessage =
+    document.getElementById(
+      "loginMessage"
+    );
+
+
+  if (loginPage) {
+
+    loginPage.style.display =
+      "flex";
+
+  }
+
+
+  if (app) {
+
+    app.style.display =
+      "none";
+
+  }
+
+
+  if (loginMessage) {
+
+    loginMessage.textContent =
+      message;
+
+  }
+
+}
+
+
+
+/* ==================================================
+   勤務表アプリ表示
+================================================== */
+
+function showApp() {
+
+  const loginPage =
+    document.getElementById(
+      "loginPage"
+    );
+
+
+  const app =
+    document.getElementById(
+      "app"
+    );
+
+
+  if (loginPage) {
+
+    loginPage.style.display =
+      "none";
+
+  }
+
+
+  if (app) {
+
+    app.style.display =
+      "";
+
+  }
+
+}
+
+
+
+/* ==================================================
+   Googleログイン設定
+================================================== */
+
+function setupGoogleLogin() {
+
+  const button =
+    document.getElementById(
+      "googleLoginButton"
+    );
+
+
+  if (!button) {
+
+    console.error(
+      "Googleログインボタンが見つかりません"
+    );
+
+    return;
+
+  }
+
+
+  /* 二重登録防止 */
+
+  if (
+    button.dataset.bound ===
+    "true"
+  ) {
+
+    return;
+
+  }
+
+
+  button.dataset.bound =
+    "true";
+
+
+  button.addEventListener(
+    "click",
+    loginWithGoogle
+  );
+
+}
+
+
+
+/* ==================================================
+   Googleログイン
+================================================== */
+
+async function loginWithGoogle() {
+
+  const button =
+    document.getElementById(
+      "googleLoginButton"
+    );
+
+
+  const message =
+    document.getElementById(
+      "loginMessage"
+    );
+
+
+  if (button) {
+
+    button.disabled =
+      true;
+
+    button.style.opacity =
+      "0.6";
+
+  }
+
+
+  if (message) {
+
+    message.textContent =
+      "Googleログイン画面を開いています…";
+
+  }
+
+
+  try {
+
+    const {
+      error
+    } =
+      await supabaseClient.auth.signInWithOAuth({
+
+        provider:
+          "google",
+
+        options: {
+
+          redirectTo:
+            window.location.origin +
+            window.location.pathname
+
+        }
+
+      });
+
+
+    if (error) {
+
+      throw error;
+
+    }
+
+
+  } catch (error) {
+
+    console.error(
+      "Googleログインエラー",
+      error
+    );
+
+
+    if (message) {
+
+      message.textContent =
+        "Googleログインに失敗しました。";
+
+    }
+
+
+    if (button) {
+
+      button.disabled =
+        false;
+
+      button.style.opacity =
+        "1";
+
+    }
+
+  }
+
+}
+
+/* ==================================================
+   現在の職場を取得
+================================================== */
+
+async function getCurrentOrganization(
+  userId
+) {
+
+  if (!supabaseClient) {
+
+    throw new Error(
+      "Supabaseが初期化されていません"
+    );
+
+  }
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient
+
+      .from(
+        "organization_members"
+      )
+
+      .select(
+        `
+          organization_id,
+          role,
+          organizations (
+            id,
+            name,
+            created_at
+          )
+        `
+      )
+
+      .eq(
+        "user_id",
+        userId
+      )
+
+      .limit(1);
+
+
+  if (error) {
+
+    console.error(
+      "職場情報取得エラー",
+      error
+    );
+
+    throw error;
+
+  }
+
+
+  if (
+    !data ||
+    data.length === 0
+  ) {
+
+    return null;
+
+  }
+
+
+  const member =
+    data[0];
+
+
+  if (
+    !member.organizations
+  ) {
+
+    return null;
+
+  }
+
+
+  return {
+
+    id:
+      member.organizations.id,
+
+    name:
+      member.organizations.name,
+
+    created_at:
+      member.organizations.created_at,
+
+    role:
+      member.role
+
+  };
+
+}
 
 /* ==================================================
    ローカルデータ読み込み
