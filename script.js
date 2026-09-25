@@ -6310,7 +6310,10 @@ async function saveLeave(
               "",
 
             leave_type:
-              leaveName
+              leaveName,
+
+             organization_id:
+    currentOrganization.id
 
           });
 
