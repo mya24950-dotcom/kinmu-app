@@ -4009,8 +4009,7 @@ function syncScheduleFixedLayers() {
           fixedCell.style.visibility =
             "visible";
 
-             fixedCell.style.transform =
-    `translate3d(${wrapper.scrollLeft}px, 0, 0)`;
+             
 
         }
 
