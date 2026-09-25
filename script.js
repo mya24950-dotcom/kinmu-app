@@ -4500,6 +4500,21 @@ function updateScheduleFixedLayers() {
     (-wrapper.scrollLeft) +
     "px, 0, 0)";
 
+   // 「職員」見出しだけ横方向にも固定
+const fixedStaffHeader =
+  scheduleFixedHeaderTable.querySelector(
+    "thead .staff-header"
+  );
+
+if (fixedStaffHeader) {
+
+  fixedStaffHeader.style.transform =
+    "translate3d(" +
+    wrapper.scrollLeft +
+    "px, 0, 0)";
+
+}
+
 
  // 職員名列は縦方向には固定しない。
 // 元のscheduleTableのsticky(left:0)だけで
