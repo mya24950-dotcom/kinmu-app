@@ -3972,6 +3972,20 @@ function updateScheduleFixedLayers() {
     (-wrapper.scrollLeft) +
     "px, 0, 0)";
 
+   const fixedStaffHeader =
+  scheduleFixedHeaderTable.querySelector(
+    ".staff-header"
+  );
+
+
+if (fixedStaffHeader) {
+
+  fixedStaffHeader.style.transform =
+    "translate3d(" +
+    wrapper.scrollLeft +
+    "px, 0, 0)";
+
+}
 
   /* ==================================================
      ヘッダーのサイズ・スタイルを同期
