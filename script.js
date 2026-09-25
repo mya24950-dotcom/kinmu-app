@@ -7506,6 +7506,9 @@ async function addOrUpdateShift() {
             break_time:
               breakTime || null
 
+             organization_id:
+        currentOrganization.id
+
           });
 
 
@@ -8484,6 +8487,9 @@ async function addCompanyHoliday() {
 
             end_date:
               end
+
+             organization_id:
+  currentOrganization.id
 
           })
           .eq(
