@@ -3544,7 +3544,7 @@ function syncScheduleFixedLayers() {
 
   /* ==================================================
      固定ヘッダー
-     ================================================== */
+  ================================================== */
 
   if (
     scheduleFixedHeaderTable
@@ -3553,6 +3553,10 @@ function syncScheduleFixedLayers() {
     const tableRect =
       table.getBoundingClientRect();
 
+
+    /* ----------------------------------------------
+       固定ヘッダーテーブル全体の幅
+    ---------------------------------------------- */
 
     scheduleFixedHeaderTable.style.width =
       tableRect.width +
@@ -3570,8 +3574,8 @@ function syncScheduleFixedLayers() {
 
 
     /* ----------------------------------------------
-       列幅を元テーブルと同期
-       ---------------------------------------------- */
+       colgroup の幅を元テーブルと同期
+    ---------------------------------------------- */
 
     const originalCols =
       table.querySelectorAll(
@@ -3624,8 +3628,12 @@ function syncScheduleFixedLayers() {
 
 
     /* ----------------------------------------------
-       ヘッダーセルを元テーブルと同期
-       ---------------------------------------------- */
+       ヘッダーセルの高さ・見た目を同期
+
+       ※ 幅は colgroup に任せる
+       ※ colspan="2" の合計・累計を
+          壊さないため
+    ---------------------------------------------- */
 
     const originalCells =
       table.querySelectorAll(
@@ -3664,20 +3672,9 @@ function syncScheduleFixedLayers() {
           );
 
 
-        fixedCell.style.width =
-          rect.width +
-          "px";
-
-
-        fixedCell.style.minWidth =
-          rect.width +
-          "px";
-
-
-        fixedCell.style.maxWidth =
-          rect.width +
-          "px";
-
+        /* ------------------------------------------
+           高さ
+        ------------------------------------------ */
 
         fixedCell.style.height =
           rect.height +
@@ -3688,9 +3685,17 @@ function syncScheduleFixedLayers() {
           "border-box";
 
 
+        /* ------------------------------------------
+           余白
+        ------------------------------------------ */
+
         fixedCell.style.padding =
           style.padding;
 
+
+        /* ------------------------------------------
+           枠線
+        ------------------------------------------ */
 
         fixedCell.style.borderTop =
           style.borderTop;
@@ -3708,9 +3713,17 @@ function syncScheduleFixedLayers() {
           style.borderLeft;
 
 
+        /* ------------------------------------------
+           背景
+        ------------------------------------------ */
+
         fixedCell.style.background =
           style.background;
 
+
+        /* ------------------------------------------
+           文字
+        ------------------------------------------ */
 
         fixedCell.style.font =
           style.font;
@@ -3737,8 +3750,12 @@ function syncScheduleFixedLayers() {
 
 
         /* ------------------------------------------
-           「職員」ヘッダーは表示する
-           ------------------------------------------ */
+           「職員」セル
+
+           固定ヘッダー本体では隠す。
+           左上の専用固定レイヤー
+           scheduleFixedCorner で表示する。
+        ------------------------------------------ */
 
         if (
           fixedCell.classList.contains(
@@ -3747,28 +3764,157 @@ function syncScheduleFixedLayers() {
         ) {
 
           fixedCell.style.visibility =
+            "hidden";
+
+        } else {
+
+          fixedCell.style.visibility =
             "visible";
-
-
-          fixedCell.style.position =
-            "sticky";
-
-
-          fixedCell.style.left =
-            "0px";
-
-
-          fixedCell.style.zIndex =
-            "1000";
-
-
-          fixedCell.style.background =
-            style.background;
 
         }
 
       }
     );
+
+  }
+
+
+  /* ==================================================
+     左上「職員」セル専用レイヤー
+  ================================================== */
+
+  if (
+    scheduleFixedCornerTable
+  ) {
+
+    const originalStaffHeader =
+      table.querySelector(
+        "thead .staff-header"
+      );
+
+
+    const fixedStaffHeader =
+      scheduleFixedCornerTable.querySelector(
+        ".staff-header"
+      );
+
+
+    if (
+      originalStaffHeader &&
+      fixedStaffHeader
+    ) {
+
+      const rect =
+        originalStaffHeader
+          .getBoundingClientRect();
+
+
+      const style =
+        window.getComputedStyle(
+          originalStaffHeader
+        );
+
+
+      /* ------------------------------------------
+         幅
+      ------------------------------------------ */
+
+      fixedStaffHeader.style.width =
+        rect.width +
+        "px";
+
+
+      fixedStaffHeader.style.minWidth =
+        rect.width +
+        "px";
+
+
+      fixedStaffHeader.style.maxWidth =
+        rect.width +
+        "px";
+
+
+      /* ------------------------------------------
+         高さ
+      ------------------------------------------ */
+
+      fixedStaffHeader.style.height =
+        rect.height +
+        "px";
+
+
+      fixedStaffHeader.style.boxSizing =
+        "border-box";
+
+
+      /* ------------------------------------------
+         余白
+      ------------------------------------------ */
+
+      fixedStaffHeader.style.padding =
+        style.padding;
+
+
+      /* ------------------------------------------
+         枠線
+      ------------------------------------------ */
+
+      fixedStaffHeader.style.borderTop =
+        style.borderTop;
+
+
+      fixedStaffHeader.style.borderRight =
+        style.borderRight;
+
+
+      fixedStaffHeader.style.borderBottom =
+        style.borderBottom;
+
+
+      fixedStaffHeader.style.borderLeft =
+        style.borderLeft;
+
+
+      /* ------------------------------------------
+         背景
+      ------------------------------------------ */
+
+      fixedStaffHeader.style.background =
+        style.background;
+
+
+      /* ------------------------------------------
+         文字
+      ------------------------------------------ */
+
+      fixedStaffHeader.style.font =
+        style.font;
+
+
+      fixedStaffHeader.style.fontSize =
+        style.fontSize;
+
+
+      fixedStaffHeader.style.fontWeight =
+        style.fontWeight;
+
+
+      fixedStaffHeader.style.color =
+        style.color;
+
+
+      fixedStaffHeader.style.textAlign =
+        style.textAlign;
+
+
+      fixedStaffHeader.style.verticalAlign =
+        style.verticalAlign;
+
+
+      fixedStaffHeader.style.visibility =
+        "visible";
+
+    }
 
   }
 
