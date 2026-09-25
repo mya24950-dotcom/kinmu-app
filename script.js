@@ -362,22 +362,25 @@ async function logout() {
 
     if (error) {
 
-      console.error(
-        "★ Supabaseログアウトエラー",
+      console.warn(
+        "★ Supabaseログアウト警告",
         error
       );
 
-      alert(
-        "ログアウトに失敗しました。\n\n" +
-        "エラー：" +
-        error.message
-      );
+      // セッションがすでにない場合は
+      // ログアウト済みとして扱う
+      if (
+        error.message !==
+        "Auth session missing!"
+      ) {
 
-      return;
+        throw error;
+
+      }
 
     }
 
-    console.log("★ ログアウト成功");
+    console.log("★ ログアウト完了");
 
     currentOrganization = null;
 
