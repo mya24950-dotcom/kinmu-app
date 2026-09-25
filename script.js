@@ -6796,7 +6796,10 @@ async function addOrUpdateStaff() {
             name,
 
             sort_order:
-              maxOrder + 1
+              maxOrder + 1,
+
+             organization_id:
+        currentOrganization.id
 
           });
 
