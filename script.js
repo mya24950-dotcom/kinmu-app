@@ -199,6 +199,8 @@ async function init() {
         SUPABASE_KEY
       );
 
+     alert("② Supabase初期化完了");
+
 
     /* ==================================================
        Googleログイン状態確認
