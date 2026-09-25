@@ -163,6 +163,8 @@ document.addEventListener(
 
 async function init() {
 
+  alert("① init開始");
+
   try {
 
     console.log(
