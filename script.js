@@ -353,34 +353,78 @@ function showLoginPage(
 
 async function logout() {
 
+  console.log("★ ログアウト開始");
+
   try {
 
-    console.log("★ ログアウト開始");
+    // まず現在のセッションを確認
+    const {
+      data: { session }
+    } = await supabaseClient.auth.getSession();
 
+    console.log(
+      "★ 現在のセッション：",
+      session
+    );
+
+    // セッションがすでにない場合
+    if (!session) {
+
+      console.log(
+        "★ セッションがありません。ログアウト済みとして処理します。"
+      );
+
+      currentOrganization = null;
+
+      showLoginPage(
+        "ログアウトしました。"
+      );
+
+      setupGoogleLogin();
+
+      return;
+    }
+
+
+    // セッションがある場合だけsignOut
     const { error } =
       await supabaseClient.auth.signOut();
 
+
     if (error) {
 
-      console.warn(
-        "★ Supabaseログアウト警告",
+      console.error(
+        "★ Supabaseログアウトエラー",
         error
       );
 
-      // セッションがすでにない場合は
-      // ログアウト済みとして扱う
+      // Auth session missing は
+      // すでにログアウト済みとして扱う
       if (
-        error.message !==
-        "Auth session missing!"
+        String(error.message).includes(
+          "Auth session missing"
+        )
       ) {
 
-        throw error;
+        currentOrganization = null;
 
+        showLoginPage(
+          "ログアウトしました。"
+        );
+
+        setupGoogleLogin();
+
+        return;
       }
+
+      throw error;
 
     }
 
-    console.log("★ ログアウト完了");
+
+    console.log(
+      "★ Supabaseログアウト成功"
+    );
 
     currentOrganization = null;
 
@@ -389,6 +433,7 @@ async function logout() {
     );
 
     setupGoogleLogin();
+
 
   } catch (error) {
 
