@@ -7501,7 +7501,7 @@ async function addOrUpdateShift() {
               end || null,
 
             break_time:
-              breakTime || null
+              breakTime || null,
 
              organization_id:
         currentOrganization.id
@@ -7990,7 +7990,10 @@ async function addOrUpdateLeave() {
 
             name,
 
-            color
+            color,
+
+             organization_id:
+        currentOrganization.id
 
           });
 
