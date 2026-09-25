@@ -185,11 +185,7 @@ async function init() {
       throw error;
     }
 
-     alert(
-  session
-    ? "セッションあり\n" + session.user.email
-    : "セッションなし"
-);
+     
 
     // ========================================
     // 未ログインの場合
