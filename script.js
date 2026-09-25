@@ -242,6 +242,8 @@ async function init() {
     // ========================================
     bindEvents();
 
+     setupLogoutButton();
+
     // ========================================
     // Supabaseからデータ取得
     // ========================================
@@ -349,7 +351,56 @@ function showLoginPage(
 
 }
 
+async function logout() {
 
+  try {
+
+    const { error } =
+      await supabaseClient.auth.signOut();
+
+    if (error) {
+      throw error;
+    }
+
+    currentOrganization = null;
+
+    showLoginPage(
+      "ログアウトしました。"
+    );
+
+    // ログアウト後もGoogleログインボタンを使えるようにする
+    setupGoogleLogin();
+
+  } catch (error) {
+
+    console.error(
+      "ログアウトエラー",
+      error
+    );
+
+    alert(
+      "ログアウトに失敗しました。"
+    );
+
+  }
+
+}
+
+function setupLogoutButton() {
+
+  const logoutButton =
+    document.getElementById("logoutButton");
+
+  if (!logoutButton) {
+    return;
+  }
+
+  logoutButton.addEventListener(
+    "click",
+    logout
+  );
+
+}
 
 /* ==================================================
    勤務表アプリ表示
