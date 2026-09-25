@@ -163,8 +163,6 @@ document.addEventListener(
 
 async function init() {
 
-  alert("① init開始");
-
   try {
 
     console.log(
@@ -193,7 +191,7 @@ async function init() {
        Supabase接続
     ================================================== */
 
-    alert("① init開始");
+    
 
 try {
 
