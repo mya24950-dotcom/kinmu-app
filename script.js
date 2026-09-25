@@ -209,9 +209,6 @@ try {
       SUPABASE_KEY
     );
 
-  // ↓ここが出ない
-  alert("② Supabase初期化完了");
-
 
     /* ==================================================
        Googleログイン状態確認
@@ -361,19 +358,8 @@ try {
     );
 
 
- } catch (error) {
+} catch (error) {
   console.error("★ 初期化エラー", error);
-
-  alert(
-    "初期化エラー\n\n" +
-    "message: " +
-    (error?.message || error) +
-    "\n\ncode: " +
-    (error?.code || "") +
-    "\ndetails: " +
-    (error?.details || "")
-  );
-
   showLoginPage("アプリの初期化に失敗しました。");
 }
 
