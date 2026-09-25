@@ -126,8 +126,12 @@ let scheduleFixedHeader =
 
 let scheduleFixedHeaderTable =
   null;
-let scheduleFixedStaffColumn = null;
-let scheduleFixedStaffTable = null;
+
+let scheduleFixedStaffColumn =
+  null;
+
+let scheduleFixedStaffTable =
+  null;
 
 
 /* ==================================================
@@ -3330,160 +3334,297 @@ function createScheduleFixedLayers() {
       "scheduleTable"
     );
 
-  if (!table) return;
+
+  if (!table) {
+
+    return;
+
+  }
+
 
   const thead =
-    table.querySelector("thead");
+    table.querySelector(
+      "thead"
+    );
+
 
   const tbody =
-    table.querySelector("tbody");
+    table.querySelector(
+      "tbody"
+    );
+
 
   const wrapper =
-    table.closest(".table-wrapper");
+    table.closest(
+      ".table-wrapper"
+    );
 
-  if (!thead || !wrapper) return;
 
-  if (scheduleFixedHeader) {
+  if (
+    !thead ||
+    !wrapper
+  ) {
+
+    return;
+
+  }
+
+
+  /* ==================================================
+     既存削除
+  ================================================== */
+
+  if (
+    scheduleFixedHeader
+  ) {
+
     scheduleFixedHeader.remove();
-    scheduleFixedHeader = null;
-    scheduleFixedHeaderTable = null;
+
+    scheduleFixedHeader =
+      null;
+
+    scheduleFixedHeaderTable =
+      null;
+
   }
 
-  if (scheduleFixedStaffColumn) {
+
+  if (
+    scheduleFixedStaffColumn
+  ) {
+
     scheduleFixedStaffColumn.remove();
-    scheduleFixedStaffColumn = null;
-    scheduleFixedStaffTable = null;
+
+    scheduleFixedStaffColumn =
+      null;
+
+    scheduleFixedStaffTable =
+      null;
+
   }
 
-  const fixedHeader = document.createElement("div");
 
-  fixedHeader.id = "scheduleFixedHeader";
-  fixedHeader.style.position = "fixed";
-  fixedHeader.style.display = "none";
-  fixedHeader.style.overflow = "hidden";
-  fixedHeader.style.margin = "0";
-  fixedHeader.style.padding = "0";
-  fixedHeader.style.background = "#f8f8fa";
-  fixedHeader.style.zIndex = "999";
-  fixedHeader.style.pointerEvents = "none";
-  fixedHeader.style.boxSizing = "border-box";
+  /* ==================================================
+     固定ヘッダー
+  ================================================== */
+
+  const fixedHeader =
+    document.createElement(
+      "div"
+    );
+
+
+  fixedHeader.id =
+    "scheduleFixedHeader";
+
+
+  fixedHeader.style.position =
+    "fixed";
+
+
+  fixedHeader.style.display =
+    "none";
+
+
+  fixedHeader.style.overflow =
+    "hidden";
+
+
+  fixedHeader.style.margin =
+    "0";
+
+
+  fixedHeader.style.padding =
+    "0";
+
+
+  fixedHeader.style.background =
+    "#f8f8fa";
+
+
+  fixedHeader.style.zIndex =
+    "999";
+
+
+  fixedHeader.style.pointerEvents =
+    "none";
+
+
+  fixedHeader.style.boxSizing =
+    "border-box";
+
 
   const fixedHeaderTable =
-    document.createElement("table");
+    document.createElement(
+      "table"
+    );
+
 
   fixedHeaderTable.style.borderCollapse =
     "separate";
 
+
   fixedHeaderTable.style.borderSpacing =
     "0";
+
 
   fixedHeaderTable.style.tableLayout =
     "fixed";
 
+
   fixedHeaderTable.style.margin =
     "0";
+
 
   fixedHeaderTable.style.padding =
     "0";
 
+
   fixedHeaderTable.style.position =
     "relative";
 
+
   const originalColgroup =
-    table.querySelector("colgroup");
+    table.querySelector(
+      "colgroup"
+    );
+
 
   if (originalColgroup) {
 
     fixedHeaderTable.appendChild(
-      originalColgroup.cloneNode(true)
+      originalColgroup.cloneNode(
+        true
+      )
     );
 
   }
 
+
   const fixedThead =
-    thead.cloneNode(true);
+    thead.cloneNode(
+      true
+    );
+
 
   fixedHeaderTable.appendChild(
     fixedThead
   );
 
+
   fixedHeader.appendChild(
     fixedHeaderTable
   );
+
 
   document.body.appendChild(
     fixedHeader
   );
 
+
   scheduleFixedHeader =
     fixedHeader;
+
 
   scheduleFixedHeaderTable =
     fixedHeaderTable;
 
 
+  /* ==================================================
+     固定職員列
+  ================================================== */
+
   const fixedStaff =
-    document.createElement("div");
+    document.createElement(
+      "div"
+    );
+
 
   fixedStaff.id =
     "scheduleFixedStaffColumn";
 
+
   fixedStaff.style.position =
     "fixed";
+
 
   fixedStaff.style.display =
     "none";
 
+
   fixedStaff.style.overflow =
     "hidden";
+
 
   fixedStaff.style.margin =
     "0";
 
+
   fixedStaff.style.padding =
     "0";
+
 
   fixedStaff.style.background =
     "#ffffff";
 
+
   fixedStaff.style.zIndex =
     "1000";
 
+
   fixedStaff.style.pointerEvents =
     "none";
+
 
   fixedStaff.style.boxSizing =
     "border-box";
 
 
   const fixedStaffTable =
-    document.createElement("table");
+    document.createElement(
+      "table"
+    );
+
 
   fixedStaffTable.style.borderCollapse =
     "separate";
 
+
   fixedStaffTable.style.borderSpacing =
     "0";
+
 
   fixedStaffTable.style.tableLayout =
     "fixed";
 
+
   fixedStaffTable.style.margin =
     "0";
 
+
   fixedStaffTable.style.padding =
     "0";
+
 
   fixedStaffTable.style.position =
     "relative";
 
 
+  /* ==================================================
+     職員ヘッダー
+  ================================================== */
+
   const fixedStaffThead =
-    document.createElement("thead");
+    document.createElement(
+      "thead"
+    );
+
 
   const headerRows =
     Array.from(
-      thead.querySelectorAll("tr")
+      thead.querySelectorAll(
+        "tr"
+      )
     );
 
 
@@ -3491,12 +3632,16 @@ function createScheduleFixedLayers() {
     (originalRow, rowIndex) => {
 
       const newRow =
-        document.createElement("tr");
+        document.createElement(
+          "tr"
+        );
+
 
       const staffCell =
         originalRow.querySelector(
           ".staff-header"
         );
+
 
       if (
         rowIndex === 0 &&
@@ -3504,25 +3649,33 @@ function createScheduleFixedLayers() {
       ) {
 
         const cloned =
-          staffCell.cloneNode(true);
+          staffCell.cloneNode(
+            true
+          );
+
 
         cloned.style.position =
           "static";
 
+
         cloned.style.left =
           "auto";
+
 
         cloned.style.top =
           "auto";
 
+
         cloned.style.zIndex =
           "1";
+
 
         newRow.appendChild(
           cloned
         );
 
       }
+
 
       fixedStaffThead.appendChild(
         newRow
@@ -3532,14 +3685,22 @@ function createScheduleFixedLayers() {
   );
 
 
+  /* ==================================================
+     職員名
+  ================================================== */
+
   const fixedStaffTbody =
-    document.createElement("tbody");
+    document.createElement(
+      "tbody"
+    );
 
 
   if (tbody) {
 
     const staffRows =
-      tbody.querySelectorAll("tr");
+      tbody.querySelectorAll(
+        "tr"
+      );
 
 
     staffRows.forEach(
@@ -3550,25 +3711,37 @@ function createScheduleFixedLayers() {
             ".staff-name-cell"
           );
 
-        if (!staffCell) return;
+
+        if (!staffCell) {
+
+          return;
+
+        }
 
 
         const newRow =
-          document.createElement("tr");
+          document.createElement(
+            "tr"
+          );
 
 
         const cloned =
-          staffCell.cloneNode(true);
+          staffCell.cloneNode(
+            true
+          );
 
 
         cloned.style.position =
           "static";
 
+
         cloned.style.left =
           "auto";
 
+
         cloned.style.top =
           "auto";
+
 
         cloned.style.zIndex =
           "1";
@@ -3593,13 +3766,16 @@ function createScheduleFixedLayers() {
     fixedStaffThead
   );
 
+
   fixedStaffTable.appendChild(
     fixedStaffTbody
   );
 
+
   fixedStaff.appendChild(
     fixedStaffTable
   );
+
 
   document.body.appendChild(
     fixedStaff
@@ -3608,6 +3784,7 @@ function createScheduleFixedLayers() {
 
   scheduleFixedStaffColumn =
     fixedStaff;
+
 
   scheduleFixedStaffTable =
     fixedStaffTable;
@@ -4404,6 +4581,16 @@ function hideScheduleFixedLayers() {
 
   }
 
+
+  if (
+    scheduleFixedStaffColumn
+  ) {
+
+    scheduleFixedStaffColumn.style.display =
+      "none";
+
+  }
+
 }
 
 
@@ -4463,9 +4650,9 @@ window.addEventListener(
 );
 
 
-/* =========================================================
+/* ==================================================
    固定レイヤー用CSS
-========================================================= */
+================================================== */
 
 if (
   !document.getElementById(
@@ -4542,6 +4729,8 @@ if (
   );
 
 }
+
+
 /* ==================================================
    勤務セル
 ================================================== */
