@@ -536,7 +536,11 @@ async function getCurrentOrganization(
 
       .limit(1);
 
-
+alert(
+  "organization取得結果\n" +
+  JSON.stringify(data)
+);
+   
   if (error) {
 
     console.error(
