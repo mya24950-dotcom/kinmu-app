@@ -2653,6 +2653,74 @@ async function getCurrentOrganization(
 }
 
 /* ==================================================
+   ログイン中の職員IDを取得
+================================================== */
+
+async function getCurrentStaffId() {
+
+  if (!supabaseClient) {
+    return null;
+  }
+
+  if (!currentOrganization) {
+    return null;
+  }
+
+  const {
+    data: {
+      user
+    }
+  } =
+    await supabaseClient.auth.getUser();
+
+  if (!user) {
+    return null;
+  }
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient
+      .from("organization_members")
+      .select("staff_id")
+      .eq(
+        "organization_id",
+        currentOrganization.id
+      )
+      .eq(
+        "user_id",
+        user.id
+      )
+      .not(
+        "staff_id",
+        "is",
+        null
+      )
+      .limit(1);
+
+  if (error) {
+
+    console.error(
+      "ログイン中の職員情報取得エラー",
+      error
+    );
+
+    return null;
+  }
+
+  if (
+    !data ||
+    data.length === 0
+  ) {
+
+    return null;
+  }
+
+  return data[0].staff_id;
+}
+
+/* ==================================================
    ローカルデータ読み込み
 ================================================== */
 
