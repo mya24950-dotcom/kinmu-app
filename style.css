@@ -2789,3 +2789,35 @@ body.dark-mode .calendar-hint svg {
   }
 
 }
+
+/* ==================================================
+   ダークモード
+   休暇一覧
+   ================================================== */
+
+body.dark-mode #leaveList,
+body.dark-mode .leave-list,
+body.dark-mode .leave-list-card {
+  background: #2c2c2e !important;
+  color: #f2f2f7 !important;
+  border-color: #48484a !important;
+}
+
+body.dark-mode #leaveList *,
+body.dark-mode .leave-list *,
+body.dark-mode .leave-list-card * {
+  color: #f2f2f7 !important;
+}
+
+body.dark-mode #leaveList .list-item,
+body.dark-mode .leave-list .list-item,
+body.dark-mode .leave-list-card .list-item {
+  background: #3a3a3c !important;
+  border-color: #545458 !important;
+}
+
+body.dark-mode #leaveList .list-item-sub,
+body.dark-mode .leave-list .list-item-sub,
+body.dark-mode .leave-list-card .list-item-sub {
+  color: #a1a1a6 !important;
+}
