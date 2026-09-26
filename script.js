@@ -5550,14 +5550,22 @@ async function renderSchedule() {
         );
 
 
-      html += `
-        <tr
-          class="staff-row"
-          data-staff-row="${escapeHtml(
-            staffName
-          )}"
-        >
-      `;
+    const isCurrentUser =
+  currentStaffId &&
+  staff.id === currentStaffId;
+
+html += `
+  <tr
+    class="staff-row ${
+      isCurrentUser
+        ? "current-user-staff-row"
+        : ""
+    }"
+    data-staff-row="${escapeHtml(
+      staffName
+    )}"
+  >
+`;
 
 
       html += `
