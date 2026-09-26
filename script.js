@@ -12704,3 +12704,158 @@ function escapeICS(
     );
 
 }
+
+/* =========================================================
+   ダークモード
+   ========================================================= */
+
+function setupDarkMode() {
+
+  const button =
+    document.getElementById("darkModeButton");
+
+  if (!button) {
+    return;
+  }
+
+  // 保存されている設定を読み込む
+  const savedMode =
+    localStorage.getItem("darkMode");
+
+  if (savedMode === "true") {
+    document.body.classList.add(
+      "dark-mode"
+    );
+
+    updateDarkModeButton(true);
+
+  } else {
+    document.body.classList.remove(
+      "dark-mode"
+    );
+
+    updateDarkModeButton(false);
+  }
+
+  button.onclick = function() {
+
+    const isDark =
+      document.body.classList.toggle(
+        "dark-mode"
+      );
+
+    localStorage.setItem(
+      "darkMode",
+      isDark ? "true" : "false"
+    );
+
+    updateDarkModeButton(isDark);
+  };
+}
+
+
+/* ---------------------------------------------------------
+   ダークモードボタン表示
+--------------------------------------------------------- */
+
+function updateDarkModeButton(isDark) {
+
+  const button =
+    document.getElementById(
+      "darkModeButton"
+    );
+
+  if (!button) {
+    return;
+  }
+
+  if (isDark) {
+
+    button.setAttribute(
+      "aria-label",
+      "ライトモード"
+    );
+
+    button.setAttribute(
+      "title",
+      "ライトモード"
+    );
+
+    button.innerHTML = `
+      <svg
+        class="dark-mode-icon"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <circle
+          cx="12"
+          cy="12"
+          r="4"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+        />
+
+        <path
+          d="
+            M12 2
+            V4
+            M12 20
+            V22
+            M4.93 4.93
+            L6.34 6.34
+            M17.66 17.66
+            L19.07 19.07
+            M2 12
+            H4
+            M20 12
+            H22
+            M4.93 19.07
+            L6.34 17.66
+            M17.66 6.34
+            L19.07 4.93
+          "
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+        />
+      </svg>
+    `;
+
+  } else {
+
+    button.setAttribute(
+      "aria-label",
+      "ダークモード"
+    );
+
+    button.setAttribute(
+      "title",
+      "ダークモード"
+    );
+
+    button.innerHTML = `
+      <svg
+        class="dark-mode-icon"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path
+          d="
+            M20.5 15.5
+            A8.5 8.5 0 0 1
+            8.5 3.5
+            A8.5 8.5 0 1 0
+            20.5 15.5Z
+          "
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
+    `;
+  }
+}
