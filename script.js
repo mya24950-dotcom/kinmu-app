@@ -1323,6 +1323,11 @@ function setupLogoutButton() {
 
       console.log("★ ログアウト開始");
 
+       sessionStorage.setItem(
+  "forceLoginScreen",
+  "true"
+);
+
       /*
        * 現在の職場情報を消す
        */
@@ -1408,17 +1413,19 @@ function setupLogoutButton() {
        */
 
       showLoginPage(
-        ""
-      );
+  ""
+);
 
 
-      /*
-       * ログイン関連ボタンを再設定
-       */
+/*
+ * ログイン関連ボタンを再設定
+ */
 
-      setupGoogleLogin();
+setupGoogleLogin();
 
-      setupNewOrganizationButton();
+setupPasskeyLogin();
+
+setupNewOrganizationButton();
 
 
     } catch (error) {
