@@ -447,15 +447,41 @@ async function issueStaffInvite(staffId) {
       encodeURIComponent(token);
 
 
-    await navigator.clipboard.writeText(
-      inviteUrl
-    );
+    /* ==================================================
+       招待リンクをコピー
+    ================================================== */
+
+    try {
+
+      await navigator.clipboard.writeText(
+        inviteUrl
+      );
 
 
-    alert(
-      "招待リンクをコピーしました。\n\n" +
-      "このリンクを職員本人に送ってください。"
-    );
+      alert(
+        "招待リンクをコピーしました。\n\n" +
+        "このリンクを職員本人に送ってください。"
+      );
+
+
+    } catch (clipboardError) {
+
+      console.warn(
+        "クリップボードへのコピーに失敗しました",
+        clipboardError
+      );
+
+
+      /* ==================================================
+         iPhoneなどでコピーできない場合
+      ================================================== */
+
+      window.prompt(
+        "招待リンクをコピーしてください。",
+        inviteUrl
+      );
+
+    }
 
 
     console.log(
@@ -474,7 +500,8 @@ async function issueStaffInvite(staffId) {
 
     alert(
       "招待リンクの発行に失敗しました。\n\n" +
-      error.message
+      (error?.message ||
+        String(error))
     );
 
   }
