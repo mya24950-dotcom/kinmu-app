@@ -35,19 +35,16 @@
     rel="stylesheet"
     href="style.css">
 
-  <!--
-    Supabase JS
-    Passkey対応版
-  -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.105.0"></script>
 
 </head>
 
 <body>
 
-<!-- =====================================================
-     Googleログイン画面
-====================================================== -->
+
+<!-- ==================================================
+     ログイン画面
+================================================== -->
 
 <div
   id="loginPage"
@@ -75,20 +72,109 @@
     "
   >
 
-    <!-- =================================================
-         通常ログイン画面
-    ================================================== -->
-
     <div id="loginMainView">
+
+      <!-- 勤務表アイコン -->
 
       <div
         style="
-          font-size:48px;
           margin-bottom:12px;
+          display:flex;
+          justify-content:center;
         "
       >
-        🗓️
+
+        <svg
+          width="48"
+          height="48"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+
+          <rect
+            x="3"
+            y="4"
+            width="18"
+            height="17"
+            rx="3"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+          />
+
+          <line
+            x1="7"
+            y1="2.5"
+            x2="7"
+            y2="6"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+          />
+
+          <line
+            x1="17"
+            y1="2.5"
+            x2="17"
+            y2="6"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+          />
+
+          <line
+            x1="3"
+            y1="9"
+            x2="21"
+            y2="9"
+            stroke="currentColor"
+            stroke-width="1.8"
+          />
+
+          <line
+            x1="7"
+            y1="13"
+            x2="10"
+            y2="13"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+          />
+
+          <line
+            x1="14"
+            y1="13"
+            x2="17"
+            y2="13"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+          />
+
+          <line
+            x1="7"
+            y1="17"
+            x2="10"
+            y2="17"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+          />
+
+          <line
+            x1="14"
+            y1="17"
+            x2="17"
+            y2="17"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+          />
+
+        </svg>
+
       </div>
+
 
       <h1
         style="
@@ -99,8 +185,6 @@
         勤務表
       </h1>
 
-
-      <!-- 登録済みの方 -->
 
       <div
         style="
@@ -115,9 +199,7 @@
       </div>
 
 
-      <!-- =================================================
-           Googleログイン
-      ================================================== -->
+      <!-- Googleログイン -->
 
       <button
         type="button"
@@ -154,9 +236,7 @@
       </button>
 
 
-      <!-- =================================================
-           Passkey / Face ID / 指紋ログイン
-      ================================================== -->
+      <!-- Passkeyログイン -->
 
       <button
         type="button"
@@ -180,20 +260,59 @@
         "
       >
 
-        <span
-          style="
-            font-size:20px;
-          "
+        <svg
+          width="21"
+          height="21"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
         >
-          🔐
-        </span>
+
+          <path
+            d="M7 8.5A5 5 0 0 1 17 8.5"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+          />
+
+          <path
+            d="M5 11a7 7 0 0 1 14 0"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+          />
+
+          <path
+            d="M8 13.5c0-2.2 1.8-4 4-4s4 1.8 4 4"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+          />
+
+          <path
+            d="M10 17c0-1.1.9-2 2-2s2 .9 2 2"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+          />
+
+          <path
+            d="M12 19.5v-1"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+          />
+
+        </svg>
 
         Face ID / 指紋でログイン
 
       </button>
 
-
-      <!-- Passkey説明 -->
 
       <p
         style="
@@ -247,9 +366,7 @@
       </div>
 
 
-      <!-- =================================================
-           新規職場登録
-      ================================================== -->
+      <!-- 新規職場 -->
 
       <button
         type="button"
@@ -285,8 +402,8 @@
     </div>
 
 
-    <!-- =================================================
-         新規職場登録画面
+    <!-- ==================================================
+         新規職場登録
     ================================================== -->
 
     <div
@@ -296,8 +413,6 @@
         text-align:left;
       "
     >
-
-      <!-- 戻る -->
 
       <button
         type="button"
@@ -316,8 +431,6 @@
       </button>
 
 
-      <!-- タイトル -->
-
       <div
         style="
           text-align:center;
@@ -325,14 +438,75 @@
         "
       >
 
+        <!-- 建物アイコン -->
+
         <div
           style="
-            font-size:42px;
             margin-bottom:10px;
+            display:flex;
+            justify-content:center;
           "
         >
-          🏫
+
+          <svg
+            width="42"
+            height="42"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+
+            <path
+              d="M3 21V6l9-4 9 4v15"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linejoin="round"
+            />
+
+            <line
+              x1="3"
+              y1="21"
+              x2="21"
+              y2="21"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+            />
+
+            <rect
+              x="9"
+              y="13"
+              width="6"
+              height="8"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.6"
+            />
+
+            <line
+              x1="7"
+              y1="9"
+              x2="9"
+              y2="9"
+              stroke="currentColor"
+              stroke-width="1.6"
+              stroke-linecap="round"
+            />
+
+            <line
+              x1="15"
+              y1="9"
+              x2="17"
+              y2="9"
+              stroke="currentColor"
+              stroke-width="1.6"
+              stroke-linecap="round"
+            />
+
+          </svg>
+
         </div>
+
 
         <h2
           style="
@@ -342,6 +516,7 @@
         >
           職場を新規登録
         </h2>
+
 
         <p
           style="
@@ -357,8 +532,6 @@
 
       </div>
 
-
-      <!-- 職場名 -->
 
       <label
         for="organizationNameInput"
@@ -393,8 +566,6 @@
       >
 
 
-      <!-- 登録者名 -->
-
       <label
         for="organizationStaffNameInput"
         style="
@@ -427,8 +598,6 @@
         "
       >
 
-
-      <!-- 登録ボタン -->
 
       <button
         type="button"
@@ -466,8 +635,6 @@
     </div>
 
 
-    <!-- ログインメッセージ -->
-
     <p
       id="loginMessage"
       style="
@@ -483,9 +650,9 @@
 </div>
 
 
-<!-- =====================================================
-     勤務表アプリ本体
-====================================================== -->
+<!-- ==================================================
+     アプリ本体
+================================================== -->
 
 <div
   class="app"
@@ -493,9 +660,10 @@
   style="display:none;"
 >
 
-  <!-- ==============================
+
+  <!-- ==================================================
        ヘッダー
-  =============================== -->
+  ================================================== -->
 
   <header class="header">
 
@@ -511,26 +679,25 @@
 
       <button
         type="button"
-        id="deleteMonthButton">
-
+        id="deleteMonthButton"
+      >
         消去(月)
-
       </button>
+
 
       <button
         type="button"
-        id="deleteFiscalYearButton">
-
+        id="deleteFiscalYearButton"
+      >
         消去(年度)
-
       </button>
+
 
       <button
         type="button"
-        id="logoutButton">
-
+        id="logoutButton"
+      >
         ログアウト
-
       </button>
 
     </div>
@@ -538,16 +705,14 @@
   </header>
 
 
-  <!-- ==============================
-       ナビ
-  =============================== -->
+  <!-- ==================================================
+       ナビゲーション
+  ================================================== -->
 
   <nav class="nav">
 
 
-    <!-- ==========================
-         勤務表
-    =========================== -->
+    <!-- 勤務表 -->
 
     <button
       class="nav-button active"
@@ -642,16 +807,12 @@
 
       </svg>
 
-      <span>
-        勤務表
-      </span>
+      <span>勤務表</span>
 
     </button>
 
 
-    <!-- ==========================
-         職員管理
-    =========================== -->
+    <!-- 職員管理 -->
 
     <button
       class="nav-button"
@@ -683,16 +844,12 @@
 
       </svg>
 
-      <span>
-        職員管理
-      </span>
+      <span>職員管理</span>
 
     </button>
 
 
-    <!-- ==========================
-         休暇設定
-    =========================== -->
+    <!-- 休暇設定 -->
 
     <button
       class="nav-button"
@@ -756,16 +913,12 @@
 
       </svg>
 
-      <span>
-        休暇設定
-      </span>
+      <span>休暇設定</span>
 
     </button>
 
 
-    <!-- ==========================
-         勤務形態
-    =========================== -->
+    <!-- 勤務形態 -->
 
     <button
       class="nav-button"
@@ -809,16 +962,12 @@
 
       </svg>
 
-      <span>
-        勤務形態
-      </span>
+      <span>勤務形態</span>
 
     </button>
 
 
-    <!-- ==========================
-         休業設定
-    =========================== -->
+    <!-- 休業設定 -->
 
     <button
       class="nav-button"
@@ -881,18 +1030,16 @@
 
       </svg>
 
-      <span>
-        休業設定
-      </span>
+      <span>休業設定</span>
 
     </button>
 
   </nav>
 
 
-  <!-- ==============================
-       勤務表
-  =============================== -->
+  <!-- ==================================================
+       勤務表ページ
+  ================================================== -->
 
   <main
     id="schedulePage"
@@ -905,52 +1052,114 @@
         id="prevMonth"
         class="month-button"
       >
-
         ‹
-
       </button>
+
 
       <div
         id="currentMonth"
         class="month-title"
       >
-
       </div>
+
 
       <button
         id="nextMonth"
         class="month-button"
       >
-
         ›
-
       </button>
 
     </div>
 
 
+    <!-- ヒント -->
+
     <div class="calendar-hint">
 
-      💡 職員名をタップすると、
-      勤務をカレンダーに登録できます
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+
+        <path
+          d="M9 18h6"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+        />
+
+        <path
+          d="M10 21h4"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+        />
+
+        <path
+          d="M8.5 15.5c-.8-1-1.5-2.3-1.5-3.8A5 5 0 0 1 17 11.7c0 1.5-.7 2.8-1.5 3.8"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+        />
+
+        <line
+          x1="12"
+          y1="3"
+          x2="12"
+          y2="5"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+        />
+
+        <line
+          x1="4"
+          y1="8"
+          x2="5.8"
+          y2="9"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+        />
+
+        <line
+          x1="20"
+          y1="8"
+          x2="18.2"
+          y2="9"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+        />
+
+      </svg>
+
+      <span>
+        職員名をタップすると、
+        勤務をカレンダーに登録できます
+      </span>
 
     </div>
 
 
     <div class="table-wrapper">
 
-      <table
-        id="scheduleTable"
-      ></table>
+      <table id="scheduleTable"></table>
 
     </div>
 
   </main>
 
 
-  <!-- ==============================
+  <!-- ==================================================
        職員管理
-  =============================== -->
+  ================================================== -->
 
   <section
     id="staffPage"
@@ -960,8 +1169,36 @@
 
     <div class="settings-card">
 
-      <h2>
-        👤 職員管理
+
+      <h2 class="section-title-icon">
+
+        <svg
+          class="section-icon"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+
+          <circle
+            cx="12"
+            cy="8"
+            r="3.5"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+          />
+
+          <path
+            d="M5 21c.5-4.2 3-6.5 7-6.5s6.5 2.3 7 6.5"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+          />
+
+        </svg>
+
+        <span>職員管理</span>
+
       </h2>
 
 
@@ -973,13 +1210,12 @@
           placeholder="職員名"
         >
 
+
         <button
           id="addStaffButton"
           class="add-button"
         >
-
           追加
-
         </button>
 
       </div>
@@ -1004,13 +1240,10 @@
         id="staffList"
         class="list"
       >
-
       </div>
 
 
-      <!-- =================================================
-           職場削除
-      ================================================== -->
+      <!-- 危険な操作 -->
 
       <div
         id="organizationDangerZone"
@@ -1023,13 +1256,50 @@
       >
 
         <h3
+          class="danger-title-icon"
           style="
             margin:0 0 8px;
             color:#d32f2f;
             font-size:17px;
           "
         >
-          ⚠️ 危険な操作
+
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+
+            <path
+              d="M12 3L22 20H2L12 3Z"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linejoin="round"
+            />
+
+            <line
+              x1="12"
+              y1="9"
+              x2="12"
+              y2="14"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+            />
+
+            <circle
+              cx="12"
+              cy="17"
+              r="1"
+              fill="currentColor"
+            />
+
+          </svg>
+
+          <span>危険な操作</span>
+
         </h3>
 
 
@@ -1072,9 +1342,9 @@
   </section>
 
 
-  <!-- ==============================
+  <!-- ==================================================
        休暇設定
-  ============================== -->
+  ================================================== -->
 
   <section
     id="leavePage"
@@ -1084,16 +1354,74 @@
 
     <div class="settings-card">
 
-      <h2>
-        🏖️ 休暇設定
+
+      <h2 class="section-title-icon">
+
+        <svg
+          class="section-icon"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+
+          <rect
+            x="3"
+            y="4"
+            width="18"
+            height="17"
+            rx="3"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+          />
+
+          <line
+            x1="7"
+            y1="2.5"
+            x2="7"
+            y2="6"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+          />
+
+          <line
+            x1="17"
+            y1="2.5"
+            x2="17"
+            y2="6"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+          />
+
+          <line
+            x1="3"
+            y1="9"
+            x2="21"
+            y2="9"
+            stroke="currentColor"
+            stroke-width="1.8"
+          />
+
+          <path
+            d="M8 15l2.3 2.3L16.5 11"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.9"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+
+        </svg>
+
+        <span>休暇設定</span>
+
       </h2>
 
 
       <p class="info">
-
         休暇の名前と表示色を登録できます。<br>
         登録した休暇は、すべての端末で共有されます。
-
       </p>
 
 
@@ -1118,9 +1446,7 @@
           <label
             for="leaveColorInput"
           >
-
             表示色
-
           </label>
 
 
@@ -1143,9 +1469,7 @@
           id="addLeaveButton"
           class="add-button"
         >
-
           休暇を追加
-
         </button>
 
       </div>
@@ -1155,7 +1479,6 @@
         id="leaveList"
         class="list"
       >
-
       </div>
 
     </div>
@@ -1163,9 +1486,9 @@
   </section>
 
 
-  <!-- ==============================
+  <!-- ==================================================
        勤務形態
-  =============================== -->
+  ================================================== -->
 
   <section
     id="shiftPage"
@@ -1175,12 +1498,54 @@
 
     <div class="shift-layout">
 
+
       <div>
+
+        <!-- 勤務形態登録 -->
 
         <div class="settings-card">
 
-          <h2>
-            ⏰ 勤務形態
+          <h2 class="section-title-icon">
+
+            <svg
+              class="section-icon"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+
+              <circle
+                cx="12"
+                cy="12"
+                r="8.5"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+              />
+
+              <line
+                x1="12"
+                y1="7"
+                x2="12"
+                y2="12"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+              />
+
+              <line
+                x1="12"
+                y1="12"
+                x2="16"
+                y2="14.5"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+              />
+
+            </svg>
+
+            <span>勤務形態</span>
+
           </h2>
 
 
@@ -1200,9 +1565,11 @@
                 type="time"
               >
 
+
               <span class="time-separator">
                 ～
               </span>
+
 
               <input
                 id="shiftEndInput"
@@ -1224,34 +1591,85 @@
               id="addShiftButton"
               class="add-button"
             >
-
               勤務形態を追加
-
             </button>
 
           </div>
 
 
           <p class="info">
-
             ※「明」は自動表示されるため登録できません。
-
           </p>
 
         </div>
 
 
+        <!-- 明け時間設定 -->
+
         <div class="settings-card">
 
-          <h2>
-            🌅 明け時間設定
+          <h2 class="section-title-icon">
+
+            <svg
+              class="section-icon"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+
+              <path
+                d="M4 17h16"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+              />
+
+              <path
+                d="M7 17a5 5 0 0 1 10 0"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+              />
+
+              <line
+                x1="12"
+                y1="3"
+                x2="12"
+                y2="6"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+              />
+
+              <line
+                x1="4.5"
+                y1="7"
+                x2="6.7"
+                y2="8.3"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+              />
+
+              <line
+                x1="19.5"
+                y1="7"
+                x2="17.3"
+                y2="8.3"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+              />
+
+            </svg>
+
+            <span>明け時間設定</span>
+
           </h2>
 
 
           <p class="info ake-info">
-
             「明」と表示される勤務の時間を設定します。
-
           </p>
 
 
@@ -1262,9 +1680,11 @@
               type="time"
             >
 
+
             <span class="time-separator">
               ～
             </span>
+
 
             <input
               id="akeEndInput"
@@ -1278,9 +1698,7 @@
             id="saveAkeTimeButton"
             class="add-button"
           >
-
             明け時間を保存
-
           </button>
 
         </div>
@@ -1288,12 +1706,86 @@
       </div>
 
 
+      <!-- 勤務リスト -->
+
       <div
         class="settings-card shift-list-card"
       >
 
-        <h2>
-          📋 勤務リスト
+        <h2 class="section-title-icon">
+
+          <svg
+            class="section-icon"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+
+            <rect
+              x="5"
+              y="3"
+              width="14"
+              height="18"
+              rx="2"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            />
+
+            <line
+              x1="9"
+              y1="8"
+              x2="16"
+              y2="8"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+            />
+
+            <line
+              x1="9"
+              y1="12"
+              x2="16"
+              y2="12"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+            />
+
+            <line
+              x1="9"
+              y1="16"
+              x2="16"
+              y2="16"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+            />
+
+            <circle
+              cx="7.2"
+              cy="8"
+              r=".7"
+              fill="currentColor"
+            />
+
+            <circle
+              cx="7.2"
+              cy="12"
+              r=".7"
+              fill="currentColor"
+            />
+
+            <circle
+              cx="7.2"
+              cy="16"
+              r=".7"
+              fill="currentColor"
+            />
+
+          </svg>
+
+          <span>勤務リスト</span>
+
         </h2>
 
 
@@ -1301,7 +1793,6 @@
           id="shiftList"
           class="list"
         >
-
         </div>
 
       </div>
@@ -1311,9 +1802,9 @@
   </section>
 
 
-  <!-- ==============================
+  <!-- ==================================================
        休業設定
-  =============================== -->
+  ================================================== -->
 
   <section
     id="holidayPage"
@@ -1323,17 +1814,74 @@
 
     <div class="settings-card">
 
-      <h2>
-        🏢 休業設定
+
+      <h2 class="section-title-icon">
+
+        <svg
+          class="section-icon"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+
+          <path
+            d="M4 21V7l8-4 8 4v14"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linejoin="round"
+          />
+
+          <line
+            x1="3"
+            y1="21"
+            x2="21"
+            y2="21"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+          />
+
+          <rect
+            x="9"
+            y="14"
+            width="6"
+            height="7"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.6"
+          />
+
+          <rect
+            x="7"
+            y="9"
+            width="2"
+            height="2"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.3"
+          />
+
+          <rect
+            x="15"
+            y="9"
+            width="2"
+            height="2"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.3"
+          />
+
+        </svg>
+
+        <span>休業設定</span>
+
       </h2>
 
 
       <p class="info">
-
         会社全体の休業日を登録できます。<br>
         終了日を入力しない場合は、
         開始日と同じ日になります。
-
       </p>
 
 
@@ -1347,6 +1895,7 @@
 
 
         <div class="date-row">
+
 
           <div class="date-box">
 
@@ -1387,9 +1936,7 @@
           id="addCompanyHolidayButton"
           class="add-button"
         >
-
           休業を登録
-
         </button>
 
       </div>
@@ -1399,7 +1946,6 @@
         id="companyHolidayList"
         class="list"
       >
-
       </div>
 
     </div>
@@ -1407,9 +1953,9 @@
   </section>
 
 
-  <!-- ==============================
+  <!-- ==================================================
        勤務選択メニュー
-  =============================== -->
+  ================================================== -->
 
   <div
     id="shiftMenu"
@@ -1417,9 +1963,7 @@
   >
 
     <div class="shift-menu-title">
-
       勤務を選択
-
     </div>
 
 
@@ -1427,15 +1971,14 @@
       id="shiftMenuButtons"
       class="shift-menu-buttons"
     >
-
     </div>
 
   </div>
 
 
-  <!-- ==============================
+  <!-- ==================================================
        カレンダー確認
-  =============================== -->
+  ================================================== -->
 
   <div
     id="calendarConfirm"
@@ -1445,11 +1988,11 @@
 
     <div class="confirm-card">
 
+
       <div
         id="calendarConfirmTitle"
         class="confirm-title"
       >
-
       </div>
 
 
@@ -1457,7 +2000,6 @@
         id="calendarConfirmText"
         class="confirm-text"
       >
-
       </div>
 
 
@@ -1467,9 +2009,7 @@
           id="calendarCancelButton"
           class="confirm-cancel"
         >
-
           やめる
-
         </button>
 
 
@@ -1477,9 +2017,7 @@
           id="calendarOKButton"
           class="confirm-ok"
         >
-
           カレンダーへ
-
         </button>
 
       </div>
@@ -1491,16 +2029,16 @@
 </div>
 
 
-<!-- =====================================================
+<!-- ==================================================
      JavaScript
-====================================================== -->
+================================================== -->
 
 <script src="script.js?v=20260926"></script>
 
 
-<!-- =====================================================
+<!-- ==================================================
      Service Worker
-====================================================== -->
+================================================== -->
 
 <script>
 
@@ -1540,6 +2078,7 @@ if ("serviceWorker" in navigator) {
 }
 
 </script>
+
 
 </body>
 
