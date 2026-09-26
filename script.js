@@ -580,6 +580,256 @@ if (
 
 }
 
+/* ==================================================
+   Passkeyログイン
+================================================== */
+
+/*
+ * Passkeyログインボタンを設定
+ */
+function setupPasskeyLogin() {
+
+  const button =
+    document.getElementById(
+      "passkeyLoginButton"
+    );
+
+  if (!button) {
+    console.log(
+      "Passkeyログインボタンが見つかりません"
+    );
+    return;
+  }
+
+
+  /*
+   * この端末・ブラウザが
+   * WebAuthn / Passkeyに対応していない場合
+   */
+  if (
+    !window.PublicKeyCredential
+  ) {
+
+    console.log(
+      "この端末・ブラウザはPasskeyに対応していません"
+    );
+
+    button.style.display =
+      "none";
+
+    return;
+
+  }
+
+
+  /*
+   * Passkeyボタンを表示
+   */
+
+  button.style.display =
+    "flex";
+
+  button.disabled =
+    false;
+
+  button.style.opacity =
+    "1";
+
+
+  /*
+   * クリック処理
+   */
+
+  button.onclick =
+    async function() {
+
+      await loginWithPasskey();
+
+    };
+
+}
+
+
+/*
+ * Passkeyでログイン
+ */
+async function loginWithPasskey() {
+
+  const button =
+    document.getElementById(
+      "passkeyLoginButton"
+    );
+
+  const message =
+    document.getElementById(
+      "loginMessage"
+    );
+
+
+  /*
+   * 二重クリック防止
+   */
+
+  if (button) {
+
+    button.disabled =
+      true;
+
+    button.style.opacity =
+      "0.6";
+
+    button.innerHTML =
+      '<span style="font-size:20px;">🔐</span>' +
+      '認証しています…';
+
+  }
+
+
+  if (message) {
+
+    message.textContent =
+      "Face ID・指紋などで認証してください…";
+
+  }
+
+
+  try {
+
+    console.log(
+      "★ Passkeyログイン開始"
+    );
+
+
+    /*
+     * ログアウト後の
+     * 強制ログイン画面フラグを解除
+     */
+
+    sessionStorage.removeItem(
+      "forceLoginScreen"
+    );
+
+
+    /*
+     * Supabase Passkeyログイン
+     */
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient.auth
+        .signInWithPasskey();
+
+
+    if (error) {
+
+      throw error;
+
+    }
+
+
+    /*
+     * セッション確認
+     */
+
+    if (
+      !data ||
+      !data.session
+    ) {
+
+      throw new Error(
+        "Passkeyログインに成功しましたが、ログインセッションを取得できませんでした。"
+      );
+
+    }
+
+
+    console.log(
+      "★ Passkeyログイン成功",
+      data.user?.email
+    );
+
+
+    /*
+     * ログイン成功
+     *
+     * init()をもう一度実行して、
+     * 通常のログイン処理を行う
+     */
+
+    window.location.reload();
+
+
+  } catch (error) {
+
+    console.error(
+      "Passkeyログインエラー",
+      error
+    );
+
+
+    const errorMessage =
+      error?.message ||
+      String(error);
+
+
+    /*
+     * キャンセルの場合は
+     * エラー表示を出しすぎない
+     */
+
+    const lowerMessage =
+      errorMessage.toLowerCase();
+
+
+    if (
+      !lowerMessage.includes(
+        "cancel"
+      ) &&
+      !lowerMessage.includes(
+        "abort"
+      )
+    ) {
+
+      alert(
+        "Face ID / 指紋ログインに失敗しました。\n\n" +
+        errorMessage
+      );
+
+    }
+
+
+    if (message) {
+
+      message.textContent =
+        "Face ID / 指紋でログインできます。";
+
+    }
+
+
+    /*
+     * ボタンを元に戻す
+     */
+
+    if (button) {
+
+      button.disabled =
+        false;
+
+      button.style.opacity =
+        "1";
+
+      button.innerHTML =
+        '<span style="font-size:20px;">🔐</span>' +
+        'Face ID / 指紋でログイン';
+
+    }
+
+  }
+
+}
+
 async function issueStaffInvite(staffId) {
 
   try {
