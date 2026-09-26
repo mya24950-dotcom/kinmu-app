@@ -5717,17 +5717,41 @@ function showShiftMenu(
   }
 
 
+  /* ==================================================
+     管理者か職員か判定
+  ================================================== */
+
+  const isAdmin =
+    currentOrganization &&
+    currentOrganization.role ===
+      "admin";
+
+
+  /*
+     職員の場合は必ず休暇モード
+  */
+
+  if (!isAdmin) {
+
+    shiftMenuMode =
+      "leave";
+
+  }
+
+
   buttons.innerHTML =
     "";
 
 
   /* ==================================================
      勤務形態モード
+     ※ 管理者のみ
   ================================================== */
 
   if (
     shiftMenuMode ===
-    "shift"
+      "shift" &&
+    isAdmin
   ) {
 
     appData.shiftTypes.forEach(
@@ -6090,7 +6114,7 @@ function showShiftMenu(
     /* -----------------------------------------------
        休暇一覧
     ------------------------------------------------ */
-     
+
     appData.leaveTypes.forEach(
       leave => {
 
@@ -6098,6 +6122,7 @@ function showShiftMenu(
           document.createElement(
             "button"
           );
+
 
         button.type =
           "button";
@@ -6116,10 +6141,8 @@ function showShiftMenu(
           "#FFD54F";
 
 
-       button.textContent = leave.name;
-button.style.background = leave.color || "#FFD54F";
-button.style.color = "#000000";
-button.style.boxSizing = "border-box";
+        button.style.color =
+          "#000000";
 
 
         button.style.boxSizing =
