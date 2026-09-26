@@ -1744,3 +1744,25 @@ button:disabled {
     inset 0 0 0 3px #007aff !important;
   z-index: 10;
 }
+
+/* ==================================================
+   Apple風 ナビアイコン
+================================================== */
+
+.nav-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.nav-icon {
+  width: 19px;
+  height: 19px;
+  flex: 0 0 19px;
+  display: block;
+}
+
+.nav-button.active .nav-icon {
+  stroke-width: 2;
+}
