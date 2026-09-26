@@ -801,6 +801,30 @@ async function loginWithGoogle() {
 
 }
 
+function setupGoogleLogin() {
+
+  const button =
+    document.getElementById(
+      "googleLoginButton"
+    );
+
+
+  if (!button) {
+
+    console.log(
+      "Googleログインボタンが見つかりません"
+    );
+
+    return;
+
+  }
+
+
+  button.onclick =
+    loginWithGoogle;
+
+}
+
 async function handleInviteAfterLogin() {
 
   const params =
