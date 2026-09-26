@@ -370,26 +370,26 @@ async function init() {
     );
 
 
-    } catch (error) {
+ } catch (error) {
 
-    console.error(
-      "★ 初期化エラー",
-      error
-    );
+  console.error(
+    "★ 初期化エラー",
+    error
+  );
 
+  alert(
+    "アプリの初期化に失敗しました。\n\n" +
+    "エラー内容：\n" +
+    (error?.message || String(error))
+  );
 
-    alert(
-      "アプリの初期化に失敗しました。\n\n" +
-      "エラー内容：\n" +
-      (error?.message || String(error))
-    );
+  showLoginPage(
+    "アプリの初期化に失敗しました。"
+  );
 
-
-    showLoginPage(
-      "アプリの初期化に失敗しました。"
-    );
-
-  }
+  /* ログインボタンを再び有効にする */
+  setupGoogleLogin();
+}
 
 }
 
@@ -820,8 +820,25 @@ function setupGoogleLogin() {
   }
 
 
+  /* ボタンを確実に有効化 */
+
+  button.disabled =
+    false;
+
+
+  button.style.opacity =
+    "1";
+
+
+  /* クリック処理を設定 */
+
   button.onclick =
     loginWithGoogle;
+
+
+  console.log(
+    "★ Googleログインボタン設定完了"
+  );
 
 }
 
