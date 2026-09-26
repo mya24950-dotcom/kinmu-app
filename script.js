@@ -5643,11 +5643,6 @@ function showShiftMenu(
     /* -----------------------------------------------
        休暇一覧
     ------------------------------------------------ */
-
-alert(
-  "画面表示時の休暇：" +
-  JSON.stringify(appData.leaveTypes)
-);
      
     appData.leaveTypes.forEach(
       leave => {
@@ -5656,12 +5651,6 @@ alert(
           document.createElement(
             "button"
           );
-
-         alert(
-  "休暇ボタン作成：" +
-  leave.name
-);
-
 
         button.type =
           "button";
@@ -5713,11 +5702,6 @@ button.style.boxSizing = "border-box";
         buttons.appendChild(
           button
         );
-
-         alert(
-  "休暇ボタン追加完了：" +
-  button.textContent
-);
 
       }
     );
