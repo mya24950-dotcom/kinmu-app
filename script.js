@@ -7493,8 +7493,6 @@ async function moveStaff(
 /* ==================================================
    職員一覧
 ================================================== */
-
-```js
 async function renderStaffList() {
 
   const list =
@@ -8139,7 +8137,6 @@ async function renderStaffList() {
   }
 
 }
-```
 
 
 
