@@ -7491,6 +7491,7 @@ async function moveStaff(
    職員一覧
 ================================================== */
 
+```js
 async function renderStaffList() {
 
   const list =
@@ -7582,7 +7583,7 @@ async function renderStaffList() {
 
 
       /* -------------------------------------------------
-         この職員の organization_members を探す
+         この職員の権限情報
       ------------------------------------------------- */
 
       const member =
@@ -7593,14 +7594,14 @@ async function renderStaffList() {
         );
 
 
-      /* -------------------------------------------------
-         権限
-      ------------------------------------------------- */
-
       const role =
         member?.role ||
         "staff";
 
+
+      /* -------------------------------------------------
+         表示する権限名
+      ------------------------------------------------- */
 
       const roleLabel =
         role === "admin"
@@ -7614,9 +7615,9 @@ async function renderStaffList() {
           : "#666";
 
 
-      /* -------------------------------------------------
-         行作成
-      ------------------------------------------------- */
+      /* =================================================
+         職員1人分の行
+      ================================================= */
 
       const item =
         document.createElement(
@@ -7628,24 +7629,19 @@ async function renderStaffList() {
         "list-item";
 
 
-      /* =================================================
-         HTML
-      ================================================= */
-
       item.innerHTML = `
 
         <!-- =========================================
              1行目
-             名前 + 操作ボタン
+             名前 / ↑ / ↓ / 編集 / 管理者設定
         ========================================== -->
 
         <div
           style="
-            width:100%;
             display:flex;
             align-items:center;
-            justify-content:space-between;
-            gap:10px;
+            width:100%;
+            gap:6px;
           "
         >
 
@@ -7665,65 +7661,59 @@ async function renderStaffList() {
           </div>
 
 
-          <!-- 管理者だけ操作ボタン -->
-
           ${
             isAdmin
               ? `
 
-                <div
-                  class="staff-main-buttons"
-                  style="
-                    display:flex;
-                    align-items:center;
-                    gap:5px;
-                    flex-shrink:0;
-                  "
+                <!-- 上へ -->
+
+                <button
+                  type="button"
+                  class="list-button move-staff-up-button"
+                  ${
+                    index === 0
+                      ? "disabled"
+                      : ""
+                  }
                 >
-
-                  <button
-                    type="button"
-                    class="list-button move-staff-up-button"
-                    ${
-                      index === 0
-                        ? "disabled"
-                        : ""
-                    }
-                  >
-                    ↑
-                  </button>
+                  ↑
+                </button>
 
 
-                  <button
-                    type="button"
-                    class="list-button move-staff-down-button"
-                    ${
-                      index ===
-                      appData.staff.length - 1
-                        ? "disabled"
-                        : ""
-                    }
-                  >
-                    ↓
-                  </button>
+                <!-- 下へ -->
+
+                <button
+                  type="button"
+                  class="list-button move-staff-down-button"
+                  ${
+                    index ===
+                    appData.staff.length - 1
+                      ? "disabled"
+                      : ""
+                  }
+                >
+                  ↓
+                </button>
 
 
-                  <button
-                    type="button"
-                    class="list-button edit-staff-button"
-                  >
-                    編集
-                  </button>
+                <!-- 編集 -->
+
+                <button
+                  type="button"
+                  class="list-button edit-staff-button"
+                >
+                  編集
+                </button>
 
 
-                  <button
-                    type="button"
-                    class="list-button delete delete-staff-button"
-                  >
-                    削除
-                  </button>
+                <!-- 管理者設定 -->
 
-                </div>
+                <button
+                  type="button"
+                  class="list-button role-change-button"
+                >
+                  管理者設定
+                </button>
 
               `
               : ""
@@ -7734,33 +7724,32 @@ async function renderStaffList() {
 
         <!-- =========================================
              2行目
-             権限 + 管理者設定 + 招待リンク
+             （職員/管理者） / 削除 / 招待リンク発行
         ========================================== -->
 
         <div
           style="
-            width:100%;
             display:flex;
             align-items:center;
-            justify-content:space-between;
-            gap:8px;
+            width:100%;
+            gap:6px;
             margin-top:4px;
           "
         >
 
-          <!-- 権限表示 -->
+          <!-- 権限 -->
 
           <div
             class="staff-role-label"
             style="
+              flex:1;
+              min-width:0;
               font-size:13px;
               color:${roleColor};
               font-weight:600;
-              flex:1;
-              min-width:0;
             "
           >
-            ${roleLabel}
+            （${roleLabel}）
           </div>
 
 
@@ -7768,43 +7757,24 @@ async function renderStaffList() {
             isAdmin
               ? `
 
-                <div
-                  style="
-                    display:flex;
-                    align-items:center;
-                    gap:6px;
-                    flex-shrink:0;
-                  "
+                <!-- 削除 -->
+
+                <button
+                  type="button"
+                  class="list-button delete delete-staff-button"
                 >
-
-                  <!-- 管理者設定 -->
-
-                  <button
-                    type="button"
-                    class="list-button role-change-button"
-                    style="
-                      font-size:12px;
-                      padding:4px 8px;
-                    "
-                  >
-                    管理者設定
-                  </button>
+                  削除
+                </button>
 
 
-                  <!-- 招待リンク -->
+                <!-- 招待リンク発行 -->
 
-                  <button
-                    type="button"
-                    class="list-button invite-staff-button"
-                    style="
-                      font-size:12px;
-                      padding:4px 8px;
-                    "
-                  >
-                    招待リンク発行
-                  </button>
-
-                </div>
+                <button
+                  type="button"
+                  class="list-button invite-staff-button"
+                >
+                  招待リンク発行
+                </button>
 
               `
               : ""
@@ -7958,9 +7928,7 @@ async function renderStaffList() {
 
 
               if (error) {
-
                 throw error;
-
               }
 
 
@@ -8055,6 +8023,10 @@ async function renderStaffList() {
 
             try {
 
+              /* -----------------------------------------
+                 勤務データを削除
+              ----------------------------------------- */
+
               const workResult =
                 await supabaseClient
                   .from("work_shifts")
@@ -8073,6 +8045,10 @@ async function renderStaffList() {
 
               }
 
+
+              /* -----------------------------------------
+                 職員を削除
+              ----------------------------------------- */
 
               const result =
                 await supabaseClient
@@ -8115,7 +8091,8 @@ async function renderStaffList() {
 
 
               alert(
-                "職員の削除に失敗しました。"
+                "職員の削除に失敗しました。\n\n" +
+                error.message
               );
 
 
@@ -8128,6 +8105,10 @@ async function renderStaffList() {
           }
         );
 
+
+      /* =================================================
+         一覧へ追加
+      ================================================= */
 
       list.appendChild(
         item
@@ -8155,294 +8136,8 @@ async function renderStaffList() {
   }
 
 }
+```
 
-
-/* ==================================================
-   勤務形態追加・編集
-================================================== */
-
-async function addOrUpdateShift() {
-
-  const nameInput =
-    document.getElementById(
-      "shiftNameInput"
-    );
-
-
-  const startInput =
-    document.getElementById(
-      "shiftStartInput"
-    );
-
-
-  const endInput =
-    document.getElementById(
-      "shiftEndInput"
-    );
-
-
-  const breakInput =
-    document.getElementById(
-      "shiftBreakInput"
-    );
-
-
-  if (!nameInput) {
-
-    return;
-
-  }
-
-
-  const name =
-    nameInput.value.trim();
-
-
-  const start =
-    startInput?.value ||
-    "";
-
-
-  const end =
-    endInput?.value ||
-    "";
-
-
-  const breakTime =
-    breakInput?.value ||
-    "";
-
-
-  if (!name) {
-
-    alert(
-      "勤務形態名を入力してください"
-    );
-
-    return;
-
-  }
-
-
-  if (
-    name === "明"
-  ) {
-
-    alert(
-      "「明」は登録できません"
-    );
-
-    return;
-
-  }
-
-
-  const duplicate =
-    appData.shiftTypes.some(
-      (shift, index) =>
-        shift.name === name &&
-        index !==
-          editingShiftIndex
-    );
-
-
-  if (duplicate) {
-
-    alert(
-      "同じ勤務形態名を登録できません"
-    );
-
-    return;
-
-  }
-
-
-  cloudOperationBusy =
-    true;
-
-
-  try {
-
-    if (
-      editingShiftIndex >= 0
-    ) {
-
-      const oldShift =
-        appData.shiftTypes[
-          editingShiftIndex
-        ];
-
-
-      if (
-        oldShift.name !== name
-      ) {
-
-        const workResult =
-          await supabaseClient
-            .from("work_shifts")
-            .update({
-
-              shift_name:
-                name
-
-            })
-            .eq(
-              "shift_name",
-              oldShift.name
-            );
-
-
-        if (
-          workResult.error
-        ) {
-
-          throw workResult.error;
-
-        }
-
-      }
-
-
-      const result =
-        await supabaseClient
-          .from("shift_types")
-          .update({
-
-            name,
-
-            start_time:
-              start || null,
-
-            end_time:
-              end || null,
-
-             break_time:
-        breakTime || null
-
-
-          })
-          .eq(
-            "id",
-            oldShift.id
-          );
-
-
-      if (
-        result.error
-      ) {
-
-        throw result.error;
-
-      }
-
-
-      editingShiftIndex =
-        -1;
-
-    } else {
-
-      const result =
-        await supabaseClient
-          .from("shift_types")
-          .insert({
-
-            name,
-
-            start_time:
-              start || null,
-
-            end_time:
-              end || null,
-
-            break_time:
-              breakTime || null,
-
-             organization_id:
-        currentOrganization.id
-
-          });
-
-
-      if (
-        result.error
-      ) {
-
-        throw result.error;
-
-      }
-
-    }
-
-
-    nameInput.value =
-      "";
-
-
-    if (startInput) {
-
-      startInput.value =
-        "";
-
-    }
-
-
-    if (endInput) {
-
-      endInput.value =
-        "";
-
-    }
-
-
-    if (breakInput) {
-
-      breakInput.value =
-        "";
-
-    }
-
-
-    const button =
-      document.getElementById(
-        "addShiftButton"
-      );
-
-
-    if (button) {
-
-      button.textContent =
-        "勤務形態を追加";
-
-    }
-
-
-    await loadAllFromSupabase();
-
-
-    renderShiftList();
-
-    renderSchedule();
-
-
-  } catch (error) {
-
-    console.error(
-      "勤務形態保存エラー",
-      error
-    );
-
-
-    alert(
-      "勤務形態の保存に失敗しました。"
-    );
-
-  } finally {
-
-    finishCloudOperation();
-
-  }
-
-}
 
 
 /* ==================================================
