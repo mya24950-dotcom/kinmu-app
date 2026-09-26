@@ -7252,41 +7252,28 @@ async function addOrUpdateStaff() {
       "staffNameInput"
     );
 
-
   if (!input) {
-
     return;
-
   }
-
 
   const name =
     input.value.trim();
 
-
   if (!name) {
-
     alert(
       "職員名を入力してください"
     );
-
     return;
-
   }
-
 
   if (
     name === "明"
   ) {
-
     alert(
       "「明」は登録できません"
     );
-
     return;
-
   }
-
 
   const duplicate =
     appData.staff.some(
@@ -7297,21 +7284,15 @@ async function addOrUpdateStaff() {
           editingStaffIndex
     );
 
-
   if (duplicate) {
-
     alert(
       "同じ職員名は登録できません"
     );
-
     return;
-
   }
-
 
   cloudOperationBusy =
     true;
-
 
   try {
 
@@ -7319,17 +7300,19 @@ async function addOrUpdateStaff() {
       editingStaffIndex >= 0
     ) {
 
+      /* =========================================
+         既存職員の編集
+         ========================================= */
+
       const oldStaff =
         appData.staff[
           editingStaffIndex
         ];
 
-
       const oldName =
         getStaffName(
           oldStaff
         );
-
 
       if (
         oldName !== name
@@ -7339,55 +7322,47 @@ async function addOrUpdateStaff() {
           await supabaseClient
             .from("work_shifts")
             .update({
-
               staff_name:
                 name
-
             })
             .eq(
               "staff_name",
               oldName
             );
 
-
         if (
           workResult.error
         ) {
-
           throw workResult.error;
-
         }
 
       }
-
 
       const result =
         await supabaseClient
           .from("staff")
           .update({
-
             name
-
           })
           .eq(
             "id",
             oldStaff.id
           );
 
-
       if (
         result.error
       ) {
-
         throw result.error;
-
       }
-
 
       editingStaffIndex =
         -1;
 
     } else {
+
+      /* =========================================
+         新規職員の追加
+         ========================================= */
 
       const maxOrder =
         appData.staff.reduce(
@@ -7398,75 +7373,111 @@ async function addOrUpdateStaff() {
                 staff.sort_order
               );
 
-
             return Number.isFinite(
               value
             )
-
               ? Math.max(
                   max,
                   value
                 )
-
               : max;
 
           },
           -1
         );
 
+      /* -----------------------------------------
+         ① staff に職員を追加
+         ----------------------------------------- */
 
       const result =
         await supabaseClient
           .from("staff")
           .insert({
-
             name,
-
             sort_order:
               maxOrder + 1,
-
-             organization_id:
-        currentOrganization.id
-
-          });
-
+            organization_id:
+              currentOrganization.id
+          })
+          .select("id")
+          .single();
 
       if (
         result.error
       ) {
-
         throw result.error;
+      }
 
+      const newStaff =
+        result.data;
+
+      if (
+        !newStaff ||
+        !newStaff.id
+      ) {
+        throw new Error(
+          "新しく追加した職員のIDを取得できませんでした。"
+        );
+      }
+
+      /* -----------------------------------------
+         ② organization_members に登録
+         ----------------------------------------- */
+
+      const memberResult =
+        await supabaseClient
+          .from(
+            "organization_members"
+          )
+          .insert({
+            organization_id:
+              currentOrganization.id,
+
+            user_id:
+              null,
+
+            role:
+              "staff",
+
+            staff_id:
+              newStaff.id
+          });
+
+      if (
+        memberResult.error
+      ) {
+        throw memberResult.error;
       }
 
     }
 
+    /* =========================================
+       入力欄をリセット
+       ========================================= */
 
     input.value =
       "";
-
 
     const button =
       document.getElementById(
         "addStaffButton"
       );
 
-
     if (button) {
-
       button.textContent =
         "追加";
-
     }
 
+    /* =========================================
+       最新データを再取得
+       ========================================= */
 
     await loadAllFromSupabase();
-
 
     renderStaffList();
 
     renderSchedule();
-
 
   } catch (error) {
 
@@ -7475,9 +7486,12 @@ async function addOrUpdateStaff() {
       error
     );
 
-
     alert(
-      "職員の保存に失敗しました。"
+      "職員の保存に失敗しました。\n\n" +
+      (
+        error?.message ||
+        String(error)
+      )
     );
 
   } finally {
