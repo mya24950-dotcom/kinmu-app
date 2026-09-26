@@ -7253,8 +7253,20 @@ function bindScheduleCells() {
             e.stopPropagation();
 
 
-            selectedCell =
-              cell;
+            // 前に選択していたセルの枠を消す
+if (selectedCell) {
+  selectedCell.classList.remove(
+    "selected-cell"
+  );
+}
+
+// 今タップしたセルを選択
+selectedCell =
+  cell;
+
+selectedCell.classList.add(
+  "selected-cell"
+);
 
 
             shiftMenuMode =
