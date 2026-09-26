@@ -205,12 +205,9 @@ async function init() {
 
 
       showLoginPage();
-
-
-      setupGoogleLogin();
-
-
-      return;
+setupGoogleLogin();
+setupNewOrganizationButton();
+return;
 
     }
 
@@ -937,6 +934,81 @@ function setupGoogleLogin() {
     loginWithGoogle();
 
   };
+
+}
+
+/* =================================================
+   新規職場登録画面
+================================================= */
+
+function setupNewOrganizationButton() {
+
+  const newOrganizationButton =
+    document.getElementById(
+      "newOrganizationButton"
+    );
+
+  const newOrganizationForm =
+    document.getElementById(
+      "newOrganizationForm"
+    );
+
+  const cancelOrganizationButton =
+    document.getElementById(
+      "cancelOrganizationButton"
+    );
+
+  const organizationNameInput =
+    document.getElementById(
+      "organizationNameInput"
+    );
+
+  if (
+    !newOrganizationButton ||
+    !newOrganizationForm
+  ) {
+    return;
+  }
+
+  newOrganizationButton.onclick =
+    function() {
+
+      newOrganizationButton.style.display =
+        "none";
+
+      newOrganizationForm.style.display =
+        "";
+
+      if (organizationNameInput) {
+
+        organizationNameInput.value =
+          "";
+
+        organizationNameInput.focus();
+
+      }
+
+    };
+
+
+  if (cancelOrganizationButton) {
+
+    cancelOrganizationButton.onclick =
+      function() {
+
+        newOrganizationForm.style.display =
+          "none";
+
+        newOrganizationButton.style.display =
+          "";
+
+        if (organizationNameInput) {
+          organizationNameInput.value = "";
+        }
+
+      };
+
+  }
 
 }
 
