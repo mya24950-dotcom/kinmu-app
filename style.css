@@ -1733,3 +1733,14 @@ button:disabled {
     background: #ffe66d !important;
   }
 }
+
+/* ==================================================
+   選択中の勤務セル
+================================================== */
+
+#scheduleTable td.selected-cell {
+  position: relative;
+  box-shadow:
+    inset 0 0 0 3px #007aff !important;
+  z-index: 10;
+}
