@@ -952,6 +952,11 @@ function setupNewOrganizationButton() {
       "newOrganizationButton"
     );
 
+  const loginMainView =
+    document.getElementById(
+      "loginMainView"
+    );
+
   const newOrganizationForm =
     document.getElementById(
       "newOrganizationForm"
@@ -967,14 +972,10 @@ function setupNewOrganizationButton() {
       "organizationNameInput"
     );
 
-  const googleLoginButton =
-    document.getElementById(
-      "googleLoginButton"
-    );
-
 
   if (
     !newOrganizationButton ||
+    !loginMainView ||
     !newOrganizationForm
   ) {
     return;
@@ -988,47 +989,12 @@ function setupNewOrganizationButton() {
   newOrganizationButton.onclick =
     function() {
 
-      /* 新規登録ボタンを隠す */
-      newOrganizationButton.style.display =
+      loginMainView.style.display =
         "none";
 
-      /* Googleログインを隠す */
-      if (googleLoginButton) {
-        googleLoginButton.style.display =
-          "none";
-      }
-
-      /* 区切り線なども隠す */
-      const newOrganizationSeparator =
-        newOrganizationButton
-          .parentElement
-          ?.querySelector(
-            '[style*="margin:28px 0"]'
-          );
-
-      if (newOrganizationSeparator) {
-        newOrganizationSeparator.style.display =
-          "none";
-      }
-
-      /* 説明文を隠す */
-      const description =
-        newOrganizationButton
-          .parentElement
-          ?.querySelector(
-            'p[style*="はじめて勤務表を作成する方"]'
-          );
-
-      if (description) {
-        description.style.display =
-          "none";
-      }
-
-      /* 登録フォームを表示 */
       newOrganizationForm.style.display =
         "";
 
-      /* 職場名入力 */
       if (organizationNameInput) {
 
         organizationNameInput.value =
@@ -1050,21 +1016,12 @@ function setupNewOrganizationButton() {
     cancelOrganizationButton.onclick =
       function() {
 
-        /* 登録フォームを隠す */
         newOrganizationForm.style.display =
           "none";
 
-        /* Googleログインを再表示 */
-        if (googleLoginButton) {
-          googleLoginButton.style.display =
-            "";
-        }
-
-        /* 新規登録ボタンを再表示 */
-        newOrganizationButton.style.display =
+        loginMainView.style.display =
           "";
 
-        /* 職場名を空にする */
         if (organizationNameInput) {
           organizationNameInput.value =
             "";
