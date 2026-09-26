@@ -822,7 +822,7 @@ function setupGoogleLogin() {
 
   };
 
-  console.log("★ Googleログインボタン設定完了");
+  alert("★ Googleログインボタン設定完了");
 
 }
 
