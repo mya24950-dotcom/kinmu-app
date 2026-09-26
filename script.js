@@ -7344,6 +7344,13 @@ function renderStaffList() {
 
           <button
             type="button"
+            class="list-button invite-staff-button"
+          >
+            招待リンク発行
+          </button>
+
+          <button
+            type="button"
             class="list-button delete delete-staff-button"
           >
             削除
@@ -7421,6 +7428,33 @@ function renderStaffList() {
                 "職員を更新";
 
             }
+
+          }
+        );
+
+
+      item
+        .querySelector(
+          ".invite-staff-button"
+        )
+        ?.addEventListener(
+          "click",
+          async () => {
+
+            if (
+              !confirm(
+                `${name}さんの招待リンクを発行しますか？`
+              )
+            ) {
+
+              return;
+
+            }
+
+
+            await issueStaffInvite(
+              staff.id
+            );
 
           }
         );
