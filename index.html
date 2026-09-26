@@ -7,40 +7,33 @@
 
   <meta
     name="viewport"
-    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover"
-  >
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
 
   <title>勤務表</title>
 
   <link
     rel="manifest"
-    href="manifest.json"
-  >
+    href="manifest.json">
 
   <meta
     name="theme-color"
-    content="#007aff"
-  >
+    content="#007aff">
 
   <meta
     name="apple-mobile-web-app-capable"
-    content="yes"
-  >
+    content="yes">
 
   <meta
     name="apple-mobile-web-app-status-bar-style"
-    content="default"
-  >
+    content="default">
 
   <meta
     name="apple-mobile-web-app-title"
-    content="勤務表"
-  >
+    content="勤務表">
 
   <link
     rel="stylesheet"
-    href="style.css"
-  >
+    href="style.css">
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.105.0"></script>
 
@@ -57,37 +50,41 @@
 <div
   id="loginPage"
   style="
-    min-height:100vh;
+    min-height:100svh;
+    height:100svh;
+    width:100%;
     display:flex;
     align-items:center;
     justify-content:center;
-    padding:24px;
+    padding:
+      max(8px, env(safe-area-inset-top))
+      16px
+      max(8px, env(safe-area-inset-bottom));
     box-sizing:border-box;
     background:#f2f2f7;
+    overflow:hidden;
   "
 >
 
-
-  <!-- ==================================================
-       ログインカード
-  ================================================== -->
 
   <div
     style="
       width:100%;
       max-width:420px;
+      max-height:100%;
       background:#ffffff;
       border-radius:20px;
-      padding:32px 24px;
+      padding:18px 22px;
       box-sizing:border-box;
       text-align:center;
       box-shadow:0 4px 20px rgba(0,0,0,0.08);
+      overflow:auto;
     "
   >
 
 
     <!-- ==================================================
-         通常ログイン画面
+         ログインメイン
     ================================================== -->
 
     <div id="loginMainView">
@@ -97,16 +94,19 @@
 
       <div
         style="
-          margin-bottom:12px;
+          width:40px;
+          height:40px;
+          margin:0 auto 4px;
           display:flex;
+          align-items:center;
           justify-content:center;
           color:#007aff;
         "
       >
 
         <svg
-          width="48"
-          height="48"
+          width="40"
+          height="40"
           viewBox="0 0 24 24"
           aria-hidden="true"
         >
@@ -196,12 +196,11 @@
       </div>
 
 
-      <!-- タイトル -->
-
       <h1
         style="
-          margin:0 0 28px;
-          font-size:28px;
+          margin:0 0 12px;
+          font-size:25px;
+          line-height:1.2;
           color:#1d1d1f;
         "
       >
@@ -213,47 +212,25 @@
            メールアドレス
       ================================================== -->
 
-      <div
+      <input
+        type="email"
+        id="emailInput"
+        autocomplete="email"
+        placeholder="メールアドレス"
         style="
-          text-align:left;
-          margin-bottom:14px;
+          width:100%;
+          height:46px;
+          padding:0 14px;
+          border:1px solid #d1d1d6;
+          border-radius:11px;
+          box-sizing:border-box;
+          font-size:16px;
+          outline:none;
+          background:#fff;
+          color:#1d1d1f;
+          margin-bottom:9px;
         "
       >
-
-        <label
-          for="emailLoginInput"
-          style="
-            display:block;
-            font-size:14px;
-            font-weight:600;
-            color:#555;
-            margin-bottom:7px;
-          "
-        >
-          メールアドレス
-        </label>
-
-
-        <input
-          type="email"
-          id="emailLoginInput"
-          autocomplete="email"
-          placeholder="メールアドレス"
-          style="
-            width:100%;
-            min-height:52px;
-            padding:0 14px;
-            border:1px solid #d1d1d6;
-            border-radius:12px;
-            box-sizing:border-box;
-            font-size:16px;
-            background:#fff;
-            color:#1d1d1f;
-            outline:none;
-          "
-        >
-
-      </div>
 
 
       <!-- ==================================================
@@ -262,112 +239,59 @@
 
       <div
         style="
-          text-align:left;
-          margin-bottom:10px;
+          position:relative;
+          margin-bottom:7px;
         "
       >
 
-        <label
-          for="passwordLoginInput"
+        <input
+          type="password"
+          id="passwordInput"
+          autocomplete="current-password"
+          placeholder="パスワード"
           style="
-            display:block;
-            font-size:14px;
-            font-weight:600;
-            color:#555;
-            margin-bottom:7px;
-          "
-        >
-          パスワード
-        </label>
-
-
-        <div
-          style="
-            position:relative;
             width:100%;
+            height:46px;
+            padding:0 48px 0 14px;
+            border:1px solid #d1d1d6;
+            border-radius:11px;
+            box-sizing:border-box;
+            font-size:16px;
+            outline:none;
+            background:#fff;
+            color:#1d1d1f;
           "
         >
 
-          <input
-            type="password"
-            id="passwordLoginInput"
-            autocomplete="current-password"
-            placeholder="パスワード"
-            style="
-              width:100%;
-              min-height:52px;
-              padding:0 52px 0 14px;
-              border:1px solid #d1d1d6;
-              border-radius:12px;
-              box-sizing:border-box;
-              font-size:16px;
-              background:#fff;
-              color:#1d1d1f;
-              outline:none;
-            "
-          >
 
-
-          <!-- パスワード表示ボタン -->
-
-          <button
-            type="button"
-            id="togglePasswordButton"
-            aria-label="パスワードを表示"
-            title="パスワードを表示"
-            style="
-              position:absolute;
-              right:8px;
-              top:50%;
-              transform:translateY(-50%);
-              width:40px;
-              height:40px;
-              border:none;
-              background:transparent;
-              color:#777;
-              cursor:pointer;
-              display:flex;
-              align-items:center;
-              justify-content:center;
-              padding:0;
-            "
-          >
-
-            <svg
-              width="23"
-              height="23"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
-
-              <path
-                d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.8"
-                stroke-linejoin="round"
-              />
-
-              <circle
-                cx="12"
-                cy="12"
-                r="2.7"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.8"
-              />
-
-            </svg>
-
-          </button>
-
-        </div>
+        <button
+          type="button"
+          id="passwordToggleButton"
+          aria-label="パスワードを表示"
+          title="パスワードを表示"
+          style="
+            position:absolute;
+            right:5px;
+            top:50%;
+            transform:translateY(-50%);
+            width:38px;
+            height:38px;
+            border:none;
+            background:transparent;
+            color:#777;
+            font-size:18px;
+            cursor:pointer;
+            padding:0;
+          "
+        >
+          👁
+        </button>
 
       </div>
 
 
       <!-- ==================================================
-           ログイン状態・パスワード忘れ
+           ログイン状態
       ================================================== -->
 
       <div
@@ -375,55 +299,49 @@
           display:flex;
           align-items:center;
           justify-content:space-between;
-          gap:10px;
-          margin:8px 0 20px;
+          gap:8px;
+          margin:0 2px 10px;
+          min-height:28px;
         "
       >
-
-
-        <!-- ログイン状態を保持 -->
 
         <label
           style="
             display:flex;
             align-items:center;
-            gap:8px;
-            font-size:14px;
+            gap:6px;
+            font-size:12px;
             color:#555;
-            cursor:pointer;
             white-space:nowrap;
+            cursor:pointer;
           "
         >
 
           <input
             type="checkbox"
-            id="rememberLoginCheckbox"
+            id="rememberLogin"
             style="
-              width:18px;
-              height:18px;
-              accent-color:#007aff;
+              width:17px;
+              height:17px;
               margin:0;
+              accent-color:#007aff;
             "
           >
 
-          <span>
-            ログイン状態を保持
-          </span>
+          ログイン状態を保持
 
         </label>
 
 
-        <!-- パスワード忘れ -->
-
         <button
           type="button"
-          id="forgotPasswordButton"
+          id="resetPasswordButton"
           style="
             border:none;
             background:transparent;
             color:#007aff;
-            font-size:14px;
-            padding:0;
+            font-size:12px;
+            padding:4px 0;
             cursor:pointer;
             white-space:nowrap;
           "
@@ -443,16 +361,15 @@
         id="emailLoginButton"
         style="
           width:100%;
-          min-height:54px;
+          height:48px;
           border:none;
-          border-radius:12px;
-          background:#22c55e;
-          color:#ffffff;
-          font-size:17px;
+          border-radius:11px;
+          background:#007aff;
+          color:#fff;
+          font-size:16px;
           font-weight:700;
           cursor:pointer;
           box-sizing:border-box;
-          box-shadow:0 2px 5px rgba(0,0,0,0.08);
         "
       >
         ログイン
@@ -467,8 +384,8 @@
         style="
           display:flex;
           align-items:center;
-          gap:12px;
-          margin:26px 0 18px;
+          gap:10px;
+          margin:12px 0 9px;
         "
       >
 
@@ -483,7 +400,7 @@
         <span
           style="
             color:#999;
-            font-size:13px;
+            font-size:11px;
             white-space:nowrap;
           "
         >
@@ -502,53 +419,16 @@
 
 
       <!-- ==================================================
-           SNSログインアイコン
+           ログインアイコン
       ================================================== -->
 
       <div
         style="
           display:flex;
           justify-content:center;
-          align-items:center;
-          gap:10px;
-          margin-bottom:18px;
+          gap:12px;
         "
       >
-
-
-        <!-- Yahoo -->
-
-        <button
-          type="button"
-          class="social-login-button"
-          aria-label="Yahoo!ログイン"
-          title="Yahoo!ログイン"
-          style="
-            width:58px;
-            height:58px;
-            border:1px solid #e0e0e0;
-            border-radius:12px;
-            background:#fff;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            cursor:pointer;
-            padding:0;
-          "
-        >
-
-          <span
-            style="
-              font-size:23px;
-              font-weight:800;
-              color:#d71920;
-              font-family:Arial,sans-serif;
-            "
-          >
-            Y!
-          </span>
-
-        </button>
 
 
         <!-- Google -->
@@ -559,46 +439,44 @@
           aria-label="Googleでログイン"
           title="Googleでログイン"
           style="
-            width:58px;
-            height:58px;
-            border:1px solid #e0e0e0;
+            width:52px;
+            height:52px;
+            border:1px solid #d1d1d6;
             border-radius:12px;
             background:#fff;
             display:flex;
             align-items:center;
             justify-content:center;
             cursor:pointer;
-            padding:0;
+            box-sizing:border-box;
           "
         >
 
           <svg
-            width="27"
-            height="27"
-            viewBox="0 0 48 48"
+            width="25"
+            height="25"
+            viewBox="0 0 24 24"
             aria-hidden="true"
           >
 
             <path
-              fill="#EA4335"
-              d="M24 9.5c3.54 0 6.72 1.22 9.22 3.6l6.84-6.84C35.9 2.56 30.47 0 24 0 14.61 0 6.51 5.38 2.56 13.22l7.96 6.18C12.43 13.07 17.72 9.5 24 9.5z"
-              transform="translate(0 4)"
-            />
-
-            <path
               fill="#4285F4"
-              d="M46.98 24.55c0-1.64-.15-3.22-.43-4.73H24v9.08h12.86c-.55 2.96-2.18 5.46-4.64 7.14l7.52 5.84C44.15 37.7 46.98 31.66 46.98 24.55z"
-              transform="translate(0 -1)"
-            />
-
-            <path
-              fill="#FBBC05"
-              d="M10.52 28.4A14.47 14.47 0 0 1 9.5 24c0-1.53.26-3.02.73-4.4l-7.96-6.18A23.9 23.9 0 0 0 0 24c0 3.84.92 7.48 2.56 10.58l7.96-6.18z"
+              d="M21.35 12.23c0-.72-.06-1.25-.2-1.81H12v3.43h5.37a4.59 4.59 0 0 1-1.99 3.01v2.5h3.23c1.89-1.74 2.74-4.3 2.74-7.13Z"
             />
 
             <path
               fill="#34A853"
-              d="M24 48c6.48 0 11.92-2.14 15.9-5.82l-7.52-5.84c-2.08 1.4-4.73 2.23-8.38 2.23-6.28 0-11.57-3.57-13.48-8.78l-7.96 6.18C6.51 42.62 14.61 48 24 48z"
+              d="M12 21.8c2.7 0 4.97-.89 6.61-2.43l-3.23-2.5c-.89.6-2.03.96-3.38.96-2.6 0-4.81-1.76-5.6-4.13H3.06v2.58A9.99 9.99 0 0 0 12 21.8Z"
+            />
+
+            <path
+              fill="#FBBC05"
+              d="M6.4 13.7a6.01 6.01 0 0 1 0-3.4V7.72H3.06a10 10 0 0 0 0 8.56l3.34-2.58Z"
+            />
+
+            <path
+              fill="#EA4335"
+              d="M12 6.17c1.47 0 2.78.5 3.82 1.5l2.86-2.86C16.97 3.23 14.7 2.2 12 2.2a10 10 0 0 0-8.94 5.52L6.4 10.3c.79-2.37 3-4.13 5.6-4.13Z"
             />
 
           </svg>
@@ -606,121 +484,73 @@
         </button>
 
 
-        <!-- Facebook -->
+        <!-- Face ID / Passkey -->
 
         <button
           type="button"
-          class="social-login-button"
-          aria-label="Facebookログイン"
-          title="Facebookログイン"
+          id="passkeyLoginButton"
+          aria-label="Face ID・指紋でログイン"
+          title="Face ID・指紋でログイン"
           style="
-            width:58px;
-            height:58px;
-            border:1px solid #e0e0e0;
+            width:52px;
+            height:52px;
+            border:1px solid #007aff;
             border-radius:12px;
             background:#fff;
+            color:#007aff;
             display:flex;
             align-items:center;
             justify-content:center;
             cursor:pointer;
-            padding:0;
-          "
-        >
-
-          <span
-            style="
-              width:30px;
-              height:30px;
-              border-radius:50%;
-              background:#1877f2;
-              color:#fff;
-              font-size:25px;
-              font-weight:700;
-              display:flex;
-              align-items:center;
-              justify-content:center;
-              font-family:Arial,sans-serif;
-            "
-          >
-            f
-          </span>
-
-        </button>
-
-
-        <!-- LINE -->
-
-        <button
-          type="button"
-          class="social-login-button"
-          aria-label="LINEログイン"
-          title="LINEログイン"
-          style="
-            width:58px;
-            height:58px;
-            border:1px solid #e0e0e0;
-            border-radius:12px;
-            background:#fff;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            cursor:pointer;
-            padding:0;
-          "
-        >
-
-          <span
-            style="
-              width:31px;
-              height:31px;
-              border-radius:50%;
-              background:#06c755;
-              color:#fff;
-              font-size:10px;
-              font-weight:800;
-              display:flex;
-              align-items:center;
-              justify-content:center;
-              font-family:Arial,sans-serif;
-            "
-          >
-            LINE
-          </span>
-
-        </button>
-
-
-        <!-- Apple -->
-
-        <button
-          type="button"
-          class="social-login-button"
-          aria-label="Appleログイン"
-          title="Appleログイン"
-          style="
-            width:58px;
-            height:58px;
-            border:1px solid #e0e0e0;
-            border-radius:12px;
-            background:#fff;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            cursor:pointer;
-            padding:0;
+            box-sizing:border-box;
           "
         >
 
           <svg
-            width="28"
-            height="32"
-            viewBox="0 0 24 28"
+            width="27"
+            height="27"
+            viewBox="0 0 24 24"
             aria-hidden="true"
           >
 
             <path
-              fill="#000"
-              d="M19.67 14.93c-.03-3.1 2.53-4.6 2.65-4.67-1.45-2.12-3.7-2.41-4.48-2.44-1.9-.2-3.74 1.13-4.7 1.13-.98 0-2.5-1.1-4.1-1.07-2.1.03-4.04 1.22-5.13 3.08-2.2 3.8-.56 9.39 1.55 12.47 1.03 1.5 2.24 3.16 3.84 3.1 1.54-.06 2.12-1 3.98-1 1.85 0 2.37 1 3.98.96 1.65-.03 2.69-1.5 3.68-3.01 1.16-1.74 1.64-3.42 1.67-3.5-.04-.01-3.2-1.22-3.24-5.05ZM16.58 5.81c.85-1.04 1.43-2.48 1.27-3.91-1.23.05-2.72.82-3.6 1.86-.79.91-1.48 2.38-1.3 3.78 1.38.1 2.78-.7 3.63-1.73Z"
+              d="M7 8.5A5 5 0 0 1 17 8.5"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+            />
+
+            <path
+              d="M5 11a7 7 0 0 1 14 0"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+            />
+
+            <path
+              d="M8 13.5c0-2.2 1.8-4 4-4s4 1.8 4 4"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+            />
+
+            <path
+              d="M10 17c0-1.1.9-2 2-2s2 .9 2 2"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+            />
+
+            <path
+              d="M12 19.5v-1"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
             />
 
           </svg>
@@ -730,96 +560,15 @@
       </div>
 
 
-      <!-- ==================================================
-           Passkey
-      ================================================== -->
-
-      <button
-        type="button"
-        id="passkeyLoginButton"
+      <div
         style="
-          width:100%;
-          min-height:50px;
-          border:1px solid #007aff;
-          border-radius:12px;
-          background:#ffffff;
-          color:#007aff;
-          font-size:15px;
-          font-weight:600;
-          cursor:pointer;
-          display:flex;
-          align-items:center;
-          justify-content:center;
-          gap:9px;
-          box-sizing:border-box;
+          margin-top:6px;
+          font-size:10px;
+          color:#999;
         "
       >
-
-        <svg
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-        >
-
-          <path
-            d="M7 8.5A5 5 0 0 1 17 8.5"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.8"
-            stroke-linecap="round"
-          />
-
-          <path
-            d="M5 11a7 7 0 0 1 14 0"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.8"
-            stroke-linecap="round"
-          />
-
-          <path
-            d="M8 13.5c0-2.2 1.8-4 4-4s4 1.8 4 4"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.8"
-            stroke-linecap="round"
-          />
-
-          <path
-            d="M10 17c0-1.1.9-2 2-2s2 .9 2 2"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.8"
-            stroke-linecap="round"
-          />
-
-          <path
-            d="M12 19.5v-1"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.8"
-            stroke-linecap="round"
-          />
-
-        </svg>
-
-        Face ID / 指紋でログイン
-
-      </button>
-
-
-      <p
-        style="
-          margin:9px 0 0;
-          color:#888;
-          font-size:12px;
-          line-height:1.6;
-        "
-      >
-        この端末に登録したFace ID・指紋などで<br>
-        簡単にログインできます。
-      </p>
+        Google / Face ID・指紋
+      </div>
 
 
       <!-- ==================================================
@@ -830,8 +579,8 @@
         style="
           display:flex;
           align-items:center;
-          gap:12px;
-          margin:28px 0 20px;
+          gap:10px;
+          margin:12px 0 8px;
         "
       >
 
@@ -846,7 +595,7 @@
         <span
           style="
             color:#999;
-            font-size:13px;
+            font-size:11px;
             white-space:nowrap;
           "
         >
@@ -869,12 +618,12 @@
         id="newOrganizationButton"
         style="
           width:100%;
-          min-height:52px;
-          border:none;
-          border-radius:12px;
-          background:#007aff;
-          color:#ffffff;
-          font-size:16px;
+          height:46px;
+          border:1px solid #007aff;
+          border-radius:11px;
+          background:#fff;
+          color:#007aff;
+          font-size:15px;
           font-weight:700;
           cursor:pointer;
           box-sizing:border-box;
@@ -884,17 +633,18 @@
       </button>
 
 
-      <p
-        style="
-          margin:10px 0 0;
-          color:#777;
-          font-size:13px;
-          line-height:1.6;
-        "
-      >
-        はじめて勤務表を作成する方はこちら
-      </p>
+      <!-- ログインメッセージ -->
 
+      <p
+        id="loginMessage"
+        style="
+          margin:7px 0 0;
+          min-height:18px;
+          color:#666;
+          font-size:12px;
+          line-height:1.4;
+        "
+      ></p>
 
     </div>
 
@@ -922,7 +672,7 @@
           font-size:15px;
           cursor:pointer;
           padding:0;
-          margin:0 0 24px;
+          margin:0 0 20px;
         "
       >
         ← 戻る
@@ -932,13 +682,13 @@
       <div
         style="
           text-align:center;
-          margin-bottom:28px;
+          margin-bottom:24px;
         "
       >
 
         <div
           style="
-            margin-bottom:10px;
+            margin-bottom:8px;
             display:flex;
             justify-content:center;
             color:#007aff;
@@ -1007,8 +757,8 @@
 
         <h2
           style="
-            margin:0 0 8px;
-            font-size:24px;
+            margin:0 0 7px;
+            font-size:23px;
           "
         >
           職場を新規登録
@@ -1019,11 +769,10 @@
           style="
             margin:0;
             color:#666;
-            font-size:14px;
-            line-height:1.7;
+            font-size:13px;
+            line-height:1.6;
           "
         >
-          はじめて勤務表を作成する方は<br>
           職場名と登録者名を入力してください。
         </p>
 
@@ -1037,7 +786,7 @@
           font-size:14px;
           font-weight:600;
           color:#555;
-          margin-bottom:8px;
+          margin-bottom:7px;
         "
       >
         職場名
@@ -1051,14 +800,14 @@
         maxlength="100"
         style="
           width:100%;
-          min-height:48px;
+          height:46px;
           padding:0 14px;
           border:1px solid #ccc;
           border-radius:10px;
           box-sizing:border-box;
           font-size:16px;
           outline:none;
-          margin-bottom:16px;
+          margin-bottom:14px;
         "
       >
 
@@ -1070,7 +819,7 @@
           font-size:14px;
           font-weight:600;
           color:#555;
-          margin-bottom:8px;
+          margin-bottom:7px;
         "
       >
         登録者名
@@ -1084,14 +833,14 @@
         maxlength="100"
         style="
           width:100%;
-          min-height:48px;
+          height:46px;
           padding:0 14px;
           border:1px solid #ccc;
           border-radius:10px;
           box-sizing:border-box;
           font-size:16px;
           outline:none;
-          margin-bottom:16px;
+          margin-bottom:14px;
         "
       >
 
@@ -1101,9 +850,9 @@
         id="createOrganizationButton"
         style="
           width:100%;
-          min-height:52px;
+          height:48px;
           border:none;
-          border-radius:12px;
+          border-radius:11px;
           background:#007aff;
           color:#ffffff;
           font-size:16px;
@@ -1118,9 +867,9 @@
 
       <p
         style="
-          margin:14px 0 0;
+          margin:10px 0 0;
           color:#888;
-          font-size:13px;
+          font-size:12px;
           line-height:1.6;
           text-align:center;
         "
@@ -1129,22 +878,7 @@
         勤務表を作成できます。
       </p>
 
-
     </div>
-
-
-    <!-- ログインメッセージ -->
-
-    <p
-      id="loginMessage"
-      style="
-        margin:16px 0 0;
-        min-height:24px;
-        color:#666;
-        font-size:14px;
-      "
-    ></p>
-
 
   </div>
 
@@ -1168,7 +902,6 @@
 
   <header class="header">
 
-
     <div
       class="header-title"
       id="organizationTitle"
@@ -1178,7 +911,6 @@
 
 
     <div class="header-delete-buttons">
-
 
       <button
         type="button"
@@ -1203,8 +935,6 @@
         ログアウト
       </button>
 
-
-      <!-- ダークモード -->
 
       <button
         type="button"
@@ -1233,7 +963,6 @@
 
       </button>
 
-
     </div>
 
   </header>
@@ -1245,8 +974,6 @@
 
   <nav class="nav">
 
-
-    <!-- 勤務表 -->
 
     <button
       class="nav-button active"
@@ -1346,8 +1073,6 @@
     </button>
 
 
-    <!-- 職員管理 -->
-
     <button
       class="nav-button"
       data-page="staff"
@@ -1382,8 +1107,6 @@
 
     </button>
 
-
-    <!-- 休暇設定 -->
 
     <button
       class="nav-button"
@@ -1452,8 +1175,6 @@
     </button>
 
 
-    <!-- 勤務形態 -->
-
     <button
       class="nav-button"
       data-page="shift"
@@ -1500,8 +1221,6 @@
 
     </button>
 
-
-    <!-- 休業設定 -->
 
     <button
       class="nav-button"
@@ -1568,12 +1287,11 @@
 
     </button>
 
-
   </nav>
 
 
   <!-- ==================================================
-       勤務表ページ
+       勤務表
   ================================================== -->
 
   <main
@@ -1594,8 +1312,7 @@
       <div
         id="currentMonth"
         class="month-title"
-      >
-      </div>
+      ></div>
 
 
       <button
@@ -1607,8 +1324,6 @@
 
     </div>
 
-
-    <!-- ヒント -->
 
     <div class="calendar-hint">
 
@@ -1745,7 +1460,6 @@
           placeholder="職員名"
         >
 
-
         <button
           id="addStaffButton"
           class="add-button"
@@ -1772,8 +1486,7 @@
       <div
         id="staffList"
         class="list"
-      >
-      </div>
+      ></div>
 
 
       <!-- 危険な操作 -->
@@ -1869,7 +1582,6 @@
         </button>
 
       </div>
-
 
     </div>
 
@@ -2010,9 +1722,7 @@
       <div
         id="leaveList"
         class="list"
-      >
-      </div>
-
+      ></div>
 
     </div>
 
@@ -2033,6 +1743,7 @@
 
 
       <div>
+
 
         <div class="settings-card">
 
@@ -2133,6 +1844,8 @@
         </div>
 
 
+        <!-- 明け時間設定 -->
+
         <div class="settings-card">
 
           <h2 class="section-title-icon">
@@ -2232,6 +1945,8 @@
       </div>
 
 
+      <!-- 勤務リスト -->
+
       <div
         class="settings-card shift-list-card"
       >
@@ -2316,8 +2031,7 @@
         <div
           id="shiftList"
           class="list"
-        >
-        </div>
+        ></div>
 
       </div>
 
@@ -2468,8 +2182,7 @@
       <div
         id="companyHolidayList"
         class="list"
-      >
-      </div>
+      ></div>
 
     </div>
 
@@ -2493,8 +2206,7 @@
     <div
       id="shiftMenuButtons"
       class="shift-menu-buttons"
-    >
-    </div>
+    ></div>
 
   </div>
 
@@ -2515,15 +2227,13 @@
       <div
         id="calendarConfirmTitle"
         class="confirm-title"
-      >
-      </div>
+      ></div>
 
 
       <div
         id="calendarConfirmText"
         class="confirm-text"
-      >
-      </div>
+      ></div>
 
 
       <div class="confirm-buttons">
@@ -2548,7 +2258,6 @@
     </div>
 
   </div>
-
 
 </div>
 
