@@ -2227,6 +2227,22 @@ function bindEvents() {
     }
   );
 
+
+  const testInviteButton =
+    document.getElementById(
+      "testInviteButton"
+    );
+
+
+  if (testInviteButton) {
+
+    testInviteButton.addEventListener(
+      "click",
+      testIssueStaffInvite
+    );
+
+  }
+
 }
 
 
