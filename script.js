@@ -9500,6 +9500,28 @@ async function renderStaffList() {
     return;
   }
 
+
+  /*
+   * ログアウト後など、
+   * 職場情報がない場合は処理しない
+   */
+
+  if (
+    !currentOrganization ||
+    !currentOrganization.id
+  ) {
+
+    console.log(
+      "★ 職場情報がないため職員一覧の権限取得を中止します"
+    );
+
+    list.innerHTML = "";
+
+    return;
+
+  }
+
+
   list.innerHTML = "";
 
 
