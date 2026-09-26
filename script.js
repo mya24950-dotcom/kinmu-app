@@ -485,6 +485,14 @@ if (
       organization
     );
 
+         /*
+     * =========================================
+     * Passkey登録
+     * =========================================
+     */
+
+    await registerCurrentUserPasskey();
+
      setupOrganizationDangerZone();
 
     /*
