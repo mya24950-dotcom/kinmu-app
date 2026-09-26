@@ -5657,6 +5657,11 @@ alert(
             "button"
           );
 
+         alert(
+  "休暇ボタン作成：" +
+  leave.name
+);
+
 
         button.type =
           "button";
