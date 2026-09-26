@@ -166,10 +166,17 @@ async function init() {
 
 
     supabaseClient =
-      window.supabase.createClient(
-        SUPABASE_URL,
-        SUPABASE_KEY
-      );
+  window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY,
+    {
+      auth: {
+        experimental: {
+          passkey: true
+        }
+      }
+    }
+  );
 
 
     console.log(
