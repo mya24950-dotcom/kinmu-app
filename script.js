@@ -300,6 +300,65 @@ async function init() {
     );
   }
 }
+
+async function testIssueStaffInvite() {
+  try {
+    const { data, error } =
+      await supabaseClient.rpc(
+        "issue_staff_invite",
+        {
+          target_staff_id:
+            "2dbeb85c-518d-40d1-8902-c471dce23266"
+        }
+      );
+
+    if (error) {
+      console.error(
+        "招待発行エラー",
+        error
+      );
+
+      alert(
+        "招待発行エラー\n\n" +
+        error.message
+      );
+
+      return;
+    }
+
+    console.log(
+      "招待発行結果",
+      data
+    );
+
+    alert(
+      "招待発行成功\n\n" +
+      JSON.stringify(data, null, 2)
+    );
+
+  } catch (error) {
+    console.error(
+      "招待発行テストエラー",
+      error
+    );
+
+    alert(
+      "招待発行テストエラー\n\n" +
+      error.message
+    );
+  }
+}
+
+
+function showLoginPage(
+  message = ""
+) {
+
+  const loginPage =
+    document.getElementById(
+      "loginPage"
+    );
+
 /* ==================================================
    ログイン画面表示
 ================================================== */
