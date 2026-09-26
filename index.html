@@ -73,180 +73,239 @@
     "
   >
 
-    <div
-      style="
-        font-size:48px;
-        margin-bottom:12px;
-      "
-    >
-      🗓️
-    </div>
-
-    <h1
-      style="
-        margin:0 0 10px;
-        font-size:28px;
-      "
-    >
-      勤務表
-    </h1>
-
-
-    <!-- 登録済みの方 -->
-
-    <div
-      style="
-        text-align:left;
-        font-size:15px;
-        font-weight:700;
-        color:#333;
-        margin-bottom:10px;
-      "
-    >
-      登録済みの方
-    </div>
-
-
-    <button
-      type="button"
-      id="googleLoginButton"
-      style="
-        width:100%;
-        min-height:52px;
-        border:1px solid #d1d1d6;
-        border-radius:12px;
-        background:#ffffff;
-        color:#222;
-        font-size:16px;
-        font-weight:600;
-        cursor:pointer;
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        gap:10px;
-        box-sizing:border-box;
-      "
-    >
-
-      <span
-        style="
-          font-size:20px;
-          font-weight:700;
-        "
-      >
-        G
-      </span>
-
-      Googleでログイン
-
-    </button>
-
-
-    <!-- 区切り -->
-
-    <div
-      style="
-        display:flex;
-        align-items:center;
-        gap:12px;
-        margin:28px 0;
-      "
-    >
-
-      <div
-        style="
-          flex:1;
-          height:1px;
-          background:#e5e5ea;
-        "
-      ></div>
-
-      <span
-        style="
-          color:#999;
-          font-size:13px;
-        "
-      >
-        はじめての方
-      </span>
-
-      <div
-        style="
-          flex:1;
-          height:1px;
-          background:#e5e5ea;
-        "
-      ></div>
-
-    </div>
-
-
-    <!-- 新規職場登録ボタン -->
-
-    <button
-      type="button"
-      id="newOrganizationButton"
-      style="
-        width:100%;
-        min-height:52px;
-        border:none;
-        border-radius:12px;
-        background:#007aff;
-        color:#ffffff;
-        font-size:16px;
-        font-weight:700;
-        cursor:pointer;
-        box-sizing:border-box;
-      "
-    >
-      職場を新規登録
-    </button>
-
-
-    <p
-      style="
-        margin:12px 0 0;
-        color:#777;
-        font-size:13px;
-        line-height:1.6;
-      "
-    >
-      はじめて勤務表を作成する方はこちら
-    </p>
-
-
     <!-- =================================================
-         新規職場登録フォーム
-    ================================================= -->
+         通常ログイン画面
+    ================================================== -->
 
-    <div
-      id="newOrganizationForm"
-      style="
-        display:none;
-        margin-top:20px;
-        text-align:left;
-      "
-    >
+    <div id="loginMainView">
 
       <div
         style="
+          font-size:48px;
+          margin-bottom:12px;
+        "
+      >
+        🗓️
+      </div>
+
+      <h1
+        style="
+          margin:0 0 10px;
+          font-size:28px;
+        "
+      >
+        勤務表
+      </h1>
+
+
+      <!-- 登録済みの方 -->
+
+      <div
+        style="
+          text-align:left;
           font-size:15px;
           font-weight:700;
           color:#333;
           margin-bottom:10px;
         "
       >
-        職場を新規登録
+        登録済みの方
       </div>
 
+
+      <button
+        type="button"
+        id="googleLoginButton"
+        style="
+          width:100%;
+          min-height:52px;
+          border:1px solid #d1d1d6;
+          border-radius:12px;
+          background:#ffffff;
+          color:#222;
+          font-size:16px;
+          font-weight:600;
+          cursor:pointer;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          gap:10px;
+          box-sizing:border-box;
+        "
+      >
+
+        <span
+          style="
+            font-size:20px;
+            font-weight:700;
+          "
+        >
+          G
+        </span>
+
+        Googleでログイン
+
+      </button>
+
+
+      <!-- 区切り -->
+
+      <div
+        style="
+          display:flex;
+          align-items:center;
+          gap:12px;
+          margin:28px 0;
+        "
+      >
+
+        <div
+          style="
+            flex:1;
+            height:1px;
+            background:#e5e5ea;
+          "
+        ></div>
+
+        <span
+          style="
+            color:#999;
+            font-size:13px;
+          "
+        >
+          はじめての方
+        </span>
+
+        <div
+          style="
+            flex:1;
+            height:1px;
+            background:#e5e5ea;
+          "
+        ></div>
+
+      </div>
+
+
+      <!-- 新規職場登録ボタン -->
+
+      <button
+        type="button"
+        id="newOrganizationButton"
+        style="
+          width:100%;
+          min-height:52px;
+          border:none;
+          border-radius:12px;
+          background:#007aff;
+          color:#ffffff;
+          font-size:16px;
+          font-weight:700;
+          cursor:pointer;
+          box-sizing:border-box;
+        "
+      >
+        職場を新規登録
+      </button>
+
+
+      <p
+        style="
+          margin:12px 0 0;
+          color:#777;
+          font-size:13px;
+          line-height:1.6;
+        "
+      >
+        はじめて勤務表を作成する方はこちら
+      </p>
+
+    </div>
+
+
+    <!-- =================================================
+         新規職場登録画面
+    ================================================== -->
+
+    <div
+      id="newOrganizationForm"
+      style="
+        display:none;
+        text-align:left;
+      "
+    >
+
+      <!-- 戻る -->
+
+      <button
+        type="button"
+        id="cancelOrganizationButton"
+        style="
+          border:none;
+          background:transparent;
+          color:#007aff;
+          font-size:15px;
+          cursor:pointer;
+          padding:0;
+          margin:0 0 24px;
+        "
+      >
+        ← 戻る
+      </button>
+
+
+      <!-- タイトル -->
+
+      <div
+        style="
+          text-align:center;
+          margin-bottom:28px;
+        "
+      >
+
+        <div
+          style="
+            font-size:42px;
+            margin-bottom:10px;
+          "
+        >
+          🏫
+        </div>
+
+        <h2
+          style="
+            margin:0 0 8px;
+            font-size:24px;
+          "
+        >
+          職場を新規登録
+        </h2>
+
+        <p
+          style="
+            margin:0;
+            color:#666;
+            font-size:14px;
+            line-height:1.7;
+          "
+        >
+          はじめて勤務表を作成する方は<br>
+          職場名を入力してください。
+        </p>
+
+      </div>
+
+
+      <!-- 職場名 -->
 
       <label
         for="organizationNameInput"
         style="
           display:block;
           font-size:14px;
+          font-weight:600;
           color:#555;
-          margin-bottom:6px;
+          margin-bottom:8px;
         "
       >
         職場名
@@ -267,10 +326,12 @@
           box-sizing:border-box;
           font-size:16px;
           outline:none;
-          margin-bottom:12px;
+          margin-bottom:16px;
         "
       >
 
+
+      <!-- 登録ボタン -->
 
       <button
         type="button"
@@ -292,22 +353,18 @@
       </button>
 
 
-      <button
-        type="button"
-        id="cancelOrganizationButton"
+      <p
         style="
-          width:100%;
-          min-height:44px;
-          margin-top:8px;
-          border:none;
-          background:transparent;
-          color:#007aff;
-          font-size:14px;
-          cursor:pointer;
+          margin:14px 0 0;
+          color:#888;
+          font-size:13px;
+          line-height:1.6;
+          text-align:center;
         "
       >
-        戻る
-      </button>
+        登録後、あなたが管理者として<br>
+        勤務表を作成できます。
+      </p>
 
     </div>
 
@@ -325,6 +382,7 @@
   </div>
 
 </div>
+
 
 <!-- =====================================================
      勤務表アプリ本体
@@ -376,6 +434,7 @@
 
   </header>
 
+
   <!-- ==============================
        ナビ
   =============================== -->
@@ -423,6 +482,7 @@
     </button>
 
   </nav>
+
 
   <!-- ==============================
        勤務表
@@ -472,6 +532,7 @@
     </div>
 
   </main>
+
 
   <!-- ==============================
        職員管理
@@ -526,6 +587,7 @@
     </div>
 
   </section>
+
 
   <!-- ==============================
        休暇設定
@@ -604,6 +666,7 @@
 
   </section>
 
+
   <!-- ==============================
        勤務形態
   ============================== -->
@@ -670,6 +733,7 @@
 
         </div>
 
+
         <div class="settings-card">
 
           <h2>
@@ -710,6 +774,7 @@
 
       </div>
 
+
       <div
         class="settings-card shift-list-card">
 
@@ -728,6 +793,7 @@
     </div>
 
   </section>
+
 
   <!-- ==============================
        休業設定
@@ -811,6 +877,7 @@
 
   </section>
 
+
   <!-- ==============================
        勤務選択メニュー
   ============================== -->
@@ -830,6 +897,7 @@
     </div>
 
   </div>
+
 
   <!-- ==============================
        カレンダー確認
@@ -880,11 +948,13 @@
 
 </div>
 
+
 <!-- =====================================================
      JavaScript
 ====================================================== -->
 
 <script src="script.js?v=20260926"></script>
+
 
 <!-- =====================================================
      Service Worker
