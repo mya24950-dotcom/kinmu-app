@@ -7549,10 +7549,12 @@ async function renderStaffList() {
     );
 
     alert(
-      "職員の権限情報を取得できませんでした。"
+      "職員の権限情報を取得できませんでした。\n\n" +
+      error.message
     );
 
     return;
+
   }
 
 
@@ -7579,6 +7581,10 @@ async function renderStaffList() {
         );
 
 
+      /* -------------------------------------------------
+         この職員の organization_members を探す
+      ------------------------------------------------- */
+
       const member =
         members.find(
           item =>
@@ -7586,6 +7592,10 @@ async function renderStaffList() {
             staff.id
         );
 
+
+      /* -------------------------------------------------
+         権限
+      ------------------------------------------------- */
 
       const role =
         member?.role ||
@@ -7595,8 +7605,18 @@ async function renderStaffList() {
       const roleLabel =
         role === "admin"
           ? "管理者"
-          : "一般職員";
+          : "職員";
 
+
+      const roleColor =
+        role === "admin"
+          ? "#007aff"
+          : "#666";
+
+
+      /* -------------------------------------------------
+         行作成
+      ------------------------------------------------- */
 
       const item =
         document.createElement(
@@ -7609,125 +7629,186 @@ async function renderStaffList() {
 
 
       /* =================================================
-         管理者の場合だけ操作ボタンを表示
-      ================================================= */
-
-      const adminButtons =
-        isAdmin
-          ? `
-
-              <button
-                type="button"
-                class="list-button move-staff-up-button"
-                ${
-                  index === 0
-                    ? "disabled"
-                    : ""
-                }
-              >
-                ↑
-              </button>
-
-
-              <button
-                type="button"
-                class="list-button move-staff-down-button"
-                ${
-                  index ===
-                  appData.staff.length - 1
-                    ? "disabled"
-                    : ""
-                }
-              >
-                ↓
-              </button>
-
-
-              <button
-                type="button"
-                class="list-button edit-staff-button"
-              >
-                編集
-              </button>
-
-
-              <button
-                type="button"
-                class="list-button role-change-button"
-              >
-                ${
-                  role === "admin"
-                    ? "一般職員に変更"
-                    : "管理者に変更"
-                }
-              </button>
-
-
-              <button
-                type="button"
-                class="list-button delete delete-staff-button"
-              >
-                削除
-              </button>
-
-
-              <button
-                type="button"
-                class="list-button invite-staff-button"
-                style="
-                  margin-left:12px;
-                "
-              >
-                招待リンク発行
-              </button>
-
-            `
-          : "";
-
-
-      /* =================================================
          HTML
       ================================================= */
 
       item.innerHTML = `
 
-        <div class="list-item-main">
+        <!-- =========================================
+             1行目
+             名前 + 操作ボタン
+        ========================================== -->
 
-          <div class="list-item-title">
+        <div
+          style="
+            width:100%;
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:10px;
+          "
+        >
+
+          <!-- 名前 -->
+
+          <div
+            class="list-item-title"
+            style="
+              flex:1;
+              min-width:0;
+              white-space:nowrap;
+              overflow:hidden;
+              text-overflow:ellipsis;
+            "
+          >
             ${escapeHtml(name)}
           </div>
 
 
+          <!-- 管理者だけ操作ボタン -->
+
+          ${
+            isAdmin
+              ? `
+
+                <div
+                  class="staff-main-buttons"
+                  style="
+                    display:flex;
+                    align-items:center;
+                    gap:5px;
+                    flex-shrink:0;
+                  "
+                >
+
+                  <button
+                    type="button"
+                    class="list-button move-staff-up-button"
+                    ${
+                      index === 0
+                        ? "disabled"
+                        : ""
+                    }
+                  >
+                    ↑
+                  </button>
+
+
+                  <button
+                    type="button"
+                    class="list-button move-staff-down-button"
+                    ${
+                      index ===
+                      appData.staff.length - 1
+                        ? "disabled"
+                        : ""
+                    }
+                  >
+                    ↓
+                  </button>
+
+
+                  <button
+                    type="button"
+                    class="list-button edit-staff-button"
+                  >
+                    編集
+                  </button>
+
+
+                  <button
+                    type="button"
+                    class="list-button delete delete-staff-button"
+                  >
+                    削除
+                  </button>
+
+                </div>
+
+              `
+              : ""
+          }
+
+        </div>
+
+
+        <!-- =========================================
+             2行目
+             権限 + 管理者設定 + 招待リンク
+        ========================================== -->
+
+        <div
+          style="
+            width:100%;
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:8px;
+            margin-top:4px;
+          "
+        >
+
+          <!-- 権限表示 -->
+
           <div
             class="staff-role-label"
             style="
-              margin-top:4px;
               font-size:13px;
-              color:${
-                role === "admin"
-                  ? "#007aff"
-                  : "#666"
-              };
+              color:${roleColor};
               font-weight:600;
+              flex:1;
+              min-width:0;
             "
           >
             ${roleLabel}
           </div>
 
-        </div>
+
+          ${
+            isAdmin
+              ? `
+
+                <div
+                  style="
+                    display:flex;
+                    align-items:center;
+                    gap:6px;
+                    flex-shrink:0;
+                  "
+                >
+
+                  <!-- 管理者設定 -->
+
+                  <button
+                    type="button"
+                    class="list-button role-change-button"
+                    style="
+                      font-size:12px;
+                      padding:4px 8px;
+                    "
+                  >
+                    管理者設定
+                  </button>
 
 
-        <div
-          class="list-item-buttons"
-          style="
-            display:flex;
-            align-items:center;
-            gap:6px;
-            flex-wrap:wrap;
-          "
-        >
+                  <!-- 招待リンク -->
 
-          ${adminButtons}
+                  <button
+                    type="button"
+                    class="list-button invite-staff-button"
+                    style="
+                      font-size:12px;
+                      padding:4px 8px;
+                    "
+                  >
+                    招待リンク発行
+                  </button>
+
+                </div>
+
+              `
+              : ""
+          }
 
         </div>
 
@@ -7820,7 +7901,7 @@ async function renderStaffList() {
 
 
       /* =================================================
-         権限変更
+         管理者設定
       ================================================= */
 
       item
@@ -7840,7 +7921,7 @@ async function renderStaffList() {
             const newRoleLabel =
               newRole === "admin"
                 ? "管理者"
-                : "一般職員";
+                : "職員";
 
 
             if (
@@ -7850,6 +7931,7 @@ async function renderStaffList() {
             ) {
 
               return;
+
             }
 
 
@@ -7876,7 +7958,9 @@ async function renderStaffList() {
 
 
               if (error) {
+
                 throw error;
+
               }
 
 
@@ -7912,7 +7996,7 @@ async function renderStaffList() {
 
       /* =================================================
          招待リンク発行
-         ※アカウント登録済みでも表示
+         ※登録済みでもボタンは表示
       ================================================= */
 
       item
@@ -7930,6 +8014,7 @@ async function renderStaffList() {
             ) {
 
               return;
+
             }
 
 
@@ -7960,6 +8045,7 @@ async function renderStaffList() {
             ) {
 
               return;
+
             }
 
 
@@ -7984,6 +8070,7 @@ async function renderStaffList() {
               ) {
 
                 throw workResult.error;
+
               }
 
 
@@ -8002,6 +8089,7 @@ async function renderStaffList() {
               ) {
 
                 throw result.error;
+
               }
 
 
