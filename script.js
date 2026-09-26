@@ -970,9 +970,9 @@ async function handleInviteAfterLogin() {
       await supabaseClient.rpc(
         "accept_staff_invite",
         {
-          invite_token:
-            inviteToken
-        }
+  target_invite_token:
+    inviteToken
+}
       );
 
 
