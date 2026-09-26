@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="ja">
 
@@ -329,12 +330,38 @@
         👤 職員管理
       </h2>
 
+
       <div class="input-row">
 
         <input
           id="staffNameInput"
           type="text"
           placeholder="職員名">
+
+
+        <select
+          id="staffRoleInput"
+          style="
+            min-height:42px;
+            padding:0 10px;
+            border:1px solid #ccc;
+            border-radius:8px;
+            background:#fff;
+            font-size:15px;
+            box-sizing:border-box;
+          "
+        >
+
+          <option value="staff">
+            一般職員
+          </option>
+
+          <option value="admin">
+            管理者
+          </option>
+
+        </select>
+
 
         <button
           id="addStaffButton"
@@ -358,21 +385,6 @@
         </span>
 
       </div>
-
-
-      <!-- ==============================
-           招待テストボタン
-      =============================== -->
-
-      <button
-        type="button"
-        id="testInviteButton"
-        class="add-button"
-        style="margin-top:16px;">
-
-        小松さんの招待テスト
-
-      </button>
 
 
       <div
@@ -473,7 +485,7 @@
 
   <!-- ==============================
        勤務形態
-  =============================== -->
+  ============================== -->
 
   <section
     id="shiftPage"
@@ -837,3 +849,4 @@ if ("serviceWorker" in navigator) {
 </body>
 
 </html>
+```
