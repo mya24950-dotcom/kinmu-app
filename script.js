@@ -7990,17 +7990,23 @@ async function renderStaffList() {
     column-gap:6px;
   ">
 
+    <!-- 名前・役割 -->
     <div style="
       min-width:0;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
     ">
-      <div class="list-item-title">
+      <div
+        class="list-item-title"
+        style="
+          white-space:nowrap;
+          overflow:hidden;
+          text-overflow:ellipsis;
+        "
+      >
         ${escapeHtml(name)}
       </div>
 
-      <div class="staff-role-label"
+      <div
+        class="staff-role-label"
         style="
           font-size:13px;
           color:${roleColor};
@@ -8012,41 +8018,36 @@ async function renderStaffList() {
       </div>
     </div>
 
+    <!-- ↑ ↓ -->
     <div style="
       display:flex;
-      flex-direction:column;
       gap:6px;
+      align-items:center;
+      justify-content:center;
     ">
-      <div style="
-        display:flex;
-        gap:6px;
-      ">
-        <button
-          type="button"
-          class="list-button move-staff-up-button"
-          ${index === 0 ? "disabled" : ""}
-        >
-          ↑
-        </button>
+      <button
+        type="button"
+        class="list-button move-staff-up-button"
+        ${index === 0 ? "disabled" : ""}
+      >
+        ↑
+      </button>
 
-        <button
-          type="button"
-          class="list-button move-staff-down-button"
-          ${index === appData.staff.length - 1 ? "disabled" : ""}
-        >
-          ↓
-        </button>
-      </div>
-
-      <div style="
-        height:32px;
-      "></div>
+      <button
+        type="button"
+        class="list-button move-staff-down-button"
+        ${index === appData.staff.length - 1 ? "disabled" : ""}
+      >
+        ↓
+      </button>
     </div>
 
+    <!-- 編集・削除 -->
     <div style="
       display:flex;
       flex-direction:column;
       gap:6px;
+      align-items:stretch;
     ">
       <button
         type="button"
@@ -8063,10 +8064,12 @@ async function renderStaffList() {
       </button>
     </div>
 
+    <!-- 管理者設定・招待リンク発行 -->
     <div style="
       display:flex;
       flex-direction:column;
       gap:6px;
+      align-items:stretch;
     ">
       <button
         type="button"
