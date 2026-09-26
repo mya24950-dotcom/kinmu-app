@@ -619,6 +619,64 @@
 
       </div>
 
+
+      <!-- =================================================
+           職場削除
+      ================================================== -->
+
+      <div
+        id="organizationDangerZone"
+        style="
+          display:none;
+          margin-top:30px;
+          padding-top:24px;
+          border-top:1px solid #e5e5ea;
+        "
+      >
+
+        <h3
+          style="
+            margin:0 0 8px;
+            color:#d32f2f;
+            font-size:17px;
+          "
+        >
+          ⚠️ 危険な操作
+        </h3>
+
+        <p
+          style="
+            margin:0 0 14px;
+            color:#666;
+            font-size:13px;
+            line-height:1.7;
+          "
+        >
+          この職場の勤務表・職員・設定など、
+          すべてのデータを削除します。<br>
+          この操作は元に戻せません。
+        </p>
+
+        <button
+          type="button"
+          id="deleteOrganizationButton"
+          style="
+            width:100%;
+            min-height:48px;
+            border:1px solid #d32f2f;
+            border-radius:10px;
+            background:#fff;
+            color:#d32f2f;
+            font-size:15px;
+            font-weight:700;
+            cursor:pointer;
+          "
+        >
+          職場を完全に削除
+        </button>
+
+      </div>
+
     </div>
 
   </section>
@@ -659,7 +717,8 @@
             align-items:center;
             gap:12px;
             margin:10px 0;
-          ">
+          "
+        >
 
           <label
             for="leaveColorInput">
@@ -677,7 +736,8 @@
               height:40px;
               padding:2px;
               cursor:pointer;
-            ">
+            "
+          >
 
         </div>
 
