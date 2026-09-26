@@ -804,41 +804,25 @@ async function loginWithGoogle() {
 function setupGoogleLogin() {
 
   const button =
-    document.getElementById(
-      "googleLoginButton"
-    );
-
+    document.getElementById("googleLoginButton");
 
   if (!button) {
-
-    console.log(
-      "Googleログインボタンが見つかりません"
-    );
-
+    console.log("Googleログインボタンが見つかりません");
     return;
-
   }
 
+  button.disabled = false;
+  button.style.opacity = "1";
 
-  /* ボタンを確実に有効化 */
+  button.onclick = function () {
 
-  button.disabled =
-    false;
+    console.log("★ Googleログインボタンが押されました");
 
+    loginWithGoogle();
 
-  button.style.opacity =
-    "1";
+  };
 
-
-  /* クリック処理を設定 */
-
-  button.onclick =
-    loginWithGoogle;
-
-
-  console.log(
-    "★ Googleログインボタン設定完了"
-  );
+  console.log("★ Googleログインボタン設定完了");
 
 }
 
