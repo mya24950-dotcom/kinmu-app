@@ -7489,6 +7489,357 @@ async function moveStaff(
 
 }
 
+/* ==================================================
+   勤務形態追加・編集
+================================================== */
+
+async function addOrUpdateShift() {
+
+  const nameInput =
+    document.getElementById(
+      "shiftNameInput"
+    );
+
+  const startInput =
+    document.getElementById(
+      "shiftStartInput"
+    );
+
+  const endInput =
+    document.getElementById(
+      "shiftEndInput"
+    );
+
+  const breakInput =
+    document.getElementById(
+      "shiftBreakInput"
+    );
+
+
+  if (!nameInput) {
+    return;
+  }
+
+
+  const name =
+    nameInput.value.trim();
+
+  const start =
+    startInput?.value || "";
+
+  const end =
+    endInput?.value || "";
+
+  const breakTime =
+    breakInput?.value || "";
+
+
+  /* --------------------------------------------------
+     入力チェック
+  -------------------------------------------------- */
+
+  if (!name) {
+
+    alert(
+      "勤務形態名を入力してください"
+    );
+
+    return;
+
+  }
+
+
+  if (name === "明") {
+
+    alert(
+      "「明」は勤務形態として登録できません"
+    );
+
+    return;
+
+  }
+
+
+  /* --------------------------------------------------
+     重複チェック
+  -------------------------------------------------- */
+
+  const duplicate =
+    appData.shiftTypes.some(
+      (shift, index) =>
+        shift.name === name &&
+        index !== editingShiftIndex
+    );
+
+
+  if (duplicate) {
+
+    alert(
+      "同じ勤務形態名は登録できません"
+    );
+
+    return;
+
+  }
+
+
+  if (!supabaseClient) {
+
+    alert(
+      "Supabaseに接続されていません。"
+    );
+
+    return;
+
+  }
+
+
+  cloudOperationBusy =
+    true;
+
+
+  try {
+
+    /* =================================================
+       編集
+    ================================================= */
+
+    if (
+      editingShiftIndex >= 0
+    ) {
+
+      const oldShift =
+        appData.shiftTypes[
+          editingShiftIndex
+        ];
+
+
+      if (!oldShift) {
+
+        throw new Error(
+          "編集対象の勤務形態が見つかりません。"
+        );
+
+      }
+
+
+      const oldName =
+        oldShift.name;
+
+
+      /* -----------------------------------------------
+         勤務形態本体を更新
+      ----------------------------------------------- */
+
+      const result =
+        await supabaseClient
+          .from("shift_types")
+          .update({
+
+            name,
+
+            start:
+              start || null,
+
+            end:
+              end || null,
+
+            break:
+              breakTime || null
+
+          })
+          .eq(
+            "id",
+            oldShift.id
+          );
+
+
+      if (result.error) {
+
+        throw result.error;
+
+      }
+
+
+      /* -----------------------------------------------
+         勤務表で使用されている勤務形態名も変更
+      ----------------------------------------------- */
+
+      if (
+        oldName !== name
+      ) {
+
+        const workResult =
+          await supabaseClient
+            .from("work_shifts")
+            .update({
+
+              shift_name:
+                name
+
+            })
+            .eq(
+              "shift_name",
+              oldName
+            );
+
+
+        if (
+          workResult.error
+        ) {
+
+          throw workResult.error;
+
+        }
+
+      }
+
+
+      editingShiftIndex =
+        -1;
+
+    }
+
+    /* =================================================
+       新規追加
+    ================================================= */
+
+    else {
+
+      const maxOrder =
+        appData.shiftTypes.reduce(
+          (max, shift) => {
+
+            const value =
+              Number(
+                shift.sort_order
+              );
+
+
+            return Number.isFinite(
+              value
+            )
+              ? Math.max(
+                  max,
+                  value
+                )
+              : max;
+
+          },
+          -1
+        );
+
+
+      const result =
+        await supabaseClient
+          .from("shift_types")
+          .insert({
+
+            name,
+
+            start:
+              start || null,
+
+            end:
+              end || null,
+
+            break:
+              breakTime || null,
+
+            sort_order:
+              maxOrder + 1,
+
+            organization_id:
+              currentOrganization.id
+
+          });
+
+
+      if (result.error) {
+
+        throw result.error;
+
+      }
+
+    }
+
+
+    /* =================================================
+       入力欄をリセット
+    ================================================= */
+
+    nameInput.value =
+      "";
+
+    if (startInput) {
+
+      startInput.value =
+        "";
+
+    }
+
+    if (endInput) {
+
+      endInput.value =
+        "";
+
+    }
+
+    if (breakInput) {
+
+      breakInput.value =
+        "";
+
+    }
+
+
+    const button =
+      document.getElementById(
+        "addShiftButton"
+      );
+
+
+    if (button) {
+
+      button.textContent =
+        "勤務形態を追加";
+
+    }
+
+
+    /* =================================================
+       最新データを再取得
+    ================================================= */
+
+    await loadAllFromSupabase();
+
+
+    renderShiftList();
+
+    renderSchedule();
+
+
+  } catch (error) {
+
+    console.error(
+      "勤務形態保存エラー",
+      error
+    );
+
+
+    alert(
+      "勤務形態の保存に失敗しました。\n\n" +
+      (error?.message || String(error))
+    );
+
+
+  } finally {
+
+    finishCloudOperation();
+
+  }
+
+}
 
 /* ==================================================
    職員一覧
