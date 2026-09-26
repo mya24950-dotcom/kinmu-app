@@ -479,6 +479,16 @@ if (
     currentOrganization =
       organization;
 
+     const organizationTitle =
+  document.getElementById(
+    "organizationTitle"
+  );
+
+if (organizationTitle) {
+  organizationTitle.textContent =
+    currentOrganization.name;
+}
+
 
     console.log(
       "所属職場",
