@@ -7977,113 +7977,162 @@ async function renderStaffList() {
         "list-item";
 
 
-      item.innerHTML = `
-  <div style="
-    display:grid;
-    grid-template-columns:minmax(0,1fr) auto auto auto;
-    align-items:center;
-    width:100%;
-    column-gap:6px;
-  ">
+            if (isAdmin) {
 
-    <!-- 名前・役割 -->
-    <div style="
-      min-width:0;
-    ">
-      <div
-        class="list-item-title"
-        style="
-          white-space:nowrap;
-          overflow:hidden;
-          text-overflow:ellipsis;
-        "
-      >
-        ${escapeHtml(name)}
-      </div>
+        /* ===============================================
+           管理者でログインした場合
+        =============================================== */
 
-      <div
-        class="staff-role-label"
-        style="
-          font-size:13px;
-          color:${roleColor};
-          font-weight:600;
-          margin-top:4px;
-        "
-      >
-        （${roleLabel}）
-      </div>
-    </div>
+        item.innerHTML = `
+          <div style="
+            display:grid;
+            grid-template-columns:minmax(0,1fr) auto auto auto;
+            align-items:center;
+            width:100%;
+            column-gap:6px;
+          ">
 
-    <!-- ↑ ↓ -->
-    <div style="
-      display:flex;
-      gap:6px;
-      align-items:center;
-      justify-content:center;
-    ">
-      <button
-        type="button"
-        class="list-button move-staff-up-button"
-        ${index === 0 ? "disabled" : ""}
-      >
-        ↑
-      </button>
+            <!-- 名前・役割 -->
+            <div style="
+              min-width:0;
+            ">
+              <div
+                class="list-item-title"
+                style="
+                  white-space:nowrap;
+                  overflow:hidden;
+                  text-overflow:ellipsis;
+                "
+              >
+                ${escapeHtml(name)}
+              </div>
 
-      <button
-        type="button"
-        class="list-button move-staff-down-button"
-        ${index === appData.staff.length - 1 ? "disabled" : ""}
-      >
-        ↓
-      </button>
-    </div>
+              <div
+                class="staff-role-label"
+                style="
+                  font-size:13px;
+                  color:${roleColor};
+                  font-weight:600;
+                  margin-top:4px;
+                "
+              >
+                （${roleLabel}）
+              </div>
+            </div>
 
-    <!-- 編集・削除 -->
-    <div style="
-      display:flex;
-      flex-direction:column;
-      gap:6px;
-      align-items:stretch;
-    ">
-      <button
-        type="button"
-        class="list-button edit-staff-button"
-      >
-        編集
-      </button>
+            <!-- ↑ ↓ -->
+            <div style="
+              display:flex;
+              gap:6px;
+              align-items:center;
+              justify-content:center;
+            ">
+              <button
+                type="button"
+                class="list-button move-staff-up-button"
+                ${index === 0 ? "disabled" : ""}
+              >
+                ↑
+              </button>
 
-      <button
-        type="button"
-        class="list-button delete delete-staff-button"
-      >
-        削除
-      </button>
-    </div>
+              <button
+                type="button"
+                class="list-button move-staff-down-button"
+                ${index === appData.staff.length - 1 ? "disabled" : ""}
+              >
+                ↓
+              </button>
+            </div>
 
-    <!-- 管理者設定・招待リンク発行 -->
-    <div style="
-      display:flex;
-      flex-direction:column;
-      gap:6px;
-      align-items:stretch;
-    ">
-      <button
-        type="button"
-        class="list-button role-change-button"
-      >
-        管理者設定
-      </button>
+            <!-- 編集・削除 -->
+            <div style="
+              display:flex;
+              flex-direction:column;
+              gap:6px;
+              align-items:stretch;
+            ">
+              <button
+                type="button"
+                class="list-button edit-staff-button"
+              >
+                編集
+              </button>
 
-      <button
-        type="button"
-        class="list-button invite-staff-button"
-      >
-        招待リンク発行
-      </button>
-    </div>
+              <button
+                type="button"
+                class="list-button delete delete-staff-button"
+              >
+                削除
+              </button>
+            </div>
 
-  </div>
-`;
+            <!-- 管理者設定・招待リンク発行 -->
+            <div style="
+              display:flex;
+              flex-direction:column;
+              gap:6px;
+              align-items:stretch;
+            ">
+              <button
+                type="button"
+                class="list-button role-change-button"
+              >
+                管理者設定
+              </button>
+
+              <button
+                type="button"
+                class="list-button invite-staff-button"
+              >
+                招待リンク発行
+              </button>
+            </div>
+
+          </div>
+        `;
+
+      } else {
+
+        /* ===============================================
+           職員でログインした場合
+        =============================================== */
+
+        item.innerHTML = `
+          <div style="
+            display:flex;
+            align-items:center;
+            width:100%;
+            gap:16px;
+          ">
+
+            <div
+              class="list-item-title"
+              style="
+                flex:1;
+                min-width:0;
+                white-space:nowrap;
+                overflow:hidden;
+                text-overflow:ellipsis;
+              "
+            >
+              ${escapeHtml(name)}
+            </div>
+
+            <div
+              class="staff-role-label"
+              style="
+                font-size:13px;
+                color:${roleColor};
+                font-weight:600;
+                white-space:nowrap;
+              "
+            >
+              ${roleLabel}
+            </div>
+
+          </div>
+        `;
+      }
 
 
       /* =================================================
