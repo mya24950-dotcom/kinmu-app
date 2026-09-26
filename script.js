@@ -301,52 +301,94 @@ async function init() {
   }
 }
 
-async function testIssueStaffInvite() {
+async function issueStaffInvite(staffId) {
+
   try {
+
     const { data, error } =
       await supabaseClient.rpc(
         "issue_staff_invite",
         {
-          target_staff_id:
-            "2dbeb85c-518d-40d1-8902-c471dce23266"
+          target_staff_id: staffId
         }
       );
 
+
     if (error) {
+
       console.error(
         "招待発行エラー",
         error
       );
 
       alert(
-        "招待発行エラー\n\n" +
+        "招待リンクの発行に失敗しました。\n\n" +
         error.message
       );
 
       return;
+
     }
 
-    console.log(
-      "招待発行結果",
-      data
+
+    if (
+      !data ||
+      !data.length ||
+      !data[0].token
+    ) {
+
+      alert(
+        "招待リンクを作成できませんでした。"
+      );
+
+      return;
+
+    }
+
+
+    const token =
+      data[0].token;
+
+
+    const inviteUrl =
+      window.location.origin +
+      window.location.pathname +
+      "?invite=" +
+      encodeURIComponent(token);
+
+
+    await navigator.clipboard.writeText(
+      inviteUrl
     );
+
 
     alert(
-      "招待発行成功\n\n" +
-      JSON.stringify(data, null, 2)
+      "招待リンクをコピーしました。\n\n" +
+      "このリンクを職員本人に送ってください。"
     );
 
+
+    console.log(
+      "招待リンク",
+      inviteUrl
+    );
+
+
   } catch (error) {
+
     console.error(
-      "招待発行テストエラー",
+      "招待リンク発行エラー",
       error
     );
 
+
     alert(
-      "招待発行テストエラー\n\n" +
+      "招待リンクの発行に失敗しました。\n\n" +
       error.message
     );
+
   }
+
 }
 
 
