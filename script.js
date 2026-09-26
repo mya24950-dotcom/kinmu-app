@@ -822,8 +822,6 @@ function setupGoogleLogin() {
 
   };
 
-  alert("★ Googleログインボタン設定完了");
-
 }
 
 async function handleInviteAfterLogin() {
