@@ -8970,155 +8970,69 @@ function renderLeaveList() {
         "list-item";
 
 
-   if (isAdmin) {
+      /* =================================================
+         休暇名
+      ================================================= */
 
-  // 管理者でログインした場合
-  item.innerHTML = `
-    <div style="
-      display:grid;
-      grid-template-columns:minmax(0,1fr) auto auto auto;
-      align-items:center;
-      width:100%;
-      column-gap:6px;
-    ">
-
-      <!-- 名前・役割 -->
-      <div style="
-        min-width:0;
-      ">
+      item.innerHTML = `
         <div
-          class="list-item-title"
           style="
-            white-space:nowrap;
-            overflow:hidden;
-            text-overflow:ellipsis;
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            width:100%;
+            gap:12px;
           "
         >
-          ${escapeHtml(name)}
+
+          <div
+            class="list-item-title"
+            style="
+              flex:1;
+              min-width:0;
+              white-space:nowrap;
+              overflow:hidden;
+              text-overflow:ellipsis;
+            "
+          >
+            ${escapeHtml(leave.name)}
+          </div>
+
+
+          <div
+            style="
+              width:28px;
+              height:28px;
+              border-radius:6px;
+              background:${leave.color || "#FFD54F"};
+              border:1px solid #ccc;
+              flex-shrink:0;
+            "
+          ></div>
+
+
+          <button
+            type="button"
+            class="list-button edit-leave-button"
+          >
+            編集
+          </button>
+
+
+          <button
+            type="button"
+            class="list-button delete delete-leave-button"
+          >
+            削除
+          </button>
+
         </div>
+      `;
 
-        <div
-          class="staff-role-label"
-          style="
-            font-size:13px;
-            color:${roleColor};
-            font-weight:600;
-            margin-top:4px;
-          "
-        >
-          （${roleLabel}）
-        </div>
-      </div>
 
-      <!-- ↑ ↓ -->
-      <div style="
-        display:flex;
-        gap:6px;
-        align-items:center;
-        justify-content:center;
-      ">
-        <button
-          type="button"
-          class="list-button move-staff-up-button"
-          ${index === 0 ? "disabled" : ""}
-        >
-          ↑
-        </button>
-
-        <button
-          type="button"
-          class="list-button move-staff-down-button"
-          ${index === appData.staff.length - 1 ? "disabled" : ""}
-        >
-          ↓
-        </button>
-      </div>
-
-      <!-- 編集・削除 -->
-      <div style="
-        display:flex;
-        flex-direction:column;
-        gap:6px;
-      ">
-        <button
-          type="button"
-          class="list-button edit-staff-button"
-        >
-          編集
-        </button>
-
-        <button
-          type="button"
-          class="list-button delete delete-staff-button"
-        >
-          削除
-        </button>
-      </div>
-
-      <!-- 管理者設定・招待リンク発行 -->
-      <div style="
-        display:flex;
-        flex-direction:column;
-        gap:6px;
-      ">
-        <button
-          type="button"
-          class="list-button role-change-button"
-        >
-          管理者設定
-        </button>
-
-        <button
-          type="button"
-          class="list-button invite-staff-button"
-        >
-          招待リンク発行
-        </button>
-      </div>
-
-    </div>
-  `;
-
-} else {
-
-  // 職員でログインした場合
-  item.innerHTML = `
-    <div style="
-      display:flex;
-      align-items:center;
-      width:100%;
-      gap:16px;
-    ">
-
-      <div
-        class="list-item-title"
-        style="
-          flex:1;
-          min-width:0;
-          white-space:nowrap;
-          overflow:hidden;
-          text-overflow:ellipsis;
-        "
-      >
-        ${escapeHtml(name)}
-      </div>
-
-      <div
-        class="staff-role-label"
-        style="
-          font-size:13px;
-          color:${roleColor};
-          font-weight:600;
-          white-space:nowrap;
-        "
-      >
-        ${roleLabel}
-      </div>
-
-    </div>
-  `;
-}
-
+      /* =================================================
+         編集
+      ================================================= */
 
       item
         .querySelector(
@@ -9179,6 +9093,10 @@ function renderLeaveList() {
           }
         );
 
+
+      /* =================================================
+         削除
+      ================================================= */
 
       item
         .querySelector(
@@ -9294,8 +9212,10 @@ function renderLeaveList() {
 
 
               alert(
-                "休暇の削除に失敗しました。"
+                "休暇の削除に失敗しました。\n\n" +
+                error.message
               );
+
 
             } finally {
 
