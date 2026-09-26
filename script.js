@@ -569,10 +569,9 @@ if (organizationTitle) {
 
     setupVisibilitySync();
 
+setupDarkMode();
 
-    console.log(
-      "★ 勤務表アプリ起動完了"
-    );
+console.log("★ 勤務表アプリ起動完了");
 
 
  } catch (error) {
