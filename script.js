@@ -197,6 +197,61 @@ async function init() {
 
     }
 
+         /*
+     * =========================================
+     * 明示的にログアウトした直後か確認
+     * =========================================
+     *
+     * Supabaseのセッションが残っていても、
+     * 「ログアウトした」という操作を優先して
+     * ログイン画面を表示する。
+     */
+
+    const forceLoginScreen =
+      sessionStorage.getItem(
+        "forceLoginScreen"
+      );
+
+
+    if (
+      forceLoginScreen === "true"
+    ) {
+
+      console.log(
+        "★ 明示的なログアウト後なのでログイン画面を表示します"
+      );
+
+
+      /*
+       * 念のためSupabaseセッションも完全にログアウト
+       */
+
+      await supabaseClient.auth.signOut({
+        scope: "global"
+      });
+
+
+      sessionStorage.removeItem(
+        "forceLoginScreen"
+      );
+
+
+      showLoginPage();
+
+
+      setupGoogleLogin();
+
+
+      setupPasskeyLogin();
+
+
+      setupNewOrganizationButton();
+
+
+      return;
+
+    }
+
 
     /*
      * =========================================
@@ -204,7 +259,7 @@ async function init() {
      * =========================================
      */
 
-    if (!session) {
+        if (!session) {
 
       console.log(
         "Googleログインが必要です"
@@ -212,9 +267,18 @@ async function init() {
 
 
       showLoginPage();
-setupGoogleLogin();
-setupNewOrganizationButton();
-return;
+
+
+      setupGoogleLogin();
+
+
+      setupPasskeyLogin();
+
+
+      setupNewOrganizationButton();
+
+
+      return;
 
     }
 
