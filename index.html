@@ -35,6 +35,10 @@
     rel="stylesheet"
     href="style.css">
 
+  <!--
+    Supabase JS
+    Passkey対応版
+  -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.105.0"></script>
 
 </head>
@@ -111,6 +115,10 @@
       </div>
 
 
+      <!-- =================================================
+           Googleログイン
+      ================================================== -->
+
       <button
         type="button"
         id="googleLoginButton"
@@ -144,6 +152,60 @@
         Googleでログイン
 
       </button>
+
+
+      <!-- =================================================
+           Passkey / Face ID / 指紋ログイン
+      ================================================== -->
+
+      <button
+        type="button"
+        id="passkeyLoginButton"
+        style="
+          width:100%;
+          min-height:52px;
+          margin-top:12px;
+          border:1px solid #007aff;
+          border-radius:12px;
+          background:#ffffff;
+          color:#007aff;
+          font-size:16px;
+          font-weight:600;
+          cursor:pointer;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          gap:10px;
+          box-sizing:border-box;
+        "
+      >
+
+        <span
+          style="
+            font-size:20px;
+          "
+        >
+          🔐
+        </span>
+
+        Face ID / 指紋でログイン
+
+      </button>
+
+
+      <!-- Passkey説明 -->
+
+      <p
+        style="
+          margin:10px 0 0;
+          color:#777;
+          font-size:12px;
+          line-height:1.6;
+        "
+      >
+        この端末に登録したFace ID・指紋などで<br>
+        簡単にログインできます。
+      </p>
 
 
       <!-- 区切り -->
@@ -185,7 +247,9 @@
       </div>
 
 
-      <!-- 新規職場登録ボタン -->
+      <!-- =================================================
+           新規職場登録
+      ================================================== -->
 
       <button
         type="button"
@@ -401,6 +465,8 @@
 
     </div>
 
+
+    <!-- ログインメッセージ -->
 
     <p
       id="loginMessage"
