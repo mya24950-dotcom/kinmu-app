@@ -6238,6 +6238,9 @@ async function saveWorkShift(
 
 /* ==================================================
    休暇保存
+==============================================
+/* ==================================================
+   休暇保存
 ================================================== */
 
 async function saveLeave(
@@ -6268,6 +6271,86 @@ async function saveLeave(
 
 
   try {
+
+    /* ==================================================
+       一般職員
+       自分の休暇だけRPC経由で変更
+    ================================================== */
+
+    if (
+      currentOrganization &&
+      currentOrganization.role !== "admin"
+    ) {
+
+      /* -----------------------------------------------
+         休暇解除
+      ------------------------------------------------ */
+
+      if (!leaveName) {
+
+        const result =
+          await supabaseClient.rpc(
+            "clear_my_leave",
+            {
+              target_date:
+                dateKey
+            }
+          );
+
+
+        if (result.error) {
+
+          throw result.error;
+
+        }
+
+      }
+
+      /* -----------------------------------------------
+         休暇登録
+      ------------------------------------------------ */
+
+      else {
+
+        const result =
+          await supabaseClient.rpc(
+            "set_my_leave",
+            {
+              target_date:
+                dateKey,
+
+              target_leave_type:
+                leaveName
+            }
+          );
+
+
+        if (result.error) {
+
+          throw result.error;
+
+        }
+
+      }
+
+
+      /* -----------------------------------------------
+         Supabaseから最新データを取得
+      ------------------------------------------------ */
+
+      await loadAllFromSupabase();
+
+      renderSchedule();
+
+      return;
+
+    }
+
+
+    /* ==================================================
+       管理者
+       今までどおり直接work_shiftsを操作
+    ================================================== */
 
     const existing =
       await supabaseClient
@@ -6357,7 +6440,6 @@ async function saveLeave(
 
       renderSchedule();
 
-
       return;
 
     }
@@ -6429,8 +6511,8 @@ async function saveLeave(
             leave_type:
               leaveName,
 
-             organization_id:
-    currentOrganization.id
+            organization_id:
+              currentOrganization.id
 
           });
 
@@ -6466,7 +6548,9 @@ async function saveLeave(
 
 
     alert(
-      "休暇の保存に失敗しました。"
+      "休暇の保存に失敗しました。\n\n" +
+      "エラー：" +
+      (error.message || error)
     );
 
   } finally {
@@ -6474,83 +6558,6 @@ async function saveLeave(
     finishCloudOperation();
 
   }
-
-}
-
-
-/* ==================================================
-   背景色から文字色
-================================================== */
-
-function getTextColorForBackground(
-  color
-) {
-
-  if (!color) {
-
-    return "#000000";
-
-  }
-
-
-  const hex =
-    color.replace(
-      "#",
-      ""
-    );
-
-
-  if (
-    hex.length !== 6
-  ) {
-
-    return "#000000";
-
-  }
-
-
-  const r =
-    parseInt(
-      hex.substring(
-        0,
-        2
-      ),
-      16
-    );
-
-
-  const g =
-    parseInt(
-      hex.substring(
-        2,
-        4
-      ),
-      16
-    );
-
-
-  const b =
-    parseInt(
-      hex.substring(
-        4,
-        6
-      ),
-      16
-    );
-
-
-  const brightness =
-    (
-      r * 299 +
-      g * 587 +
-      b * 114
-    ) /
-    1000;
-
-
-  return brightness > 155
-    ? "#000000"
-    : "#ffffff";
 
 }
 
