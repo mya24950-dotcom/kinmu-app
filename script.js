@@ -781,17 +781,144 @@ async function logout() {
 
 function setupLogoutButton() {
 
-  const logoutButton =
+  const button =
     document.getElementById("logoutButton");
 
-  if (!logoutButton) {
+  if (!button) {
     return;
   }
 
-  logoutButton.addEventListener(
-    "click",
-    logout
-  );
+  button.onclick = async function() {
+
+    const confirmed =
+      confirm(
+        "ログアウトしますか？"
+      );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+
+      console.log("★ ログアウト開始");
+
+      /*
+       * 現在の職場情報を消す
+       */
+
+      currentOrganization = null;
+
+
+      /*
+       * アプリ内のローカルデータを消す
+       */
+
+      localStorage.removeItem(
+        STORAGE_KEY
+      );
+
+
+      /*
+       * 新規職場登録途中の情報も消す
+       */
+
+      sessionStorage.removeItem(
+        "pendingOrganizationName"
+      );
+
+      sessionStorage.removeItem(
+        "pendingStaffName"
+      );
+
+
+      /*
+       * Supabaseのログインセッションを
+       * 完全にログアウト
+       */
+
+      const {
+        error
+      } =
+        await supabaseClient.auth.signOut({
+          scope: "global"
+        });
+
+
+      if (error) {
+        throw error;
+      }
+
+
+      console.log(
+        "★ Supabaseログアウト完了"
+      );
+
+
+      /*
+       * 念のため、現在のセッションが
+       * 本当に消えているか確認
+       */
+
+      const {
+        data: {
+          session
+        }
+      } =
+        await supabaseClient.auth.getSession();
+
+
+      if (session) {
+
+        console.warn(
+          "⚠️ セッションが残っています"
+        );
+
+      } else {
+
+        console.log(
+          "★ セッション完全消去確認"
+        );
+
+      }
+
+
+      /*
+       * ログイン画面へ戻す
+       */
+
+      showLoginPage(
+        ""
+      );
+
+
+      /*
+       * ログイン関連ボタンを再設定
+       */
+
+      setupGoogleLogin();
+
+      setupNewOrganizationButton();
+
+
+    } catch (error) {
+
+      console.error(
+        "ログアウトエラー",
+        error
+      );
+
+      alert(
+        "ログアウトに失敗しました。\n\n" +
+        (
+          error?.message ||
+          String(error)
+        )
+      );
+
+    }
+
+  };
 
 }
 
