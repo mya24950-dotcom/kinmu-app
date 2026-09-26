@@ -8501,12 +8501,16 @@ async function renderStaffList() {
 
               const workResult =
                 await supabaseClient
-                  .from("work_shifts")
-                  .delete()
-                  .eq(
-                    "staff_name",
-                    name
-                  );
+               .from("work_shifts")
+.delete()
+.eq(
+  "staff_name",
+  name
+)
+.eq(
+  "organization_id",
+  currentOrganization.id
+);
 
               if (
                 workResult.error
