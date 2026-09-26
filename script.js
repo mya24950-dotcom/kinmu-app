@@ -145,9 +145,9 @@ let scheduleFixedStaffTable =
    初期化
 ================================================== */
 
+console.log("★★ script.js 読み込み開始 ★★");
+
 document.addEventListener("DOMContentLoaded", init);
-
-
 async function init() {
 
   try {
