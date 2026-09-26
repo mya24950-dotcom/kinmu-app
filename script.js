@@ -920,12 +920,17 @@ async function loadAllFromSupabase() {
 
   if (leaveResult.error) {
 
-    console.error(
-      "leave_types取得エラー:",
-      leaveResult.error
-    );
+  console.error(
+    "leave_types取得エラー:",
+    leaveResult.error
+  );
 
-  }
+  alert(
+    "休暇一覧の取得エラー\n\n" +
+    leaveResult.error.message
+  );
+
+}
 
 
   /* ==================================================
