@@ -32,20 +32,11 @@ body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 
-  /*
-    画面全体を上下スクロール
-  */
   overflow-x: hidden;
   overflow-y: auto;
 
-  /*
-    基本は上下スクロール
-  */
   touch-action: pan-y;
 
-  /*
-    iPhoneの文字自動拡大防止
-  */
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
 }
@@ -62,10 +53,6 @@ body {
   width: 100%;
   min-height: 100vh;
 
-  /*
-    内側にスクロール領域を作らない
-    → 画面全体で上下スクロール
-  */
   overflow: visible;
 }
 
@@ -167,9 +154,6 @@ body {
 
   border-bottom: 1px solid rgba(60, 60, 67, 0.1);
 
-  /*
-    ナビだけ横スクロール
-  */
   overflow-x: auto;
   overflow-y: hidden;
 
@@ -232,10 +216,6 @@ body {
 
   padding: 14px;
 
-  /*
-    ページ内部をスクロールさせない
-    → bodyがスクロール
-  */
   overflow: visible;
 
   touch-action: pan-y;
@@ -327,14 +307,8 @@ body {
 .table-wrapper {
   width: 100%;
 
-  /*
-    横方向はこの部分でスクロール
-  */
   overflow-x: auto;
 
-  /*
-    縦方向はbodyへ
-  */
   overflow-y: visible;
 
   background: #ffffff;
@@ -347,9 +321,6 @@ body {
     0 3px 12px rgba(0, 0, 0, 0.045),
     0 1px 3px rgba(0, 0, 0, 0.035);
 
-  /*
-    iPhoneで上下・左右両方を許可
-  */
   touch-action: pan-x pan-y;
 
   -webkit-overflow-scrolling: touch;
@@ -366,9 +337,6 @@ body {
 
   border-spacing: 0;
 
-  /*
-    表自体は横に広がる
-  */
   width: max-content;
 
   min-width: max-content;
@@ -405,10 +373,6 @@ body {
    勤務表ヘッダー
    ========================================================= */
 
-/* =========================================================
-   勤務表ヘッダー
-   ========================================================= */
-
 #scheduleTable th {
   background: #f8f8fa;
 
@@ -416,14 +380,11 @@ body {
 
   font-weight: 700;
 
-  /*
-    固定ヘッダーはJS側で作るため、
-    元のTHは通常表示にする
-  */
   position: static;
 
   z-index: 1;
 }
+
 /* =========================================================
    職員名列
    ========================================================= */
@@ -490,11 +451,6 @@ body {
    土曜日
    ========================================================= */
 
-/*
-  JS側で saturday / sat / 土曜 などの
-  クラスを付けている場合に対応
-*/
-
 #scheduleTable .saturday,
 #scheduleTable .sat,
 #scheduleTable .土曜,
@@ -553,11 +509,6 @@ body {
    土日祝の職員名列
    ========================================================= */
 
-/*
-  職員名列は固定するため、
-  土日祝の色を維持
-*/
-
 #scheduleTable td:first-child.saturday {
   background: #eaf4ff;
 }
@@ -571,16 +522,82 @@ body {
    休暇色
    ========================================================= */
 
-/*
-  JS側でstyle.backgroundColorを設定している場合は
-  インラインスタイルを優先するため、
-  ここでは!importantを使わない
-*/
-
 #scheduleTable td[style*="background"] {
   /*
     休暇色を優先
   */
+}
+
+/* =========================================================
+   ★ ログイン中の職員行
+   ========================================================= */
+
+/*
+  JS側で本人の行に
+
+  current-user-staff-row
+
+  クラスを付ける。
+*/
+
+/* 本人の行全体 */
+#scheduleTable tr.current-user-staff-row td {
+  background: #fff3a6 !important;
+
+  box-shadow:
+    inset 0 2px 0 #e0b800,
+    inset 0 -2px 0 #e0b800;
+}
+
+/* 本人の職員名 */
+#scheduleTable tr.current-user-staff-row td:first-child {
+  background: #ffe66d !important;
+
+  color: #5c4800;
+
+  font-weight: 800;
+
+  position: sticky;
+
+  left: 0;
+
+  z-index: 25;
+
+  border-left: 4px solid #e0b800;
+}
+
+/* 本人の職員名の前にマーカー */
+#scheduleTable tr.current-user-staff-row td:first-child::before {
+  content: "▶";
+
+  display: inline-block;
+
+  margin-right: 6px;
+
+  color: #d39e00;
+
+  font-size: 12px;
+
+  font-weight: 900;
+}
+
+/* 本人行の勤務セル */
+#scheduleTable tr.current-user-staff-row td:not(:first-child) {
+  font-weight: 700;
+
+  color: #4a4100;
+}
+
+/*
+  土日祝の色より本人行を優先
+*/
+#scheduleTable tr.current-user-staff-row td.saturday,
+#scheduleTable tr.current-user-staff-row td.sunday,
+#scheduleTable tr.current-user-staff-row td.holiday,
+#scheduleTable tr.current-user-staff-row td.company-holiday {
+  background: #fff3a6 !important;
+
+  color: #4a4100;
 }
 
 /* =========================================================
@@ -642,9 +659,6 @@ body {
 input,
 select,
 textarea {
-  /*
-    iPhone Safariの自動ズーム防止
-  */
   font-size: 16px !important;
 
   font-family: inherit;
@@ -1342,10 +1356,6 @@ input[type="color"] {
 
 @media (max-width: 700px) {
 
-  /* -------------------------------------------------------
-     ページ
-     ------------------------------------------------------- */
-
   .page {
     padding: 10px;
 
@@ -1353,10 +1363,6 @@ input[type="color"] {
 
     touch-action: pan-y;
   }
-
-  /* -------------------------------------------------------
-     ヘッダー
-     ------------------------------------------------------- */
 
   .header {
     min-height: 54px;
@@ -1380,10 +1386,6 @@ input[type="color"] {
     font-size: 11px;
   }
 
-  /* -------------------------------------------------------
-     ナビ
-     ------------------------------------------------------- */
-
   .nav {
     gap: 6px;
 
@@ -1398,10 +1400,6 @@ input[type="color"] {
     font-size: 13px;
   }
 
-  /* -------------------------------------------------------
-     月
-     ------------------------------------------------------- */
-
   .month-title {
     min-width: 140px;
 
@@ -1414,29 +1412,17 @@ input[type="color"] {
     height: 40px;
   }
 
-  /* -------------------------------------------------------
-     ヒント
-     ------------------------------------------------------- */
-
   .calendar-hint {
     font-size: 12px;
 
     padding: 9px 10px;
   }
 
-  /* -------------------------------------------------------
-     勤務表
-     ------------------------------------------------------- */
-
   .table-wrapper {
     overflow-x: auto;
 
     overflow-y: visible;
 
-    /*
-      勤務表上でも
-      上下・左右のジェスチャーを許可
-    */
     touch-action: pan-x pan-y;
 
     -webkit-overflow-scrolling: touch;
@@ -1467,9 +1453,21 @@ input[type="color"] {
     font-size: 14px;
   }
 
-  /* -------------------------------------------------------
-     設定カード
-     ------------------------------------------------------- */
+  /* -----------------------------------------------
+     本人行：スマホでも見やすく
+     ----------------------------------------------- */
+
+  #scheduleTable tr.current-user-staff-row td:first-child {
+    border-left-width: 4px;
+
+    padding-left: 7px;
+  }
+
+  #scheduleTable tr.current-user-staff-row td:first-child::before {
+    margin-right: 5px;
+
+    font-size: 11px;
+  }
 
   .settings-card {
     padding: 14px;
@@ -1480,10 +1478,6 @@ input[type="color"] {
   .settings-card h2 {
     font-size: 18px;
   }
-
-  /* -------------------------------------------------------
-     入力
-     ------------------------------------------------------- */
 
   input,
   select,
@@ -1498,19 +1492,11 @@ input[type="color"] {
     min-height: 46px;
   }
 
-  /* -------------------------------------------------------
-     追加ボタン
-     ------------------------------------------------------- */
-
   .add-button {
     min-height: 46px;
 
     font-size: 14px;
   }
-
-  /* -------------------------------------------------------
-     職員入力
-     ------------------------------------------------------- */
 
   .input-row {
     gap: 7px;
@@ -1524,10 +1510,6 @@ input[type="color"] {
     padding-right: 12px;
   }
 
-  /* -------------------------------------------------------
-     勤務形態
-     ------------------------------------------------------- */
-
   .shift-layout {
     display: block;
   }
@@ -1536,17 +1518,9 @@ input[type="color"] {
     width: 100%;
   }
 
-  /* -------------------------------------------------------
-     時間
-     ------------------------------------------------------- */
-
   .time-row {
     gap: 7px;
   }
-
-  /* -------------------------------------------------------
-     日付
-     ------------------------------------------------------- */
 
   .date-row {
     gap: 6px;
@@ -1555,10 +1529,6 @@ input[type="color"] {
   .date-arrow {
     font-size: 16px;
   }
-
-  /* -------------------------------------------------------
-     勤務メニュー
-     ------------------------------------------------------- */
 
   .shift-menu {
     width: calc(100vw - 20px);
@@ -1587,10 +1557,6 @@ input[type="color"] {
 
     font-size: 13px;
   }
-
-  /* -------------------------------------------------------
-     モーダル
-     ------------------------------------------------------- */
 
   .confirm-card {
     padding: 18px;
@@ -1733,5 +1699,10 @@ button:disabled {
 
   #scheduleTable {
     width: 100%;
+  }
+
+  /* 印刷時も本人行のマーカーを維持 */
+  #scheduleTable tr.current-user-staff-row td {
+    background: #fff3a6 !important;
   }
 }
