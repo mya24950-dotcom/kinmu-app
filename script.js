@@ -5715,6 +5715,11 @@ alert(
           button
         );
 
+         alert(
+  "休暇ボタン追加完了：" +
+  button.textContent
+);
+
       }
     );
 
