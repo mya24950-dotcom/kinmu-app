@@ -9534,18 +9534,32 @@ async function renderStaffList() {
   try {
 
     const {
+
       data,
+
       error
+
     } =
+
       await supabaseClient
+
         .from("organization_members")
+
         .select(
+
           "staff_id, role, user_id"
+
         )
+
         .eq(
+
           "organization_id",
+
           currentOrganization.id
+
         );
+
+    // 以下は今までのコードをそのまま
 
     if (error) {
       throw error;
