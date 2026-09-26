@@ -601,7 +601,7 @@ function showApp() {
    Googleログイン設定
 ================================================== */
 
-function setupGoogleLogin() {
+async function loginWithGoogle() {
 
   const button =
     document.getElementById(
@@ -609,76 +609,78 @@ function setupGoogleLogin() {
     );
 
 
-  if (!button) {
-
-    console.error(
-      "Googleログインボタンが見つかりません"
+  const message =
+    document.getElementById(
+      "loginMessage"
     );
 
-    return;
-
-  }
-
-
-  /* 二重登録防止 */
-
-  if (
-    button.dataset.bound ===
-    "true"
-  ) {
-
-    return;
-
-  }
-
-
-  button.dataset.bound =
-    "true";
-
-
-  button.addEventListener(
-    "click",
-    loginWithGoogle
-  );
-
-}
-
-
-
-/* ==================================================
-   Googleログイン
-================================================== */
-
-async function loginWithGoogle() {
-  const button =
-    document.getElementById("googleLoginButton");
-
-  const message =
-    document.getElementById("loginMessage");
 
   if (button) {
+
     button.disabled = true;
     button.style.opacity = "0.6";
+
   }
+
 
   if (message) {
+
     message.textContent =
       "Googleログイン画面を開いています…";
+
   }
 
+
   try {
+
+    /*
+      招待リンクのトークンを取得
+    */
+    const inviteToken =
+      new URLSearchParams(
+        window.location.search
+      ).get("invite");
+
+
+    /*
+      通常ログインなら通常のURLへ戻す
+      招待ログインなら invite を付けたまま戻す
+    */
+    let redirectUrl =
+      "https://mya24950-dotcom.github.io/kinmu-app/";
+
+
+    if (inviteToken) {
+
+      redirectUrl +=
+        "?invite=" +
+        encodeURIComponent(
+          inviteToken
+        );
+
+    }
+
+
     const { error } =
       await supabaseClient.auth.signInWithOAuth({
         provider: "google",
+
         options: {
+
           redirectTo:
-            "https://mya24950-dotcom.github.io/kinmu-app/"
+            redirectUrl
+
         }
+
       });
 
+
     if (error) {
+
       throw error;
+
     }
+
 
   } catch (error) {
 
@@ -687,16 +689,142 @@ async function loginWithGoogle() {
       error
     );
 
+
     if (message) {
+
       message.textContent =
         "Googleログインに失敗しました。";
+
     }
 
+
     if (button) {
+
       button.disabled = false;
       button.style.opacity = "1";
+
     }
+
   }
+
+}
+
+async function handleInviteAfterLogin() {
+
+  const params =
+    new URLSearchParams(
+      window.location.search
+    );
+
+
+  const inviteToken =
+    params.get("invite");
+
+
+  if (!inviteToken) {
+
+    return false;
+
+  }
+
+
+  console.log(
+    "★ 招待リンクを検出しました"
+  );
+
+
+  try {
+
+    const { data, error } =
+      await supabaseClient.rpc(
+        "accept_staff_invite",
+        {
+          invite_token:
+            inviteToken
+        }
+      );
+
+
+    if (error) {
+
+      console.error(
+        "招待受け入れエラー",
+        error
+      );
+
+
+      alert(
+        "招待リンクの登録に失敗しました。\n\n" +
+        error.message
+      );
+
+
+      return false;
+
+    }
+
+
+    if (
+      !data ||
+      !data.length
+    ) {
+
+      alert(
+        "招待リンクの登録結果を取得できませんでした。"
+      );
+
+
+      return false;
+
+    }
+
+
+    const result =
+      data[0];
+
+
+    console.log(
+      "★ 招待受け入れ成功",
+      result
+    );
+
+
+    alert(
+      `${result.staff_name}さんとして登録しました。`
+    );
+
+
+    /*
+      招待トークンをURLから削除
+    */
+    window.history.replaceState(
+      {},
+      document.title,
+      window.location.pathname
+    );
+
+
+    return true;
+
+
+  } catch (error) {
+
+    console.error(
+      "招待受け入れ処理エラー",
+      error
+    );
+
+
+    alert(
+      "招待リンクの処理に失敗しました。\n\n" +
+      error.message
+    );
+
+
+    return false;
+
+  }
+
 }
 
 /* ==================================================
