@@ -5680,13 +5680,10 @@ alert(
           "#FFD54F";
 
 
-        /*
-button.style.color =
-  getTextColorForBackground(
-    leave.color ||
-    "#FFD54F"
-  );
-*/
+       button.textContent = leave.name;
+button.style.background = leave.color || "#FFD54F";
+button.style.color = "#000000";
+button.style.boxSizing = "border-box";
 
 
         button.style.boxSizing =
