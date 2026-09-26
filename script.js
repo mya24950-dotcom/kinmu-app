@@ -683,6 +683,97 @@ function showApp() {
 
   }
 
+
+  /* =====================================================
+     管理者かどうか
+  ===================================================== */
+
+  const isAdmin =
+    currentOrganization &&
+    currentOrganization.role === "admin";
+
+
+  /* =====================================================
+     ナビゲーション
+  ===================================================== */
+
+  document
+    .querySelectorAll(
+      ".nav-button"
+    )
+    .forEach(
+      button => {
+
+        const page =
+          button.dataset.page;
+
+        if (
+          isAdmin ||
+          page === "schedule"
+        ) {
+
+          button.style.display =
+            "";
+
+        } else {
+
+          button.style.display =
+            "none";
+
+        }
+
+      }
+    );
+
+
+  /* =====================================================
+     月消去・年度消去
+  ===================================================== */
+
+  const deleteMonthButton =
+    document.getElementById(
+      "deleteMonthButton"
+    );
+
+
+  const deleteFiscalYearButton =
+    document.getElementById(
+      "deleteFiscalYearButton"
+    );
+
+
+  if (deleteMonthButton) {
+
+    deleteMonthButton.style.display =
+      isAdmin
+        ? ""
+        : "none";
+
+  }
+
+
+  if (deleteFiscalYearButton) {
+
+    deleteFiscalYearButton.style.display =
+      isAdmin
+        ? ""
+        : "none";
+
+  }
+
+
+  /* =====================================================
+     職員の場合は必ず勤務表を表示
+  ===================================================== */
+
+  if (!isAdmin) {
+
+    showPage(
+      "schedule"
+    );
+
+  }
+
 }
 
 
