@@ -7491,7 +7491,7 @@ async function moveStaff(
    職員一覧
 ================================================== */
 
-function renderStaffList() {
+async function renderStaffList() {
 
   const list =
     document.getElementById(
@@ -7500,15 +7500,75 @@ function renderStaffList() {
 
 
   if (!list) {
-
     return;
-
   }
 
 
   list.innerHTML =
     "";
 
+
+  /* =====================================================
+     職員ごとの権限情報を取得
+  ===================================================== */
+
+  let members = [];
+
+
+  try {
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient
+        .from("organization_members")
+        .select(
+          "staff_id, role, user_id"
+        )
+        .eq(
+          "organization_id",
+          currentOrganization.id
+        );
+
+
+    if (error) {
+      throw error;
+    }
+
+
+    members =
+      data || [];
+
+
+  } catch (error) {
+
+    console.error(
+      "職員権限情報取得エラー",
+      error
+    );
+
+    alert(
+      "職員の権限情報を取得できませんでした。"
+    );
+
+    return;
+  }
+
+
+  /* =====================================================
+     現在のユーザーが管理者か
+  ===================================================== */
+
+  const isAdmin =
+    currentOrganization &&
+    currentOrganization.role ===
+      "admin";
+
+
+  /* =====================================================
+     職員一覧
+  ===================================================== */
 
   appData.staff.forEach(
     (staff, index) => {
@@ -7517,6 +7577,25 @@ function renderStaffList() {
         getStaffName(
           staff
         );
+
+
+      const member =
+        members.find(
+          item =>
+            item.staff_id ===
+            staff.id
+        );
+
+
+      const role =
+        member?.role ||
+        "staff";
+
+
+      const roleLabel =
+        role === "admin"
+          ? "管理者"
+          : "一般職員";
 
 
       const item =
@@ -7529,64 +7608,135 @@ function renderStaffList() {
         "list-item";
 
 
+      /* =================================================
+         管理者の場合だけ操作ボタンを表示
+      ================================================= */
+
+      const adminButtons =
+        isAdmin
+          ? `
+
+              <button
+                type="button"
+                class="list-button move-staff-up-button"
+                ${
+                  index === 0
+                    ? "disabled"
+                    : ""
+                }
+              >
+                ↑
+              </button>
+
+
+              <button
+                type="button"
+                class="list-button move-staff-down-button"
+                ${
+                  index ===
+                  appData.staff.length - 1
+                    ? "disabled"
+                    : ""
+                }
+              >
+                ↓
+              </button>
+
+
+              <button
+                type="button"
+                class="list-button edit-staff-button"
+              >
+                編集
+              </button>
+
+
+              <button
+                type="button"
+                class="list-button role-change-button"
+              >
+                ${
+                  role === "admin"
+                    ? "一般職員に変更"
+                    : "管理者に変更"
+                }
+              </button>
+
+
+              <button
+                type="button"
+                class="list-button delete delete-staff-button"
+              >
+                削除
+              </button>
+
+
+              <button
+                type="button"
+                class="list-button invite-staff-button"
+                style="
+                  margin-left:12px;
+                "
+              >
+                招待リンク発行
+              </button>
+
+            `
+          : "";
+
+
+      /* =================================================
+         HTML
+      ================================================= */
+
       item.innerHTML = `
+
         <div class="list-item-main">
+
           <div class="list-item-title">
             ${escapeHtml(name)}
           </div>
+
+
+          <div
+            class="staff-role-label"
+            style="
+              margin-top:4px;
+              font-size:13px;
+              color:${
+                role === "admin"
+                  ? "#007aff"
+                  : "#666"
+              };
+              font-weight:600;
+            "
+          >
+            ${roleLabel}
+          </div>
+
         </div>
 
-        <div class="list-item-buttons">
 
-          <button
-            type="button"
-            class="list-button move-staff-up-button"
-            ${
-              index === 0
-                ? "disabled"
-                : ""
-            }
-          >
-            ↑
-          </button>
+        <div
+          class="list-item-buttons"
+          style="
+            display:flex;
+            align-items:center;
+            gap:6px;
+            flex-wrap:wrap;
+          "
+        >
 
-          <button
-            type="button"
-            class="list-button move-staff-down-button"
-            ${
-              index ===
-              appData.staff.length - 1
-                ? "disabled"
-                : ""
-            }
-          >
-            ↓
-          </button>
-
-          <button
-            type="button"
-            class="list-button edit-staff-button"
-          >
-            編集
-          </button>
-
-          <button
-            type="button"
-            class="list-button invite-staff-button"
-          >
-            招待リンク発行
-          </button>
-
-          <button
-            type="button"
-            class="list-button delete delete-staff-button"
-          >
-            削除
-          </button>
+          ${adminButtons}
 
         </div>
+
       `;
 
+
+      /* =================================================
+         上へ
+      ================================================= */
 
       item
         .querySelector(
@@ -7602,6 +7752,10 @@ function renderStaffList() {
         );
 
 
+      /* =================================================
+         下へ
+      ================================================= */
+
       item
         .querySelector(
           ".move-staff-down-button"
@@ -7615,6 +7769,10 @@ function renderStaffList() {
             )
         );
 
+
+      /* =================================================
+         編集
+      ================================================= */
 
       item
         .querySelector(
@@ -7661,6 +7819,102 @@ function renderStaffList() {
         );
 
 
+      /* =================================================
+         権限変更
+      ================================================= */
+
+      item
+        .querySelector(
+          ".role-change-button"
+        )
+        ?.addEventListener(
+          "click",
+          async () => {
+
+            const newRole =
+              role === "admin"
+                ? "staff"
+                : "admin";
+
+
+            const newRoleLabel =
+              newRole === "admin"
+                ? "管理者"
+                : "一般職員";
+
+
+            if (
+              !confirm(
+                `${name}さんを「${newRoleLabel}」に変更しますか？`
+              )
+            ) {
+
+              return;
+            }
+
+
+            cloudOperationBusy =
+              true;
+
+
+            try {
+
+              const {
+                error
+              } =
+                await supabaseClient
+                  .rpc(
+                    "set_staff_role",
+                    {
+                      target_staff_id:
+                        staff.id,
+
+                      target_role:
+                        newRole
+                    }
+                  );
+
+
+              if (error) {
+                throw error;
+              }
+
+
+              await loadAllFromSupabase();
+
+
+              await renderStaffList();
+
+
+            } catch (error) {
+
+              console.error(
+                "権限変更エラー",
+                error
+              );
+
+
+              alert(
+                "権限の変更に失敗しました。\n\n" +
+                error.message
+              );
+
+
+            } finally {
+
+              finishCloudOperation();
+
+            }
+
+          }
+        );
+
+
+      /* =================================================
+         招待リンク発行
+         ※アカウント登録済みでも表示
+      ================================================= */
+
       item
         .querySelector(
           ".invite-staff-button"
@@ -7676,7 +7930,6 @@ function renderStaffList() {
             ) {
 
               return;
-
             }
 
 
@@ -7687,6 +7940,10 @@ function renderStaffList() {
           }
         );
 
+
+      /* =================================================
+         削除
+      ================================================= */
 
       item
         .querySelector(
@@ -7703,7 +7960,6 @@ function renderStaffList() {
             ) {
 
               return;
-
             }
 
 
@@ -7728,7 +7984,6 @@ function renderStaffList() {
               ) {
 
                 throw workResult.error;
-
               }
 
 
@@ -7747,7 +8002,6 @@ function renderStaffList() {
               ) {
 
                 throw result.error;
-
               }
 
 
@@ -7758,7 +8012,8 @@ function renderStaffList() {
               await loadAllFromSupabase();
 
 
-              renderStaffList();
+              await renderStaffList();
+
 
               renderSchedule();
 
@@ -7774,6 +8029,7 @@ function renderStaffList() {
               alert(
                 "職員の削除に失敗しました。"
               );
+
 
             } finally {
 
@@ -7792,6 +8048,10 @@ function renderStaffList() {
     }
   );
 
+
+  /* =====================================================
+     人数
+  ===================================================== */
 
   const count =
     document.getElementById(
