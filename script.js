@@ -5194,8 +5194,21 @@ function renderLeaveLegend() {
    勤務表
 ================================================== */
 
-function renderSchedule() {
+async function renderSchedule() {
 
+  // ログイン中の職員ID
+  let currentStaffId = null;
+
+  try {
+    currentStaffId =
+      await getCurrentStaffId();
+  } catch (error) {
+    console.error(
+      "ログイン中の職員ID取得エラー",
+      error
+    );
+  }
+   
   const table =
     document.getElementById(
       "scheduleTable"
