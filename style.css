@@ -432,7 +432,7 @@ body {
    職員名
    ========================================================= */
 
-#scheduleTable td:first-child {
+#scheduleTable th.staff-name-cell {
   min-width: 95px;
 
   padding-left: 10px;
@@ -509,12 +509,12 @@ body {
    土日祝の職員名列
    ========================================================= */
 
-#scheduleTable td:first-child.saturday {
+#scheduleTable th.staff-name-cell.saturday {
   background: #eaf4ff;
 }
 
-#scheduleTable td:first-child.sunday,
-#scheduleTable td:first-child.holiday {
+#scheduleTable th.staff-name-cell.sunday,
+#scheduleTable th.staff-name-cell.holiday {
   background: #fff0f0;
 }
 
@@ -530,7 +530,7 @@ body {
 
 /* =========================================================
    ★ ログイン中の職員行
-   ========================================================= */
+========================================================= */
 
 /*
   JS側で本人の行に
@@ -540,17 +540,26 @@ body {
   クラスを付ける。
 */
 
-/* 本人の行全体 */
-#scheduleTable tr.current-user-staff-row td {
+
+/* =========================================================
+   本人の行全体
+   ========================================================= */
+
+#scheduleTable tr.current-user-staff-row > th,
+#scheduleTable tr.current-user-staff-row > td {
   background: #fff3a6 !important;
 
-  box-shadow:
-    inset 0 2px 0 #e0b800,
-    inset 0 -2px 0 #e0b800;
+  color: #4a4100;
+
+  font-weight: 700;
 }
 
-/* 本人の職員名 */
-#scheduleTable tr.current-user-staff-row td:first-child {
+
+/* =========================================================
+   本人の職員名
+   ========================================================= */
+
+#scheduleTable tr.current-user-staff-row > th:first-child {
   background: #ffe66d !important;
 
   color: #5c4800;
@@ -566,8 +575,12 @@ body {
   border-left: 4px solid #e0b800;
 }
 
-/* 本人の職員名の前にマーカー */
-#scheduleTable tr.current-user-staff-row td:first-child::before {
+
+/* =========================================================
+   本人の職員名の前にマーカー
+   ========================================================= */
+
+#scheduleTable tr.current-user-staff-row > th:first-child::before {
   content: "▶";
 
   display: inline-block;
@@ -581,24 +594,31 @@ body {
   font-weight: 900;
 }
 
-/* 本人行の勤務セル */
-#scheduleTable tr.current-user-staff-row td:not(:first-child) {
+
+/* =========================================================
+   本人行の勤務セル
+   ========================================================= */
+
+#scheduleTable tr.current-user-staff-row > td {
   font-weight: 700;
 
   color: #4a4100;
 }
 
-/*
-  土日祝の色より本人行を優先
-*/
-#scheduleTable tr.current-user-staff-row td.saturday,
-#scheduleTable tr.current-user-staff-row td.sunday,
-#scheduleTable tr.current-user-staff-row td.holiday,
-#scheduleTable tr.current-user-staff-row td.company-holiday {
+
+/* =========================================================
+   本人行の土日祝
+   ========================================================= */
+
+#scheduleTable tr.current-user-staff-row > td.saturday,
+#scheduleTable tr.current-user-staff-row > td.sunday,
+#scheduleTable tr.current-user-staff-row > td.holiday,
+#scheduleTable tr.current-user-staff-row > td.company-holiday {
   background: #fff3a6 !important;
 
   color: #4a4100;
 }
+
 
 /* =========================================================
    設定カード
@@ -1447,27 +1467,29 @@ input[type="color"] {
     font-size: 14px;
   }
 
-  #scheduleTable td:first-child {
+  #scheduleTable th.staff-name-cell {
     min-width: 90px;
 
     font-size: 14px;
   }
 
+
   /* -----------------------------------------------
      本人行：スマホでも見やすく
      ----------------------------------------------- */
 
-  #scheduleTable tr.current-user-staff-row td:first-child {
+  #scheduleTable tr.current-user-staff-row > th:first-child {
     border-left-width: 4px;
 
     padding-left: 7px;
   }
 
-  #scheduleTable tr.current-user-staff-row td:first-child::before {
+  #scheduleTable tr.current-user-staff-row > th:first-child::before {
     margin-right: 5px;
 
     font-size: 11px;
   }
+
 
   .settings-card {
     padding: 14px;
@@ -1606,7 +1628,7 @@ input[type="color"] {
     min-width: 58px;
   }
 
-  #scheduleTable td:first-child {
+  #scheduleTable th.staff-name-cell {
     min-width: 84px;
   }
 
@@ -1702,7 +1724,12 @@ button:disabled {
   }
 
   /* 印刷時も本人行のマーカーを維持 */
-  #scheduleTable tr.current-user-staff-row td {
+  #scheduleTable tr.current-user-staff-row > th,
+  #scheduleTable tr.current-user-staff-row > td {
     background: #fff3a6 !important;
+  }
+
+  #scheduleTable tr.current-user-staff-row > th:first-child {
+    background: #ffe66d !important;
   }
 }
