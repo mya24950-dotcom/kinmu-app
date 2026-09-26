@@ -2002,6 +2002,15 @@ async function loginWithGoogle() {
       "googleLoginButton"
     );
 
+     /*
+   * Googleログインを開始したので、
+   * ログアウト後の強制ログイン画面フラグを解除
+   */
+
+  sessionStorage.removeItem(
+    "forceLoginScreen"
+  );
+
 
   const message =
     document.getElementById(
