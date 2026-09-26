@@ -925,10 +925,7 @@ async function loadAllFromSupabase() {
     leaveResult.error
   );
 
-  alert(
-    "休暇一覧の取得エラー\n\n" +
-    leaveResult.error.message
-  );
+
 
 }
 
