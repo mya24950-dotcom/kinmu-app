@@ -414,6 +414,7 @@ if (
       organization
     );
 
+     setupOrganizationDangerZone();
 
     /*
      * =========================================
@@ -794,6 +795,418 @@ function setupLogoutButton() {
 
 }
 
+/* =========================================================
+   職場完全削除
+   ========================================================= */
+
+/* ---------------------------------------------------------
+   職場完全削除ボタンの表示設定
+   --------------------------------------------------------- */
+
+function setupOrganizationDangerZone() {
+
+  const dangerZone =
+    document.getElementById(
+      "organizationDangerZone"
+    );
+
+  const deleteButton =
+    document.getElementById(
+      "deleteOrganizationButton"
+    );
+
+  if (!dangerZone || !deleteButton) {
+    return;
+  }
+
+  /*
+   * 管理者だけ表示
+   */
+
+  const isAdmin =
+    currentOrganization &&
+    currentOrganization.role === "admin";
+
+  if (!isAdmin) {
+
+    dangerZone.style.display = "none";
+
+    return;
+  }
+
+  dangerZone.style.display = "block";
+
+  /*
+   * クリック処理
+   */
+
+  deleteButton.onclick =
+    async function() {
+
+      await deleteCurrentOrganization();
+
+    };
+
+}
+
+
+/* ---------------------------------------------------------
+   職場完全削除
+   --------------------------------------------------------- */
+
+async function deleteCurrentOrganization() {
+
+  if (!currentOrganization) {
+
+    alert(
+      "現在の職場情報を取得できません。"
+    );
+
+    return;
+  }
+
+
+  /*
+   * 管理者チェック
+   */
+
+  if (
+    currentOrganization.role !== "admin"
+  ) {
+
+    alert(
+      "管理者のみ職場を削除できます。"
+    );
+
+    return;
+  }
+
+
+  /*
+   * 職場名
+   */
+
+  const organizationName =
+    currentOrganization.name;
+
+
+  /*
+   * 1回目の確認
+   */
+
+  const firstConfirm =
+    confirm(
+      "【重要】\n\n" +
+      "この職場を完全に削除します。\n\n" +
+      "削除されるもの：\n" +
+      "・勤務表\n" +
+      "・職員\n" +
+      "・勤務形態\n" +
+      "・休暇設定\n" +
+      "・休業設定\n" +
+      "・職場設定\n" +
+      "・招待情報\n" +
+      "・この職場に紐づくアプリのログインアカウント\n\n" +
+      "この操作は元に戻せません。\n\n" +
+      "本当に削除しますか？"
+    );
+
+
+  if (!firstConfirm) {
+    return;
+  }
+
+
+  /*
+   * 職場名を入力してもらう
+   */
+
+  const confirmationName =
+    prompt(
+      "削除を実行するには、\n" +
+      "職場名をそのまま入力してください。\n\n" +
+      "職場名：\n" +
+      organizationName
+    );
+
+
+  /*
+   * キャンセル
+   */
+
+  if (confirmationName === null) {
+    return;
+  }
+
+
+  /*
+   * 職場名確認
+   */
+
+  if (
+    confirmationName.trim() !==
+    organizationName
+  ) {
+
+    alert(
+      "職場名が一致しません。\n\n" +
+      "職場の削除を中止しました。"
+    );
+
+    return;
+  }
+
+
+  /*
+   * 最終確認
+   */
+
+  const finalConfirm =
+    confirm(
+      "最終確認です。\n\n" +
+      "「" +
+      organizationName +
+      "」を完全に削除します。\n\n" +
+      "本当に実行しますか？"
+    );
+
+
+  if (!finalConfirm) {
+    return;
+  }
+
+
+  /*
+   * ボタンを無効化
+   */
+
+  const deleteButton =
+    document.getElementById(
+      "deleteOrganizationButton"
+    );
+
+  if (deleteButton) {
+
+    deleteButton.disabled = true;
+
+    deleteButton.textContent =
+      "削除しています…";
+
+    deleteButton.style.opacity =
+      "0.6";
+
+  }
+
+
+  cloudOperationBusy = true;
+
+
+  try {
+
+    /*
+     * 現在のログインセッション確認
+     */
+
+    const {
+      data: {
+        session
+      }
+    } =
+      await supabaseClient.auth.getSession();
+
+
+    if (!session) {
+
+      throw new Error(
+        "ログイン情報を取得できませんでした。"
+      );
+
+    }
+
+
+    /*
+     * Edge Functionを呼び出す
+     */
+
+    const response =
+      await fetch(
+        SUPABASE_URL +
+        "/functions/v1/delete-organization-completely",
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json",
+
+            "Authorization":
+              "Bearer " +
+              session.access_token
+          },
+
+          body: JSON.stringify({
+
+            organization_id:
+              currentOrganization.id,
+
+            confirmation_name:
+              confirmationName.trim()
+
+          })
+
+        }
+      );
+
+
+    /*
+     * レスポンス取得
+     */
+
+    const result =
+      await response.json();
+
+
+    /*
+     * エラー
+     */
+
+    if (!response.ok) {
+
+      throw new Error(
+        result?.error ||
+        "職場の削除に失敗しました。"
+      );
+
+    }
+
+
+    if (!result?.success) {
+
+      throw new Error(
+        result?.error ||
+        "職場の削除結果を確認できませんでした。"
+      );
+
+    }
+
+
+    console.log(
+      "職場完全削除完了",
+      result
+    );
+
+
+    /*
+     * ローカルデータを削除
+     */
+
+    localStorage.removeItem(
+      STORAGE_KEY
+    );
+
+
+    /*
+     * 現在の職場情報をクリア
+     */
+
+    currentOrganization = null;
+
+
+    /*
+     * Supabaseログアウト
+     *
+     * Edge Function側で現在ユーザーの
+     * Authアカウントが削除された場合も、
+     * ここでローカルセッションを消します。
+     */
+
+    try {
+
+      await supabaseClient.auth.signOut();
+
+    } catch (signOutError) {
+
+      console.warn(
+        "ログアウト処理",
+        signOutError
+      );
+
+    }
+
+
+    /*
+     * 完了メッセージ
+     */
+
+    alert(
+      "「" +
+      organizationName +
+      "」を完全に削除しました。\n\n" +
+      "ログイン画面に戻ります。"
+    );
+
+
+    /*
+     * ログイン画面へ
+     */
+
+    showLoginPage(
+      "職場を削除しました。"
+    );
+
+
+    /*
+     * Googleログイン・新規登録ボタンを再設定
+     */
+
+    setupGoogleLogin();
+
+    setupNewOrganizationButton();
+
+
+  } catch (error) {
+
+    console.error(
+      "職場完全削除エラー",
+      error
+    );
+
+
+    alert(
+      "職場の削除に失敗しました。\n\n" +
+      (
+        error?.message ||
+        String(error)
+      )
+    );
+
+
+  } finally {
+
+    finishCloudOperation();
+
+
+    /*
+     * エラーだった場合は
+     * ボタンを元に戻す
+     */
+
+    if (deleteButton) {
+
+      deleteButton.disabled = false;
+
+      deleteButton.textContent =
+        "職場を完全に削除";
+
+      deleteButton.style.opacity =
+        "1";
+
+    }
+
+  }
+
+}
+
 /* ==================================================
    勤務表アプリ表示
 ================================================== */
@@ -824,6 +1237,8 @@ function showApp() {
 
     app.style.display =
       "";
+
+   setupOrganizationDangerZone();
 
   }
 
