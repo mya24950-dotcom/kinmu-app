@@ -173,6 +173,8 @@ async function init() {
         SUPABASE_KEY
       );
 
+     alert("① Supabase初期化完了");
+
 
     console.log(
       "★ Supabase初期化完了"
