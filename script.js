@@ -7838,36 +7838,7 @@ async function addOrUpdateStaff() {
         );
       }
 
-      /* -----------------------------------------
-         ② organization_members に登録
-         ----------------------------------------- */
-
-      const memberResult =
-        await supabaseClient
-          .from(
-            "organization_members"
-          )
-          .insert({
-            organization_id:
-              currentOrganization.id,
-
-            user_id:
-              null,
-
-            role:
-              "staff",
-
-            staff_id:
-              newStaff.id
-          });
-
-      if (
-        memberResult.error
-      ) {
-        throw memberResult.error;
-      }
-
-    }
+   
 
     /* =========================================
        入力欄をリセット
