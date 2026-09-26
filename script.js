@@ -7845,14 +7845,11 @@ async function renderStaffList() {
       "staffList"
     );
 
-
   if (!list) {
     return;
   }
 
-
-  list.innerHTML =
-    "";
+  list.innerHTML = "";
 
 
   /* =====================================================
@@ -7860,7 +7857,6 @@ async function renderStaffList() {
   ===================================================== */
 
   let members = [];
-
 
   try {
 
@@ -7878,15 +7874,11 @@ async function renderStaffList() {
           currentOrganization.id
         );
 
-
     if (error) {
       throw error;
     }
 
-
-    members =
-      data || [];
-
+    members = data || [];
 
   } catch (error) {
 
@@ -7901,7 +7893,6 @@ async function renderStaffList() {
     );
 
     return;
-
   }
 
 
@@ -7911,8 +7902,7 @@ async function renderStaffList() {
 
   const isAdmin =
     currentOrganization &&
-    currentOrganization.role ===
-      "admin";
+    currentOrganization.role === "admin";
 
 
   /* =====================================================
@@ -7970,16 +7960,15 @@ async function renderStaffList() {
           "div"
         );
 
-
       item.className =
         "list-item";
 
 
-            if (isAdmin) {
+      /* =================================================
+         管理者ログイン時
+      ================================================= */
 
-        /* ===============================================
-           管理者でログインした場合
-        =============================================== */
+      if (isAdmin) {
 
         item.innerHTML = `
           <div style="
@@ -7994,6 +7983,7 @@ async function renderStaffList() {
             <div style="
               min-width:0;
             ">
+
               <div
                 class="list-item-title"
                 style="
@@ -8016,7 +8006,9 @@ async function renderStaffList() {
               >
                 （${roleLabel}）
               </div>
+
             </div>
+
 
             <!-- ↑ ↓ -->
             <div style="
@@ -8025,6 +8017,7 @@ async function renderStaffList() {
               align-items:center;
               justify-content:center;
             ">
+
               <button
                 type="button"
                 class="list-button move-staff-up-button"
@@ -8040,7 +8033,9 @@ async function renderStaffList() {
               >
                 ↓
               </button>
+
             </div>
+
 
             <!-- 編集・削除 -->
             <div style="
@@ -8049,6 +8044,7 @@ async function renderStaffList() {
               gap:6px;
               align-items:stretch;
             ">
+
               <button
                 type="button"
                 class="list-button edit-staff-button"
@@ -8062,7 +8058,9 @@ async function renderStaffList() {
               >
                 削除
               </button>
+
             </div>
+
 
             <!-- 管理者設定・招待リンク発行 -->
             <div style="
@@ -8071,6 +8069,7 @@ async function renderStaffList() {
               gap:6px;
               align-items:stretch;
             ">
+
               <button
                 type="button"
                 class="list-button role-change-button"
@@ -8084,53 +8083,11 @@ async function renderStaffList() {
               >
                 招待リンク発行
               </button>
+
             </div>
 
           </div>
         `;
-
-      } else {
-
-        /* ===============================================
-           職員でログインした場合
-        =============================================== */
-
-        item.innerHTML = `
-          <div style="
-            display:flex;
-            align-items:center;
-            width:100%;
-            gap:16px;
-          ">
-
-            <div
-              class="list-item-title"
-              style="
-                flex:1;
-                min-width:0;
-                white-space:nowrap;
-                overflow:hidden;
-                text-overflow:ellipsis;
-              "
-            >
-              ${escapeHtml(name)}
-            </div>
-
-            <div
-              class="staff-role-label"
-              style="
-                font-size:13px;
-                color:${roleColor};
-                font-weight:600;
-                white-space:nowrap;
-              "
-            >
-              ${roleLabel}
-            </div>
-
-          </div>
-        `;
-      }
 
 
       /* =================================================
@@ -8184,12 +8141,10 @@ async function renderStaffList() {
             editingStaffIndex =
               index;
 
-
             const input =
               document.getElementById(
                 "staffNameInput"
               );
-
 
             if (input) {
 
@@ -8200,12 +8155,10 @@ async function renderStaffList() {
 
             }
 
-
             const button =
               document.getElementById(
                 "addStaffButton"
               );
-
 
             if (button) {
 
@@ -8235,12 +8188,10 @@ async function renderStaffList() {
                 ? "staff"
                 : "admin";
 
-
             const newRoleLabel =
               newRole === "admin"
                 ? "管理者"
                 : "職員";
-
 
             if (
               !confirm(
@@ -8252,10 +8203,8 @@ async function renderStaffList() {
 
             }
 
-
             cloudOperationBusy =
               true;
-
 
             try {
 
@@ -8274,17 +8223,13 @@ async function renderStaffList() {
                     }
                   );
 
-
               if (error) {
                 throw error;
               }
 
-
               await loadAllFromSupabase();
 
-
               await renderStaffList();
-
 
             } catch (error) {
 
@@ -8293,12 +8238,10 @@ async function renderStaffList() {
                 error
               );
 
-
               alert(
                 "権限の変更に失敗しました。\n\n" +
                 error.message
               );
-
 
             } finally {
 
@@ -8312,7 +8255,6 @@ async function renderStaffList() {
 
       /* =================================================
          招待リンク発行
-         ※登録済みでもボタンは表示
       ================================================= */
 
       item
@@ -8332,7 +8274,6 @@ async function renderStaffList() {
               return;
 
             }
-
 
             await issueStaffInvite(
               staff.id
@@ -8364,10 +8305,8 @@ async function renderStaffList() {
 
             }
 
-
             cloudOperationBusy =
               true;
-
 
             try {
 
@@ -8383,7 +8322,6 @@ async function renderStaffList() {
                     "staff_name",
                     name
                   );
-
 
               if (
                 workResult.error
@@ -8407,7 +8345,6 @@ async function renderStaffList() {
                     staff.id
                   );
 
-
               if (
                 result.error
               ) {
@@ -8416,19 +8353,14 @@ async function renderStaffList() {
 
               }
 
-
               editingStaffIndex =
                 -1;
 
-
               await loadAllFromSupabase();
-
 
               await renderStaffList();
 
-
               renderSchedule();
-
 
             } catch (error) {
 
@@ -8437,12 +8369,10 @@ async function renderStaffList() {
                 error
               );
 
-
               alert(
                 "職員の削除に失敗しました。\n\n" +
                 error.message
               );
-
 
             } finally {
 
@@ -8453,17 +8383,60 @@ async function renderStaffList() {
           }
         );
 
+    } else {
 
       /* =================================================
-         一覧へ追加
+         職員ログイン時
       ================================================= */
 
-      list.appendChild(
-        item
-      );
+      item.innerHTML = `
+        <div style="
+          display:flex;
+          align-items:center;
+          width:100%;
+          gap:16px;
+        ">
+
+          <div
+            class="list-item-title"
+            style="
+              flex:1;
+              min-width:0;
+              white-space:nowrap;
+              overflow:hidden;
+              text-overflow:ellipsis;
+            "
+          >
+            ${escapeHtml(name)}
+          </div>
+
+          <div
+            class="staff-role-label"
+            style="
+              font-size:13px;
+              color:${roleColor};
+              font-weight:600;
+              white-space:nowrap;
+            "
+          >
+            ${roleLabel}
+          </div>
+
+        </div>
+      `;
 
     }
-  );
+
+
+    /* =================================================
+       一覧へ追加
+    ================================================= */
+
+    list.appendChild(
+      item
+    );
+
+  });
 
 
   /* =====================================================
@@ -8474,7 +8447,6 @@ async function renderStaffList() {
     document.getElementById(
       "staffCount"
     );
-
 
   if (count) {
 
