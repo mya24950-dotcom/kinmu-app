@@ -1157,10 +1157,6 @@ async function loadAllFromSupabase() {
   /* ==================================================
      休暇
   ================================================== */
-alert(
-  "休暇データ：" +
-  JSON.stringify(leaveResult.data)
-);
   if (
     !leaveResult.error
   ) {
