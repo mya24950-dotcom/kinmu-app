@@ -223,6 +223,126 @@ return;
       session.user.email
     );
 
+     const pendingOrganizationName =
+  sessionStorage.getItem(
+    "pendingOrganizationName"
+  );
+
+const pendingStaffName =
+  sessionStorage.getItem(
+    "pendingStaffName"
+  );
+
+
+if (
+  pendingOrganizationName &&
+  pendingStaffName
+) {
+
+  console.log(
+    "★ 新規職場登録を再開します"
+  );
+
+  console.log(
+    "職場名：",
+    pendingOrganizationName
+  );
+
+  console.log(
+    "登録者名：",
+    pendingStaffName
+  );
+
+
+  // 二重実行を防ぐため先に削除
+  sessionStorage.removeItem(
+    "pendingOrganizationName"
+  );
+
+  sessionStorage.removeItem(
+    "pendingStaffName"
+  );
+
+
+  try {
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient.rpc(
+        "create_organization_and_admin",
+        {
+          new_org_name:
+            pendingOrganizationName,
+
+          new_staff_name:
+            pendingStaffName
+        }
+      );
+
+    if (error) {
+      throw error;
+    }
+
+    if (
+      !data ||
+      !data.length
+    ) {
+      throw new Error(
+        "職場の登録結果を取得できませんでした。"
+      );
+    }
+
+    const result =
+      data[0];
+
+
+    currentOrganization = {
+
+      id:
+        result.organization_id,
+
+      name:
+        result.organization_name,
+
+      role:
+        "admin"
+
+    };
+
+
+    alert(
+      `${result.organization_name}を登録しました。\n\n` +
+      `${result.staff_name}さんを登録者として職員管理に登録しました。`
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Googleログイン後の職場登録エラー",
+      error
+    );
+
+    alert(
+      "職場の登録に失敗しました。\n\n" +
+      (error?.message ||
+        String(error))
+    );
+
+    showLoginPage(
+      "職場の登録に失敗しました。"
+    );
+
+    setupGoogleLogin();
+
+    setupNewOrganizationButton();
+
+    return;
+  }
+
+}
+
 
     /*
      * =========================================
@@ -937,6 +1057,164 @@ function setupGoogleLogin() {
 
 }
 
+async function createNewOrganization() {
+
+  const organizationNameInput =
+    document.getElementById(
+      "organizationNameInput"
+    );
+
+  const staffNameInput =
+    document.getElementById(
+      "organizationStaffNameInput"
+    );
+
+  const organizationName =
+    organizationNameInput
+      ? organizationNameInput.value.trim()
+      : "";
+
+  const staffName =
+    staffNameInput
+      ? staffNameInput.value.trim()
+      : "";
+
+  if (!organizationName) {
+    alert("職場名を入力してください。");
+    organizationNameInput?.focus();
+    return;
+  }
+
+  if (!staffName) {
+    alert("登録者名を入力してください。");
+    staffNameInput?.focus();
+    return;
+  }
+
+  try {
+
+    // まだGoogleログインしていない場合
+    const {
+      data: {
+        session
+      }
+    } =
+      await supabaseClient.auth.getSession();
+
+    if (!session) {
+
+      sessionStorage.setItem(
+        "pendingOrganizationName",
+        organizationName
+      );
+
+      sessionStorage.setItem(
+        "pendingStaffName",
+        staffName
+      );
+
+      console.log(
+        "★ 職場名を保存",
+        organizationName
+      );
+
+      console.log(
+        "★ 登録者名を保存",
+        staffName
+      );
+
+      // Googleログインへ
+      await loginWithGoogle();
+
+      return;
+    }
+
+
+    // すでにログイン済みならそのまま登録
+    const {
+      data,
+      error
+    } =
+      await supabaseClient.rpc(
+        "create_organization_and_admin",
+        {
+          new_org_name:
+            organizationName,
+
+          new_staff_name:
+            staffName
+        }
+      );
+
+    if (error) {
+      throw error;
+    }
+
+    if (
+      !data ||
+      !data.length
+    ) {
+      throw new Error(
+        "職場の登録結果を取得できませんでした。"
+      );
+    }
+
+    const result =
+      data[0];
+
+    currentOrganization = {
+      id:
+        result.organization_id,
+
+      name:
+        result.organization_name,
+
+      role:
+        "admin"
+    };
+
+    alert(
+      `${result.organization_name}を登録しました。\n\n` +
+      `${result.staff_name}さんを登録者として職員管理に登録しました。`
+    );
+
+    showApp();
+
+    loadLocalData();
+
+    bindEvents();
+
+    setupLogoutButton();
+
+    await loadAllFromSupabase();
+
+    renderAll();
+
+    loadPublicHolidays();
+
+    setupRealtime();
+
+    startAutoSync();
+
+    setupVisibilitySync();
+
+  } catch (error) {
+
+    console.error(
+      "職場新規登録エラー",
+      error
+    );
+
+    alert(
+      "職場の登録に失敗しました。\n\n" +
+      (error?.message ||
+        String(error))
+    );
+
+  }
+
+}
+
 /* =================================================
    新規職場登録画面
 ================================================= */
@@ -972,6 +1250,16 @@ function setupNewOrganizationButton() {
       "organizationNameInput"
     );
 
+  const organizationStaffNameInput =
+    document.getElementById(
+      "organizationStaffNameInput"
+    );
+
+  const createOrganizationButton =
+    document.getElementById(
+      "createOrganizationButton"
+    );
+
 
   if (
     !newOrganizationButton ||
@@ -1000,6 +1288,17 @@ function setupNewOrganizationButton() {
         organizationNameInput.value =
           "";
 
+      }
+
+      if (organizationStaffNameInput) {
+
+        organizationStaffNameInput.value =
+          "";
+
+      }
+
+      if (organizationNameInput) {
+
         organizationNameInput.focus();
 
       }
@@ -1023,9 +1322,34 @@ function setupNewOrganizationButton() {
           "";
 
         if (organizationNameInput) {
+
           organizationNameInput.value =
             "";
+
         }
+
+        if (organizationStaffNameInput) {
+
+          organizationStaffNameInput.value =
+            "";
+
+        }
+
+      };
+
+  }
+
+
+  /* -----------------------------------------
+     職場を登録する
+  ----------------------------------------- */
+
+  if (createOrganizationButton) {
+
+    createOrganizationButton.onclick =
+      function() {
+
+        createNewOrganization();
 
       };
 
