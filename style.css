@@ -1766,3 +1766,37 @@ button:disabled {
 .nav-button.active .nav-icon {
   stroke-width: 2;
 }
+
+/* ==================================================
+   Apple風 共通セクションアイコン
+================================================== */
+
+.section-title-icon {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.section-icon {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
+  display: block;
+}
+
+.danger-title-icon {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.calendar-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.calendar-hint svg {
+  flex: 0 0 18px;
+  display: block;
+}
