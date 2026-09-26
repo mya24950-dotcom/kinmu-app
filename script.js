@@ -370,11 +370,18 @@ async function init() {
     );
 
 
-  } catch (error) {
+    } catch (error) {
 
     console.error(
       "★ 初期化エラー",
       error
+    );
+
+
+    alert(
+      "アプリの初期化に失敗しました。\n\n" +
+      "エラー内容：\n" +
+      (error?.message || String(error))
     );
 
 
