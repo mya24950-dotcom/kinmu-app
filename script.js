@@ -350,15 +350,6 @@ async function testIssueStaffInvite() {
 }
 
 
-function showLoginPage(
-  message = ""
-) {
-
-  const loginPage =
-    document.getElementById(
-      "loginPage"
-    );
-
 /* ==================================================
    ログイン画面表示
 ================================================== */
