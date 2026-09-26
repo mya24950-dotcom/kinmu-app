@@ -9625,18 +9625,17 @@ async function renderStaffList() {
       "★ 職場情報がないため職員一覧の権限取得を中止します"
     );
 
-    list.innerHTML = "";
-
     return;
 
   }
 
 
-  list.innerHTML = "";
-
-
   /* =====================================================
      職員ごとの権限情報を取得
+     
+     ※重要
+     ここでは現在表示されている職員一覧を消さない。
+     Supabaseから取得している間も、現在の一覧を表示したままにする。
   ===================================================== */
 
   let members = [];
@@ -9644,38 +9643,25 @@ async function renderStaffList() {
   try {
 
     const {
-
       data,
-
       error
-
     } =
-
       await supabaseClient
-
         .from("organization_members")
-
         .select(
-
           "staff_id, role, user_id"
-
         )
-
         .eq(
-
           "organization_id",
-
           currentOrganization.id
-
         );
-
-    // 以下は今までのコードをそのまま
 
     if (error) {
       throw error;
     }
 
-    members = data || [];
+    members =
+      data || [];
 
   } catch (error) {
 
@@ -9689,6 +9675,11 @@ async function renderStaffList() {
       error.message
     );
 
+    /*
+     * 取得に失敗しても、
+     * 現在表示されている一覧は消さない
+     */
+
     return;
   }
 
@@ -9700,6 +9691,16 @@ async function renderStaffList() {
   const isAdmin =
     currentOrganization &&
     currentOrganization.role === "admin";
+
+
+  /* =====================================================
+     新しい職員一覧を一時的に作成
+     
+     ※ここでも現在の画面は変更しない
+  ===================================================== */
+
+  const newList =
+    document.createDocumentFragment();
 
 
   /* =====================================================
@@ -9826,7 +9827,12 @@ async function renderStaffList() {
               <button
                 type="button"
                 class="list-button move-staff-down-button"
-                ${index === appData.staff.length - 1 ? "disabled" : ""}
+                ${
+                  index ===
+                  appData.staff.length - 1
+                    ? "disabled"
+                    : ""
+                }
               >
                 ↓
               </button>
@@ -9887,331 +9893,348 @@ async function renderStaffList() {
         `;
 
 
-      /* =================================================
-         上へ
-      ================================================= */
+        /* =================================================
+           上へ
+        ================================================= */
 
-      item
-        .querySelector(
-          ".move-staff-up-button"
-        )
-        ?.addEventListener(
-          "click",
-          () =>
-            moveStaff(
-              index,
-              -1
-            )
-        );
-
-
-      /* =================================================
-         下へ
-      ================================================= */
-
-      item
-        .querySelector(
-          ".move-staff-down-button"
-        )
-        ?.addEventListener(
-          "click",
-          () =>
-            moveStaff(
-              index,
-              1
-            )
-        );
-
-
-      /* =================================================
-         編集
-      ================================================= */
-
-      item
-        .querySelector(
-          ".edit-staff-button"
-        )
-        ?.addEventListener(
-          "click",
-          () => {
-
-            editingStaffIndex =
-              index;
-
-            const input =
-              document.getElementById(
-                "staffNameInput"
-              );
-
-            if (input) {
-
-              input.value =
-                name;
-
-              input.focus();
-
-            }
-
-            const button =
-              document.getElementById(
-                "addStaffButton"
-              );
-
-            if (button) {
-
-              button.textContent =
-                "職員を更新";
-
-            }
-
-          }
-        );
-
-
-      /* =================================================
-         管理者設定
-      ================================================= */
-
-      item
-        .querySelector(
-          ".role-change-button"
-        )
-        ?.addEventListener(
-          "click",
-          async () => {
-
-            const newRole =
-              role === "admin"
-                ? "staff"
-                : "admin";
-
-            const newRoleLabel =
-              newRole === "admin"
-                ? "管理者"
-                : "職員";
-
-            if (
-              !confirm(
-                `${name}さんを「${newRoleLabel}」に変更しますか？`
+        item
+          .querySelector(
+            ".move-staff-up-button"
+          )
+          ?.addEventListener(
+            "click",
+            () =>
+              moveStaff(
+                index,
+                -1
               )
-            ) {
-
-              return;
-
-            }
-
-            cloudOperationBusy =
-              true;
-
-            try {
-
-              const {
-                error
-              } =
-                await supabaseClient
-                  .rpc(
-                    "set_staff_role",
-                    {
-                      target_staff_id:
-                        staff.id,
-
-                      target_role:
-                        newRole
-                    }
-                  );
-
-              if (error) {
-                throw error;
-              }
-
-              await loadAllFromSupabase();
-
-              await renderStaffList();
-
-            } catch (error) {
-
-              console.error(
-                "権限変更エラー",
-                error
-              );
-
-              alert(
-                "権限の変更に失敗しました。\n\n" +
-                error.message
-              );
-
-            } finally {
-
-              finishCloudOperation();
-
-            }
-
-          }
-        );
+          );
 
 
-      /* =================================================
-         招待リンク発行
-      ================================================= */
+        /* =================================================
+           下へ
+        ================================================= */
 
-      item
-        .querySelector(
-          ".invite-staff-button"
-        )
-        ?.addEventListener(
-          "click",
-          async () => {
-
-            if (
-              !confirm(
-                `${name}さんの招待リンクを発行しますか？`
+        item
+          .querySelector(
+            ".move-staff-down-button"
+          )
+          ?.addEventListener(
+            "click",
+            () =>
+              moveStaff(
+                index,
+                1
               )
-            ) {
-
-              return;
-
-            }
-
-            await issueStaffInvite(
-              staff.id
-            );
-
-          }
-        );
+          );
 
 
-      /* =================================================
-         削除
-      ================================================= */
+        /* =================================================
+           編集
+        ================================================= */
 
-      item
-        .querySelector(
-          ".delete-staff-button"
-        )
-        ?.addEventListener(
-          "click",
-          async () => {
-
-            if (
-              !confirm(
-                `${name}を削除しますか？`
-              )
-            ) {
-
-              return;
-
-            }
-
-            cloudOperationBusy =
-              true;
-
-            try {
-
-           /* -----------------------------------------
-   職員・勤務データ・ログインアカウントを削除
------------------------------------------ */
-
-const result =
-  await supabaseClient.rpc(
-    "delete_staff_and_account",
-    {
-      target_staff_id:
-        staff.id
-    }
-  );
-
-if (
-  result.error
-) {
-
-  throw result.error;
-
-}
+        item
+          .querySelector(
+            ".edit-staff-button"
+          )
+          ?.addEventListener(
+            "click",
+            () => {
 
               editingStaffIndex =
-                -1;
+                index;
 
-              await loadAllFromSupabase();
+              const input =
+                document.getElementById(
+                  "staffNameInput"
+                );
 
-              await renderStaffList();
+              if (input) {
 
-              renderSchedule();
+                input.value =
+                  name;
 
-            } catch (error) {
+                input.focus();
 
-              console.error(
-                "職員削除エラー",
-                error
-              );
+              }
 
-              alert(
-                "職員の削除に失敗しました。\n\n" +
-                error.message
-              );
+              const button =
+                document.getElementById(
+                  "addStaffButton"
+                );
 
-            } finally {
+              if (button) {
 
-              finishCloudOperation();
+                button.textContent =
+                  "職員を更新";
+
+              }
 
             }
+          );
 
-          }
-        );
 
-    } else {
+        /* =================================================
+           管理者設定
+        ================================================= */
+
+        item
+          .querySelector(
+            ".role-change-button"
+          )
+          ?.addEventListener(
+            "click",
+            async () => {
+
+              const newRole =
+                role === "admin"
+                  ? "staff"
+                  : "admin";
+
+              const newRoleLabel =
+                newRole === "admin"
+                  ? "管理者"
+                  : "職員";
+
+
+              if (
+                !confirm(
+                  `${name}さんを「${newRoleLabel}」に変更しますか？`
+                )
+              ) {
+
+                return;
+
+              }
+
+
+              cloudOperationBusy =
+                true;
+
+
+              try {
+
+                const {
+                  error
+                } =
+                  await supabaseClient
+                    .rpc(
+                      "set_staff_role",
+                      {
+                        target_staff_id:
+                          staff.id,
+
+                        target_role:
+                          newRole
+                      }
+                    );
+
+
+                if (error) {
+                  throw error;
+                }
+
+
+                await loadAllFromSupabase();
+
+                await renderStaffList();
+
+
+              } catch (error) {
+
+                console.error(
+                  "権限変更エラー",
+                  error
+                );
+
+                alert(
+                  "権限の変更に失敗しました。\n\n" +
+                  error.message
+                );
+
+
+              } finally {
+
+                finishCloudOperation();
+
+              }
+
+            }
+          );
+
+
+        /* =================================================
+           招待リンク発行
+        ================================================= */
+
+        item
+          .querySelector(
+            ".invite-staff-button"
+          )
+          ?.addEventListener(
+            "click",
+            async () => {
+
+              if (
+                !confirm(
+                  `${name}さんの招待リンクを発行しますか？`
+                )
+              ) {
+
+                return;
+
+              }
+
+              await issueStaffInvite(
+                staff.id
+              );
+
+            }
+          );
+
+
+        /* =================================================
+           削除
+        ================================================= */
+
+        item
+          .querySelector(
+            ".delete-staff-button"
+          )
+          ?.addEventListener(
+            "click",
+            async () => {
+
+              if (
+                !confirm(
+                  `${name}を削除しますか？`
+                )
+              ) {
+
+                return;
+
+              }
+
+
+              cloudOperationBusy =
+                true;
+
+
+              try {
+
+                /* -----------------------------------------
+                   職員・勤務データ・ログインアカウントを削除
+                ----------------------------------------- */
+
+                const result =
+                  await supabaseClient
+                    .rpc(
+                      "delete_staff_and_account",
+                      {
+                        target_staff_id:
+                          staff.id
+                      }
+                    );
+
+
+                if (
+                  result.error
+                ) {
+
+                  throw result.error;
+
+                }
+
+
+                editingStaffIndex =
+                  -1;
+
+
+                await loadAllFromSupabase();
+
+                await renderStaffList();
+
+                renderSchedule();
+
+
+              } catch (error) {
+
+                console.error(
+                  "職員削除エラー",
+                  error
+                );
+
+                alert(
+                  "職員の削除に失敗しました。\n\n" +
+                  error.message
+                );
+
+
+              } finally {
+
+                finishCloudOperation();
+
+              }
+
+            }
+          );
+
+
+      } else {
+
+        /* =================================================
+           職員ログイン時
+        ================================================= */
+
+        item.innerHTML = `
+          <div style="
+            display:flex;
+            align-items:center;
+            width:100%;
+            gap:16px;
+          ">
+
+            <div
+              class="list-item-title"
+              style="
+                flex:1;
+                min-width:0;
+                white-space:nowrap;
+                overflow:hidden;
+                text-overflow:ellipsis;
+              "
+            >
+              ${escapeHtml(name)}
+            </div>
+
+            <div
+              class="staff-role-label"
+              style="
+                font-size:13px;
+                color:${roleColor};
+                font-weight:600;
+                white-space:nowrap;
+              "
+            >
+              ${roleLabel}
+            </div>
+
+          </div>
+        `;
+
+      }
+
 
       /* =================================================
-         職員ログイン時
+         新しい一覧へ追加
       ================================================= */
 
-      item.innerHTML = `
-        <div style="
-          display:flex;
-          align-items:center;
-          width:100%;
-          gap:16px;
-        ">
-
-          <div
-            class="list-item-title"
-            style="
-              flex:1;
-              min-width:0;
-              white-space:nowrap;
-              overflow:hidden;
-              text-overflow:ellipsis;
-            "
-          >
-            ${escapeHtml(name)}
-          </div>
-
-          <div
-            class="staff-role-label"
-            style="
-              font-size:13px;
-              color:${roleColor};
-              font-weight:600;
-              white-space:nowrap;
-            "
-          >
-            ${roleLabel}
-          </div>
-
-        </div>
-      `;
+      newList.appendChild(
+        item
+      );
 
     }
-
-
-    /* =================================================
-       一覧へ追加
-    ================================================= */
-
-    list.appendChild(
-      item
-    );
-
-  });
+  );
 
 
   /* =====================================================
@@ -10229,6 +10252,19 @@ if (
       `${appData.staff.length}人`;
 
   }
+
+
+  /* =====================================================
+     ここで初めて画面を入れ替える
+     
+     重要：
+     Supabase取得・職員一覧作成が全部終わった後なので、
+     「職員が一瞬消える」時間が発生しない。
+  ===================================================== */
+
+  list.replaceChildren(
+    newList
+  );
 
 }
 
