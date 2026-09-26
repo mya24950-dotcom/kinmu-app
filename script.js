@@ -5644,6 +5644,11 @@ function showShiftMenu(
        休暇一覧
     ------------------------------------------------ */
 
+alert(
+  "画面表示時の休暇：" +
+  JSON.stringify(appData.leaveTypes)
+);
+     
     appData.leaveTypes.forEach(
       leave => {
 
