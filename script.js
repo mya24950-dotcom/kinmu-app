@@ -8883,52 +8883,26 @@ async function renderStaffList() {
 
             try {
 
-              /* -----------------------------------------
-                 勤務データを削除
-              ----------------------------------------- */
+           /* -----------------------------------------
+   職員・勤務データ・ログインアカウントを削除
+----------------------------------------- */
 
-              const workResult =
-                await supabaseClient
-               .from("work_shifts")
-.delete()
-.eq(
-  "staff_name",
-  name
-)
-.eq(
-  "organization_id",
-  currentOrganization.id
-);
+const result =
+  await supabaseClient.rpc(
+    "delete_staff_and_account",
+    {
+      target_staff_id:
+        staff.id
+    }
+  );
 
-              if (
-                workResult.error
-              ) {
+if (
+  result.error
+) {
 
-                throw workResult.error;
+  throw result.error;
 
-              }
-
-
-              /* -----------------------------------------
-                 職員を削除
-              ----------------------------------------- */
-
-              const result =
-                await supabaseClient
-                  .from("staff")
-                  .delete()
-                  .eq(
-                    "id",
-                    staff.id
-                  );
-
-              if (
-                result.error
-              ) {
-
-                throw result.error;
-
-              }
+}
 
               editingStaffIndex =
                 -1;
