@@ -290,7 +290,7 @@
           "
         >
           はじめて勤務表を作成する方は<br>
-          職場名を入力してください。
+          職場名と登録者名を入力してください。
         </p>
 
       </div>
@@ -316,6 +316,41 @@
         type="text"
         id="organizationNameInput"
         placeholder="例：○○学校"
+        maxlength="100"
+        style="
+          width:100%;
+          min-height:48px;
+          padding:0 14px;
+          border:1px solid #ccc;
+          border-radius:10px;
+          box-sizing:border-box;
+          font-size:16px;
+          outline:none;
+          margin-bottom:16px;
+        "
+      >
+
+
+      <!-- 登録者名 -->
+
+      <label
+        for="organizationStaffNameInput"
+        style="
+          display:block;
+          font-size:14px;
+          font-weight:600;
+          color:#555;
+          margin-bottom:8px;
+        "
+      >
+        登録者名
+      </label>
+
+
+      <input
+        type="text"
+        id="organizationStaffNameInput"
+        placeholder="例：山田太郎"
         maxlength="100"
         style="
           width:100%;
