@@ -147,146 +147,228 @@ let scheduleFixedStaffTable =
 
 document.addEventListener("DOMContentLoaded", init);
 
+
 async function init() {
+
   try {
+
     console.log("★ 勤務表アプリ起動");
 
-    // ========================================
-    // Supabaseライブラリ確認
-    // ========================================
+
     if (
       !window.supabase ||
       typeof window.supabase.createClient !== "function"
     ) {
+
       throw new Error(
         "Supabaseライブラリが読み込まれていません"
       );
+
     }
 
-    // ========================================
-    // Supabaseクライアント初期化
-    // ========================================
-    supabaseClient = window.supabase.createClient(
-      SUPABASE_URL,
-      SUPABASE_KEY
+
+    supabaseClient =
+      window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+      );
+
+
+    console.log(
+      "★ Supabase初期化完了"
     );
 
-    console.log("★ Supabase初期化完了");
 
-    // ========================================
-    // ログイン状態を確認
-    // ========================================
     const {
       data: { session },
       error
-    } = await supabaseClient.auth.getSession();
-     
+    } =
+      await supabaseClient.auth.getSession();
+
+
     if (error) {
+
       throw error;
+
     }
 
-     
 
-    // ========================================
-    // 未ログインの場合
-    // ========================================
+    /*
+     * =========================================
+     * Googleログイン前
+     * =========================================
+     */
+
     if (!session) {
-      console.log("Googleログインが必要です");
+
+      console.log(
+        "Googleログインが必要です"
+      );
+
 
       showLoginPage();
+
+
       setupGoogleLogin();
 
+
       return;
+
     }
 
-    // ========================================
-    // ログイン済み
-    // ========================================
+
+    /*
+     * =========================================
+     * Googleログイン済み
+     * =========================================
+     */
+
     console.log(
       "Googleログイン済み",
       session.user.email
     );
 
-    // ========================================
-    // 所属職場を取得
-    // ========================================
+
+    /*
+     * =========================================
+     * 招待URLの確認
+     * =========================================
+     */
+
+    const inviteToken =
+      new URLSearchParams(
+        window.location.search
+      ).get("invite");
+
+
+    if (inviteToken) {
+
+      console.log(
+        "★ 招待ログインを処理します"
+      );
+
+
+      const inviteAccepted =
+        await handleInviteAfterLogin();
+
+
+      if (!inviteAccepted) {
+
+        showLoginPage(
+          "招待リンクの登録に失敗しました。"
+        );
+
+
+        return;
+
+      }
+
+    }
+
+
+    /*
+     * =========================================
+     * 所属職場を取得
+     * =========================================
+     */
+
     const organization =
-      await getCurrentOrganization(session.user.id);
+      await getCurrentOrganization(
+        session.user.id
+      );
+
 
     if (!organization) {
+
       showLoginPage(
         "ログインしましたが、職場への所属がありません。"
       );
+
+
       return;
+
     }
 
-    currentOrganization = organization;
+
+    currentOrganization =
+      organization;
+
 
     console.log(
       "所属職場",
       organization
     );
 
-    // ========================================
-    // アプリ画面を表示
-    // ========================================
+
+    /*
+     * =========================================
+     * アプリ表示
+     * =========================================
+     */
+
     showApp();
 
-    // ========================================
-    // ローカルデータ読み込み
-    // ========================================
+
     loadLocalData();
 
-    // ========================================
-    // イベント設定
-    // ========================================
+
     bindEvents();
 
-     setupLogoutButton();
 
-    // ========================================
-    // Supabaseからデータ取得
-    // ========================================
+    setupLogoutButton();
+
+
+    /*
+     * =========================================
+     * Supabaseデータ読み込み
+     * =========================================
+     */
+
     try {
+
       await loadAllFromSupabase();
+
     } catch (error) {
+
       console.error(
         "Supabaseデータ取得失敗",
         error
       );
 
+
       alert(
         "Supabaseからデータを取得できませんでした。\n" +
         "現在の画面を表示します。"
       );
+
     }
 
-    // ========================================
-    // 画面描画
-    // ========================================
+
+    /*
+     * =========================================
+     * 画面描画
+     * =========================================
+     */
+
     renderAll();
 
-    // ========================================
-    // 祝日読み込み
-    // ========================================
+
     loadPublicHolidays();
 
-    // ========================================
-    // リアルタイム同期
-    // ========================================
+
     setupRealtime();
 
-    // ========================================
-    // 自動同期
-    // ========================================
+
     startAutoSync();
 
-    // ========================================
-    // 画面復帰時の同期
-    // ========================================
+
     setupVisibilitySync();
 
-    console.log("★ 勤務表アプリ起動完了");
+
+    console.log(
+      "★ 勤務表アプリ起動完了"
+    );
+
 
   } catch (error) {
 
@@ -295,10 +377,13 @@ async function init() {
       error
     );
 
+
     showLoginPage(
       "アプリの初期化に失敗しました。"
     );
+
   }
+
 }
 
 async function issueStaffInvite(staffId) {
