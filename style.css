@@ -95,6 +95,30 @@ body {
   font-weight: 700;
 
   white-space: nowrap;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* =========================================================
+   ヘッダーブランド
+   ========================================================= */
+
+.app-header-brand {
+  display: flex;
+  align-items: center;
+
+  min-width: 0;
+
+  flex: 1;
+}
+
+/*
+  スケジュール画面にロゴと職場名を表示するため、
+  ヘッダー側のロゴは基本的に使用しない。
+*/
+.app-header-logo {
+  display: none;
 }
 
 /* =========================================================
@@ -196,6 +220,12 @@ body {
   cursor: pointer;
 
   -webkit-tap-highlight-color: transparent;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 6px;
 }
 
 .nav-button.active {
@@ -205,6 +235,19 @@ body {
 
 .nav-button:active {
   transform: scale(0.97);
+}
+
+.nav-icon {
+  width: 19px;
+  height: 19px;
+
+  flex: 0 0 19px;
+
+  display: block;
+}
+
+.nav-button.active .nav-icon {
+  stroke-width: 2;
 }
 
 /* =========================================================
@@ -219,6 +262,63 @@ body {
   overflow: visible;
 
   touch-action: pan-y;
+}
+
+/* =========================================================
+   勤務表ページ ブランド
+   Shift+ロゴ
+   ↓
+   職場名
+   ========================================================= */
+
+.schedule-brand {
+  width: 100%;
+
+  text-align: left;
+
+  padding: 8px 12px 6px;
+
+  box-sizing: border-box;
+}
+
+/* =========================================================
+   勤務表ページ ロゴ
+   ========================================================= */
+
+.schedule-logo {
+  display: block;
+
+  width: 95px;
+
+  max-width: 35vw;
+
+  height: auto;
+
+  object-fit: contain;
+
+  margin: 0 0 3px;
+}
+
+/* =========================================================
+   勤務表ページ 職場名
+   ========================================================= */
+
+.schedule-organization-title {
+  width: 100%;
+
+  font-size: 18px;
+
+  font-weight: 700;
+
+  line-height: 1.25;
+
+  color: inherit;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
 }
 
 /* =========================================================
@@ -279,6 +379,7 @@ body {
   text-align: center;
 
   font-size: 20px;
+
   font-weight: 700;
 }
 
@@ -297,7 +398,19 @@ body {
   color: #345;
 
   font-size: 13px;
+
   line-height: 1.5;
+
+  display: flex;
+  align-items: center;
+
+  gap: 6px;
+}
+
+.calendar-hint svg {
+  flex: 0 0 18px;
+
+  display: block;
 }
 
 /* =========================================================
@@ -523,26 +636,11 @@ body {
    ========================================================= */
 
 #scheduleTable td[style*="background"] {
-  /*
-    休暇色を優先
-  */
+  /* 休暇色を優先 */
 }
 
 /* =========================================================
-   ★ ログイン中の職員行
-========================================================= */
-
-/*
-  JS側で本人の行に
-
-  current-user-staff-row
-
-  クラスを付ける。
-*/
-
-
-/* =========================================================
-   本人の行全体
+   本人の行
    ========================================================= */
 
 #scheduleTable tr.current-user-staff-row > th,
@@ -553,7 +651,6 @@ body {
 
   font-weight: 700;
 }
-
 
 /* =========================================================
    本人の職員名
@@ -575,9 +672,8 @@ body {
   border-left: 4px solid #e0b800;
 }
 
-
 /* =========================================================
-   本人の職員名の前にマーカー
+   本人の職員名マーカー
    ========================================================= */
 
 #scheduleTable tr.current-user-staff-row > th:first-child::before {
@@ -594,7 +690,6 @@ body {
   font-weight: 900;
 }
 
-
 /* =========================================================
    本人行の勤務セル
    ========================================================= */
@@ -604,7 +699,6 @@ body {
 
   color: #4a4100;
 }
-
 
 /* =========================================================
    本人行の土日祝
@@ -618,7 +712,6 @@ body {
 
   color: #4a4100;
 }
-
 
 /* =========================================================
    設定カード
@@ -652,6 +745,31 @@ body {
   font-weight: 700;
 
   line-height: 1.4;
+}
+
+.section-title-icon {
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+}
+
+.section-icon {
+  width: 22px;
+  height: 22px;
+
+  flex: 0 0 22px;
+
+  display: block;
+}
+
+.danger-title-icon {
+  display: flex;
+
+  align-items: center;
+
+  gap: 7px;
 }
 
 /* =========================================================
@@ -836,19 +954,11 @@ input[type="date"] {
   border-radius: 11px;
 }
 
-/* =========================================================
-   リスト情報
-   ========================================================= */
-
 .list-item-info {
   flex: 1;
 
   min-width: 0;
 }
-
-/* =========================================================
-   リストタイトル
-   ========================================================= */
 
 .list-item-title {
   font-size: 15px;
@@ -861,10 +971,6 @@ input[type="date"] {
 
   white-space: nowrap;
 }
-
-/* =========================================================
-   リストサブ
-   ========================================================= */
 
 .list-item-sub {
   margin-top: 3px;
@@ -925,10 +1031,6 @@ input[type="date"] {
 
   align-items: start;
 }
-
-/* =========================================================
-   勤務形態フォーム
-   ========================================================= */
 
 .shift-form {
   display: flex;
@@ -1112,10 +1214,6 @@ input[type="color"] {
   touch-action: pan-y;
 }
 
-/* =========================================================
-   勤務選択タイトル
-   ========================================================= */
-
 .shift-menu-title {
   padding: 4px 4px 10px;
 
@@ -1125,10 +1223,6 @@ input[type="color"] {
 
   text-align: center;
 }
-
-/* =========================================================
-   勤務ボタン
-   ========================================================= */
 
 .shift-menu-buttons {
   display: grid;
@@ -1141,10 +1235,6 @@ input[type="color"] {
 
   gap: 7px;
 }
-
-/* =========================================================
-   勤務選択ボタン
-   ========================================================= */
 
 .shift-menu-button {
   width: 100%;
@@ -1180,10 +1270,6 @@ input[type="color"] {
   background: #e5e5ea;
 }
 
-/* =========================================================
-   休暇
-   ========================================================= */
-
 .shift-leave {
   grid-column: 1 / -1;
 
@@ -1197,10 +1283,6 @@ input[type="color"] {
 
   font-weight: 700 !important;
 }
-
-/* =========================================================
-   キャンセル
-   ========================================================= */
 
 .shift-cancel {
   grid-column: 1 / -1;
@@ -1247,10 +1329,6 @@ input[type="color"] {
   -webkit-backdrop-filter: blur(4px);
 }
 
-/* =========================================================
-   確認カード
-   ========================================================= */
-
 .confirm-card {
   width: min(
     420px,
@@ -1272,10 +1350,6 @@ input[type="color"] {
     );
 }
 
-/* =========================================================
-   確認タイトル
-   ========================================================= */
-
 .confirm-title {
   margin-bottom: 10px;
 
@@ -1285,10 +1359,6 @@ input[type="color"] {
 
   text-align: center;
 }
-
-/* =========================================================
-   確認本文
-   ========================================================= */
 
 .confirm-text {
   margin-bottom: 18px;
@@ -1301,10 +1371,6 @@ input[type="color"] {
 
   text-align: center;
 }
-
-/* =========================================================
-   確認ボタン
-   ========================================================= */
 
 .confirm-buttons {
   display: grid;
@@ -1371,6 +1437,19 @@ input[type="color"] {
 }
 
 /* =========================================================
+   選択中の勤務セル
+   ========================================================= */
+
+#scheduleTable td.selected-cell {
+  position: relative;
+
+  box-shadow:
+    inset 0 0 0 3px #007aff !important;
+
+  z-index: 10;
+}
+
+/* =========================================================
    スマートフォン
    ========================================================= */
 
@@ -1418,6 +1497,26 @@ input[type="color"] {
     padding: 8px 12px;
 
     font-size: 13px;
+  }
+
+  /* -----------------------------------------------
+     勤務表ブランド
+     ----------------------------------------------- */
+
+  .schedule-brand {
+    padding: 7px 10px 5px;
+  }
+
+  .schedule-logo {
+    width: 88px;
+
+    max-width: 34vw;
+
+    margin-bottom: 3px;
+  }
+
+  .schedule-organization-title {
+    font-size: 17px;
   }
 
   .month-title {
@@ -1473,11 +1572,6 @@ input[type="color"] {
     font-size: 14px;
   }
 
-
-  /* -----------------------------------------------
-     本人行：スマホでも見やすく
-     ----------------------------------------------- */
-
   #scheduleTable tr.current-user-staff-row > th:first-child {
     border-left-width: 4px;
 
@@ -1489,7 +1583,6 @@ input[type="color"] {
 
     font-size: 11px;
   }
-
 
   .settings-card {
     padding: 14px;
@@ -1618,6 +1711,14 @@ input[type="color"] {
     font-size: 12px;
   }
 
+  .schedule-logo {
+    width: 82px;
+  }
+
+  .schedule-organization-title {
+    font-size: 16px;
+  }
+
   .month-title {
     min-width: 125px;
 
@@ -1723,7 +1824,6 @@ button:disabled {
     width: 100%;
   }
 
-  /* 印刷時も本人行のマーカーを維持 */
   #scheduleTable tr.current-user-staff-row > th,
   #scheduleTable tr.current-user-staff-row > td {
     background: #fff3a6 !important;
@@ -1734,575 +1834,37 @@ button:disabled {
   }
 }
 
-/* ==================================================
-   選択中の勤務セル
-================================================== */
-
-#scheduleTable td.selected-cell {
-  position: relative;
-  box-shadow:
-    inset 0 0 0 3px #007aff !important;
-  z-index: 10;
-}
-
-/* ==================================================
-   Apple風 ナビアイコン
-================================================== */
-
-.nav-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-}
-
-.nav-icon {
-  width: 19px;
-  height: 19px;
-  flex: 0 0 19px;
-  display: block;
-}
-
-.nav-button.active .nav-icon {
-  stroke-width: 2;
-}
-
-/* ==================================================
-   Apple風 共通セクションアイコン
-================================================== */
-
-.section-title-icon {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.section-icon {
-  width: 22px;
-  height: 22px;
-  flex: 0 0 22px;
-  display: block;
-}
-
-.danger-title-icon {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-}
-
-.calendar-hint {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.calendar-hint svg {
-  flex: 0 0 18px;
-  display: block;
-}
-
-/* ==================================================
+/* =========================================================
    ダークモード
-================================================== */
+   ========================================================= */
 
 body.dark-mode {
   background: #1c1c1e;
+
   color: #f2f2f7;
-}
 
-
-/* ==================================================
-   ダークモード
-   ヘッダー
-================================================== */
-
-body.dark-mode .header {
-  background: #2c2c2e;
-  color: #f2f2f7;
-}
-
-body.dark-mode .header-delete-buttons button {
-  background: #3a3a3c;
-  color: #f2f2f7;
-  border-color: #545458;
-}
-
-body.dark-mode .header-delete-buttons button:hover {
-  background: #48484a;
-}
-
-
-/* ==================================================
-   ダークモード
-   ナビゲーション
-================================================== */
-
-body.dark-mode .nav {
-  background: #2c2c2e;
-  border-color: #3a3a3c;
-}
-
-body.dark-mode .nav-button {
-  color: #d1d1d6;
-}
-
-body.dark-mode .nav-button.active {
-  background: #0a84ff;
-  color: #ffffff;
-}
-
-
-/* ==================================================
-   ダークモード切替ボタン
-================================================== */
-
-#darkModeButton {
-  width: 40px;
-  height: 36px;
-  min-width: 40px;
-  padding: 0;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  border: 1px solid #d1d1d6;
-  border-radius: 10px;
-
-  background: #ffffff;
-  color: #333333;
-
-  cursor: pointer;
-}
-
-#darkModeButton:hover {
-  background: #f2f2f7;
-}
-
-.dark-mode-icon {
-  width: 20px;
-  height: 20px;
-  display: block;
-}
-
-
-/* ==================================================
-   ダークモード
-   月移動
-================================================== */
-
-body.dark-mode .month-bar {
-  color: #f2f2f7;
-}
-
-body.dark-mode .month-button {
-  background: #2c2c2e;
-  color: #f2f2f7;
-  border-color: #545458;
-}
-
-body.dark-mode .month-button:hover {
-  background: #3a3a3c;
-}
-
-body.dark-mode .month-title {
-  color: #f2f2f7;
-}
-
-
-/* ==================================================
-   ダークモード
-   ヒント
-================================================== */
-
-body.dark-mode .calendar-hint {
-  color: #a1a1a6;
-}
-
-
-/* ==================================================
-   ダークモード
-   設定カード
-================================================== */
-
-body.dark-mode .settings-card {
-  background: #2c2c2e;
-  color: #f2f2f7;
-  border-color: #3a3a3c;
-}
-
-body.dark-mode .section-title-icon {
-  color: #f2f2f7;
-}
-
-body.dark-mode .info {
-  color: #a1a1a6;
-}
-
-
-/* ==================================================
-   ダークモード
-   入力欄
-================================================== */
-
-body.dark-mode input,
-body.dark-mode select,
-body.dark-mode textarea {
-  background: #1c1c1e;
-  color: #f2f2f7;
-  border-color: #545458;
-}
-
-body.dark-mode input::placeholder,
-body.dark-mode textarea::placeholder {
-  color: #8e8e93;
-}
-
-body.dark-mode input:focus,
-body.dark-mode select:focus,
-body.dark-mode textarea:focus {
-  border-color: #0a84ff;
-  outline: none;
-}
-
-
-/* ==================================================
-   ダークモード
-   ラベル
-================================================== */
-
-body.dark-mode label {
-  color: #d1d1d6;
-}
-
-
-/* ==================================================
-   ダークモード
-   職員リスト・勤務リスト・休暇リスト
-================================================== */
-
-body.dark-mode .list {
-  color: #f2f2f7;
-}
-
-body.dark-mode .list > div {
-  background: #2c2c2e;
-  border-color: #3a3a3c;
-}
-
-body.dark-mode .staff-list-header {
-  color: #d1d1d6;
-}
-
-
-/* ==================================================
-   ダークモード
-   追加ボタン
-================================================== */
-
-body.dark-mode .add-button {
-  background: #0a84ff;
-  color: #ffffff;
-}
-
-body.dark-mode .add-button:hover {
-  background: #0077ed;
-}
-
-
-/* ==================================================
-   ダークモード
-   勤務表
-================================================== */
-
-body.dark-mode #scheduleTable {
-  color: #f2f2f7;
-}
-
-body.dark-mode #scheduleTable th,
-body.dark-mode #scheduleTable td {
-  border-color: #545458;
-}
-
-body.dark-mode #scheduleTable th {
-  background: #2c2c2e;
-  color: #f2f2f7;
-}
-
-body.dark-mode #scheduleTable td {
-  background: #1c1c1e;
-  color: #f2f2f7;
-}
-
-
-/* ==================================================
-   ダークモード
-   土日・祝日
-================================================== */
-
-body.dark-mode #scheduleTable td.saturday {
-  background: #25252a;
-}
-
-body.dark-mode #scheduleTable td.sunday,
-body.dark-mode #scheduleTable td.holiday,
-body.dark-mode #scheduleTable td.company-holiday {
-  background: #29252a;
-}
-
-
-/* ==================================================
-   ダークモード
-   固定ヘッダー
-================================================== */
-
-body.dark-mode #scheduleFixedHeader {
-  background: #2c2c2e;
-}
-
-body.dark-mode #scheduleFixedHeaderTable th {
-  background: #2c2c2e;
-  color: #f2f2f7;
-  border-color: #545458;
-}
-
-
-/* ==================================================
-   ダークモード
-   固定職員列
-================================================== */
-
-body.dark-mode #scheduleFixedStaffColumn {
-  background: #1c1c1e;
-}
-
-body.dark-mode #scheduleFixedStaffTable th {
-  background: #2c2c2e;
-  color: #f2f2f7;
-  border-color: #545458;
-}
-
-
-/* ==================================================
-   ダークモード
-   現在ログイン中の職員
-   黄色マーカーは維持
-================================================== */
-
-body.dark-mode
-#scheduleTable tr.current-user-staff-row > th,
-body.dark-mode
-#scheduleTable tr.current-user-staff-row > td {
-  background: #514b20 !important;
-  color: #fff4a8;
-}
-
-body.dark-mode
-#scheduleTable tr.current-user-staff-row > th:first-child {
-  background: #665d18 !important;
-  color: #fff3a6;
-  border-left-color: #e0b800;
-}
-
-body.dark-mode
-#scheduleTable tr.current-user-staff-row > th:first-child::before {
-  color: #ffd60a;
-}
-
-
-/* ==================================================
-   ダークモード
-   選択中セル
-================================================== */
-
-body.dark-mode #scheduleTable td.selected-cell {
-  box-shadow:
-    inset 0 0 0 3px #0a84ff !important;
-}
-
-
-/* ==================================================
-   ダークモード
-   勤務選択メニュー
-================================================== */
-
-body.dark-mode .shift-menu {
-  background: #2c2c2e;
-  color: #f2f2f7;
-  border-color: #545458;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
-}
-
-body.dark-mode .shift-menu-title {
-  color: #f2f2f7;
-  border-color: #545458;
-}
-
-body.dark-mode .shift-menu-buttons button {
-  background: #3a3a3c;
-  color: #f2f2f7;
-  border-color: #545458;
-}
-
-body.dark-mode .shift-menu-buttons button:hover {
-  background: #48484a;
-}
-
-
-/* ==================================================
-   ダークモード
-   モーダル
-================================================== */
-
-body.dark-mode .modal-overlay {
-  background: rgba(0, 0, 0, 0.7);
-}
-
-body.dark-mode .confirm-card {
-  background: #2c2c2e;
-  color: #f2f2f7;
-  border-color: #3a3a3c;
-}
-
-body.dark-mode .confirm-title {
-  color: #f2f2f7;
-}
-
-body.dark-mode .confirm-text {
-  color: #d1d1d6;
-}
-
-body.dark-mode .confirm-cancel {
-  background: #3a3a3c;
-  color: #f2f2f7;
-  border-color: #545458;
-}
-
-
-/* ==================================================
-   ダークモード
-   危険な操作
-================================================== */
-
-body.dark-mode #organizationDangerZone {
-  border-top-color: #48484a !important;
-}
-
-body.dark-mode #organizationDangerZone p {
-  color: #a1a1a6 !important;
-}
-
-body.dark-mode #deleteOrganizationButton {
-  background: #2c2c2e !important;
-  color: #ff453a !important;
-  border-color: #ff453a !important;
-}
-
-
-/* ==================================================
-   ダークモード
-   勤務・休暇リスト内の削除ボタンなど
-================================================== */
-
-body.dark-mode .list button {
-  background: #3a3a3c;
-  color: #f2f2f7;
-  border-color: #545458;
-}
-
-body.dark-mode .list button:hover {
-  background: #48484a;
-}
-
-
-/* ==================================================
-   ダークモード
-   区切り線
-================================================== */
-
-body.dark-mode hr {
-  border-color: #3a3a3c;
-}
-
-
-/* ==================================================
-   ダークモード
-   スクロールバー
-================================================== */
-
-body.dark-mode ::-webkit-scrollbar {
-  background: #1c1c1e;
-}
-
-body.dark-mode ::-webkit-scrollbar-thumb {
-  background: #545458;
-  border-radius: 10px;
-}
-
-
-/* ==================================================
-   ダークモード
-   スマホ
-================================================== */
-
-@media (max-width: 600px) {
-
-  body.dark-mode .header {
-    background: #2c2c2e;
-  }
-
-  body.dark-mode .nav {
-    background: #2c2c2e;
-  }
-
-  #darkModeButton {
-    width: 36px;
-    min-width: 36px;
-    height: 34px;
-    border-radius: 9px;
-  }
-
-  .dark-mode-icon {
-    width: 18px;
-    height: 18px;
-  }
-
-}
-
-/* ==================================================
-   ダークモード追加修正
-   ================================================== */
-
-/* --------------------------------------------------
-   基本
--------------------------------------------------- */
-
-body.dark-mode {
   color-scheme: dark;
 }
-
-body.dark-mode,
-body.dark-mode html {
-  background: #1c1c1e;
-  color: #f2f2f7;
-}
-
-
-/* --------------------------------------------------
-   アプリ全体
--------------------------------------------------- */
 
 body.dark-mode .app {
   background: #1c1c1e;
 }
 
-
-/* --------------------------------------------------
+/* =========================================================
+   ダークモード
    ヘッダー
--------------------------------------------------- */
+   ========================================================= */
 
 body.dark-mode .header {
-  background: rgba(44, 44, 46, 0.96) !important;
+  background: rgba(
+    44,
+    44,
+    46,
+    0.96
+  ) !important;
+
+  color: #f2f2f7;
+
   border-bottom-color: #48484a !important;
 }
 
@@ -2310,69 +1872,106 @@ body.dark-mode .header-title {
   color: #f2f2f7 !important;
 }
 
+body.dark-mode .header-delete-buttons button {
+  background: #3a3a3c;
 
-/* --------------------------------------------------
+  color: #f2f2f7;
+
+  border-color: #545458;
+}
+
+body.dark-mode .header-delete-buttons button:hover {
+  background: #48484a;
+}
+
+/* =========================================================
+   ダークモード
    ナビ
--------------------------------------------------- */
+   ========================================================= */
 
 body.dark-mode .nav {
   background: #2c2c2e !important;
+
   border-bottom-color: #48484a !important;
 }
 
 body.dark-mode .nav-button {
   background: #3a3a3c;
+
   color: #d1d1d6;
 }
 
 body.dark-mode .nav-button.active {
   background: #0a84ff;
+
   color: #ffffff;
 }
 
-
-/* --------------------------------------------------
+/* =========================================================
+   ダークモード
    ページ
--------------------------------------------------- */
+   ========================================================= */
 
 body.dark-mode .page {
   background: #1c1c1e;
 }
 
+/* =========================================================
+   ダークモード
+   勤務表ブランド
+   ========================================================= */
 
-/* --------------------------------------------------
-   月ボタン
--------------------------------------------------- */
+body.dark-mode .schedule-organization-title {
+  color: #f2f2f7;
+}
+
+/* =========================================================
+   ダークモード
+   月移動
+   ========================================================= */
+
+body.dark-mode .month-bar {
+  color: #f2f2f7;
+}
 
 body.dark-mode .month-button {
   background: #2c2c2e !important;
-  color: #0a84ff !important;
+
+  color: #f2f2f7 !important;
+
+  border-color: #545458;
 
   box-shadow:
     0 2px 7px rgba(0, 0, 0, 0.35);
 }
 
-body.dark-mode .month-button:active {
+body.dark-mode .month-button:hover {
   background: #3a3a3c !important;
 }
 
+body.dark-mode .month-title {
+  color: #f2f2f7;
+}
 
-/* --------------------------------------------------
+/* =========================================================
+   ダークモード
    カレンダーヒント
--------------------------------------------------- */
+   ========================================================= */
 
 body.dark-mode .calendar-hint {
   background: #26394a !important;
+
   color: #b8d9f5 !important;
 }
 
-
-/* --------------------------------------------------
+/* =========================================================
+   ダークモード
    勤務表ラッパー
--------------------------------------------------- */
+   ========================================================= */
 
 body.dark-mode .table-wrapper {
   background: #1c1c1e !important;
+
   border-color: #48484a !important;
 
   box-shadow:
@@ -2380,45 +1979,54 @@ body.dark-mode .table-wrapper {
     0 1px 3px rgba(0, 0, 0, 0.25);
 }
 
-
-/* --------------------------------------------------
+/* =========================================================
+   ダークモード
    勤務表
--------------------------------------------------- */
+   ========================================================= */
+
+body.dark-mode #scheduleTable {
+  color: #f2f2f7;
+}
 
 body.dark-mode #scheduleTable th,
 body.dark-mode #scheduleTable td {
   border-color: #48484a !important;
 }
 
-
-/* ヘッダー */
-
 body.dark-mode #scheduleTable th {
   background: #2c2c2e !important;
+
   color: #f2f2f7 !important;
 }
 
+body.dark-mode #scheduleTable td {
+  background: #1c1c1e;
 
-/* 職員名列 */
+  color: #f2f2f7;
+}
+
+/* =========================================================
+   ダークモード
+   職員名列
+   ========================================================= */
 
 body.dark-mode #scheduleTable th:first-child,
 body.dark-mode #scheduleTable td:first-child {
   background: #1c1c1e !important;
+
   color: #f2f2f7 !important;
 }
-
-
-/* 左上「職員」 */
 
 body.dark-mode #scheduleTable thead th:first-child {
   background: #2c2c2e !important;
+
   color: #f2f2f7 !important;
 }
 
-
-/* --------------------------------------------------
+/* =========================================================
+   ダークモード
    土曜日
--------------------------------------------------- */
+   ========================================================= */
 
 body.dark-mode #scheduleTable .saturday,
 body.dark-mode #scheduleTable .sat,
@@ -2428,13 +2036,14 @@ body.dark-mode #scheduleTable td.saturday,
 body.dark-mode #scheduleTable th.sat,
 body.dark-mode #scheduleTable td.sat {
   background: #26394a !important;
+
   color: #8ec9ff !important;
 }
 
-
-/* --------------------------------------------------
+/* =========================================================
+   ダークモード
    日曜日
--------------------------------------------------- */
+   ========================================================= */
 
 body.dark-mode #scheduleTable .sunday,
 body.dark-mode #scheduleTable .sun,
@@ -2444,13 +2053,14 @@ body.dark-mode #scheduleTable td.sunday,
 body.dark-mode #scheduleTable th.sun,
 body.dark-mode #scheduleTable td.sun {
   background: #452b2d !important;
+
   color: #ff8f8f !important;
 }
 
-
-/* --------------------------------------------------
+/* =========================================================
+   ダークモード
    祝日
--------------------------------------------------- */
+   ========================================================= */
 
 body.dark-mode #scheduleTable .holiday,
 body.dark-mode #scheduleTable .national-holiday,
@@ -2460,13 +2070,14 @@ body.dark-mode #scheduleTable td.holiday,
 body.dark-mode #scheduleTable th.national-holiday,
 body.dark-mode #scheduleTable td.national-holiday {
   background: #452b2d !important;
+
   color: #ff8f8f !important;
 }
 
-
-/* --------------------------------------------------
+/* =========================================================
+   ダークモード
    休業日
--------------------------------------------------- */
+   ========================================================= */
 
 body.dark-mode #scheduleTable .company-holiday,
 body.dark-mode #scheduleTable .closed-day,
@@ -2474,39 +2085,56 @@ body.dark-mode #scheduleTable .休業日,
 body.dark-mode #scheduleTable th.company-holiday,
 body.dark-mode #scheduleTable td.company-holiday {
   background: #303034 !important;
+
   color: #a1a1a6 !important;
 }
 
-
-/* --------------------------------------------------
+/* =========================================================
+   ダークモード
    本人行
-   ※黄色マーカーは維持
--------------------------------------------------- */
+   ========================================================= */
 
 body.dark-mode
-#scheduleTable tr.current-user-staff-row
-> th,
+#scheduleTable tr.current-user-staff-row > th,
 body.dark-mode
-#scheduleTable tr.current-user-staff-row
-> td {
+#scheduleTable tr.current-user-staff-row > td {
   background: #514b20 !important;
+
   color: #fff4a8 !important;
 }
 
 body.dark-mode
-#scheduleTable tr.current-user-staff-row
-> th:first-child {
+#scheduleTable tr.current-user-staff-row > th:first-child {
   background: #665d18 !important;
+
   color: #fff3a6 !important;
+
+  border-left-color: #e0b800;
 }
 
+body.dark-mode
+#scheduleTable tr.current-user-staff-row > th:first-child::before {
+  color: #ffd60a;
+}
 
-/* --------------------------------------------------
+/* =========================================================
+   ダークモード
+   選択中セル
+   ========================================================= */
+
+body.dark-mode #scheduleTable td.selected-cell {
+  box-shadow:
+    inset 0 0 0 3px #0a84ff !important;
+}
+
+/* =========================================================
+   ダークモード
    設定カード
--------------------------------------------------- */
+   ========================================================= */
 
 body.dark-mode .settings-card {
   background: #2c2c2e !important;
+
   color: #f2f2f7 !important;
 
   box-shadow:
@@ -2526,11 +2154,6 @@ body.dark-mode .section-icon {
   color: #f2f2f7;
 }
 
-
-/* --------------------------------------------------
-   説明文
--------------------------------------------------- */
-
 body.dark-mode .info,
 body.dark-mode .staff-list-header,
 body.dark-mode .time-separator,
@@ -2538,14 +2161,52 @@ body.dark-mode .date-arrow {
   color: #a1a1a6 !important;
 }
 
+/* =========================================================
+   ダークモード
+   入力
+   ========================================================= */
 
-/* --------------------------------------------------
-   リスト項目
--------------------------------------------------- */
+body.dark-mode input,
+body.dark-mode select,
+body.dark-mode textarea {
+  background: #1c1c1e !important;
+
+  color: #f2f2f7 !important;
+
+  border-color: #545458 !important;
+}
+
+body.dark-mode input::placeholder,
+body.dark-mode textarea::placeholder {
+  color: #8e8e93 !important;
+}
+
+body.dark-mode input:focus,
+body.dark-mode select:focus,
+body.dark-mode textarea:focus {
+  border-color: #0a84ff;
+
+  outline: none;
+}
+
+body.dark-mode label {
+  color: #d1d1d6;
+}
+
+/* =========================================================
+   ダークモード
+   リスト
+   ========================================================= */
+
+body.dark-mode .list {
+  color: #f2f2f7;
+}
 
 body.dark-mode .list-item {
   background: #2c2c2e !important;
+
   border-color: #48484a !important;
+
   color: #f2f2f7 !important;
 }
 
@@ -2557,33 +2218,40 @@ body.dark-mode .list-item-sub {
   color: #a1a1a6 !important;
 }
 
+/* =========================================================
+   ダークモード
+   追加ボタン
+   ========================================================= */
 
-/* --------------------------------------------------
-   入力欄
--------------------------------------------------- */
+body.dark-mode .add-button {
+  background: #0a84ff;
 
-body.dark-mode input,
-body.dark-mode select,
-body.dark-mode textarea {
-  background: #1c1c1e !important;
-  color: #f2f2f7 !important;
-  border-color: #545458 !important;
+  color: #ffffff;
 }
 
-body.dark-mode input::placeholder,
-body.dark-mode textarea::placeholder {
-  color: #8e8e93 !important;
+body.dark-mode .add-button:hover {
+  background: #0077ed;
 }
 
-
-/* --------------------------------------------------
+/* =========================================================
+   ダークモード
    勤務選択メニュー
--------------------------------------------------- */
+   ========================================================= */
 
 body.dark-mode .shift-menu {
-  background: rgba(44, 44, 46, 0.98) !important;
+  background: rgba(
+    44,
+    44,
+    46,
+    0.98
+  ) !important;
+
   color: #f2f2f7 !important;
+
   border-color: #545458 !important;
+
+  box-shadow:
+    0 8px 30px rgba(0, 0, 0, 0.5);
 }
 
 body.dark-mode .shift-menu-title {
@@ -2592,40 +2260,44 @@ body.dark-mode .shift-menu-title {
 
 body.dark-mode .shift-menu-button {
   background: #3a3a3c !important;
+
   color: #f2f2f7 !important;
 }
 
+body.dark-mode .shift-menu-button:hover,
 body.dark-mode .shift-menu-button:active {
   background: #48484a !important;
 }
 
-
-/* 休暇 */
-
 body.dark-mode .shift-leave {
   background: #25432e !important;
+
   color: #8ee6a8 !important;
 }
 
-
-/* キャンセル */
-
 body.dark-mode .shift-cancel {
   background: #3a3a3c !important;
+
   color: #f2f2f7 !important;
 }
 
-
-/* --------------------------------------------------
+/* =========================================================
+   ダークモード
    モーダル
--------------------------------------------------- */
+   ========================================================= */
 
 body.dark-mode .modal-overlay {
-  background: rgba(0, 0, 0, 0.72) !important;
+  background: rgba(
+    0,
+    0,
+    0,
+    0.72
+  ) !important;
 }
 
 body.dark-mode .confirm-card {
   background: #2c2c2e !important;
+
   color: #f2f2f7 !important;
 }
 
@@ -2638,14 +2310,17 @@ body.dark-mode .confirm-text {
 }
 
 body.dark-mode .confirm-cancel {
-  background: #3a3a3c !important;
-  color: #f2f2f7 !important;
+  background: #3a3a3c;
+
+  color: #f2f2f7;
+
+  border-color: #545458;
 }
 
-
-/* --------------------------------------------------
+/* =========================================================
+   ダークモード
    固定ヘッダー
--------------------------------------------------- */
+   ========================================================= */
 
 body.dark-mode #scheduleFixedHeader {
   background: #2c2c2e !important;
@@ -2657,14 +2332,16 @@ body.dark-mode #scheduleFixedHeaderTable {
 
 body.dark-mode #scheduleFixedHeaderTable th {
   background: #2c2c2e !important;
+
   color: #f2f2f7 !important;
+
   border-color: #48484a !important;
 }
 
-
-/* --------------------------------------------------
+/* =========================================================
+   ダークモード
    固定職員列
--------------------------------------------------- */
+   ========================================================= */
 
 body.dark-mode #scheduleFixedStaffColumn {
   background: #1c1c1e !important;
@@ -2676,14 +2353,26 @@ body.dark-mode #scheduleFixedStaffTable {
 
 body.dark-mode #scheduleFixedStaffTable th {
   background: #1c1c1e !important;
+
   color: #f2f2f7 !important;
+
   border-color: #48484a !important;
 }
 
-
-/* --------------------------------------------------
+/* =========================================================
+   ダークモード
    スクロールバー
--------------------------------------------------- */
+   ========================================================= */
+
+body.dark-mode ::-webkit-scrollbar {
+  background: #1c1c1e;
+}
+
+body.dark-mode ::-webkit-scrollbar-thumb {
+  background: #545458;
+
+  border-radius: 10px;
+}
 
 body.dark-mode .table-wrapper::-webkit-scrollbar-track {
   background: #2c2c2e;
@@ -2693,14 +2382,53 @@ body.dark-mode .table-wrapper::-webkit-scrollbar-thumb {
   background: #636366;
 }
 
-
-/* --------------------------------------------------
+/* =========================================================
    ダークモード切替ボタン
--------------------------------------------------- */
+   ========================================================= */
+
+#darkModeButton {
+  width: 40px;
+
+  height: 36px;
+
+  min-width: 40px;
+
+  padding: 0;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  border: 1px solid #d1d1d6;
+
+  border-radius: 10px;
+
+  background: #ffffff;
+
+  color: #333333;
+
+  cursor: pointer;
+}
+
+#darkModeButton:hover {
+  background: #f2f2f7;
+}
+
+.dark-mode-icon {
+  width: 20px;
+
+  height: 20px;
+
+  display: block;
+}
 
 body.dark-mode #darkModeButton {
   background: #3a3a3c !important;
+
   color: #ffd60a !important;
+
   border-color: #545458 !important;
 }
 
@@ -2708,98 +2436,65 @@ body.dark-mode #darkModeButton:hover {
   background: #48484a !important;
 }
 
+/* =========================================================
+   ダークモード
+   危険な操作
+   ========================================================= */
 
-/* ==================================================
-   ログイン画面
-   ================================================== */
-
-body.dark-mode #loginPage {
-  background: #1c1c1e !important;
-  color: #f2f2f7 !important;
+body.dark-mode #organizationDangerZone {
+  border-top-color: #48484a !important;
 }
 
-body.dark-mode #loginPage h1,
-body.dark-mode #loginPage h2 {
-  color: #f2f2f7 !important;
+body.dark-mode #organizationDangerZone p {
+  color: #a1a1a6 !important;
 }
 
-body.dark-mode #loginPage p,
-body.dark-mode #loginPage label {
-  color: #d1d1d6 !important;
-}
-
-
-/* ログインカード */
-
-body.dark-mode #loginPage > div {
+body.dark-mode #deleteOrganizationButton {
   background: #2c2c2e !important;
-  color: #f2f2f7 !important;
-  border-color: #48484a !important;
+
+  color: #ff453a !important;
+
+  border-color: #ff453a !important;
 }
 
+/* =========================================================
+   ダークモード
+   リスト内ボタン
+   ========================================================= */
 
-/* ログイン画面の入力欄 */
+body.dark-mode .list button {
+  background: #3a3a3c;
 
-body.dark-mode #loginPage input {
-  background: #1c1c1e !important;
-  color: #f2f2f7 !important;
-  border-color: #545458 !important;
+  color: #f2f2f7;
+
+  border-color: #545458;
 }
 
-
-/* --------------------------------------------------
-   新規職場登録画面
--------------------------------------------------- */
-
-body.dark-mode #newOrganizationForm {
-  background: #1c1c1e !important;
-  color: #f2f2f7 !important;
+body.dark-mode .list button:hover {
+  background: #48484a;
 }
 
-body.dark-mode #newOrganizationForm input {
-  background: #1c1c1e !important;
-  color: #f2f2f7 !important;
-  border-color: #545458 !important;
+/* =========================================================
+   ダークモード
+   区切り線
+   ========================================================= */
+
+body.dark-mode hr {
+  border-color: #3a3a3c;
 }
 
-
-/* --------------------------------------------------
-   SVGアイコン
--------------------------------------------------- */
-
-body.dark-mode .nav-icon,
-body.dark-mode .section-icon,
-body.dark-mode .calendar-hint svg {
-  color: currentColor;
-}
-
-
-/* --------------------------------------------------
-   iPhone
--------------------------------------------------- */
-
-@media (max-width: 700px) {
-
-  body.dark-mode .list-item {
-    background: #2c2c2e !important;
-  }
-
-  body.dark-mode .settings-card {
-    background: #2c2c2e !important;
-  }
-
-}
-
-/* ==================================================
+/* =========================================================
    ダークモード
    休暇一覧
-   ================================================== */
+   ========================================================= */
 
 body.dark-mode #leaveList,
 body.dark-mode .leave-list,
 body.dark-mode .leave-list-card {
   background: #2c2c2e !important;
+
   color: #f2f2f7 !important;
+
   border-color: #48484a !important;
 }
 
@@ -2813,6 +2508,7 @@ body.dark-mode #leaveList .list-item,
 body.dark-mode .leave-list .list-item,
 body.dark-mode .leave-list-card .list-item {
   background: #3a3a3c !important;
+
   border-color: #545458 !important;
 }
 
@@ -2822,37 +2518,128 @@ body.dark-mode .leave-list-card .list-item-sub {
   color: #a1a1a6 !important;
 }
 
+/* =========================================================
+   ログイン画面ロゴ
+   ========================================================= */
+
 .login-logo {
   width: 100%;
+
   display: flex;
+
   justify-content: center;
+
   align-items: center;
+
   margin: 0 0 14px;
 }
 
 .login-logo img {
   display: block;
-  width: min(220px, 65vw);
+
+  width: min(
+    220px,
+    65vw
+  );
+
   height: auto;
+
   object-fit: contain;
 }
 
-/* ==================================================
-   アプリヘッダーのShift+ロゴ
-================================================== */
+/* =========================================================
+   ダークモード
+   ログイン画面
+   ========================================================= */
 
-.app-header-brand {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
+body.dark-mode #loginPage {
+  background: #1c1c1e !important;
+
+  color: #f2f2f7 !important;
 }
 
-.app-header-logo {
-  display: block;
-  width: 72px;
-  max-width: 72px;
-  height: auto;
-  object-fit: contain;
-  flex-shrink: 0;
+body.dark-mode #loginPage h1,
+body.dark-mode #loginPage h2 {
+  color: #f2f2f7 !important;
+}
+
+body.dark-mode #loginPage p,
+body.dark-mode #loginPage label {
+  color: #d1d1d6 !important;
+}
+
+body.dark-mode #loginPage > div {
+  background: #2c2c2e !important;
+
+  color: #f2f2f7 !important;
+
+  border-color: #48484a !important;
+}
+
+body.dark-mode #loginPage input {
+  background: #1c1c1e !important;
+
+  color: #f2f2f7 !important;
+
+  border-color: #545458 !important;
+}
+
+/* =========================================================
+   ダークモード
+   新規職場登録
+   ========================================================= */
+
+body.dark-mode #newOrganizationForm {
+  background: #1c1c1e !important;
+
+  color: #f2f2f7 !important;
+}
+
+body.dark-mode #newOrganizationForm input {
+  background: #1c1c1e !important;
+
+  color: #f2f2f7 !important;
+
+  border-color: #545458 !important;
+}
+
+/* =========================================================
+   SVGアイコン
+   ========================================================= */
+
+body.dark-mode .nav-icon,
+body.dark-mode .section-icon,
+body.dark-mode .calendar-hint svg {
+  color: currentColor;
+}
+
+/* =========================================================
+   スマートフォン
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+  body.dark-mode .header {
+    background: #2c2c2e;
+  }
+
+  body.dark-mode .nav {
+    background: #2c2c2e;
+  }
+
+  #darkModeButton {
+    width: 36px;
+
+    min-width: 36px;
+
+    height: 34px;
+
+    border-radius: 9px;
+  }
+
+  .dark-mode-icon {
+    width: 18px;
+
+    height: 18px;
+  }
 }
