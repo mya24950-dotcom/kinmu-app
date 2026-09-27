@@ -51,20 +51,59 @@
 
   <style>
 
+    /* ==================================================
+       ページ全体
+       ログイン中は画面が動かないようにする
+    ================================================== */
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      min-width: 100%;
+    }
+
+
     /*
-     * ログイン画面は端末の高さに完全に合わせる
-     * 縦スクロールはさせない
+     * ログイン画面そのものを
+     * 端末画面に固定する
      */
     #loginPage {
-      height:100svh !important;
-      min-height:100svh !important;
-      max-height:100svh !important;
-      overflow:hidden !important;
+      position: fixed !important;
+
+      top: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
+      left: 0 !important;
+
+      width: 100vw !important;
+      height: 100svh !important;
+      min-height: 100svh !important;
+      max-height: 100svh !important;
+
+      margin: 0 !important;
+
+      box-sizing: border-box !important;
+
+      overflow: hidden !important;
+
+      overscroll-behavior: none !important;
+
+      touch-action: none !important;
+
+      display: flex !important;
+
+      align-items: center !important;
+      justify-content: center !important;
+
       padding:
         max(8px, env(safe-area-inset-top))
-        10px
+        max(10px, env(safe-area-inset-right))
         max(8px, env(safe-area-inset-bottom))
-        10px !important;
+        max(10px, env(safe-area-inset-left)) !important;
+
+      background: #f2f2f7;
     }
 
 
@@ -72,105 +111,202 @@
      * ログインカード
      */
     #loginPage > div {
-      width:100% !important;
-      max-width:390px !important;
-      max-height:calc(100svh - 20px) !important;
-      padding:16px 18px 12px !important;
-      box-sizing:border-box !important;
-      overflow:hidden !important;
+      width: 100% !important;
+
+      max-width: 390px !important;
+
+      max-height:
+        calc(
+          100svh
+          - env(safe-area-inset-top)
+          - env(safe-area-inset-bottom)
+          - 16px
+        ) !important;
+
+      padding: 16px 18px 12px !important;
+
+      box-sizing: border-box !important;
+
+      overflow: hidden !important;
+
+      flex-shrink: 1;
+
+      touch-action: none;
     }
 
 
     /*
-     * 小さい画面ではさらにコンパクトにする
+     * ログイン画面内のボタンなどは
+     * 普通にタップできるようにする
      */
-    @media (max-height:700px) {
-
-      #loginPage > div {
-        padding:11px 16px 9px !important;
-      }
-
-    }
-
-
-    @media (max-height:620px) {
-
-      #loginPage > div {
-        padding:8px 14px 6px !important;
-      }
-
+    #loginPage button,
+    #loginPage input,
+    #loginPage label {
+      touch-action: manipulation;
     }
 
 
     /*
-     * ログイン画面の各要素を少し詰める
+     * ログイン画面のアイコン
      */
     #loginPage #loginMainView > div:first-child {
-      margin-bottom:5px !important;
+      margin-bottom: 5px !important;
     }
 
 
+    /*
+     * タイトル
+     */
     #loginPage h1 {
-      margin-bottom:10px !important;
-      font-size:24px !important;
+      margin-bottom: 10px !important;
+      font-size: 24px !important;
     }
 
 
+    /*
+     * メール・パスワード
+     */
     #loginPage input[type="email"],
     #loginPage input[type="password"] {
-      min-height:43px !important;
-    }
-
-
-    #loginPage .social-login-button {
-      width:48px !important;
-      height:48px !important;
-      border-radius:11px !important;
+      min-height: 43px !important;
     }
 
 
     /*
-     * Passkeyボタン
+     * SNSボタン
+     */
+    #loginPage .social-login-button {
+      width: 48px !important;
+      height: 48px !important;
+      min-width: 48px !important;
+      min-height: 48px !important;
+      border-radius: 11px !important;
+      flex-shrink: 0 !important;
+    }
+
+
+    /*
+     * Passkey
      */
     #passkeyLoginButton {
-      min-height:43px !important;
+      min-height: 43px !important;
     }
 
 
     /*
-     * 新規登録画面も1画面に収める
+     * 新規登録画面
      */
     #newOrganizationForm {
-      max-height:calc(100svh - 50px);
-      overflow:hidden;
+      max-height: calc(100svh - 50px);
+      overflow: hidden !important;
+      touch-action: none;
+    }
+
+
+    /*
+     * 小さい画面
+     */
+    @media (max-height: 700px) {
+
+      #loginPage > div {
+        padding: 11px 16px 9px !important;
+      }
+
+      #loginPage h1 {
+        margin-bottom: 7px !important;
+        font-size: 22px !important;
+      }
+
+      #loginPage input[type="email"],
+      #loginPage input[type="password"] {
+        min-height: 40px !important;
+      }
+
+      #emailLoginButton,
+      #passkeyLoginButton,
+      #newOrganizationButton {
+        min-height: 40px !important;
+      }
+
+      #loginPage .social-login-button {
+        width: 44px !important;
+        height: 44px !important;
+        min-width: 44px !important;
+        min-height: 44px !important;
+      }
+
     }
 
 
     /*
      * 非常に高さの低い端末
      */
-    @media (max-height:600px) {
+    @media (max-height: 620px) {
 
       #loginPage > div {
-        padding:7px 13px 5px !important;
+        padding: 7px 14px 5px !important;
       }
 
       #loginPage h1 {
-        font-size:21px !important;
-        margin-bottom:7px !important;
+        font-size: 21px !important;
+        margin-bottom: 6px !important;
       }
 
       #loginPage input[type="email"],
       #loginPage input[type="password"] {
-        min-height:38px !important;
+        min-height: 37px !important;
       }
 
-      #emailLoginButton {
-        min-height:40px !important;
+      #emailLoginButton,
+      #passkeyLoginButton,
+      #newOrganizationButton {
+        min-height: 37px !important;
       }
 
-      #passkeyLoginButton {
-        min-height:38px !important;
+      #loginPage .social-login-button {
+        width: 40px !important;
+        height: 40px !important;
+        min-width: 40px !important;
+        min-height: 40px !important;
+      }
+
+    }
+
+
+    /*
+     * さらに低い画面
+     */
+    @media (max-height: 560px) {
+
+      #loginPage > div {
+        padding: 5px 12px 4px !important;
+      }
+
+      #loginPage h1 {
+        font-size: 19px !important;
+        margin-bottom: 4px !important;
+      }
+
+      #loginPage #loginMainView > div:first-child {
+        margin-bottom: 2px !important;
+      }
+
+      #loginPage input[type="email"],
+      #loginPage input[type="password"] {
+        min-height: 34px !important;
+      }
+
+      #emailLoginButton,
+      #passkeyLoginButton,
+      #newOrganizationButton {
+        min-height: 34px !important;
+      }
+
+      #loginPage .social-login-button {
+        width: 36px !important;
+        height: 36px !important;
+        min-width: 36px !important;
+        min-height: 36px !important;
       }
 
     }
@@ -190,16 +326,29 @@
 <div
   id="loginPage"
   style="
-    min-height:100svh;
+    position:fixed;
+    top:0;
+    right:0;
+    bottom:0;
+    left:0;
+    width:100vw;
     height:100svh;
+    min-height:100svh;
     max-height:100svh;
     display:flex;
     align-items:center;
     justify-content:center;
-    padding:10px;
+    margin:0;
+    padding:
+      max(8px, env(safe-area-inset-top))
+      max(10px, env(safe-area-inset-right))
+      max(8px, env(safe-area-inset-bottom))
+      max(10px, env(safe-area-inset-left));
     box-sizing:border-box;
     background:#f2f2f7;
     overflow:hidden;
+    overscroll-behavior:none;
+    touch-action:none;
   "
 >
 
@@ -212,6 +361,7 @@
     style="
       width:100%;
       max-width:390px;
+      max-height:calc(100svh - 20px);
       background:#ffffff;
       border-radius:20px;
       padding:16px 18px 12px;
@@ -445,8 +595,6 @@
             "
           >
 
-
-          <!-- パスワード表示 -->
 
           <button
             type="button"
