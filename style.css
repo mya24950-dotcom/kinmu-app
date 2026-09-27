@@ -77,7 +77,8 @@ body {
 
   gap: 10px;
 
-  padding: 7px 14px;
+  /* 左側をより左へ */
+  padding: 7px 14px 7px 4px;
 
   background: rgba(255, 255, 255, 0.96);
 
@@ -99,7 +100,6 @@ body {
   align-items: flex-start;
   justify-content: center;
 
-  /* ロゴと職場名を少し離す */
   gap: 5px;
 
   min-width: 0;
@@ -294,7 +294,6 @@ body {
 
 /* =========================================================
    ページ
-   ★ ここを白背景に固定
    ========================================================= */
 
 .page {
@@ -1976,7 +1975,8 @@ body.dark-mode .calendar-hint svg {
   .header {
     min-height: 62px;
 
-    padding: 6px 10px;
+    /* 左側をより左へ */
+    padding: 6px 10px 6px 4px;
   }
 
   .app-header-brand {
@@ -2233,7 +2233,8 @@ body.dark-mode .calendar-hint svg {
 @media (max-width: 390px) {
 
   .header {
-    padding-left: 8px;
+    /* 左側をより左へ */
+    padding-left: 4px;
 
     padding-right: 8px;
   }
@@ -2288,8 +2289,13 @@ body.dark-mode .calendar-hint svg {
 @supports (padding: max(0px)) {
 
   .header {
+    /*
+      左側は4pxを基本にする。
+      iPhoneのノッチ等がある場合だけ
+      safe-area分を確保する。
+    */
     padding-left: max(
-      14px,
+      4px,
       env(safe-area-inset-left)
     );
 
