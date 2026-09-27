@@ -1242,7 +1242,10 @@ async function logout() {
 
   try {
 
-    // まず現在のセッションを確認
+    /* =====================================================
+       ① Supabaseからログアウト
+       ===================================================== */
+
     const {
       data: { session }
     } = await supabaseClient.auth.getSession();
@@ -1252,72 +1255,140 @@ async function logout() {
       session
     );
 
-    // セッションがすでにない場合
-    if (!session) {
 
-      console.log(
-        "★ セッションがありません。ログアウト済みとして処理します。"
-      );
+    if (session) {
 
-      currentOrganization = null;
+      const { error } =
+        await supabaseClient.auth.signOut();
 
-      showLoginPage(
-        "ログアウトしました。"
-      );
+      if (error) {
 
-      setupGoogleLogin();
-
-      return;
-    }
-
-
-    // セッションがある場合だけsignOut
-    const { error } =
-      await supabaseClient.auth.signOut();
-
-
-    if (error) {
-
-      console.error(
-        "★ Supabaseログアウトエラー",
-        error
-      );
-
-      // Auth session missing は
-      // すでにログアウト済みとして扱う
-      if (
-        String(error.message).includes(
-          "Auth session missing"
-        )
-      ) {
-
-        currentOrganization = null;
-
-        showLoginPage(
-          "ログアウトしました。"
+        console.error(
+          "★ Supabaseログアウトエラー",
+          error
         );
 
-        setupGoogleLogin();
+        /*
+         * Auth session missing は
+         * すでにログアウト済みとして扱う
+         */
+        if (
+          !String(error.message).includes(
+            "Auth session missing"
+          )
+        ) {
 
-        return;
+          throw error;
+
+        }
+
+      } else {
+
+        console.log(
+          "★ Supabaseログアウト成功"
+        );
+
       }
 
-      throw error;
+    } else {
+
+      console.log(
+        "★ セッションなし → ログアウト済みとして処理"
+      );
 
     }
 
 
-    console.log(
-      "★ Supabaseログアウト成功"
-    );
+    /* =====================================================
+       ② 現在の組織情報をクリア
+       ===================================================== */
 
     currentOrganization = null;
 
-    showLoginPage(
-      "ログアウトしました。"
-    );
+
+    /* =====================================================
+       ③ アプリを完全に隠す
+       ===================================================== */
+
+    const app =
+      document.getElementById("app");
+
+    if (app) {
+
+      app.style.setProperty(
+        "display",
+        "none",
+        "important"
+      );
+
+      app.style.setProperty(
+        "visibility",
+        "hidden",
+        "important"
+      );
+
+      app.style.setProperty(
+        "opacity",
+        "0",
+        "important"
+      );
+
+    }
+
+
+    /* =====================================================
+       ④ ログイン画面を強制表示
+       ===================================================== */
+
+    const loginPage =
+      document.getElementById("loginPage");
+
+    if (loginPage) {
+
+      loginPage.style.setProperty(
+        "display",
+        "flex",
+        "important"
+      );
+
+      loginPage.style.setProperty(
+        "visibility",
+        "visible",
+        "important"
+      );
+
+      loginPage.style.setProperty(
+        "opacity",
+        "1",
+        "important"
+      );
+
+      loginPage.style.setProperty(
+        "pointer-events",
+        "auto",
+        "important"
+      );
+
+    }
+
+
+    /* =====================================================
+       ⑤ Googleログインボタンを再設定
+       ===================================================== */
 
     setupGoogleLogin();
+
+
+    /* =====================================================
+       ⑥ 画面を先頭へ
+       ===================================================== */
+
+    window.scrollTo(0, 0);
+
+
+    console.log(
+      "★ ログアウト画面表示完了"
+    );
 
 
   } catch (error) {
