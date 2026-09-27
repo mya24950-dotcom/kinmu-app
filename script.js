@@ -1243,12 +1243,23 @@ async function logout() {
   try {
 
     /* =====================================================
-       ① Supabaseからログアウト
+       ① 次回起動時にログイン画面を表示するフラグを設定
+       ===================================================== */
+
+    sessionStorage.setItem(
+      "forceLoginScreen",
+      "true"
+    );
+
+
+    /* =====================================================
+       ② Supabaseからログアウト
        ===================================================== */
 
     const {
       data: { session }
-    } = await supabaseClient.auth.getSession();
+    } =
+      await supabaseClient.auth.getSession();
 
     console.log(
       "★ 現在のセッション：",
@@ -1259,7 +1270,10 @@ async function logout() {
     if (session) {
 
       const { error } =
-        await supabaseClient.auth.signOut();
+        await supabaseClient.auth.signOut({
+          scope: "global"
+        });
+
 
       if (error) {
 
@@ -1269,8 +1283,8 @@ async function logout() {
         );
 
         /*
-         * Auth session missing は
-         * すでにログアウト済みとして扱う
+         * すでにログアウト済みなら
+         * そのままログイン画面へ進む
          */
         if (
           !String(error.message).includes(
@@ -1293,102 +1307,32 @@ async function logout() {
     } else {
 
       console.log(
-        "★ セッションなし → ログアウト済みとして処理"
+        "★ セッションなし → ログアウト済み"
       );
 
     }
 
 
     /* =====================================================
-       ② 現在の組織情報をクリア
+       ③ 現在の組織情報をクリア
        ===================================================== */
 
     currentOrganization = null;
 
 
     /* =====================================================
-       ③ アプリを完全に隠す
+       ④ ページを再読み込み
+       
+       → init() が実行される
+       → forceLoginScreen === "true"
+       → ログイン画面を表示
        ===================================================== */
-
-    const app =
-      document.getElementById("app");
-
-    if (app) {
-
-      app.style.setProperty(
-        "display",
-        "none",
-        "important"
-      );
-
-      app.style.setProperty(
-        "visibility",
-        "hidden",
-        "important"
-      );
-
-      app.style.setProperty(
-        "opacity",
-        "0",
-        "important"
-      );
-
-    }
-
-
-    /* =====================================================
-       ④ ログイン画面を強制表示
-       ===================================================== */
-
-    const loginPage =
-      document.getElementById("loginPage");
-
-    if (loginPage) {
-
-      loginPage.style.setProperty(
-        "display",
-        "flex",
-        "important"
-      );
-
-      loginPage.style.setProperty(
-        "visibility",
-        "visible",
-        "important"
-      );
-
-      loginPage.style.setProperty(
-        "opacity",
-        "1",
-        "important"
-      );
-
-      loginPage.style.setProperty(
-        "pointer-events",
-        "auto",
-        "important"
-      );
-
-    }
-
-
-    /* =====================================================
-       ⑤ Googleログインボタンを再設定
-       ===================================================== */
-
-    setupGoogleLogin();
-
-
-    /* =====================================================
-       ⑥ 画面を先頭へ
-       ===================================================== */
-
-    window.scrollTo(0, 0);
-
 
     console.log(
-      "★ ログアウト画面表示完了"
+      "★ ログアウト完了 → ログイン画面へ移動"
     );
+
+    window.location.reload();
 
 
   } catch (error) {
@@ -1398,10 +1342,20 @@ async function logout() {
       error
     );
 
+
+    /*
+     * エラーになった場合は、
+     * ログイン画面フラグを解除
+     */
+    sessionStorage.removeItem(
+      "forceLoginScreen"
+    );
+
+
     alert(
       "ログアウトに失敗しました。\n\n" +
       "エラー：" +
-      error.message
+      (error?.message || String(error))
     );
 
   }
