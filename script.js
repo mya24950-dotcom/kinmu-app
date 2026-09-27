@@ -365,18 +365,102 @@ async function init() {
        ※通常ログイン画面
     ================================================== */
 
-    if (!session) {
+   /* ==================================================
+   ログインしていない場合
+   ※Google認証直後はセッション確立を少し待つ
+================================================== */
 
-      showLoginPage();
+if (!session) {
 
-      setupGoogleLogin();
+  console.log(
+    "★ セッションがまだありません。再確認します。"
+  );
 
-      setupPasskeyLogin();
+  let currentSession = null;
 
-      setupNewOrganizationButton();
+  /*
+     Google認証から戻った直後は、
+     Supabaseのセッション確立に少し時間がかかる
+     場合があるため、数回確認する
+  */
+  for (
+    let i = 0;
+    i < 5;
+    i++
+  ) {
 
-      return;
+    await new Promise(
+      resolve =>
+        setTimeout(
+          resolve,
+          500
+        )
+    );
+
+
+    const {
+      data: {
+        session: retrySession
+      }
+    } =
+      await supabaseClient.auth.getSession();
+
+
+    if (retrySession) {
+
+      currentSession =
+        retrySession;
+
+      console.log(
+        "★ セッション取得成功",
+        retrySession.user.email
+      );
+
+      break;
+
     }
+
+  }
+
+
+  /*
+     再確認してもログインしていなければ
+     通常のログイン画面を表示
+  */
+  if (!currentSession) {
+
+    console.log(
+      "★ セッションを取得できませんでした"
+    );
+
+
+    showLoginPage();
+
+    setupGoogleLogin();
+
+    setupPasskeyLogin();
+
+    setupNewOrganizationButton();
+
+    return;
+
+  }
+
+
+  /*
+     Google認証直後に取得できたセッションを
+     以降の処理で使用する
+  */
+  session =
+    currentSession;
+
+
+  console.log(
+    "★ Google認証後のセッションを確認しました",
+    session.user.email
+  );
+
+}
 
 
     console.log(
