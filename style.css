@@ -1945,7 +1945,9 @@ body.dark-mode #darkModeButton:hover {
 
 /* =========================================================
    ログイン画面
-   ※ display / visibility はJSに任せる
+   ※ 重要
+   ※ display / visibility はJSに完全に任せる
+   ※ ここでは display を指定しない
    ========================================================= */
 
 #loginPage {
@@ -1964,6 +1966,8 @@ body.dark-mode #darkModeButton:hover {
   min-height: 100svh;
 
   box-sizing: border-box;
+
+  /* display は指定しない */
 }
 
 /* =========================================================
