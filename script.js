@@ -4230,112 +4230,102 @@ function bindEvents() {
 
 function showPage(page) {
 
-  console.log("showPage:", page);
+    console.log("showPage:", page);
 
-  // ==========================================
-  // ログイン画面を確実に非表示
-  // ==========================================
+    // ==========================================
+    // ログイン画面を完全に隠す
+    // ==========================================
 
-  const loginPage = document.getElementById("loginPage");
+    const loginPage = document.getElementById("loginPage");
 
-  if (loginPage) {
-    loginPage.style.display = "none";
-  }
-
-
-  // ==========================================
-  // アプリ本体を確実に表示
-  // ==========================================
-
-  const app = document.getElementById("app");
-
-  if (app) {
-    app.style.display = "block";
-  }
+    if (loginPage) {
+        loginPage.style.display = "none";
+    }
 
 
-  // ==========================================
-  // すべてのページを非表示
-  // ==========================================
+    // ==========================================
+    // アプリ本体を表示
+    // ==========================================
 
-  const pages = document.querySelectorAll(".page");
+    const app = document.getElementById("app");
 
-  pages.forEach(function (p) {
-    p.style.display = "none";
-  });
+    if (app) {
+        app.style.display = "block";
+    }
 
 
-  // ==========================================
-  // 選択されたページを表示
-  // ==========================================
+    // ==========================================
+    // すべてのページを一旦非表示
+    // ==========================================
 
-  const targetPage =
-    document.getElementById(page + "Page");
+    document.querySelectorAll(".page").forEach(function(pageElement) {
+        pageElement.style.display = "none";
+    });
 
-  if (targetPage) {
+
+    // ==========================================
+    // 選択されたページを表示
+    // ==========================================
+
+    const targetPage = document.getElementById(page + "Page");
+
+    if (!targetPage) {
+        console.log("ページが見つかりません:", page + "Page");
+        return;
+    }
+
     targetPage.style.display = "block";
-  } else {
-    console.log(
-      "ページが見つかりません:",
-      page + "Page"
-    );
-    return;
-  }
 
 
-  // ==========================================
-  // ナビボタンの active
-  // ==========================================
+    // ==========================================
+    // ナビボタンの選択状態
+    // ==========================================
 
-  const navButtons =
-    document.querySelectorAll(".nav-button");
+    document.querySelectorAll(".nav-button").forEach(function(button) {
+        button.classList.remove("active");
+    });
 
-  navButtons.forEach(function (button) {
-    button.classList.remove("active");
-  });
-
-  const activeButton =
-    document.querySelector(
-      '.nav-button[data-page="' + page + '"]'
+    const activeButton = document.querySelector(
+        '.nav-button[data-page="' + page + '"]'
     );
 
-  if (activeButton) {
-    activeButton.classList.add("active");
-  }
+    if (activeButton) {
+        activeButton.classList.add("active");
+    }
 
 
-  // ==========================================
-  // 各ページの内容を再描画
-  // ==========================================
+    // ==========================================
+    // 各ページを表示したときの処理
+    // ==========================================
 
-  if (page === "schedule") {
-    renderSchedule();
-  }
+    if (page === "schedule") {
+        renderSchedule();
+    }
 
-  if (page === "staff") {
-    renderStaffList();
-  }
+    if (page === "staff") {
+        renderStaffList();
+    }
 
-  if (page === "leave") {
-    renderLeaveList();
-  }
+    if (page === "leave") {
+        renderLeaveList();
+    }
 
-  if (page === "shift") {
-    renderShiftList();
-  }
+    if (page === "shift") {
+        renderShiftList();
+    }
 
-  if (page === "holiday") {
-    renderHolidayList();
-  }
+    if (page === "holiday") {
+        renderHolidayList();
+    }
 
 
-  // ==========================================
-  // 勤務形態メニューを閉じる
-  // ==========================================
+    // ==========================================
+    // シフトメニューを閉じる
+    // ==========================================
 
-  if (typeof hideShiftMenu === "function") {
-    hideShiftMenu();
-  }
+    if (typeof hideShiftMenu === "function") {
+        hideShiftMenu();
+    }
 }
 
 
