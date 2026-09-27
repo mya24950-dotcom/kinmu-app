@@ -2702,158 +2702,49 @@ body.loading-active #loginPage {
 }
 
 /* =========================================================
-   ★ 職員ログイン時のヘッダーを左端へ
+   Shift+ ロゴ＋職場名を左端へ
    ========================================================= */
 
 .header {
   padding-left: 0 !important;
 }
 
-.app-header-brand {
+.header .app-header-brand {
+  position: relative !important;
+  left: -14px !important;
   margin-left: 0 !important;
   padding-left: 0 !important;
-  transform: translateX(-4px);
+  transform: none !important;
 }
 
-.app-header-logo {
+.header .app-header-logo {
   margin-left: 0 !important;
 }
 
-/* スマホ */
+
+/* スマートフォン */
 @media (max-width: 700px) {
 
   .header {
     padding-left: 0 !important;
   }
 
-  .app-header-brand {
+  .header .app-header-brand {
+    position: relative !important;
+    left: -10px !important;
     margin-left: 0 !important;
     padding-left: 0 !important;
-    transform: translateX(-4px);
+    transform: none !important;
   }
 
 }
 
-/* 小さいスマホ */
+
+/* 小さいiPhone */
 @media (max-width: 390px) {
 
-  .header {
-    padding-left: 0 !important;
-  }
-
-  .app-header-brand {
-    transform: translateX(-4px);
-  }
-
-}
-
-/* iPhoneセーフエリアによる左余白を上書き */
-@supports (padding: max(0px)) {
-
-  .header {
-    padding-left: 0 !important;
-  }
-
-}
-
-/* =========================================================
-   Shift+ ヘッダー左端寄せ
-   ========================================================= */
-
-.header {
-  padding-left: 0 !important;
-}
-
-.app-header-brand {
-  margin-left: 0 !important;
-  padding-left: 0 !important;
-  transform: translateX(-14px) !important;
-}
-
-.app-header-logo {
-  margin-left: 0 !important;
-}
-
-
-/* iPhone等のセーフエリア設定より優先して左寄せ */
-@supports (padding: max(0px)) {
-  .header {
-    padding-left: 0 !important;
-  }
-
-  .app-header-brand {
-    margin-left: 0 !important;
-    padding-left: 0 !important;
-    transform: translateX(-14px) !important;
-  }
-}
-
-
-/* 小さい画面 */
-@media (max-width: 600px) {
-  .header {
-    padding-left: 0 !important;
-  }
-
-  .app-header-brand {
-    margin-left: 0 !important;
-    padding-left: 0 !important;
-    transform: translateX(-14px) !important;
-  }
-}
-
-/* =========================================================
-   勤務表上部 Shift+ ロゴ・職場名
-   ========================================================= */
-
-/* 勤務表ページの通常の余白は戻す */
-#schedulePage {
-  padding-left: 10px !important;
-  padding-right: 10px !important;
-}
-
-/* ロゴ＋職場名だけ左へ */
-#schedulePage .schedule-brand {
-  position: relative !important;
-
-  left: -10px !important;
-
-  width: calc(100% + 10px) !important;
-
-  margin-left: 0 !important;
-
-  padding-left: 0 !important;
-  padding-right: 0 !important;
-
-  box-sizing: border-box !important;
-}
-
-/* ロゴ */
-#schedulePage .schedule-logo {
-  position: relative !important;
-
-  left: 0 !important;
-
-  margin-left: 0 !important;
-}
-
-/* 職場名 */
-#schedulePage .schedule-organization-title {
-  position: relative !important;
-
-  left: 0 !important;
-
-  margin-left: 0 !important;
-}
-
-
-/* スマホ */
-@media (max-width: 700px) {
-
-  #schedulePage .schedule-brand {
+  .header .app-header-brand {
     left: -10px !important;
-
-    width: calc(100% + 10px) !important;
   }
 
 }
