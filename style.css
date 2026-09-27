@@ -2629,3 +2629,129 @@ body.loading-active {
   touch-action: none !important;
 
 }
+
+
+/* =========================================================
+   ★ ログイン画面の操作を最優先
+   ========================================================= */
+
+/* ログイン画面そのもの */
+#loginPage {
+  position: relative;
+  z-index: 100;
+  pointer-events: auto !important;
+}
+
+/* ログイン画面内のボタン */
+#loginPage button,
+#loginPage a,
+#loginPage input,
+#loginPage select {
+  position: relative;
+  z-index: 200;
+  pointer-events: auto !important;
+  touch-action: manipulation !important;
+}
+
+/* 新規職場登録 */
+#newOrganizationForm,
+#newOrganizationForm button,
+#newOrganizationForm input {
+  position: relative;
+  z-index: 300;
+  pointer-events: auto !important;
+}
+
+/* 招待登録画面 */
+#inviteRegisterView,
+#inviteRegisterView button,
+#inviteRegisterView a {
+  position: relative;
+  z-index: 300;
+  pointer-events: auto !important;
+}
+
+/* ---------------------------------------------------------
+   非表示の画面は完全に操作対象外
+   --------------------------------------------------------- */
+
+#loginPage[style*="display: none"],
+#newOrganizationForm[style*="display: none"],
+#inviteRegisterView[style*="display: none"] {
+  pointer-events: none !important;
+  visibility: hidden !important;
+}
+
+/* ---------------------------------------------------------
+   ローディング終了後に残った透明画面を操作対象外にする
+   --------------------------------------------------------- */
+
+#loadingScreen[style*="display: none"] {
+  pointer-events: none !important;
+  visibility: hidden !important;
+}
+
+/* ローディング画面が表示中だけ操作を止める */
+#loadingScreen:not([style*="display: none"]) {
+  pointer-events: auto;
+}
+
+/* loading-activeが残ってもログイン画面は操作可能 */
+body.loading-active #loginPage {
+  pointer-events: auto !important;
+}
+
+/* =========================================================
+   ★ 職員ログイン時のヘッダーを左端へ
+   ========================================================= */
+
+.header {
+  padding-left: 0 !important;
+}
+
+.app-header-brand {
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+  transform: translateX(-4px);
+}
+
+.app-header-logo {
+  margin-left: 0 !important;
+}
+
+/* スマホ */
+@media (max-width: 700px) {
+
+  .header {
+    padding-left: 0 !important;
+  }
+
+  .app-header-brand {
+    margin-left: 0 !important;
+    padding-left: 0 !important;
+    transform: translateX(-4px);
+  }
+
+}
+
+/* 小さいスマホ */
+@media (max-width: 390px) {
+
+  .header {
+    padding-left: 0 !important;
+  }
+
+  .app-header-brand {
+    transform: translateX(-4px);
+  }
+
+}
+
+/* iPhoneセーフエリアによる左余白を上書き */
+@supports (padding: max(0px)) {
+
+  .header {
+    padding-left: 0 !important;
+  }
+
+}
