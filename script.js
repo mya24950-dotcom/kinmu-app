@@ -4228,137 +4228,114 @@ function bindEvents() {
    ページ切り替え
 ================================================== */
 
-function showPage(
-  page
-) {
+function showPage(page) {
 
-  /* =====================================================
-     職員は「勤務表」以外を開けない
-  ===================================================== */
+  console.log("showPage:", page);
 
-  const isAdmin =
-    currentOrganization &&
-    currentOrganization.role === "admin";
+  // ==========================================
+  // ログイン画面を確実に非表示
+  // ==========================================
 
-  if (
-    !isAdmin &&
-    page !== "schedule"
-  ) {
+  const loginPage = document.getElementById("loginPage");
 
-    page = "schedule";
-
+  if (loginPage) {
+    loginPage.style.display = "none";
   }
 
 
-  /* =====================================================
-     ページ表示切り替え
-  ===================================================== */
+  // ==========================================
+  // アプリ本体を確実に表示
+  // ==========================================
 
-  document
-    .querySelectorAll(
-      ".page"
-    )
-    .forEach(
-      p => {
+  const app = document.getElementById("app");
 
-        p.style.display =
-          "none";
-
-      }
-    );
+  if (app) {
+    app.style.display = "block";
+  }
 
 
-  const target =
-    document.getElementById(
+  // ==========================================
+  // すべてのページを非表示
+  // ==========================================
+
+  const pages = document.querySelectorAll(".page");
+
+  pages.forEach(function (p) {
+    p.style.display = "none";
+  });
+
+
+  // ==========================================
+  // 選択されたページを表示
+  // ==========================================
+
+  const targetPage =
+    document.getElementById(page + "Page");
+
+  if (targetPage) {
+    targetPage.style.display = "block";
+  } else {
+    console.log(
+      "ページが見つかりません:",
       page + "Page"
     );
-
-
-  if (target) {
-
-    target.style.display =
-      "";
-
+    return;
   }
 
 
-  /* =====================================================
-     ナビボタンの active
-  ===================================================== */
+  // ==========================================
+  // ナビボタンの active
+  // ==========================================
 
-  document
-    .querySelectorAll(
-      ".nav-button"
-    )
-    .forEach(
-      button => {
+  const navButtons =
+    document.querySelectorAll(".nav-button");
 
-        button.classList.toggle(
-          "active",
-          button.dataset.page ===
-            page
-        );
+  navButtons.forEach(function (button) {
+    button.classList.remove("active");
+  });
 
-      }
+  const activeButton =
+    document.querySelector(
+      '.nav-button[data-page="' + page + '"]'
     );
 
+  if (activeButton) {
+    activeButton.classList.add("active");
+  }
 
-  hideShiftMenu();
 
+  // ==========================================
+  // 各ページの内容を再描画
+  // ==========================================
 
-  /* =====================================================
-     ページごとの表示処理
-  ===================================================== */
-
-  if (
-    page ===
-    "schedule"
-  ) {
-
+  if (page === "schedule") {
     renderSchedule();
-
   }
 
-
-  if (
-    page ===
-    "staff"
-  ) {
-
+  if (page === "staff") {
     renderStaffList();
-
   }
 
-
-  if (
-    page ===
-    "leave"
-  ) {
-
+  if (page === "leave") {
     renderLeaveList();
-
   }
 
-
-  if (
-    page ===
-    "shift"
-  ) {
-
+  if (page === "shift") {
     renderShiftList();
-
   }
 
-
-  if (
-    page ===
-    "holiday"
-  ) {
-
+  if (page === "holiday") {
     renderHolidayList();
-
   }
 
+
+  // ==========================================
+  // 勤務形態メニューを閉じる
+  // ==========================================
+
+  if (typeof hideShiftMenu === "function") {
+    hideShiftMenu();
+  }
 }
 
 
