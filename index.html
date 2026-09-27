@@ -151,7 +151,22 @@
     ================================================== */
 
     #loginPage #loginMainView > div:first-child {
-      margin-bottom: 8px !important;
+
+      margin-top: 28px !important;
+
+      margin-bottom: 28px !important;
+
+      min-height: 130px !important;
+
+      display: flex !important;
+
+      justify-content: center !important;
+
+      align-items: center !important;
+
+      box-sizing: border-box !important;
+
+      flex-shrink: 0 !important;
     }
 
 
@@ -568,7 +583,12 @@
 
 
       #loginPage #loginMainView > div:first-child {
-        margin-bottom: 4px !important;
+
+        margin-top: 18px !important;
+
+        margin-bottom: 18px !important;
+
+        min-height: 100px !important;
       }
 
 
@@ -601,6 +621,16 @@
       }
 
 
+      #loginPage #loginMainView > div:first-child {
+
+        margin-top: 12px !important;
+
+        margin-bottom: 12px !important;
+
+        min-height: 75px !important;
+      }
+
+
       #passkeyLoginButton,
       #newOrganizationButton {
         min-height: 37px !important;
@@ -627,6 +657,16 @@
 
       #loginPage > div {
         padding: 5px 12px 4px !important;
+      }
+
+
+      #loginPage #loginMainView > div:first-child {
+
+        margin-top: 8px !important;
+
+        margin-bottom: 8px !important;
+
+        min-height: 55px !important;
       }
 
 
@@ -942,13 +982,21 @@
 
       <div
         style="
-          margin-bottom:8px;
+          margin-top:28px;
+
+          margin-bottom:28px;
+
+          min-height:130px;
 
           display:flex;
 
           justify-content:center;
 
           align-items:center;
+
+          box-sizing:border-box;
+
+          flex-shrink:0;
         "
       >
 
@@ -1386,8 +1434,6 @@
         職員アカウント登録
       </h2>
 
-
-      <!-- その他 -->
 
       <div class="invite-social-title">
 
@@ -3337,16 +3383,10 @@
     }
 
 
-    /*
-     * 通常ログインを隠す
-     */
     loginMainView.style.display =
       "none";
 
 
-    /*
-     * 新規職場登録も隠す
-     */
     if (newOrganizationForm) {
 
       newOrganizationForm.style.display =
@@ -3355,16 +3395,10 @@
     }
 
 
-    /*
-     * 招待登録だけ表示
-     */
     inviteRegisterView.style.display =
       "block";
 
 
-    /*
-     * OAuth後にも使えるように保存
-     */
     try {
 
       sessionStorage.setItem(
@@ -3386,12 +3420,6 @@
 
   /*
    * Googleで招待登録
-   *
-   * 既存のloginWithGoogle()を使用する。
-   *
-   * 既存のloginWithGoogle()には
-   * ?invite=TOKENを維持してOAuthへ
-   * リダイレクトする処理が入っている。
    */
   function setupInviteGoogleButton() {
 
@@ -3443,9 +3471,6 @@
 
   /*
    * Apple / Azure
-   *
-   * 現時点では認証処理を実装していないため、
-   * ボタンだけ表示する。
    */
   function setupInviteOtherButtons() {
 
