@@ -1158,11 +1158,7 @@ async function issueStaffInvite(staffId) {
        招待発行前の確認
     ================================================== */
 
-    alert(
-      "staffId = " + staffId +
-      "\n\norganizationId = " +
-      (currentOrganization?.id || "なし")
-    );
+    
 
 
     /* ==================================================
