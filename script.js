@@ -3970,25 +3970,80 @@ function showPage(page) {
 
   console.log("showPage:", page);
 
-  // ログイン画面を隠す
+  /* =====================================================
+     ① ログイン画面を完全に隠す
+     ===================================================== */
+
   const loginPage =
     document.getElementById("loginPage");
 
   if (loginPage) {
-    loginPage.style.display = "none";
+
+    loginPage.style.setProperty(
+      "display",
+      "none",
+      "important"
+    );
+
+    loginPage.style.setProperty(
+      "visibility",
+      "hidden",
+      "important"
+    );
+
+    loginPage.style.setProperty(
+      "opacity",
+      "0",
+      "important"
+    );
+
+    loginPage.style.setProperty(
+      "pointer-events",
+      "none",
+      "important"
+    );
   }
 
 
-  // アプリを表示
+  /* =====================================================
+     ② アプリ本体を表示
+     ===================================================== */
+
   const app =
     document.getElementById("app");
 
   if (app) {
-    app.style.display = "block";
+
+    app.style.setProperty(
+      "display",
+      "block",
+      "important"
+    );
+
+    app.style.setProperty(
+      "visibility",
+      "visible",
+      "important"
+    );
+
+    app.style.setProperty(
+      "opacity",
+      "1",
+      "important"
+    );
+
+    app.style.setProperty(
+      "pointer-events",
+      "auto",
+      "important"
+    );
   }
 
 
-  // すべてのページを隠す
+  /* =====================================================
+     ③ すべてのページを一旦非表示
+     ===================================================== */
+
   document
     .querySelectorAll(".page")
     .forEach(function(element) {
@@ -3998,9 +4053,13 @@ function showPage(page) {
     });
 
 
-  // 選択されたページを表示
+  /* =====================================================
+     ④ 表示するページを取得
+     ===================================================== */
+
   const targetPage =
     document.getElementById(page + "Page");
+
 
   if (!targetPage) {
 
@@ -4012,10 +4071,18 @@ function showPage(page) {
     return;
   }
 
+
+  /* =====================================================
+     ⑤ 選択されたページを表示
+     ===================================================== */
+
   targetPage.style.display = "block";
 
 
-  // ナビボタンの選択状態
+  /* =====================================================
+     ⑥ ナビボタンのactiveをリセット
+     ===================================================== */
+
   document
     .querySelectorAll(".nav-button")
     .forEach(function(button) {
@@ -4025,44 +4092,86 @@ function showPage(page) {
     });
 
 
+  /* =====================================================
+     ⑦ 現在のページのボタンをactiveにする
+     ===================================================== */
+
   const activeButton =
     document.querySelector(
-      '.nav-button[data-page="' + page + '"]'
+      '.nav-button[data-page="' +
+      page +
+      '"]'
     );
 
+
   if (activeButton) {
+
     activeButton.classList.add("active");
+
   }
 
 
-  // 各ページの表示処理
+  /* =====================================================
+     ⑧ ページごとの表示処理
+     ===================================================== */
+
   if (page === "schedule") {
 
-    renderSchedule();
+    if (typeof renderSchedule === "function") {
+      renderSchedule();
+    }
 
-  } else if (page === "staff") {
+  }
 
-    renderStaffList();
+  else if (page === "staff") {
 
-  } else if (page === "leave") {
+    if (typeof renderStaffList === "function") {
+      renderStaffList();
+    }
 
-    renderLeaveList();
+  }
 
-  } else if (page === "shift") {
+  else if (page === "leave") {
 
-    renderShiftList();
+    if (typeof renderLeaveList === "function") {
+      renderLeaveList();
+    }
 
-  } else if (page === "holiday") {
+  }
 
-    renderHolidayList();
+  else if (page === "shift") {
+
+    if (typeof renderShiftList === "function") {
+      renderShiftList();
+    }
+
+  }
+
+  else if (page === "holiday") {
+
+    if (typeof renderHolidayList === "function") {
+      renderHolidayList();
+    }
 
   }
 
 
-  // シフトメニューを閉じる
+  /* =====================================================
+     ⑨ シフトメニューを閉じる
+     ===================================================== */
+
   if (typeof hideShiftMenu === "function") {
+
     hideShiftMenu();
+
   }
+
+
+  /* =====================================================
+     ⑩ ページ上部へ
+     ===================================================== */
+
+  window.scrollTo(0, 0);
 }
 
 /* ==================================================
