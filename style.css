@@ -2836,3 +2836,23 @@ body.dark-mode .leave-list-card .list-item-sub {
   height: auto;
   object-fit: contain;
 }
+
+/* ==================================================
+   アプリヘッダーのShift+ロゴ
+================================================== */
+
+.app-header-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.app-header-logo {
+  display: block;
+  width: 72px;
+  max-width: 72px;
+  height: auto;
+  object-fit: contain;
+  flex-shrink: 0;
+}
