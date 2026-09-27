@@ -2803,21 +2803,57 @@ body.loading-active #loginPage {
 }
 
 /* =========================================================
-   勤務表上部の Shift+ ロゴ・職場名を左端へ
+   勤務表上部 Shift+ ロゴ・職場名
    ========================================================= */
 
-.schedule-brand {
-  width: 100% !important;
+/* 勤務表ページの通常の余白は戻す */
+#schedulePage {
+  padding-left: 10px !important;
+  padding-right: 10px !important;
+}
+
+/* ロゴ＋職場名だけ左へ */
+#schedulePage .schedule-brand {
+  position: relative !important;
+
+  left: -10px !important;
+
+  width: calc(100% + 10px) !important;
+
   margin-left: 0 !important;
+
   padding-left: 0 !important;
   padding-right: 0 !important;
+
   box-sizing: border-box !important;
 }
 
-.schedule-logo {
+/* ロゴ */
+#schedulePage .schedule-logo {
+  position: relative !important;
+
+  left: 0 !important;
+
   margin-left: 0 !important;
 }
 
-.schedule-organization-title {
+/* 職場名 */
+#schedulePage .schedule-organization-title {
+  position: relative !important;
+
+  left: 0 !important;
+
   margin-left: 0 !important;
+}
+
+
+/* スマホ */
+@media (max-width: 700px) {
+
+  #schedulePage .schedule-brand {
+    left: -10px !important;
+
+    width: calc(100% + 10px) !important;
+  }
+
 }
