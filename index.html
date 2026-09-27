@@ -395,6 +395,41 @@
 
 
     /* ==================================================
+       アプリ画面
+       Shift+ロゴ
+    ================================================== */
+
+    .app-header-brand {
+
+      display: flex;
+
+      align-items: center;
+
+      gap: 8px;
+
+      min-width: 0;
+
+      flex-shrink: 1;
+    }
+
+
+    .app-header-logo {
+
+      display: block;
+
+      width: 72px;
+
+      max-width: 72px;
+
+      height: auto;
+
+      object-fit: contain;
+
+      flex-shrink: 0;
+    }
+
+
+    /* ==================================================
        小さい画面
     ================================================== */
 
@@ -1696,13 +1731,28 @@
 
   <header class="header">
 
-    <div
-      class="header-title"
-      id="organizationTitle"
-    >
-      勤務表
+    <!-- Shift+ロゴと職場名 -->
+
+    <div class="app-header-brand">
+
+      <img
+        src="./icons/shift-plus-logo.PNG"
+        alt="Shift+"
+        class="app-header-logo"
+      >
+
+
+      <div
+        class="header-title"
+        id="organizationTitle"
+      >
+        勤務表
+      </div>
+
     </div>
 
+
+    <!-- 右側ボタン -->
 
     <div class="header-delete-buttons">
 
@@ -2094,11 +2144,14 @@
     class="page"
   >
 
+    <!-- 月移動 -->
+
     <div class="month-bar">
 
       <button
         id="prevMonth"
         class="month-button"
+        type="button"
       >
         ‹
       </button>
@@ -2113,6 +2166,7 @@
       <button
         id="nextMonth"
         class="month-button"
+        type="button"
       >
         ›
       </button>
