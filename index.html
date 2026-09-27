@@ -619,11 +619,6 @@
 
     /* ==================================================
        勤務表ページ
-       Shift+ロゴ
-       ↓
-       職場名
-       ↓
-       月送り
     ================================================== */
 
     #schedulePage {
@@ -692,7 +687,6 @@
 
     /* ==================================================
        月送り
-       既存のmonth-barを壊さない
     ================================================== */
 
     #schedulePage .month-bar {
@@ -902,10 +896,6 @@
     }
 
 
-    /* ==================================================
-       ローディング Shift+
-    ================================================== */
-
     .loadingLogo {
 
       font-size: 38px;
@@ -925,10 +915,6 @@
 
     }
 
-
-    /* ==================================================
-       3つの点
-    ================================================== */
 
     .loadingDots {
 
@@ -985,10 +971,6 @@
     }
 
 
-    /* ==================================================
-       点のアニメーション
-    ================================================== */
-
     @keyframes shiftLoadingDot {
 
       0%,
@@ -1012,10 +994,6 @@
     }
 
 
-    /* ==================================================
-       読み込み中
-    ================================================== */
-
     .loadingText {
 
       margin-top: 12px;
@@ -1026,10 +1004,6 @@
 
     }
 
-
-    /* ==================================================
-       ダークモード
-    ================================================== */
 
     body.dark-mode #loadingScreen {
 
@@ -1055,10 +1029,7 @@
 
 
 <!-- ==================================================
-     ★ Shift+ ローディング画面
-     
-     body直後
-     loginPageより前
+     Shift+ ローディング画面
 ================================================== -->
 
 <div id="loadingScreen">
@@ -1067,17 +1038,13 @@
     Shift<span>+</span>
   </div>
 
-
   <div class="loadingDots">
 
     <span></span>
-
     <span></span>
-
     <span></span>
 
   </div>
-
 
   <div class="loadingText">
     読み込み中
@@ -1131,10 +1098,6 @@
 >
 
 
-  <!-- ==================================================
-       ログインカード
-  ================================================== -->
-
   <div
     style="
       width:100%;
@@ -1166,10 +1129,6 @@
     <div id="loginMainView">
 
 
-      <!-- ==================================================
-           Shift+ロゴ
-      ================================================== -->
-
       <div
         style="
           margin-bottom:8px;
@@ -1200,10 +1159,6 @@
 
       </div>
 
-
-      <!-- ==================================================
-           メールアドレス
-      ================================================== -->
 
       <div
         style="
@@ -1261,10 +1216,6 @@
 
       </div>
 
-
-      <!-- ==================================================
-           パスワード
-      ================================================== -->
 
       <div
         style="
@@ -1398,10 +1349,6 @@
       </div>
 
 
-      <!-- ==================================================
-           ログイン状態・パスワード忘れ
-      ================================================== -->
-
       <div
         style="
           display:flex;
@@ -1482,10 +1429,6 @@
       </div>
 
 
-      <!-- ==================================================
-           ログイン
-      ================================================== -->
-
       <button
         type="button"
         id="emailLoginButton"
@@ -1517,10 +1460,6 @@
       </button>
 
 
-      <!-- ==================================================
-           その他のログイン
-      ================================================== -->
-
       <div
         style="
           display:flex;
@@ -1543,7 +1482,6 @@
           "
         ></div>
 
-
         <span
           style="
             color:#888;
@@ -1555,7 +1493,6 @@
         >
           その他のログイン
         </span>
-
 
         <div
           style="
@@ -1569,10 +1506,6 @@
 
       </div>
 
-
-      <!-- ==================================================
-           Google / Apple / Azure
-      ================================================== -->
 
       <div
         style="
@@ -1632,7 +1565,6 @@
 
           </button>
 
-
           <span class="social-login-label">
             Google
           </span>
@@ -1667,7 +1599,6 @@
             </svg>
 
           </button>
-
 
           <span class="social-login-label">
             Apple
@@ -1714,7 +1645,6 @@
 
           </button>
 
-
           <span class="social-login-label">
             Azure
           </span>
@@ -1724,9 +1654,7 @@
       </div>
 
 
-      <!-- ==================================================
-           Passkey
-      ================================================== -->
+      <!-- Passkey -->
 
       <button
         type="button"
@@ -1834,10 +1762,6 @@
       </p>
 
 
-      <!-- ==================================================
-           はじめての方
-      ================================================== -->
-
       <div
         style="
           display:flex;
@@ -1860,7 +1784,6 @@
           "
         ></div>
 
-
         <span
           style="
             color:#888;
@@ -1872,7 +1795,6 @@
         >
           はじめての方
         </span>
-
 
         <div
           style="
@@ -1886,10 +1808,6 @@
 
       </div>
 
-
-      <!-- ==================================================
-           新規職場登録
-      ================================================== -->
 
       <button
         type="button"
@@ -1941,8 +1859,7 @@
 
 
     <!-- ==================================================
-         ★ 招待リンク専用
-         ?invite=TOKEN の場合だけ表示
+         招待リンク専用・職員登録画面
     ================================================== -->
 
     <div
@@ -1955,9 +1872,7 @@
       </h2>
 
 
-      <!-- ==================================================
-           メールアドレス
-      ================================================== -->
+      <!-- メールアドレス -->
 
       <div class="invite-input-group">
 
@@ -1967,7 +1882,6 @@
         >
           メールアドレス
         </label>
-
 
         <input
           type="email"
@@ -1979,9 +1893,7 @@
       </div>
 
 
-      <!-- ==================================================
-           パスワード
-      ================================================== -->
+      <!-- パスワード -->
 
       <div class="invite-input-group">
 
@@ -1991,7 +1903,6 @@
         >
           パスワード
         </label>
-
 
         <input
           type="password"
@@ -2003,9 +1914,7 @@
       </div>
 
 
-      <!-- ==================================================
-           メールアドレスで登録
-      ================================================== -->
+      <!-- メール登録 -->
 
       <button
         type="button"
@@ -2015,9 +1924,7 @@
       </button>
 
 
-      <!-- ==================================================
-           その他の登録
-      ================================================== -->
+      <!-- その他 -->
 
       <div class="invite-social-title">
 
@@ -2078,7 +1985,6 @@
 
           </button>
 
-
           <span class="social-login-label">
             Google
           </span>
@@ -2113,7 +2019,6 @@
             </svg>
 
           </button>
-
 
           <span class="social-login-label">
             Apple
@@ -2160,7 +2065,6 @@
 
           </button>
 
-
           <span class="social-login-label">
             Azure
           </span>
@@ -2169,10 +2073,6 @@
 
       </div>
 
-
-      <!-- ==================================================
-           招待登録メッセージ
-      ================================================== -->
 
       <p id="inviteRegisterMessage"></p>
 
@@ -2920,7 +2820,6 @@
         alt="Shift+"
         class="schedule-logo"
       >
-
 
       <div
         id="scheduleOrganizationTitle"
@@ -3917,26 +3816,35 @@
 
 
 <!-- ==================================================
-     ★ 招待リンク判定
-     
-     ?invite=TOKEN の場合
-     通常ログインを隠して
-     招待登録画面だけ表示する
+     招待登録画面
 ================================================== -->
 
 <script>
 
 (function() {
 
-  function setupInviteRegisterView() {
+  /*
+   * 招待トークンを取得
+   */
+  function getInviteToken() {
 
     const params =
       new URLSearchParams(
         window.location.search
       );
 
+    return params.get("invite");
+
+  }
+
+
+  /*
+   * 招待登録画面を表示
+   */
+  function setupInviteRegisterView() {
+
     const inviteToken =
-      params.get("invite");
+      getInviteToken();
 
 
     const loginMainView =
@@ -3960,20 +3868,21 @@
       !loginMainView ||
       !inviteRegisterView
     ) {
+
       return;
+
     }
 
 
     /*
-     * 招待リンクの場合は
-     * 通常ログインを表示しない
+     * 通常ログインを隠す
      */
     loginMainView.style.display =
       "none";
 
 
     /*
-     * 職場新規登録画面も表示しない
+     * 新規職場登録も隠す
      */
     if (newOrganizationForm) {
 
@@ -3984,17 +3893,14 @@
 
 
     /*
-     * 招待登録画面だけ表示
+     * 招待登録だけ表示
      */
     inviteRegisterView.style.display =
       "block";
 
 
     /*
-     * 招待URLをsessionStorageにも保持
-     *
-     * OAuthでGoogleなどへ移動した場合に
-     * 招待情報を維持するため
+     * OAuth後にも使えるように保存
      */
     try {
 
@@ -4006,11 +3912,438 @@
     } catch (error) {
 
       console.warn(
-        "招待トークンの保存に失敗しました",
+        "招待トークン保存エラー",
         error
       );
 
     }
+
+  }
+
+
+  /*
+   * メールアドレス＋パスワード登録
+   */
+  async function registerByInviteEmail() {
+
+    const emailInput =
+      document.getElementById(
+        "inviteEmailInput"
+      );
+
+    const passwordInput =
+      document.getElementById(
+        "invitePasswordInput"
+      );
+
+    const button =
+      document.getElementById(
+        "inviteEmailRegisterButton"
+      );
+
+    const message =
+      document.getElementById(
+        "inviteRegisterMessage"
+      );
+
+
+    if (
+      !emailInput ||
+      !passwordInput ||
+      !button
+    ) {
+
+      return;
+
+    }
+
+
+    const email =
+      emailInput.value.trim();
+
+    const password =
+      passwordInput.value;
+
+
+    if (!email) {
+
+      if (message) {
+
+        message.textContent =
+          "メールアドレスを入力してください。";
+
+      }
+
+      emailInput.focus();
+
+      return;
+
+    }
+
+
+    if (!password) {
+
+      if (message) {
+
+        message.textContent =
+          "パスワードを入力してください。";
+
+      }
+
+      passwordInput.focus();
+
+      return;
+
+    }
+
+
+    if (password.length < 6) {
+
+      if (message) {
+
+        message.textContent =
+          "パスワードは6文字以上で入力してください。";
+
+      }
+
+      passwordInput.focus();
+
+      return;
+
+    }
+
+
+    const inviteToken =
+      getInviteToken();
+
+
+    if (!inviteToken) {
+
+      if (message) {
+
+        message.textContent =
+          "招待リンクが確認できません。";
+
+      }
+
+      return;
+
+    }
+
+
+    /*
+     * 招待URLを維持
+     */
+    const redirectUrl =
+      window.location.origin +
+      window.location.pathname +
+      "?invite=" +
+      encodeURIComponent(
+        inviteToken
+      );
+
+
+    try {
+
+      button.disabled = true;
+
+      button.style.opacity = "0.6";
+
+
+      if (message) {
+
+        message.textContent =
+          "アカウントを登録しています…";
+
+      }
+
+
+      if (
+        !window.supabase ||
+        typeof window.supabase.createClient !==
+          "function"
+      ) {
+
+        throw new Error(
+          "Supabaseライブラリが読み込まれていません。"
+        );
+
+      }
+
+
+      /*
+       * script.jsで作成済みの
+       * supabaseClientを使用
+       */
+      if (
+        typeof supabaseClient ===
+        "undefined" ||
+        !supabaseClient
+      ) {
+
+        throw new Error(
+          "Supabaseに接続できていません。"
+        );
+
+      }
+
+
+      const {
+        data,
+        error
+      } =
+        await supabaseClient.auth.signUp({
+
+          email: email,
+
+          password: password,
+
+          options: {
+
+            emailRedirectTo:
+              redirectUrl
+
+          }
+
+        });
+
+
+      if (error) {
+
+        throw error;
+
+      }
+
+
+      /*
+       * メール確認が不要で、
+       * その場でセッションが作成された場合
+       */
+      if (data && data.session) {
+
+        if (message) {
+
+          message.textContent =
+            "登録が完了しました。招待を確認しています…";
+
+        }
+
+
+        /*
+         * init()をもう一度動かして
+         * handleInviteAfterLogin()に処理を渡す
+         */
+        window.location.href =
+          redirectUrl;
+
+        return;
+
+      }
+
+
+      /*
+       * メール確認が必要な場合
+       */
+      if (message) {
+
+        message.textContent =
+          "確認メールを送信しました。メール内のリンクから登録を完了してください。";
+
+      }
+
+
+      button.disabled = false;
+
+      button.style.opacity = "1";
+
+
+    } catch (error) {
+
+      console.error(
+        "招待メール登録エラー",
+        error
+      );
+
+
+      if (message) {
+
+        message.textContent =
+          "登録に失敗しました。\n" +
+          (
+            error &&
+            error.message
+              ? error.message
+              : "もう一度お試しください。"
+          );
+
+      }
+
+
+      button.disabled = false;
+
+      button.style.opacity = "1";
+
+    }
+
+  }
+
+
+  /*
+   * Googleで招待登録
+   *
+   * 既存のloginWithGoogle()を使用する。
+   *
+   * 既存のloginWithGoogle()には
+   * ?invite=TOKENを維持してOAuthへ
+   * リダイレクトする処理が入っている。
+   */
+  function setupInviteGoogleButton() {
+
+    const button =
+      document.getElementById(
+        "inviteGoogleButton"
+      );
+
+
+    if (!button) {
+
+      return;
+
+    }
+
+
+    button.onclick =
+      async function() {
+
+        if (
+          typeof loginWithGoogle ===
+          "function"
+        ) {
+
+          await loginWithGoogle();
+
+          return;
+
+        }
+
+
+        const message =
+          document.getElementById(
+            "inviteRegisterMessage"
+          );
+
+
+        if (message) {
+
+          message.textContent =
+            "Googleログイン機能を読み込めませんでした。";
+
+        }
+
+      };
+
+  }
+
+
+  /*
+   * Apple / Azure
+   *
+   * 現時点では認証処理を実装していないため、
+   * ボタンだけ表示する。
+   */
+  function setupInviteOtherButtons() {
+
+    const appleButton =
+      document.getElementById(
+        "inviteAppleButton"
+      );
+
+    const azureButton =
+      document.getElementById(
+        "inviteAzureButton"
+      );
+
+
+    if (appleButton) {
+
+      appleButton.onclick =
+        function() {
+
+          const message =
+            document.getElementById(
+              "inviteRegisterMessage"
+            );
+
+          if (message) {
+
+            message.textContent =
+              "Appleでの登録機能は現在準備中です。";
+
+          }
+
+        };
+
+    }
+
+
+    if (azureButton) {
+
+      azureButton.onclick =
+        function() {
+
+          const message =
+            document.getElementById(
+              "inviteRegisterMessage"
+            );
+
+          if (message) {
+
+            message.textContent =
+              "Azureでの登録機能は現在準備中です。";
+
+          }
+
+        };
+
+    }
+
+  }
+
+
+  /*
+   * 各ボタンを設定
+   */
+  function setupInviteButtons() {
+
+    const emailButton =
+      document.getElementById(
+        "inviteEmailRegisterButton"
+      );
+
+
+    if (emailButton) {
+
+      emailButton.onclick =
+        registerByInviteEmail;
+
+    }
+
+
+    setupInviteGoogleButton();
+
+    setupInviteOtherButtons();
+
+  }
+
+
+  /*
+   * 初期化
+   */
+  function initInviteScreen() {
+
+    setupInviteRegisterView();
+
+    setupInviteButtons();
 
   }
 
@@ -4022,12 +4355,12 @@
 
     document.addEventListener(
       "DOMContentLoaded",
-      setupInviteRegisterView
+      initInviteScreen
     );
 
   } else {
 
-    setupInviteRegisterView();
+    initInviteScreen();
 
   }
 
@@ -4056,15 +4389,23 @@
         "scheduleOrganizationTitle"
       );
 
+
     if (!source || !target) {
+
       return;
+
     }
+
 
     const text =
       source.textContent.trim();
 
+
     if (text) {
-      target.textContent = text;
+
+      target.textContent =
+        text;
+
     }
 
   }
@@ -4080,15 +4421,20 @@
         "organizationTitle"
       );
 
+
     if (!source) {
+
       return;
+
     }
 
 
     const observer =
       new MutationObserver(
         function() {
+
           syncScheduleOrganizationTitle();
+
         }
       );
 
