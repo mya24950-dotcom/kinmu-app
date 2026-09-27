@@ -2017,6 +2017,22 @@ function showApp() {
 
   }
 
+const loginPage = document.getElementById("loginPage");
+
+if (loginPage) {
+    loginPage.style.setProperty("display", "none", "important");
+    loginPage.style.setProperty("visibility", "hidden", "important");
+    loginPage.style.setProperty("pointer-events", "none", "important");
+}
+
+const app = document.getElementById("app");
+
+if (app) {
+    app.style.setProperty("display", "block", "important");
+    app.style.setProperty("visibility", "visible", "important");
+    app.style.setProperty("pointer-events", "auto", "important");
+}
+   
 }
 
 
