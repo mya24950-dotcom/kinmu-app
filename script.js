@@ -287,6 +287,10 @@ async function init() {
     console.log("★ 勤務表アプリ起動");
 
 
+    /* ==================================================
+       Supabase初期化
+    ================================================== */
+
     if (
       !window.supabase ||
       typeof window.supabase.createClient !== "function"
@@ -318,6 +322,10 @@ async function init() {
     );
 
 
+    /* ==================================================
+       現在のセッション確認
+    ================================================== */
+
     let {
       data: { session },
       error
@@ -329,6 +337,10 @@ async function init() {
       throw error;
     }
 
+
+    /* ==================================================
+       ログアウト後の強制ログイン画面
+    ================================================== */
 
     const forceLoginScreen =
       sessionStorage.getItem(
@@ -344,9 +356,11 @@ async function init() {
         scope: "global"
       });
 
+
       sessionStorage.removeItem(
         "forceLoginScreen"
       );
+
 
       showLoginPage();
 
@@ -362,106 +376,185 @@ async function init() {
 
     /* ==================================================
        ログインしていない場合
-       ※通常ログイン画面
+       ※Google認証直後は認証完了イベントを待つ
     ================================================== */
 
-   /* ==================================================
-   ログインしていない場合
-   ※Google認証直後はセッション確立を少し待つ
-================================================== */
-
-if (!session) {
-
-  console.log(
-    "★ セッションがまだありません。再確認します。"
-  );
-
-  let currentSession = null;
-
-  /*
-     Google認証から戻った直後は、
-     Supabaseのセッション確立に少し時間がかかる
-     場合があるため、数回確認する
-  */
-  for (
-    let i = 0;
-    i < 5;
-    i++
-  ) {
-
-    await new Promise(
-      resolve =>
-        setTimeout(
-          resolve,
-          500
-        )
-    );
-
-
-    const {
-      data: {
-        session: retrySession
-      }
-    } =
-      await supabaseClient.auth.getSession();
-
-
-    if (retrySession) {
-
-      currentSession =
-        retrySession;
+    if (!session) {
 
       console.log(
-        "★ セッション取得成功",
-        retrySession.user.email
+        "★ セッションなし。Google認証完了を待ちます。"
       );
 
-      break;
+
+      session =
+        await new Promise(
+          async (resolve) => {
+
+            let finished = false;
+
+
+            /* ------------------------------------------
+               Supabase認証状態変更を監視
+            ------------------------------------------ */
+
+            const {
+              data: authListener
+            } =
+              supabaseClient.auth.onAuthStateChange(
+                (event, newSession) => {
+
+                  console.log(
+                    "★ Supabase認証イベント:",
+                    event
+                  );
+
+
+                  /*
+                     Googleログイン完了
+                  */
+                  if (
+                    event === "SIGNED_IN" &&
+                    newSession
+                  ) {
+
+                    console.log(
+                      "★ Google認証完了:",
+                      newSession.user.email
+                    );
+
+
+                    if (!finished) {
+
+                      finished = true;
+
+
+                      authListener
+                        .subscription
+                        .unsubscribe();
+
+
+                      resolve(
+                        newSession
+                      );
+
+                    }
+
+                  }
+
+                }
+              );
+
+
+            /* ------------------------------------------
+               listener登録直後にもう一度確認
+               ※登録直後にセッションができた場合への対策
+            ------------------------------------------ */
+
+            const {
+              data: {
+                session: latestSession
+              }
+            } =
+              await supabaseClient.auth.getSession();
+
+
+            if (
+              latestSession &&
+              !finished
+            ) {
+
+              finished = true;
+
+
+              authListener
+                .subscription
+                .unsubscribe();
+
+
+              console.log(
+                "★ 待機中にセッションを取得しました:",
+                latestSession.user.email
+              );
+
+
+              resolve(
+                latestSession
+              );
+
+
+              return;
+            }
+
+
+            /* ------------------------------------------
+               最大15秒待機
+            ------------------------------------------ */
+
+            setTimeout(
+              () => {
+
+                if (!finished) {
+
+                  finished = true;
+
+
+                  authListener
+                    .subscription
+                    .unsubscribe();
+
+
+                  console.log(
+                    "★ 認証完了を15秒待っても取得できませんでした"
+                  );
+
+
+                  resolve(null);
+
+                }
+
+              },
+              15000
+            );
+
+          }
+        );
+
+
+      /* ----------------------------------------------
+         認証できなかった場合
+      ---------------------------------------------- */
+
+      if (!session) {
+
+        console.log(
+          "★ Google認証セッションを取得できませんでした"
+        );
+
+
+        showLoginPage();
+
+        setupGoogleLogin();
+
+        setupPasskeyLogin();
+
+        setupNewOrganizationButton();
+
+        return;
+
+      }
+
+
+      console.log(
+        "★ Google認証後のセッションを確認しました:",
+        session.user.email
+      );
 
     }
 
-  }
 
-
-  /*
-     再確認してもログインしていなければ
-     通常のログイン画面を表示
-  */
-  if (!currentSession) {
-
-    console.log(
-      "★ セッションを取得できませんでした"
-    );
-
-
-    showLoginPage();
-
-    setupGoogleLogin();
-
-    setupPasskeyLogin();
-
-    setupNewOrganizationButton();
-
-    return;
-
-  }
-
-
-  /*
-     Google認証直後に取得できたセッションを
-     以降の処理で使用する
-  */
-  session =
-    currentSession;
-
-
-  console.log(
-    "★ Google認証後のセッションを確認しました",
-    session.user.email
-  );
-
-}
-
+    /* ==================================================
+       ログイン済み
+    ================================================== */
 
     console.log(
       "Googleログイン済み",
@@ -510,6 +603,7 @@ if (!session) {
 
         return;
       }
+
     }
 
 
@@ -531,6 +625,7 @@ if (!session) {
         "pendingOrganizationName"
       );
 
+
     const pendingStaffName =
       sessionStorage.getItem(
         "pendingStaffName"
@@ -545,6 +640,7 @@ if (!session) {
       sessionStorage.removeItem(
         "pendingOrganizationName"
       );
+
 
       sessionStorage.removeItem(
         "pendingStaffName"
@@ -639,6 +735,7 @@ if (!session) {
 
         return;
       }
+
     }
 
 
@@ -675,6 +772,10 @@ if (!session) {
       organization;
 
 
+    /* ==================================================
+       職場名表示
+    ================================================== */
+
     const organizationTitle =
       document.getElementById(
         "organizationTitle"
@@ -690,15 +791,18 @@ if (!session) {
 
 
     /* ==================================================
-   パスキー登録
-   ※招待登録から来た職員は登録しない
-================================================== */
+       パスキー登録
+       ※招待登録から来た職員は登録しない
+    ================================================== */
 
-if (!inviteToken) {
-  await registerCurrentUserPasskey();
-}
+    if (!inviteToken) {
 
-setupOrganizationDangerZone();
+      await registerCurrentUserPasskey();
+
+    }
+
+
+    setupOrganizationDangerZone();
 
 
     /* ==================================================
@@ -711,7 +815,9 @@ setupOrganizationDangerZone();
 
     loadLocalData();
 
+
     bindEvents();
+
 
     setupLogoutButton();
 
