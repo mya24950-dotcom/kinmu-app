@@ -2377,3 +2377,26 @@ button:disabled {
     background: #ffe66d !important;
   }
 }
+
+/* =========================================================
+   ナビゲーションを確実にタップ可能にする
+   ========================================================= */
+
+.header,
+.nav {
+    position: relative;
+    z-index: 5000 !important;
+    pointer-events: auto !important;
+}
+
+.nav-button {
+    position: relative;
+    z-index: 5001 !important;
+    pointer-events: auto !important;
+    touch-action: manipulation !important;
+}
+
+/* ログイン画面が非表示のときは完全に操作対象外 */
+#loginPage[style*="display: none"] {
+    pointer-events: none !important;
+}
