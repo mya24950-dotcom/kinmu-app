@@ -1135,97 +1135,105 @@ async function issueStaffInvite(staffId) {
    ログイン画面表示
 ================================================== */
 
-function showLoginPage(
-  message = ""
-) {
+function showLoginPage(message = "") {
 
-  const loginPage =
-    document.getElementById(
-      "loginPage"
-    );
+  console.log("ログイン画面を表示");
 
+
+  /* =====================================================
+     ① アプリ本体を完全に隠す
+     ===================================================== */
 
   const app =
-    document.getElementById(
-      "app"
-    );
-
-
-  const loginMessage =
-    document.getElementById(
-      "loginMessage"
-    );
-
-
-  if (loginPage) {
-
-    loginPage.style.display =
-      "flex";
-
-    // ログイン画面のスクロール位置を先頭に戻す
-    loginPage.scrollTop = 0;
-
-    const loginContent =
-      loginPage.querySelector(
-        ":scope > div"
-      );
-
-    if (loginContent) {
-
-      loginContent.scrollTop = 0;
-
-    }
-
-  }
-
+    document.getElementById("app");
 
   if (app) {
 
-    app.style.display =
-      "none";
+    app.style.setProperty(
+      "display",
+      "none",
+      "important"
+    );
 
+    app.style.setProperty(
+      "visibility",
+      "hidden",
+      "important"
+    );
+
+    app.style.setProperty(
+      "opacity",
+      "0",
+      "important"
+    );
+
+    app.style.setProperty(
+      "pointer-events",
+      "none",
+      "important"
+    );
   }
 
+
+  /* =====================================================
+     ② ログイン画面を表示
+     ===================================================== */
+
+  const loginPage =
+    document.getElementById("loginPage");
+
+  if (loginPage) {
+
+    loginPage.style.setProperty(
+      "display",
+      "flex",
+      "important"
+    );
+
+    loginPage.style.setProperty(
+      "visibility",
+      "visible",
+      "important"
+    );
+
+    loginPage.style.setProperty(
+      "opacity",
+      "1",
+      "important"
+    );
+
+    loginPage.style.setProperty(
+      "pointer-events",
+      "auto",
+      "important"
+    );
+  }
+
+
+  /* =====================================================
+     ③ ログインメッセージ
+     ===================================================== */
+
+  const loginMessage =
+    document.getElementById("loginMessage");
 
   if (loginMessage) {
 
     loginMessage.textContent =
-      message;
+      message || "";
 
   }
 
 
-  // Googleログインをキャンセルして
-  // 戻ってきた場合も画面位置を確実に先頭へ戻す
-  requestAnimationFrame(() => {
+  /* =====================================================
+     ④ 画面を一番上へ
+     ===================================================== */
 
-    window.scrollTo(
-      0,
-      0
-    );
+  window.scrollTo(0, 0);
 
-
-    if (loginPage) {
-
-      loginPage.scrollTop = 0;
-
-
-      const loginContent =
-        loginPage.querySelector(
-          ":scope > div"
-        );
-
-
-      if (loginContent) {
-
-        loginContent.scrollTop = 0;
-
-      }
-
-    }
-
-  });
-
+  if (loginPage) {
+    loginPage.scrollTop = 0;
+  }
 }
 
 async function logout() {
