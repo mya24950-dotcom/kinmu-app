@@ -278,6 +278,10 @@ function hideInitialLoading() {
    初期化
 ================================================== */
 
+/* ==================================================
+   初期化
+================================================== */
+
 document.addEventListener("DOMContentLoaded", init);
 
 async function init() {
@@ -376,15 +380,34 @@ async function init() {
 
     /* ==================================================
        ログインしていない場合
-       ※Google認証直後は認証完了イベントを待つ
+       ※ログイン画面を先に表示してから
+         認証状態をバックグラウンドで確認
     ================================================== */
 
     if (!session) {
 
       console.log(
-        "★ セッションなし。Google認証完了を待ちます。"
+        "★ セッションなし。ログイン画面を即時表示します。"
       );
 
+
+      /* ------------------------------------------
+         ログイン画面を先に表示
+         ※ここでボタンを操作可能にする
+      ------------------------------------------ */
+
+      showLoginPage();
+
+      setupGoogleLogin();
+
+      setupPasskeyLogin();
+
+      setupNewOrganizationButton();
+
+
+      /* ------------------------------------------
+         Supabase認証状態変更を監視
+      ------------------------------------------ */
 
       session =
         await new Promise(
@@ -392,10 +415,6 @@ async function init() {
 
             let finished = false;
 
-
-            /* ------------------------------------------
-               Supabase認証状態変更を監視
-            ------------------------------------------ */
 
             const {
               data: authListener
@@ -412,6 +431,7 @@ async function init() {
                   /*
                      Googleログイン完了
                   */
+
                   if (
                     event === "SIGNED_IN" &&
                     newSession
@@ -530,6 +550,11 @@ async function init() {
           "★ Google認証セッションを取得できませんでした"
         );
 
+
+        /*
+           ログイン画面はすでに表示済みなので、
+           ここでは再表示するだけ
+        */
 
         showLoginPage();
 
@@ -764,6 +789,13 @@ async function init() {
       );
 
 
+      setupGoogleLogin();
+
+      setupPasskeyLogin();
+
+      setupNewOrganizationButton();
+
+
       return;
     }
 
@@ -919,6 +951,10 @@ async function init() {
 
 
     setupGoogleLogin();
+
+    setupPasskeyLogin();
+
+    setupNewOrganizationButton();
 
   }
 
