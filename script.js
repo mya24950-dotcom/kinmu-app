@@ -279,6 +279,7 @@ function hideInitialLoading() {
 ================================================== */
 
 document.addEventListener("DOMContentLoaded", init);
+
 async function init() {
 
   try {
@@ -359,6 +360,11 @@ async function init() {
     }
 
 
+    /* ==================================================
+       ログインしていない場合
+       ※通常ログイン画面
+    ================================================== */
+
     if (!session) {
 
       showLoginPage();
@@ -377,6 +383,50 @@ async function init() {
       "Googleログイン済み",
       session.user.email
     );
+
+
+    /* ==================================================
+       招待リンク
+       ※認証成功後にだけ実行する
+    ================================================== */
+
+    const inviteToken =
+      new URLSearchParams(
+        window.location.search
+      ).get("invite");
+
+
+    if (inviteToken) {
+
+      showInitialLoading(
+        "招待情報を確認しています…"
+      );
+
+
+      const inviteAccepted =
+        await handleInviteAfterLogin();
+
+
+      if (!inviteAccepted) {
+
+        hideInitialLoading();
+
+
+        showLoginPage(
+          "招待リンクの登録に失敗しました。"
+        );
+
+
+        setupGoogleLogin();
+
+        setupPasskeyLogin();
+
+        setupNewOrganizationButton();
+
+
+        return;
+      }
+    }
 
 
     /* ==================================================
@@ -497,39 +547,11 @@ async function init() {
           "職場の登録に失敗しました。"
         );
 
+
         setupGoogleLogin();
 
         setupNewOrganizationButton();
 
-        return;
-      }
-    }
-
-
-    /* ==================================================
-       招待リンク
-    ================================================== */
-
-    const inviteToken =
-      new URLSearchParams(
-        window.location.search
-      ).get("invite");
-
-
-    if (inviteToken) {
-
-      const inviteAccepted =
-        await handleInviteAfterLogin();
-
-
-      if (!inviteAccepted) {
-
-        hideInitialLoading();
-
-
-        showLoginPage(
-          "招待リンクの登録に失敗しました。"
-        );
 
         return;
       }
@@ -559,6 +581,7 @@ async function init() {
       showLoginPage(
         "ログインしましたが、職場への所属がありません。"
       );
+
 
       return;
     }
