@@ -1371,6 +1371,7 @@ function setupLogoutButton() {
     return;
   }
 
+
   button.onclick = async function() {
 
     const confirmed =
@@ -1382,34 +1383,43 @@ function setupLogoutButton() {
       return;
     }
 
+
     try {
 
-      console.log("★ ログアウト開始");
+      console.log(
+        "★ ログアウト開始"
+      );
 
-       sessionStorage.setItem(
-  "forceLoginScreen",
-  "true"
-);
 
-      /*
-       * 現在の職場情報を消す
-       */
+      /* =================================================
+         ① ログアウト後はログイン画面を表示する
+         ================================================= */
+
+      sessionStorage.setItem(
+        "forceLoginScreen",
+        "true"
+      );
+
+
+      /* =================================================
+         ② 現在の職場情報を消す
+         ================================================= */
 
       currentOrganization = null;
 
 
-      /*
-       * アプリ内のローカルデータを消す
-       */
+      /* =================================================
+         ③ アプリ内のローカルデータを消す
+         ================================================= */
 
       localStorage.removeItem(
         STORAGE_KEY
       );
 
 
-      /*
-       * 新規職場登録途中の情報も消す
-       */
+      /* =================================================
+         ④ 新規職場登録途中の情報を消す
+         ================================================= */
 
       sessionStorage.removeItem(
         "pendingOrganizationName"
@@ -1420,10 +1430,9 @@ function setupLogoutButton() {
       );
 
 
-      /*
-       * Supabaseのログインセッションを
-       * 完全にログアウト
-       */
+      /* =================================================
+         ⑤ Supabaseからログアウト
+         ================================================= */
 
       const {
         error
@@ -1434,7 +1443,9 @@ function setupLogoutButton() {
 
 
       if (error) {
+
         throw error;
+
       }
 
 
@@ -1443,10 +1454,9 @@ function setupLogoutButton() {
       );
 
 
-      /*
-       * 念のため、現在のセッションが
-       * 本当に消えているか確認
-       */
+      /* =================================================
+         ⑥ セッション確認
+         ================================================= */
 
       const {
         data: {
@@ -1459,7 +1469,7 @@ function setupLogoutButton() {
       if (session) {
 
         console.warn(
-          "⚠️ セッションが残っています"
+          "⚠️ セッションがまだ残っています"
         );
 
       } else {
@@ -1471,32 +1481,41 @@ function setupLogoutButton() {
       }
 
 
-      /*
-       * ログイン画面へ戻す
-       */
+      /* =================================================
+         ⑦ ページを再読み込み
+         
+         init() が実行され、
+         forceLoginScreen === "true"
+         を検出してログイン画面を表示する
+         ================================================= */
 
-      showLoginPage(
-  ""
-);
-
-
-/*
- * ログイン関連ボタンを再設定
- */
-
-setupGoogleLogin();
-
-setupPasskeyLogin();
-
-setupNewOrganizationButton();
+      console.log(
+        "★ ログイン画面へ移動します"
+      );
 
 
-    } catch (error) {
+      window.location.reload();
+
+    }
+
+
+    catch (error) {
 
       console.error(
         "ログアウトエラー",
         error
       );
+
+
+      /*
+       * エラーの場合は
+       * ログイン画面フラグを解除
+       */
+
+      sessionStorage.removeItem(
+        "forceLoginScreen"
+      );
+
 
       alert(
         "ログアウトに失敗しました。\n\n" +
