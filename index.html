@@ -61,6 +61,35 @@
 
 
     /* ==================================================
+       アプリ本体
+    ================================================== */
+
+    #app {
+      width: 100%;
+      min-height: 100vh;
+      min-height: 100svh;
+      box-sizing: border-box;
+      background: #ffffff;
+      position: relative;
+      z-index: 10;
+    }
+
+
+    /* ==================================================
+       アプリ内ページ
+    ================================================== */
+
+    #app .page {
+      width: 100%;
+      min-height: 100vh;
+      min-height: 100svh;
+      box-sizing: border-box;
+      background: #ffffff;
+      position: relative;
+    }
+
+
+    /* ==================================================
        ログイン画面
     ================================================== */
 
@@ -77,6 +106,8 @@
 
       min-height: 100svh !important;
       max-height: 100svh !important;
+
+      min-width: 100vw !important;
 
       margin: 0 !important;
 
@@ -100,6 +131,8 @@
       overscroll-behavior: none !important;
 
       touch-action: none !important;
+
+      z-index: 99999 !important;
     }
 
 
@@ -385,6 +418,7 @@
     ================================================== */
 
     #newOrganizationForm {
+
       max-height:
         calc(100svh - 50px);
 
@@ -395,7 +429,7 @@
 
 
     /* ==================================================
-       アプリ画面
+       アプリヘッダー
        Shift+ロゴ
     ================================================== */
 
@@ -431,7 +465,6 @@
 
     /* ==================================================
        月送り
-       既存のmonth-barを壊さない
     ================================================== */
 
     #schedulePage .month-bar {
@@ -445,6 +478,35 @@
       align-items: center;
 
       justify-content: center;
+
+      background: #ffffff;
+
+      position: relative;
+
+      z-index: 20;
+    }
+
+
+    #schedulePage .month-title,
+    #schedulePage .month-button {
+
+      position: relative;
+
+      z-index: 21;
+    }
+
+
+    /* ==================================================
+       カレンダー説明
+    ================================================== */
+
+    #schedulePage .calendar-hint {
+
+      position: relative;
+
+      z-index: 20;
+
+      background: #ffffff;
     }
 
 
@@ -1740,7 +1802,15 @@
 <div
   class="app"
   id="app"
-  style="display:none;"
+  style="
+    display:none;
+    width:100%;
+    min-height:100vh;
+    min-height:100svh;
+    background:#ffffff;
+    position:relative;
+    z-index:10;
+  "
 >
 
 
@@ -2157,7 +2227,6 @@
     class="page"
   >
 
-
     <!-- ==================================================
          月移動
     ================================================== -->
@@ -2189,6 +2258,10 @@
 
     </div>
 
+
+    <!-- ==================================================
+         カレンダー操作説明
+    ================================================== -->
 
     <div class="calendar-hint">
 
@@ -2262,6 +2335,10 @@
 
     </div>
 
+
+    <!-- ==================================================
+         勤務表
+    ================================================== -->
 
     <div class="table-wrapper">
 
