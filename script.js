@@ -318,7 +318,7 @@ async function init() {
     );
 
 
-    const {
+    let {
       data: { session },
       error
     } =
