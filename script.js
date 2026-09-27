@@ -1154,6 +1154,21 @@ async function issueStaffInvite(staffId) {
 
   try {
 
+    /* ==================================================
+       招待発行前の確認
+    ================================================== */
+
+    alert(
+      "staffId = " + staffId +
+      "\n\norganizationId = " +
+      (currentOrganization?.id || "なし")
+    );
+
+
+    /* ==================================================
+       招待リンク発行
+    ================================================== */
+
     const { data, error } =
       await supabaseClient.rpc(
         "issue_staff_invite",
