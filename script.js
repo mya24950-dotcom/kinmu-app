@@ -3966,6 +3966,105 @@ function setupVisibilitySync() {
 }
 
 
+function showPage(page) {
+
+  console.log("showPage:", page);
+
+  // ログイン画面を隠す
+  const loginPage =
+    document.getElementById("loginPage");
+
+  if (loginPage) {
+    loginPage.style.display = "none";
+  }
+
+
+  // アプリを表示
+  const app =
+    document.getElementById("app");
+
+  if (app) {
+    app.style.display = "block";
+  }
+
+
+  // すべてのページを隠す
+  document
+    .querySelectorAll(".page")
+    .forEach(function(element) {
+
+      element.style.display = "none";
+
+    });
+
+
+  // 選択されたページを表示
+  const targetPage =
+    document.getElementById(page + "Page");
+
+  if (!targetPage) {
+
+    console.error(
+      "ページが見つかりません:",
+      page + "Page"
+    );
+
+    return;
+  }
+
+  targetPage.style.display = "block";
+
+
+  // ナビボタンの選択状態
+  document
+    .querySelectorAll(".nav-button")
+    .forEach(function(button) {
+
+      button.classList.remove("active");
+
+    });
+
+
+  const activeButton =
+    document.querySelector(
+      '.nav-button[data-page="' + page + '"]'
+    );
+
+  if (activeButton) {
+    activeButton.classList.add("active");
+  }
+
+
+  // 各ページの表示処理
+  if (page === "schedule") {
+
+    renderSchedule();
+
+  } else if (page === "staff") {
+
+    renderStaffList();
+
+  } else if (page === "leave") {
+
+    renderLeaveList();
+
+  } else if (page === "shift") {
+
+    renderShiftList();
+
+  } else if (page === "holiday") {
+
+    renderHolidayList();
+
+  }
+
+
+  // シフトメニューを閉じる
+  if (typeof hideShiftMenu === "function") {
+    hideShiftMenu();
+  }
+}
+
 /* ==================================================
    イベント
 ================================================== */
