@@ -605,9 +605,16 @@ async function init() {
     }
 
 
-    await registerCurrentUserPasskey();
+    /* ==================================================
+   パスキー登録
+   ※招待登録から来た職員は登録しない
+================================================== */
 
-    setupOrganizationDangerZone();
+if (!inviteToken) {
+  await registerCurrentUserPasskey();
+}
+
+setupOrganizationDangerZone();
 
 
     /* ==================================================
