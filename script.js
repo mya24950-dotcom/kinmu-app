@@ -4228,120 +4228,80 @@ function bindEvents() {
    ページ切り替え
 ================================================== */
 
-function showPage(page) {
+function showLoginPage(message = "") {
 
-    console.log("ページ切り替え:", page);
-
-    // ==========================================
-    // ログイン画面を強制的に完全非表示
-    // ==========================================
-
-    document.querySelectorAll("#loginPage").forEach(function(el) {
-        el.style.setProperty("display", "none", "important");
-        el.style.setProperty("visibility", "hidden", "important");
-        el.style.setProperty("pointer-events", "none", "important");
-    });
-
+    console.log("ログイン画面を表示");
 
     // ==========================================
-    // アプリ本体を強制表示
+    // アプリ本体を非表示
     // ==========================================
 
     const app = document.getElementById("app");
 
     if (app) {
-        app.style.setProperty("display", "block", "important");
-        app.style.setProperty("visibility", "visible", "important");
-    }
-
-
-    // ==========================================
-    // すべてのページを非表示
-    // ==========================================
-
-    document.querySelectorAll(".page").forEach(function(el) {
-        el.style.setProperty("display", "none", "important");
-    });
-
-
-    // ==========================================
-    // 選択されたページだけ表示
-    // ==========================================
-
-    const targetPage = document.getElementById(page + "Page");
-
-    if (!targetPage) {
-
-        console.error(
-            "ページが見つかりません:",
-            page + "Page"
+        app.style.setProperty(
+            "display",
+            "none",
+            "important"
         );
 
-        return;
-    }
-
-    targetPage.style.setProperty(
-        "display",
-        "block",
-        "important"
-    );
-
-    targetPage.style.setProperty(
-        "visibility",
-        "visible",
-        "important"
-    );
-
-
-    // ==========================================
-    // ナビボタン
-    // ==========================================
-
-    document.querySelectorAll(".nav-button").forEach(function(button) {
-        button.classList.remove("active");
-    });
-
-    const activeButton = document.querySelector(
-        '.nav-button[data-page="' + page + '"]'
-    );
-
-    if (activeButton) {
-        activeButton.classList.add("active");
+        app.style.setProperty(
+            "visibility",
+            "hidden",
+            "important"
+        );
     }
 
 
     // ==========================================
-    // ページ内容を描画
+    // ログイン画面を表示
     // ==========================================
 
-    if (page === "schedule") {
+    const loginPage =
+        document.getElementById("loginPage");
 
-        renderSchedule();
+    if (loginPage) {
 
-    } else if (page === "staff") {
+        loginPage.style.setProperty(
+            "display",
+            "flex",
+            "important"
+        );
 
-        renderStaffList();
+        loginPage.style.setProperty(
+            "visibility",
+            "visible",
+            "important"
+        );
 
-    } else if (page === "leave") {
-
-        renderLeaveList();
-
-    } else if (page === "shift") {
-
-        renderShiftList();
-
-    } else if (page === "holiday") {
-
-        renderHolidayList();
+        loginPage.style.setProperty(
+            "pointer-events",
+            "auto",
+            "important"
+        );
     }
 
 
     // ==========================================
-    // シフトメニューを閉じる
+    // ログインメッセージ
     // ==========================================
 
-    if (typeof hideShiftMenu === "function") {
-        hideShiftMenu();
+    const loginMessage =
+        document.getElementById("loginMessage");
+
+    if (loginMessage) {
+        loginMessage.textContent = message || "";
+    }
+
+
+    // ==========================================
+    // ログイン画面の先頭へ
+    // ==========================================
+
+    window.scrollTo(0, 0);
+
+    if (loginPage) {
+        loginPage.scrollTop = 0;
     }
 }
 
