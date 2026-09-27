@@ -4230,55 +4230,71 @@ function bindEvents() {
 
 function showPage(page) {
 
-    console.log("showPage:", page);
+    console.log("ページ切り替え:", page);
 
     // ==========================================
-    // ログイン画面を完全に隠す
+    // ログイン画面を強制的に完全非表示
     // ==========================================
 
-    const loginPage = document.getElementById("loginPage");
-
-    if (loginPage) {
-        loginPage.style.display = "none";
-    }
+    document.querySelectorAll("#loginPage").forEach(function(el) {
+        el.style.setProperty("display", "none", "important");
+        el.style.setProperty("visibility", "hidden", "important");
+        el.style.setProperty("pointer-events", "none", "important");
+    });
 
 
     // ==========================================
-    // アプリ本体を表示
+    // アプリ本体を強制表示
     // ==========================================
 
     const app = document.getElementById("app");
 
     if (app) {
-        app.style.display = "block";
+        app.style.setProperty("display", "block", "important");
+        app.style.setProperty("visibility", "visible", "important");
     }
 
 
     // ==========================================
-    // すべてのページを一旦非表示
+    // すべてのページを非表示
     // ==========================================
 
-    document.querySelectorAll(".page").forEach(function(pageElement) {
-        pageElement.style.display = "none";
+    document.querySelectorAll(".page").forEach(function(el) {
+        el.style.setProperty("display", "none", "important");
     });
 
 
     // ==========================================
-    // 選択されたページを表示
+    // 選択されたページだけ表示
     // ==========================================
 
     const targetPage = document.getElementById(page + "Page");
 
     if (!targetPage) {
-        console.log("ページが見つかりません:", page + "Page");
+
+        console.error(
+            "ページが見つかりません:",
+            page + "Page"
+        );
+
         return;
     }
 
-    targetPage.style.display = "block";
+    targetPage.style.setProperty(
+        "display",
+        "block",
+        "important"
+    );
+
+    targetPage.style.setProperty(
+        "visibility",
+        "visible",
+        "important"
+    );
 
 
     // ==========================================
-    // ナビボタンの選択状態
+    // ナビボタン
     // ==========================================
 
     document.querySelectorAll(".nav-button").forEach(function(button) {
@@ -4295,26 +4311,27 @@ function showPage(page) {
 
 
     // ==========================================
-    // 各ページを表示したときの処理
+    // ページ内容を描画
     // ==========================================
 
     if (page === "schedule") {
+
         renderSchedule();
-    }
 
-    if (page === "staff") {
+    } else if (page === "staff") {
+
         renderStaffList();
-    }
 
-    if (page === "leave") {
+    } else if (page === "leave") {
+
         renderLeaveList();
-    }
 
-    if (page === "shift") {
+    } else if (page === "shift") {
+
         renderShiftList();
-    }
 
-    if (page === "holiday") {
+    } else if (page === "holiday") {
+
         renderHolidayList();
     }
 
