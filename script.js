@@ -778,71 +778,46 @@ async function loginWithPasskey() {
     window.location.reload();
 
 
-  } catch (error) {
-
-    console.error(
-      "Passkeyログインエラー",
-      error
-    );
-
+    } catch (error) {
+    console.error("Passkeyログインエラー", error);
 
     const errorMessage =
-      error?.message ||
-      String(error);
-
-
-    /*
-     * キャンセルの場合は
-     * エラー表示を出しすぎない
-     */
+      error?.message || String(error);
 
     const lowerMessage =
       errorMessage.toLowerCase();
 
+    /*
+     * Face ID / 指紋認証をユーザーがキャンセルした場合は
+     * エラー表示しない
+     */
+    const isUserCancel =
+      error?.name === "NotAllowedError" ||
+      error?.name === "AbortError" ||
+      lowerMessage.includes("cancel") ||
+      lowerMessage.includes("abort") ||
+      lowerMessage.includes("not allowed by the user agent") ||
+      lowerMessage.includes("the request is not allowed");
 
-    if (
-      !lowerMessage.includes(
-        "cancel"
-      ) &&
-      !lowerMessage.includes(
-        "abort"
-      )
-    ) {
-
+    if (!isUserCancel) {
       alert(
         "Face ID / 指紋ログインに失敗しました。\n\n" +
         errorMessage
       );
-
     }
-
 
     if (message) {
-
       message.textContent =
         "Face ID / 指紋でログインできます。";
-
     }
 
-
-    /*
-     * ボタンを元に戻す
-     */
-
     if (button) {
-
-      button.disabled =
-        false;
-
-      button.style.opacity =
-        "1";
-
+      button.disabled = false;
+      button.style.opacity = "1";
       button.innerHTML =
         '<span style="font-size:20px;">🔐</span>' +
         'Face ID / 指紋でログイン';
-
     }
-
   }
 
 }
