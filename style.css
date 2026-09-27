@@ -2400,3 +2400,238 @@ button:disabled {
 #loginPage[style*="display: none"] {
     pointer-events: none !important;
 }
+
+
+/* =========================================================
+   Shift+ ローディング画面
+   ========================================================= */
+
+#loadingScreen {
+
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 99999;
+
+  display: none;
+
+  align-items: center;
+
+  justify-content: center;
+
+  flex-direction: column;
+
+  background: #ffffff;
+
+  color: #333333;
+
+}
+
+
+/* =========================================================
+   ローディング Shift+ ロゴ
+   ========================================================= */
+
+.loadingLogo {
+
+  font-size: 38px;
+
+  font-weight: 700;
+
+  letter-spacing: 1px;
+
+  margin-bottom: 18px;
+
+  line-height: 1;
+
+}
+
+.loadingLogo span {
+
+  font-weight: 800;
+
+}
+
+
+/* =========================================================
+   ローディング 3つの点
+   ========================================================= */
+
+.loadingDots {
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 8px;
+
+  height: 20px;
+
+}
+
+
+.loadingDots span {
+
+  width: 9px;
+
+  height: 9px;
+
+  border-radius: 50%;
+
+  background: #007aff;
+
+  animation:
+    shiftLoadingDot
+    1.2s
+    infinite
+    ease-in-out;
+
+}
+
+
+.loadingDots span:nth-child(1) {
+
+  animation-delay: 0s;
+
+}
+
+
+.loadingDots span:nth-child(2) {
+
+  animation-delay: 0.15s;
+
+}
+
+
+.loadingDots span:nth-child(3) {
+
+  animation-delay: 0.30s;
+
+}
+
+
+/* =========================================================
+   ローディング アニメーション
+   ========================================================= */
+
+@keyframes shiftLoadingDot {
+
+  0%,
+  60%,
+  100% {
+
+    transform: translateY(0);
+
+    opacity: 0.35;
+
+  }
+
+  30% {
+
+    transform: translateY(-7px);
+
+    opacity: 1;
+
+  }
+
+}
+
+
+/* =========================================================
+   ローディング文字
+   ========================================================= */
+
+.loadingText {
+
+  margin-top: 12px;
+
+  font-size: 14px;
+
+  color: #777777;
+
+}
+
+
+/* =========================================================
+   ローディング ダークモード
+   ========================================================= */
+
+body.dark-mode #loadingScreen {
+
+  background: #111111;
+
+  color: #ffffff;
+
+}
+
+body.dark-mode .loadingText {
+
+  color: #aaaaaa;
+
+}
+
+
+/* =========================================================
+   ローディング画面 スマートフォン
+   ========================================================= */
+
+@media (max-width: 700px) {
+
+  .loadingLogo {
+
+    font-size: 36px;
+
+  }
+
+  .loadingDots {
+
+    gap: 8px;
+
+  }
+
+  .loadingDots span {
+
+    width: 9px;
+
+    height: 9px;
+
+  }
+
+  .loadingText {
+
+    font-size: 14px;
+
+  }
+
+}
+
+
+/* =========================================================
+   ローディング画面 小さいスマホ
+   ========================================================= */
+
+@media (max-width: 390px) {
+
+  .loadingLogo {
+
+    font-size: 34px;
+
+  }
+
+}
+
+
+/* =========================================================
+   ローディング中はスクロールさせない
+   ========================================================= */
+
+body.loading-active {
+
+  overflow: hidden !important;
+
+  touch-action: none !important;
+
+}
