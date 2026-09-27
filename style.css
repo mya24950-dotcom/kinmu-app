@@ -2801,3 +2801,23 @@ body.loading-active #loginPage {
     transform: translateX(-14px) !important;
   }
 }
+
+/* =========================================================
+   勤務表上部の Shift+ ロゴ・職場名を左端へ
+   ========================================================= */
+
+.schedule-brand {
+  width: 100% !important;
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.schedule-logo {
+  margin-left: 0 !important;
+}
+
+.schedule-organization-title {
+  margin-left: 0 !important;
+}
