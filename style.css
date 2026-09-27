@@ -2821,3 +2821,18 @@ body.dark-mode .leave-list .list-item-sub,
 body.dark-mode .leave-list-card .list-item-sub {
   color: #a1a1a6 !important;
 }
+
+.login-logo {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 0 14px;
+}
+
+.login-logo img {
+  display: block;
+  width: min(220px, 65vw);
+  height: auto;
+  object-fit: contain;
+}
