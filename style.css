@@ -97,7 +97,7 @@ body {
   flex-direction: column;
 
   align-items: flex-start;
-  justify-content: center;
+  justify-content: flex-start;
 
   gap: 0;
 
@@ -125,6 +125,7 @@ body {
 
 /* =========================================================
    職場名
+   ※ロゴ画像の透明な余白部分へ少し重ねる
    ========================================================= */
 
 .header-title {
@@ -132,7 +133,7 @@ body {
 
   max-width: 220px;
 
-  margin-top: -3px;
+  margin-top: -12px;
 
   font-size: 14px;
 
@@ -147,6 +148,8 @@ body {
   text-overflow: ellipsis;
 
   color: #1d1d1f;
+
+  text-align: left;
 }
 
 /* =========================================================
@@ -295,7 +298,6 @@ body {
 
 /* =========================================================
    ページ
-   ★ ここを白背景に固定
    ========================================================= */
 
 .page {
@@ -1984,6 +1986,8 @@ body.dark-mode .calendar-hint svg {
     gap: 0;
 
     align-items: flex-start;
+
+    justify-content: flex-start;
   }
 
   .app-header-logo {
@@ -1995,7 +1999,11 @@ body.dark-mode .calendar-hint svg {
   .header-title {
     max-width: 170px;
 
+    margin-top: -12px;
+
     font-size: 13px;
+
+    text-align: left;
   }
 
   .header-delete-buttons {
@@ -2248,7 +2256,11 @@ body.dark-mode .calendar-hint svg {
   .header-title {
     max-width: 145px;
 
+    margin-top: -12px;
+
     font-size: 12px;
+
+    text-align: left;
   }
 
   .header-delete-buttons button {
@@ -2386,23 +2398,22 @@ button:disabled {
 
 .header,
 .nav {
-    position: relative;
-    z-index: 5000 !important;
-    pointer-events: auto !important;
+  position: relative;
+  z-index: 5000 !important;
+  pointer-events: auto !important;
 }
 
 .nav-button {
-    position: relative;
-    z-index: 5001 !important;
-    pointer-events: auto !important;
-    touch-action: manipulation !important;
+  position: relative;
+  z-index: 5001 !important;
+  pointer-events: auto !important;
+  touch-action: manipulation !important;
 }
 
 /* ログイン画面が非表示のときは完全に操作対象外 */
 #loginPage[style*="display: none"] {
-    pointer-events: none !important;
+  pointer-events: none !important;
 }
-
 
 /* =========================================================
    Shift+ ローディング画面
@@ -2430,7 +2441,6 @@ button:disabled {
 
 }
 
-
 /* =========================================================
    ローディング Shift+ ロゴ
    ========================================================= */
@@ -2455,7 +2465,6 @@ button:disabled {
 
 }
 
-
 /* =========================================================
    ローディング 3つの点
    ========================================================= */
@@ -2473,7 +2482,6 @@ button:disabled {
   height: 20px;
 
 }
-
 
 .loadingDots span {
 
@@ -2493,13 +2501,11 @@ button:disabled {
 
 }
 
-
 .loadingDots span:nth-child(1) {
 
   animation-delay: 0s;
 
 }
-
 
 .loadingDots span:nth-child(2) {
 
@@ -2507,13 +2513,11 @@ button:disabled {
 
 }
 
-
 .loadingDots span:nth-child(3) {
 
   animation-delay: 0.30s;
 
 }
-
 
 /* =========================================================
    ローディング アニメーション
@@ -2541,7 +2545,6 @@ button:disabled {
 
 }
 
-
 /* =========================================================
    ローディング文字
    ========================================================= */
@@ -2555,7 +2558,6 @@ button:disabled {
   color: #777777;
 
 }
-
 
 /* =========================================================
    ローディング ダークモード
@@ -2574,7 +2576,6 @@ body.dark-mode .loadingText {
   color: #aaaaaa;
 
 }
-
 
 /* =========================================================
    ローディング画面 スマートフォン
@@ -2610,7 +2611,6 @@ body.dark-mode .loadingText {
 
 }
 
-
 /* =========================================================
    ローディング画面 小さいスマホ
    ========================================================= */
@@ -2624,7 +2624,6 @@ body.dark-mode .loadingText {
   }
 
 }
-
 
 /* =========================================================
    ローディング中はスクロールさせない
