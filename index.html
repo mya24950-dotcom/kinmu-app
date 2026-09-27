@@ -430,79 +430,6 @@
 
 
     /* ==================================================
-       勤務表ページ
-       Shift+ロゴ
-       ↓
-       職場名
-       ↓
-       月送り
-    ================================================== */
-
-    #schedulePage {
-      position: relative;
-    }
-
-
-    .schedule-brand {
-
-      display: flex;
-
-      flex-direction: column;
-
-      align-items: flex-start;
-
-      width: 100%;
-
-      padding:
-        6px
-        10px
-        2px;
-
-      box-sizing: border-box;
-    }
-
-
-    .schedule-logo {
-
-      display: block;
-
-      width: auto;
-
-      height: 22px;
-
-      max-width: 100px;
-
-      object-fit: contain;
-
-      flex-shrink: 0;
-    }
-
-
-    .schedule-organization-title {
-
-      margin-top: 2px;
-
-      font-size: 18px;
-
-      font-weight: 600;
-
-      line-height: 1.3;
-
-      color: #333333;
-
-      white-space: nowrap;
-
-      overflow: hidden;
-
-      text-overflow: ellipsis;
-
-      max-width: 100%;
-
-      min-height: 23px;
-    }
-
-
-    /* ==================================================
        月送り
        既存のmonth-barを壊さない
     ================================================== */
@@ -629,38 +556,6 @@
 
         min-width: 36px !important;
         min-height: 36px !important;
-      }
-
-    }
-
-
-    /* ==================================================
-       スマートフォン
-    ================================================== */
-
-    @media (max-width: 600px) {
-
-      .schedule-brand {
-        padding:
-          5px
-          8px
-          2px;
-      }
-
-
-      .schedule-logo {
-
-        height: 20px;
-
-        max-width: 92px;
-      }
-
-
-      .schedule-organization-title {
-
-        font-size: 17px;
-
-        min-height: 22px;
       }
 
     }
@@ -2264,31 +2159,6 @@
 
 
     <!-- ==================================================
-         Shift+ロゴ
-         ↓
-         職場名
-    ================================================== -->
-
-    <div class="schedule-brand">
-
-      <img
-        src="./icons/shift-plus-logo.PNG"
-        alt="Shift+"
-        class="schedule-logo"
-      >
-
-
-      <div
-        id="scheduleOrganizationTitle"
-        class="schedule-organization-title"
-      >
-        勤務表
-      </div>
-
-    </div>
-
-
-    <!-- ==================================================
          月移動
     ================================================== -->
 
@@ -3274,96 +3144,6 @@
 ================================================== -->
 
 <script src="script.js?v=20260927"></script>
-
-
-<!-- ==================================================
-     勤務表ページの職場名を同期
-================================================== -->
-
-<script>
-
-(function() {
-
-  function syncScheduleOrganizationTitle() {
-
-    const source =
-      document.getElementById(
-        "organizationTitle"
-      );
-
-    const target =
-      document.getElementById(
-        "scheduleOrganizationTitle"
-      );
-
-    if (!source || !target) {
-      return;
-    }
-
-    const text =
-      source.textContent.trim();
-
-    if (text) {
-      target.textContent = text;
-    }
-
-  }
-
-
-  function setupScheduleOrganizationTitle() {
-
-    syncScheduleOrganizationTitle();
-
-
-    const source =
-      document.getElementById(
-        "organizationTitle"
-      );
-
-    if (!source) {
-      return;
-    }
-
-
-    const observer =
-      new MutationObserver(
-        function() {
-          syncScheduleOrganizationTitle();
-        }
-      );
-
-
-    observer.observe(
-      source,
-      {
-        childList: true,
-        characterData: true,
-        subtree: true
-      }
-    );
-
-  }
-
-
-  if (
-    document.readyState ===
-    "loading"
-  ) {
-
-    document.addEventListener(
-      "DOMContentLoaded",
-      setupScheduleOrganizationTitle
-    );
-
-  } else {
-
-    setupScheduleOrganizationTitle();
-
-  }
-
-})();
-
-</script>
 
 
 <!-- ==================================================
