@@ -50,7 +50,7 @@ body {
 
 /* =========================================================
    アプリ全体
-   ※ 認証処理の display / z-index を邪魔しない
+   ※ display / visibility はJSに任せる
    ========================================================= */
 
 .app {
@@ -59,11 +59,12 @@ body {
   min-height: 100vh;
   min-height: 100svh;
 
+  background: #ffffff;
+  color: #1d1d1f;
+
   overflow: visible;
 
-  background: #ffffff;
-
-  color: #1d1d1f;
+  position: relative;
 }
 
 /* =========================================================
@@ -75,7 +76,7 @@ body {
 
   top: 0;
 
-  z-index: 1000;
+  z-index: 100;
 
   min-height: 70px;
 
@@ -213,7 +214,7 @@ body {
 .nav {
   position: relative;
 
-  z-index: 1001;
+  z-index: 90;
 
   display: flex;
 
@@ -314,6 +315,7 @@ body {
 
 /* =========================================================
    ページ
+   ※ display / visibility はJSに任せる
    ========================================================= */
 
 .page {
@@ -330,15 +332,16 @@ body {
   background: #ffffff;
 
   color: #1d1d1f;
+
+  position: relative;
 }
 
 /* =========================================================
    勤務表ページのロゴ・職場名
-   不要なので非表示
    ========================================================= */
 
 .schedule-brand {
-  display: none
+  display: none;
 }
 
 /* =========================================================
@@ -350,6 +353,8 @@ body {
 
   min-height: calc(100vh - 120px);
   min-height: calc(100svh - 120px);
+
+  position: relative;
 }
 
 /* =========================================================
@@ -359,7 +364,7 @@ body {
 .month-bar {
   position: relative;
 
-  z-index: 50;
+  z-index: 10;
 
   display: flex;
 
@@ -391,7 +396,7 @@ body {
 .month-button {
   position: relative;
 
-  z-index: 51;
+  z-index: 11;
 
   width: 42px;
 
@@ -434,7 +439,7 @@ body {
 .month-title {
   position: relative;
 
-  z-index: 52;
+  z-index: 12;
 
   display: block;
 
@@ -466,7 +471,7 @@ body {
 .calendar-hint {
   position: relative;
 
-  z-index: 40;
+  z-index: 5;
 
   display: flex;
 
@@ -502,7 +507,7 @@ body {
 .table-wrapper {
   position: relative;
 
-  z-index: 30;
+  z-index: 1;
 
   width: 100%;
 
@@ -1940,7 +1945,7 @@ body.dark-mode #darkModeButton:hover {
 
 /* =========================================================
    ログイン画面
-   ※ 認証時の表示・非表示はJSに任せる
+   ※ display / visibility はJSに任せる
    ========================================================= */
 
 #loginPage {
@@ -1948,11 +1953,17 @@ body.dark-mode #darkModeButton:hover {
 
   inset: 0;
 
-  z-index: 9000;
+  z-index: 99999;
 
-  width: 100%;
+  width: 100vw;
+
+  height: 100vh;
 
   min-height: 100vh;
+
+  min-height: 100svh;
+
+  box-sizing: border-box;
 }
 
 /* =========================================================
