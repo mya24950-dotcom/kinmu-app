@@ -9305,16 +9305,39 @@ async function addOrUpdateStaff() {
       }
 
       const newStaff =
-        result.data;
+  result.data;
 
-      if (
-        !newStaff ||
-        !newStaff.id
-      ) {
-        throw new Error(
-          "新しく追加した職員のIDを取得できませんでした。"
-        );
-      }
+if (
+  !newStaff ||
+  !newStaff.id
+) {
+  throw new Error(
+    "新しく追加した職員のIDを取得できませんでした。"
+  );
+}
+
+
+/* -----------------------------------------
+   ② organization_members に所属情報を追加
+   ----------------------------------------- */
+
+const memberResult =
+  await supabaseClient
+    .from("organization_members")
+    .insert({
+      organization_id:
+        currentOrganization.id,
+      staff_id:
+        newStaff.id,
+      role:
+        "staff"
+    });
+
+if (
+  memberResult.error
+) {
+  throw memberResult.error;
+}
 
    }
 
