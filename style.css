@@ -85,7 +85,6 @@ body {
 
 /* =========================================================
    Shift+ ＋ 職場名
-   ★ 横並びではなく上下
    ========================================================= */
 
 .app-header-brand {
@@ -303,8 +302,7 @@ body {
 }
 
 /* =========================================================
-   ★ 勤務表ページのロゴ・職場名
-   ★ 今回は不要
+   勤務表ページのロゴ・職場名
    ========================================================= */
 
 .schedule-brand {
@@ -454,6 +452,19 @@ body {
   font-size: 14px;
 
   table-layout: fixed !important;
+
+  /* ★ 勤務表全体を白 */
+  background: #ffffff !important;
+}
+
+/* =========================================================
+   勤務表の行・セクション背景
+   ========================================================= */
+
+#scheduleTable thead,
+#scheduleTable tbody,
+#scheduleTable tr {
+  background: #ffffff;
 }
 
 /* =========================================================
@@ -522,6 +533,7 @@ body {
 
 /* =========================================================
    勤務セル
+   ★ 通常時は白背景
    ========================================================= */
 
 #scheduleTable td {
@@ -534,6 +546,8 @@ body {
   font-weight: 600;
 
   cursor: pointer;
+
+  background: #ffffff;
 
   -webkit-tap-highlight-color: transparent;
 }
@@ -1472,6 +1486,10 @@ body.dark-mode .table-wrapper {
     0 1px 3px rgba(0, 0, 0, 0.25);
 }
 
+body.dark-mode #scheduleTable {
+  background: #1c1c1e !important;
+}
+
 body.dark-mode #scheduleTable th,
 body.dark-mode #scheduleTable td {
   border-color: #48484a !important;
@@ -1484,7 +1502,7 @@ body.dark-mode #scheduleTable th {
 }
 
 body.dark-mode #scheduleTable td {
-  background: #1c1c1e;
+  background: #1c1c1e !important;
 
   color: #f2f2f7;
 }
@@ -1949,7 +1967,6 @@ body.dark-mode .calendar-hint svg {
     padding: 6px 10px;
   }
 
-  /* Shift+ と職場名は上下 */
   .app-header-brand {
     gap: 1px;
 
@@ -2026,6 +2043,8 @@ body.dark-mode .calendar-hint svg {
 
   #scheduleTable {
     font-size: 14px;
+
+    background: #ffffff !important;
   }
 
   #scheduleTable th,
@@ -2039,6 +2058,8 @@ body.dark-mode .calendar-hint svg {
     height: 48px;
 
     font-size: 14px;
+
+    background: #ffffff;
   }
 
   #scheduleTable th.staff-name-cell {
@@ -2320,6 +2341,8 @@ button:disabled {
 
   #scheduleTable {
     width: 100%;
+
+    background: #ffffff !important;
   }
 
   #scheduleTable tr.current-user-staff-row > th,
