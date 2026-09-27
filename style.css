@@ -2821,3 +2821,29 @@ body.loading-active #loginPage {
 .schedule-organization-title {
   margin-left: 0 !important;
 }
+
+/* =========================================================
+   勤務表ページ
+   Shift+ロゴ・職場名を画面左端まで寄せる
+   ========================================================= */
+
+#schedulePage {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+#schedulePage .schedule-brand {
+  width: 100% !important;
+  margin: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  box-sizing: border-box !important;
+}
+
+#schedulePage .schedule-logo {
+  margin-left: 0 !important;
+}
+
+#schedulePage .schedule-organization-title {
+  margin-left: 0 !important;
+}
