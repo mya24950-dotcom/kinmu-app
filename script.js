@@ -1162,6 +1162,20 @@ function showLoginPage(
     loginPage.style.display =
       "flex";
 
+    // ログイン画面のスクロール位置を先頭に戻す
+    loginPage.scrollTop = 0;
+
+    const loginContent =
+      loginPage.querySelector(
+        ":scope > div"
+      );
+
+    if (loginContent) {
+
+      loginContent.scrollTop = 0;
+
+    }
+
   }
 
 
@@ -1179,6 +1193,38 @@ function showLoginPage(
       message;
 
   }
+
+
+  // Googleログインをキャンセルして
+  // 戻ってきた場合も画面位置を確実に先頭へ戻す
+  requestAnimationFrame(() => {
+
+    window.scrollTo(
+      0,
+      0
+    );
+
+
+    if (loginPage) {
+
+      loginPage.scrollTop = 0;
+
+
+      const loginContent =
+        loginPage.querySelector(
+          ":scope > div"
+        );
+
+
+      if (loginContent) {
+
+        loginContent.scrollTop = 0;
+
+      }
+
+    }
+
+  });
 
 }
 
