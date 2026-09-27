@@ -665,12 +665,216 @@
 
     }
 
+
+    /* ==================================================
+       Shift+ ローディング画面
+    ================================================== */
+
+    #loadingScreen {
+
+      position: fixed;
+
+      inset: 0;
+
+      z-index: 99999;
+
+      display: none;
+
+      align-items: center;
+
+      justify-content: center;
+
+      flex-direction: column;
+
+      background: #ffffff;
+
+      color: #333333;
+
+    }
+
+
+    /* ==================================================
+       ローディング Shift+
+    ================================================== */
+
+    .loadingLogo {
+
+      font-size: 38px;
+
+      font-weight: 700;
+
+      letter-spacing: 1px;
+
+      margin-bottom: 18px;
+
+    }
+
+
+    .loadingLogo span {
+
+      font-weight: 800;
+
+    }
+
+
+    /* ==================================================
+       3つの点
+    ================================================== */
+
+    .loadingDots {
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: center;
+
+      gap: 8px;
+
+      height: 20px;
+
+    }
+
+
+    .loadingDots span {
+
+      width: 9px;
+
+      height: 9px;
+
+      border-radius: 50%;
+
+      background: #007aff;
+
+      animation:
+        shiftLoadingDot
+        1.2s
+        infinite
+        ease-in-out;
+
+    }
+
+
+    .loadingDots span:nth-child(1) {
+
+      animation-delay: 0s;
+
+    }
+
+
+    .loadingDots span:nth-child(2) {
+
+      animation-delay: 0.15s;
+
+    }
+
+
+    .loadingDots span:nth-child(3) {
+
+      animation-delay: 0.30s;
+
+    }
+
+
+    /* ==================================================
+       点のアニメーション
+    ================================================== */
+
+    @keyframes shiftLoadingDot {
+
+      0%,
+      60%,
+      100% {
+
+        transform: translateY(0);
+
+        opacity: 0.35;
+
+      }
+
+      30% {
+
+        transform: translateY(-7px);
+
+        opacity: 1;
+
+      }
+
+    }
+
+
+    /* ==================================================
+       読み込み中
+    ================================================== */
+
+    .loadingText {
+
+      margin-top: 12px;
+
+      font-size: 14px;
+
+      color: #777777;
+
+    }
+
+
+    /* ==================================================
+       ダークモード
+    ================================================== */
+
+    body.dark-mode #loadingScreen {
+
+      background: #111111;
+
+      color: #ffffff;
+
+    }
+
+
+    body.dark-mode .loadingText {
+
+      color: #aaaaaa;
+
+    }
+
   </style>
 
 </head>
 
 
 <body>
+
+
+<!-- ==================================================
+     ★ Shift+ ローディング画面
+     
+     body直後
+     loginPageより前
+================================================== -->
+
+<div id="loadingScreen">
+
+  <div class="loadingLogo">
+    Shift<span>+</span>
+  </div>
+
+
+  <div class="loadingDots">
+
+    <span></span>
+
+    <span></span>
+
+    <span></span>
+
+  </div>
+
+
+  <div class="loadingText">
+    読み込み中
+  </div>
+
+</div>
 
 
 <!-- ==================================================
@@ -1540,7 +1744,6 @@
       "
     >
 
-
       <button
         type="button"
         id="cancelOrganizationButton"
@@ -2262,13 +2465,6 @@
     class="page"
   >
 
-
-    <!-- ==================================================
-         Shift+ロゴ
-         ↓
-         職場名
-    ================================================== -->
-
     <div class="schedule-brand">
 
       <img
@@ -2287,10 +2483,6 @@
 
     </div>
 
-
-    <!-- ==================================================
-         月移動
-    ================================================== -->
 
     <div class="month-bar">
 
