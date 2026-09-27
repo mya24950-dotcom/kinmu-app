@@ -97,9 +97,10 @@ body {
   flex-direction: column;
 
   align-items: flex-start;
-  justify-content: flex-start;
+  justify-content: center;
 
-  gap: 0;
+  /* ロゴと職場名を少し離す */
+  gap: 5px;
 
   min-width: 0;
 
@@ -125,17 +126,14 @@ body {
 
 /* =========================================================
    職場名
-   ※ロゴ画像の透明な余白部分へ少し重ねる
    ========================================================= */
 
 .header-title {
   min-width: 0;
 
-  max-width: 220px;
+  max-width: 240px;
 
-  margin-top: -12px;
-
-  font-size: 14px;
+  font-size: 17px;
 
   line-height: 1.2;
 
@@ -148,8 +146,6 @@ body {
   text-overflow: ellipsis;
 
   color: #1d1d1f;
-
-  text-align: left;
 }
 
 /* =========================================================
@@ -298,6 +294,7 @@ body {
 
 /* =========================================================
    ページ
+   ★ ここを白背景に固定
    ========================================================= */
 
 .page {
@@ -1983,11 +1980,9 @@ body.dark-mode .calendar-hint svg {
   }
 
   .app-header-brand {
-    gap: 0;
+    gap: 5px;
 
     align-items: flex-start;
-
-    justify-content: flex-start;
   }
 
   .app-header-logo {
@@ -1997,13 +1992,9 @@ body.dark-mode .calendar-hint svg {
   }
 
   .header-title {
-    max-width: 170px;
+    max-width: 200px;
 
-    margin-top: -12px;
-
-    font-size: 13px;
-
-    text-align: left;
+    font-size: 16px;
   }
 
   .header-delete-buttons {
@@ -2256,11 +2247,7 @@ body.dark-mode .calendar-hint svg {
   .header-title {
     max-width: 145px;
 
-    margin-top: -12px;
-
     font-size: 12px;
-
-    text-align: left;
   }
 
   .header-delete-buttons button {
