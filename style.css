@@ -2755,3 +2755,49 @@ body.loading-active #loginPage {
   }
 
 }
+
+/* =========================================================
+   Shift+ ヘッダー左端寄せ
+   ========================================================= */
+
+.header {
+  padding-left: 0 !important;
+}
+
+.app-header-brand {
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+  transform: translateX(-14px) !important;
+}
+
+.app-header-logo {
+  margin-left: 0 !important;
+}
+
+
+/* iPhone等のセーフエリア設定より優先して左寄せ */
+@supports (padding: max(0px)) {
+  .header {
+    padding-left: 0 !important;
+  }
+
+  .app-header-brand {
+    margin-left: 0 !important;
+    padding-left: 0 !important;
+    transform: translateX(-14px) !important;
+  }
+}
+
+
+/* 小さい画面 */
+@media (max-width: 600px) {
+  .header {
+    padding-left: 0 !important;
+  }
+
+  .app-header-brand {
+    margin-left: 0 !important;
+    padding-left: 0 !important;
+    transform: translateX(-14px) !important;
+  }
+}
