@@ -394,6 +394,7 @@ async function init() {
       showLoginPage();
 
       setupGoogleLogin();
+       setupEmailLogin();
 
       setupAppleLogin();
 
@@ -428,6 +429,7 @@ async function init() {
       setupGoogleLogin();
 
       setupAppleLogin();
+      setupEmailLogin();
 
       setupPasskeyLogin();
 
@@ -585,6 +587,7 @@ async function init() {
         showLoginPage();
 
         setupGoogleLogin();
+         setupEmailLogin();
 
         setupAppleLogin();
 
@@ -650,6 +653,7 @@ session.user.email
 
 
         setupGoogleLogin();
+         setupEmailLogin();
 
         setupAppleLogin();
 
@@ -786,6 +790,7 @@ session.user.email
 
 
         setupGoogleLogin();
+         setupEmailLogin();
 
         setupAppleLogin();
 
@@ -824,6 +829,7 @@ session.user.email
 
 
       setupGoogleLogin();
+       setupEmailLogin();
 
       setupAppleLogin();
 
@@ -987,6 +993,7 @@ session.user.email
 
 
     setupGoogleLogin();
+     setupEmailLogin();
 
     setupAppleLogin();
 
@@ -2308,6 +2315,7 @@ async function deleteCurrentOrganization() {
      */
 
     setupGoogleLogin();
+     setupEmailLogin();
 
     setupAppleLogin();
 
