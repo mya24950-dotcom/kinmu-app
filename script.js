@@ -7793,7 +7793,67 @@ if (
    勤務セル
 ================================================== */
 
-function bindScheduleCells() {
+async function bindScheduleCells() {
+
+  /* ==================================================
+     ログイン中の職員IDを取得
+  ================================================== */
+
+  let currentStaffId = null;
+
+  try {
+
+    currentStaffId =
+      await getCurrentStaffId();
+
+  } catch (error) {
+
+    console.error(
+      "ログイン中の職員ID取得エラー",
+      error
+    );
+
+  }
+
+
+  /* ==================================================
+     管理者か職員か
+  ================================================== */
+
+  const isAdmin =
+    currentOrganization &&
+    currentOrganization.role === "admin";
+
+
+  /* ==================================================
+     職員の場合、自分の職員名を取得
+  ================================================== */
+
+  let currentStaffName = null;
+
+  if (!isAdmin && currentStaffId) {
+
+    const currentStaff =
+      appData.staff.find(
+        staff =>
+          staff.id === currentStaffId
+      );
+
+    if (currentStaff) {
+
+      currentStaffName =
+        getStaffName(
+          currentStaff
+        );
+
+    }
+
+  }
+
+
+  /* ==================================================
+     セルクリック
+  ================================================== */
 
   document
     .querySelectorAll(
@@ -7809,24 +7869,72 @@ function bindScheduleCells() {
             e.stopPropagation();
 
 
-            // 前に選択していたセルの枠を消す
-if (selectedCell) {
-  selectedCell.classList.remove(
-    "selected-cell"
-  );
-}
+            /* ==========================================
+               職員の場合
+               自分以外のセルは選択不可
+            ========================================== */
 
-// 今タップしたセルを選択
-selectedCell =
-  cell;
+            if (!isAdmin) {
 
-selectedCell.classList.add(
-  "selected-cell"
-);
+              const cellStaffName =
+                cell.dataset.staff;
+
+              if (
+                !currentStaffName ||
+                cellStaffName !== currentStaffName
+              ) {
+
+                return;
+
+              }
+
+            }
 
 
-            shiftMenuMode =
-              "shift";
+            /* ==========================================
+               前に選択していたセルの枠を消す
+            ========================================== */
+
+            if (selectedCell) {
+
+              selectedCell.classList.remove(
+                "selected-cell"
+              );
+
+            }
+
+
+            /* ==========================================
+               今タップしたセルを選択
+            ========================================== */
+
+            selectedCell =
+              cell;
+
+            selectedCell.classList.add(
+              "selected-cell"
+            );
+
+
+            /* ==========================================
+               管理者
+               → 勤務変更モード
+
+               職員
+               → 休暇モード
+            ========================================== */
+
+            if (isAdmin) {
+
+              shiftMenuMode =
+                "shift";
+
+            } else {
+
+              shiftMenuMode =
+                "leave";
+
+            }
 
 
             showShiftMenu(
