@@ -639,10 +639,12 @@ session.user.email
 
 
       const inviteAccepted =
-        await handleInviteAfterLogin();
-
-
-      if (!inviteAccepted) {
+  await handleInviteAfterLogin();
+alert(
+  "招待処理結果：" +
+  (inviteAccepted ? "成功" : "失敗")
+);
+if (!inviteAccepted) {
 
         hideInitialLoading();
 
