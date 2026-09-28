@@ -2928,3 +2928,38 @@ body.loading-active #loginPage {
   }
 
 }
+
+/* =========================================================
+   休暇一覧：ダークモード対応
+   ========================================================= */
+
+/* 通常モード */
+#leaveLegend {
+  background: #ffffff;
+  border-color: #d1d1d6;
+  color: #222222;
+}
+
+#leaveLegend .leave-legend-name {
+  color: #222222;
+}
+
+
+/* ダークモード */
+body.dark-mode #leaveLegend {
+  background: #1c1c1e !important;
+  border-color: #38383a !important;
+  color: #f2f2f7 !important;
+
+  --leave-legend-bg: #1c1c1e;
+  --leave-legend-border: #38383a;
+  --leave-legend-text: #f2f2f7;
+}
+
+body.dark-mode #leaveLegend .leave-legend-title {
+  color: #f2f2f7 !important;
+}
+
+body.dark-mode #leaveLegend .leave-legend-name {
+  color: #f2f2f7 !important;
+}
