@@ -560,6 +560,8 @@ async function init() {
 
         setupGoogleLogin();
 
+        setupAppleLogin();
+
         setupPasskeyLogin();
 
         setupNewOrganizationButton();
@@ -620,6 +622,8 @@ async function init() {
 
 
         setupGoogleLogin();
+
+        setupAppleLogin();
 
         setupPasskeyLogin();
 
@@ -791,6 +795,8 @@ async function init() {
 
       setupGoogleLogin();
 
+      setupAppleLogin();
+
       setupPasskeyLogin();
 
       setupNewOrganizationButton();
@@ -951,6 +957,8 @@ async function init() {
 
 
     setupGoogleLogin();
+
+    setupAppleLogin();
 
     setupPasskeyLogin();
 
@@ -2270,6 +2278,8 @@ async function deleteCurrentOrganization() {
      */
 
     setupGoogleLogin();
+
+    setupAppleLogin();
 
     setupNewOrganizationButton();
 
