@@ -3641,121 +3641,115 @@ function setupNewOrganizationButton() {
 }
 
 async function handleInviteAfterLogin() {
-
+  console.log(
+    "★ handleInviteAfterLogin 開始"
+  );
   const params =
     new URLSearchParams(
       window.location.search
     );
-
-
   const inviteToken =
     params.get("invite");
-
-
+  console.log(
+    "★ 招待トークン:",
+    inviteToken
+  );
   if (!inviteToken) {
-
+    console.log(
+      "★ 招待トークンなし"
+    );
     return false;
-
   }
-
-
   console.log(
     "★ 招待リンクを検出しました"
   );
-
-
   try {
-
-    const { data, error } =
+    /*
+     * 招待を受け入れる
+     */
+    const {
+      data,
+      error
+    } =
       await supabaseClient.rpc(
         "accept_staff_invite",
         {
-  target_invite_token:
-    inviteToken
-}
+          target_invite_token:
+            inviteToken
+        }
       );
-
-
     if (error) {
-
       console.error(
-        "招待受け入れエラー",
+        "★ 招待受け入れエラー",
         error
       );
-
-
       alert(
         "招待リンクの登録に失敗しました。\n\n" +
         error.message
       );
-
-
       return false;
-
     }
-
-
+    /*
+     * 結果確認
+     */
     if (
       !data ||
       !data.length
     ) {
-
+      console.error(
+        "★ 招待受け入れ結果がありません",
+        data
+      );
       alert(
         "招待リンクの登録結果を取得できませんでした。"
       );
-
-
       return false;
-
     }
-
-
     const result =
       data[0];
-
-
     console.log(
       "★ 招待受け入れ成功",
       result
     );
-
-
+    /*
+     * 登録完了メッセージ
+     */
     alert(
       `${result.staff_name}さんとして登録しました。`
     );
-
-
     /*
-      招待トークンをURLから削除
-    */
+     * URLから招待トークンを削除
+     *
+     * 重要：
+     * ここではページをリロードしない。
+     * history.replaceStateだけでURLを書き換える。
+     */
     window.history.replaceState(
       {},
       document.title,
       window.location.pathname
     );
-
-
+    console.log(
+      "★ 招待トークンをURLから削除しました"
+    );
+    console.log(
+      "★ handleInviteAfterLogin 完了"
+    );
     return true;
-
-
   } catch (error) {
-
     console.error(
-      "招待受け入れ処理エラー",
+      "★ 招待受け入れ処理エラー",
       error
     );
-
-
+    const errorMessage =
+      error?.message ||
+      String(error);
     alert(
       "招待リンクの処理に失敗しました。\n\n" +
-      error.message
+      errorMessage
     );
-
-
     return false;
-
   }
-
 }
 
 /* ==================================================
@@ -3765,26 +3759,29 @@ async function handleInviteAfterLogin() {
 async function getCurrentOrganization(
   userId
 ) {
-
+  console.log(
+    "★ getCurrentOrganization 開始",
+    userId
+  );
   if (!supabaseClient) {
-
     throw new Error(
       "Supabaseが初期化されていません"
     );
-
   }
-
-
+  if (!userId) {
+    console.error(
+      "★ userIdがありません"
+    );
+    return null;
+  }
   const {
     data,
     error
   } =
     await supabaseClient
-
       .from(
         "organization_members"
       )
-
       .select(
         `
           organization_id,
@@ -3796,65 +3793,57 @@ async function getCurrentOrganization(
           )
         `
       )
-
       .eq(
         "user_id",
         userId
       )
-
       .limit(1);
-   
   if (error) {
-
     console.error(
-      "職場情報取得エラー",
+      "★ 職場情報取得エラー",
       error
     );
-
     throw error;
-
   }
-
-
+  console.log(
+    "★ organization_members取得結果",
+    data
+  );
   if (
     !data ||
     data.length === 0
   ) {
-
+    console.log(
+      "★ このユーザーには職場所属がありません"
+    );
     return null;
-
   }
-
-
   const member =
     data[0];
-
-
   if (
     !member.organizations
   ) {
-
+    console.error(
+      "★ organization情報が取得できません",
+      member
+    );
     return null;
-
   }
-
-
-  return {
-
+  const organization = {
     id:
       member.organizations.id,
-
     name:
       member.organizations.name,
-
     created_at:
       member.organizations.created_at,
-
     role:
       member.role
-
   };
-
+  console.log(
+    "★ 現在の職場",
+    organization
+  );
+  return organization;
 }
 
 /* ==================================================
