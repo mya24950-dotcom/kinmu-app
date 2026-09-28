@@ -1,34 +1,83 @@
-/* ==================================================
+/* =========================================================
+   Shift+ 勤務表
+   script.js
+   第1部：初期化・認証共通処理
+   ========================================================= */
+
+
+/* =========================================================
+   初期ローディング画面
+   ========================================================= */
+
+function hideInitialLoading() {
+
+  const loading =
+    document.getElementById(
+      "initialLoadingScreen"
+    );
+
+  if (loading) {
+    loading.remove();
+  }
+
+}
+
+
+/* =========================================================
    Supabase
-================================================== */
+   ========================================================= */
 
 const SUPABASE_URL =
   "https://pyfdhlqvnponaczmbuot.supabase.co";
 
-const SUPABASE_KEY =
+const SUPABASE_ANON_KEY =
   "sb_publishable_dROecn8WChOgOOipDaIX6w_3eIWK0co";
 
-let supabaseClient = null;
-
-/* ==================================================
-   現在の職場
-================================================== */
-
-let currentOrganization =
-  null;
+const supabaseClient =
+  supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY
+  );
 
 
-/* ==================================================
-   ローカル保存
-================================================== */
+/* =========================================================
+   アプリ共通変数
+   ========================================================= */
 
 const STORAGE_KEY =
   "workScheduleAppData";
 
 
-/* ==================================================
-   アプリデータ
-================================================== */
+let currentOrganization = null;
+
+
+/*
+ * 現在ログインしているユーザー
+ */
+let currentUser = null;
+
+
+/*
+ * 初期化中フラグ
+ */
+let appInitializing = false;
+
+
+/*
+ * 認証処理中フラグ
+ */
+let authenticationBusy = false;
+
+
+/*
+ * 職場登録処理中フラグ
+ */
+let organizationCreating = false;
+
+
+/* =========================================================
+   勤務表アプリデータ
+   ========================================================= */
 
 let appData = {
 
@@ -53,2321 +102,206 @@ let appData = {
 };
 
 
-let currentDate =
-  new Date();
+/* =========================================================
+   現在表示している年月
+   ========================================================= */
+
+let currentDate = new Date();
 
 currentDate.setDate(1);
 
 
-let editingStaffIndex =
-  -1;
-
-let editingShiftIndex =
-  -1;
-
-let editingLeaveId =
-  null;
-
-let editingHolidayId =
-  null;
-
-
-let selectedCell =
-  null;
-
-
-let publicHolidays =
-  {};
-
-
-/* ==================================================
-   同期管理
-================================================== */
-
-let realtimeChannel =
-  null;
-
-let realtimeReloadTimer =
-  null;
-
-let autoSyncTimer =
-  null;
-
-let realtimeUpdating =
-  false;
-
-let cloudOperationBusy =
-  false;
-
-
-/*
-   保存中にRealtime通知が来た場合、
-
-   以前：
-   「保存中だからreturn」
-   → 通知を捨てる
-
-   今回：
-   「保存後に再読み込みする」
-   → 通知を取りこぼさない
-*/
-
-let realtimeReloadPending =
-  false;
-
-
-/* ==================================================
-   メニュー状態
-================================================== */
-
-let shiftMenuMode =
-  "shift";
-
-
-/* ==================================================
-   固定ヘッダー
-================================================== */
-
-let scheduleFixedHeader =
-  null;
-
-let scheduleFixedHeaderTable =
-  null;
-
-let scheduleFixedStaffColumn =
-  null;
-
-let scheduleFixedStaffTable =
-  null;
-
-
-function showInitialLoading(message = "データを取得しています…") {
-
-  let loading =
-    document.getElementById("initialLoadingScreen");
-
-  if (!loading) {
-
-    loading = document.createElement("div");
-
-    loading.id = "initialLoadingScreen";
-
-    loading.innerHTML = `
-      <div class="initial-loading-content">
-
-        <div class="initial-loading-spinner"></div>
-
-        <div class="initial-loading-title">
-          勤務表を読み込んでいます
-        </div>
-
-        <div
-          id="initialLoadingMessage"
-          class="initial-loading-message"
-        >
-          ${message}
-        </div>
-
-      </div>
-    `;
-
-    loading.style.cssText = `
-      position: fixed;
-      inset: 0;
-      z-index: 99999;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #ffffff;
-      color: #333333;
-    `;
-
-    const style =
-      document.createElement("style");
-
-    style.textContent = `
-      #initialLoadingScreen {
-        font-family:
-          -apple-system,
-          BlinkMacSystemFont,
-          "Helvetica Neue",
-          Arial,
-          sans-serif;
-      }
-
-      #initialLoadingScreen
-      .initial-loading-content {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-      }
-
-      #initialLoadingScreen
-      .initial-loading-spinner {
-        width: 42px;
-        height: 42px;
-        border: 4px solid #e5e5e5;
-        border-top-color: #007aff;
-        border-radius: 50%;
-        animation:
-          initialLoadingSpin
-          0.8s linear infinite;
-        margin-bottom: 20px;
-      }
-
-      #initialLoadingScreen
-      .initial-loading-title {
-        font-size: 20px;
-        font-weight: 700;
-        margin-bottom: 8px;
-      }
-
-      #initialLoadingScreen
-      .initial-loading-message {
-        font-size: 14px;
-        color: #666666;
-      }
-
-      @keyframes initialLoadingSpin {
-        from {
-          transform: rotate(0deg);
-        }
-
-        to {
-          transform: rotate(360deg);
-        }
-      }
-    `;
-
-    document.head.appendChild(style);
-
-    document.body.appendChild(loading);
-
-  } else {
-
-    const messageElement =
-      document.getElementById(
-        "initialLoadingMessage"
-      );
-
-    if (messageElement) {
-      messageElement.textContent = message;
-    }
-
-    loading.style.display = "flex";
-  }
-}
-
-function hideInitialLoading() {
-
-  const loading =
-    document.getElementById(
-      "initialLoadingScreen"
-    );
-
-  if (!loading) {
-    console.log(
-      "★ initialLoadingScreen はありません"
-    );
-    return;
-  }
-
-  console.log(
-    "★ initialLoadingScreen を非表示にします"
-  );
-
-  loading.style.setProperty(
-    "display",
-    "none",
-    "important"
-  );
-
-  loading.style.setProperty(
-    "visibility",
-    "hidden",
-    "important"
-  );
-
-  loading.style.setProperty(
-    "opacity",
-    "0",
-    "important"
-  );
-
-  loading.style.setProperty(
-    "pointer-events",
-    "none",
-    "important"
-  );
-}
-
-/* ==================================================
-   初期化
-================================================== */
-
-document.addEventListener("DOMContentLoaded", init);
-
-async function init() {
-
-  try {
-
-    console.log("★ 勤務表アプリ起動");
-
-
-    /* ==================================================
-       Supabase初期化
-    ================================================== */
-
-    if (
-      !window.supabase ||
-      typeof window.supabase.createClient !== "function"
-    ) {
-
-      throw new Error(
-        "Supabaseライブラリが読み込まれていません"
-      );
-
-    }
-
-
-    supabaseClient =
-      window.supabase.createClient(
-        SUPABASE_URL,
-        SUPABASE_KEY,
-        {
-          auth: {
-            experimental: {
-              passkey: true
-            }
-          }
-        }
-      );
-
-
-    console.log(
-      "★ Supabase初期化完了"
-    );
-
-
-    /* ==================================================
-       現在のセッション確認
-    ================================================== */
-
-    let {
-      data: { session },
-      error
-    } =
-      await supabaseClient.auth.getSession();
-
-
-    if (error) {
-      throw error;
-    }
-
-
-    /* ==================================================
-       ログアウト後の強制ログイン画面
-    ================================================== */
-
-    const forceLoginScreen =
-      sessionStorage.getItem(
-        "forceLoginScreen"
-      );
-
-
-    if (
-      forceLoginScreen === "true"
-    ) {
-
-      await supabaseClient.auth.signOut({
-        scope: "global"
-      });
-
-
-      sessionStorage.removeItem(
-        "forceLoginScreen"
-      );
-
-
-      showLoginPage();
-
-      setupGoogleLogin();
-       setupEmailLogin();
-
-      setupAppleLogin();
-
-      setupPasskeyLogin();
-
-      setupNewOrganizationButton();
-
-      return;
-    }
-
-
-    /* ==================================================
-       ログインしていない場合
-       ※ログイン画面を先に表示してから
-         認証状態をバックグラウンドで確認
-    ================================================== */
-
-    if (!session) {
-
-      console.log(
-        "★ セッションなし。ログイン画面を即時表示します。"
-      );
-
-
-      /* ------------------------------------------
-         ログイン画面を先に表示
-         ※ここでボタンを操作可能にする
-      ------------------------------------------ */
-
-      showLoginPage();
-
-      setupGoogleLogin();
-
-      setupAppleLogin();
-      setupEmailLogin();
-
-      setupPasskeyLogin();
-
-      setupNewOrganizationButton();
-
-
-      /* ------------------------------------------
-         Supabase認証状態変更を監視
-      ------------------------------------------ */
-
-      session =
-        await new Promise(
-          async (resolve) => {
-
-            let finished = false;
-
-
-            const {
-  data: authListener
-} =
-  supabaseClient.auth.onAuthStateChange(
-    (event, newSession) => {
-
-      console.log(
-        "★ Supabase認証イベント:",
-        event
-      );
-
-      /*
-         認証完了
-         Google / Apple / Azure / Passkey
-      */
-
-      if (
-        event === "SIGNED_IN" &&
-        newSession
-      ) {
-
-        console.log(
-          "★ 認証完了:",
-          newSession.user.email
-        );
-
-        if (!finished) {
-
-          finished = true;
-
-          authListener
-            .subscription
-            .unsubscribe();
-
-          resolve(
-            newSession
-          );
-
-        }
-
-      }
-
-    }
-  );
-
-
-            /* ------------------------------------------
-               listener登録直後にもう一度確認
-               ※登録直後にセッションができた場合への対策
-            ------------------------------------------ */
-
-            const {
-              data: {
-                session: latestSession
-              }
-            } =
-              await supabaseClient.auth.getSession();
-
-
-            if (
-              latestSession &&
-              !finished
-            ) {
-
-              finished = true;
-
-
-              authListener
-                .subscription
-                .unsubscribe();
-
-
-              console.log(
-                "★ 待機中にセッションを取得しました:",
-                latestSession.user.email
-              );
-
-
-              resolve(
-                latestSession
-              );
-
-
-              return;
-            }
-
-
-            /* ------------------------------------------
-               最大15秒待機
-            ------------------------------------------ */
-
-            setTimeout(
-              () => {
-
-                if (!finished) {
-
-                  finished = true;
-
-
-                  authListener
-                    .subscription
-                    .unsubscribe();
-
-
-                  console.log(
-                    "★ 認証完了を15秒待っても取得できませんでした"
-                  );
-
-
-                  resolve(null);
-
-                }
-
-              },
-              15000
-            );
-
-          }
-        );
-
-
-      /* ----------------------------------------------
-         認証できなかった場合
-      ---------------------------------------------- */
-
-      if (!session) {
-
-        console.log(
-          "★ Google認証セッションを取得できませんでした"
-        );
-
-
-        /*
-           ログイン画面はすでに表示済みなので、
-           ここでは再表示するだけ
-        */
-
-        showLoginPage();
-
-        setupGoogleLogin();
-         setupEmailLogin();
-
-        setupAppleLogin();
-
-        setupPasskeyLogin();
-
-        setupNewOrganizationButton();
-
-        return;
-
-      }
-
-
-      console.log(
-"★ 認証後のセッションを確認しました:",
-session.user.email
-);
-
-
-    }
-
-
-    /* ==================================================
-       ログイン済み
-    ================================================== */
-
-    console.log(
-"ログイン済み",
-session.user.email
-);
-
-
-
-    /* ==================================================
-       招待リンク
-       ※認証成功後にだけ実行する
-    ================================================== */
-
-    const inviteToken =
-      new URLSearchParams(
-        window.location.search
-      ).get("invite");
-
-
-    if (inviteToken) {
-
-      showInitialLoading(
-        "招待情報を確認しています…"
-      );
-
-
-      const inviteAccepted =
-        await handleInviteAfterLogin();
-
-
-      if (!inviteAccepted) {
-
-        hideInitialLoading();
-
-
-        showLoginPage(
-          "招待リンクの登録に失敗しました。"
-        );
-
-
-        setupGoogleLogin();
-         setupEmailLogin();
-
-        setupAppleLogin();
-
-        setupPasskeyLogin();
-
-        setupNewOrganizationButton();
-
-
-        return;
-      }
-
-    }
-
-
-    /* ==================================================
-       ローディング開始
-    ================================================== */
-
-    showInitialLoading(
-      "ログイン情報を確認しています…"
-    );
-
-
-    /* ==================================================
-       新規職場登録
-    ================================================== */
-
-    const pendingOrganizationName =
-      sessionStorage.getItem(
-        "pendingOrganizationName"
-      );
-
-
-    const pendingStaffName =
-      sessionStorage.getItem(
-        "pendingStaffName"
-      );
-
-
-    if (
-      pendingOrganizationName &&
-      pendingStaffName
-    ) {
-
-      sessionStorage.removeItem(
-        "pendingOrganizationName"
-      );
-
-
-      sessionStorage.removeItem(
-        "pendingStaffName"
-      );
-
-
-      try {
-
-        const {
-          data,
-          error
-        } =
-          await supabaseClient.rpc(
-            "create_organization_and_admin",
-            {
-              new_org_name:
-                pendingOrganizationName,
-
-              new_staff_name:
-                pendingStaffName
-            }
-          );
-
-
-        if (error) {
-          throw error;
-        }
-
-
-        if (
-          !data ||
-          !data.length
-        ) {
-
-          throw new Error(
-            "職場の登録結果を取得できませんでした。"
-          );
-
-        }
-
-
-        const result =
-          data[0];
-
-
-        currentOrganization = {
-
-          id:
-            result.organization_id,
-
-          name:
-            result.organization_name,
-
-          role:
-            "admin"
-
-        };
-
-
-        alert(
-          `${result.organization_name}を登録しました。\n\n` +
-          `${result.staff_name}さんを登録者として職員管理に登録しました。`
-        );
-
-
-      } catch (error) {
-
-        console.error(
-          "Googleログイン後の職場登録エラー",
-          error
-        );
-
-
-        hideInitialLoading();
-
-
-        alert(
-          "職場の登録に失敗しました。\n\n" +
-          (error?.message || String(error))
-        );
-
-
-        showLoginPage(
-          "職場の登録に失敗しました。"
-        );
-
-
-        setupGoogleLogin();
-         setupEmailLogin();
-
-        setupAppleLogin();
-
-        setupNewOrganizationButton();
-
-
-        return;
-      }
-
-    }
-
-
-    /* ==================================================
-       所属職場取得
-    ================================================== */
-
-    showInitialLoading(
-      "職場情報を確認しています…"
-    );
-
-
-    const organization =
-      await getCurrentOrganization(
-        session.user.id
-      );
-
-
-    if (!organization) {
-
-      hideInitialLoading();
-
-
-      showLoginPage(
-        "ログインしましたが、職場への所属がありません。"
-      );
-
-
-      setupGoogleLogin();
-       setupEmailLogin();
-
-      setupAppleLogin();
-
-      setupPasskeyLogin();
-
-      setupNewOrganizationButton();
-
-
-      return;
-    }
-
-
-    currentOrganization =
-      organization;
-
-
-    /* ==================================================
-       職場名表示
-    ================================================== */
-
-    const organizationTitle =
-      document.getElementById(
-        "organizationTitle"
-      );
-
-
-    if (organizationTitle) {
-
-      organizationTitle.textContent =
-        currentOrganization.name;
-
-    }
-
-
-    /* ==================================================
-       パスキー登録
-       ※招待登録から来た職員は登録しない
-    ================================================== */
-
-    if (!inviteToken) {
-
-      await registerCurrentUserPasskey();
-
-    }
-
-
-    setupOrganizationDangerZone();
-
-
-    /* ==================================================
-       アプリ表示
-       ※ローディング画面の下で表示
-    ================================================== */
-
-    showApp();
-
-
-    loadLocalData();
-
-
-    bindEvents();
-
-
-    setupLogoutButton();
-
-
-    /* ==================================================
-       Supabaseデータ取得
-    ================================================== */
-
-    showInitialLoading(
-      "Supabaseから勤務表データを取得しています…"
-    );
-
-
-    try {
-
-      await loadAllFromSupabase();
-
-    } catch (error) {
-
-      console.error(
-        "Supabaseデータ取得失敗",
-        error
-      );
-
-
-      alert(
-        "Supabaseからデータを取得できませんでした。\n" +
-        "現在の画面を表示します。"
-      );
-
-    }
-
-
-    /* ==================================================
-       勤務表描画
-    ================================================== */
-
-    showInitialLoading(
-      "勤務表を表示しています…"
-    );
-
-
-    await renderAll();
-
-
-    /* ==================================================
-       公休日取得
-    ================================================== */
-
-    await loadPublicHolidays();
-
-
-    /* ==================================================
-       各機能開始
-    ================================================== */
-
-    setupRealtime();
-
-    startAutoSync();
-
-    setupVisibilitySync();
-
-    setupDarkMode();
-
-
-    /* ==================================================
-       初期読み込み完了
-    ================================================== */
-
-    hideInitialLoading();
-
-
-    console.log(
-      "★ 勤務表アプリ起動完了"
-    );
-
-
-  } catch (error) {
-
-    console.error(
-      "★ 初期化エラー",
-      error
-    );
-
-
-    hideInitialLoading();
-
-
-    alert(
-      "アプリの初期化に失敗しました。\n\n" +
-      "エラー内容：\n" +
-      (error?.message || String(error))
-    );
-
-
-    showLoginPage(
-      "アプリの初期化に失敗しました。"
-    );
-
-
-    setupGoogleLogin();
-     setupEmailLogin();
-
-    setupAppleLogin();
-
-    setupPasskeyLogin();
-
-    setupNewOrganizationButton();
-
-  }
-
-}
-
-/* ==================================================
-   Passkeyログイン
-================================================== */
-
-/*
- * Passkeyログインボタンを設定
- */
-function setupPasskeyLogin() {
-
-  const button =
-    document.getElementById(
-      "passkeyLoginButton"
-    );
-
-  if (!button) {
-    console.log(
-      "Passkeyログインボタンが見つかりません"
-    );
-    return;
-  }
-
-
-  /*
-   * この端末・ブラウザが
-   * WebAuthn / Passkeyに対応していない場合
-   */
-  if (
-    !window.PublicKeyCredential
-  ) {
-
-    console.log(
-      "この端末・ブラウザはPasskeyに対応していません"
-    );
-
-    button.style.display =
-      "none";
-
-    return;
-
-  }
-
-
-  /*
-   * Passkeyボタンを表示
-   */
-
-  button.style.display =
-    "flex";
-
-  button.disabled =
-    false;
-
-  button.style.opacity =
-    "1";
-
-
-  /*
-   * クリック処理
-   */
-
-  button.onclick =
-    async function() {
-
-      await loginWithPasskey();
-
-    };
-
-}
-
-
-/*
- * Passkeyでログイン
- */
-async function loginWithPasskey() {
-
-  const button =
-    document.getElementById(
-      "passkeyLoginButton"
-    );
-
-  const message =
-    document.getElementById(
-      "loginMessage"
-    );
-
-
-  /*
-   * 二重クリック防止
-   */
-
-  if (button) {
-
-    button.disabled =
-      true;
-
-    button.style.opacity =
-      "0.6";
-
-    button.innerHTML =
-      '<span style="font-size:20px;">🔐</span>' +
-      '認証しています…';
-
-  }
-
-
-  if (message) {
-
-    message.textContent =
-      "Face ID・指紋などで認証してください…";
-
-  }
-
-
-  try {
-
-    console.log(
-      "★ Passkeyログイン開始"
-    );
-
-
-    /*
-     * ログアウト後の
-     * 強制ログイン画面フラグを解除
-     */
-
-    sessionStorage.removeItem(
-      "forceLoginScreen"
-    );
-
-
-    /*
-     * Supabase Passkeyログイン
-     */
-
-    const {
-      data,
-      error
-    } =
-      await supabaseClient.auth
-        .signInWithPasskey();
-
-
-    if (error) {
-
-      throw error;
-
-    }
-
-
-    /*
-     * セッション確認
-     */
-
-    if (
-      !data ||
-      !data.session
-    ) {
-
-      throw new Error(
-        "Passkeyログインに成功しましたが、ログインセッションを取得できませんでした。"
-      );
-
-    }
-
-
-    console.log(
-      "★ Passkeyログイン成功",
-      data.user?.email
-    );
-
-
-    /*
-     * ログイン成功
-     *
-     * init()をもう一度実行して、
-     * 通常のログイン処理を行う
-     */
-
-    window.location.reload();
-
-
-    } catch (error) {
-    console.error("Passkeyログインエラー", error);
-
-    const errorMessage =
-      error?.message || String(error);
-
-    const lowerMessage =
-      errorMessage.toLowerCase();
-
-    /*
-     * Face ID / 指紋認証をユーザーがキャンセルした場合は
-     * エラー表示しない
-     */
-    const isUserCancel =
-      error?.name === "NotAllowedError" ||
-      error?.name === "AbortError" ||
-      lowerMessage.includes("cancel") ||
-      lowerMessage.includes("abort") ||
-      lowerMessage.includes("not allowed by the user agent") ||
-      lowerMessage.includes("the request is not allowed");
-
-    if (!isUserCancel) {
-      alert(
-        "Face ID / 指紋ログインに失敗しました。\n\n" +
-        errorMessage
-      );
-    }
-
-    if (message) {
-      message.textContent =
-        "Face ID / 指紋でログインできます。";
-    }
-
-    if (button) {
-      button.disabled = false;
-      button.style.opacity = "1";
-      button.innerHTML =
-        '<span style="font-size:20px;">🔐</span>' +
-        'Face ID / 指紋でログイン';
-    }
-  }
-
-}
-
- /* ==================================================
-    Passkey登録
- ================================================== */
-
-/*
- * 現在ログインしているユーザーに
- * Passkeyを登録する
- */
-async function registerCurrentUserPasskey() {
-
-  try {
-
-    /*
-     * Passkey対応確認
-     */
-    if (
-      !window.PublicKeyCredential
-    ) {
-
-      console.log(
-        "この端末・ブラウザはPasskeyに対応していません"
-      );
-
-      return;
-
-    }
-
-
-    /*
-     * 現在のログイン状態を確認
-     */
-    const {
-      data: {
-        session
-      }
-    } =
-      await supabaseClient.auth.getSession();
-
-
-    if (!session) {
-
-      console.log(
-        "ログインしていないためPasskey登録を行いません"
-      );
-
-      return;
-
-    }
-
-
-    /*
-     * すでにPasskeyが登録されているか確認
-     */
-    const {
-      data: passkeys,
-      error: listError
-    } =
-      await supabaseClient.auth.passkey.list();
-
-
-    if (listError) {
-
-      console.error(
-        "Passkey一覧取得エラー",
-        listError
-      );
-
-      return;
-
-    }
-
-
-    /*
-     * すでに登録済みなら何もしない
-     */
-    if (
-      passkeys &&
-      passkeys.length > 0
-    ) {
-
-      console.log(
-        "★ Passkeyはすでに登録されています"
-      );
-
-      return;
-
-    }
-
-
-    /*
-     * Passkey登録を確認
-     */
-    const register =
-      confirm(
-        "次回から、Face ID・指紋などで\n" +
-        "勤務表にログインできるようにしますか？\n\n" +
-        "この端末にPasskeyを登録します。"
-      );
-
-
-    if (!register) {
-
-      console.log(
-        "Passkey登録はキャンセルされました"
-      );
-
-      return;
-
-    }
-
-
-    /*
-     * Passkey登録開始
-     */
-    console.log(
-      "★ Passkey登録開始"
-    );
-
-
-    const {
-      data,
-      error
-    } =
-      await supabaseClient.auth
-        .registerPasskey();
-
-
-    if (error) {
-
-      throw error;
-
-    }
-
-
-    console.log(
-      "★ Passkey登録完了",
-      data
-    );
-
-
-    alert(
-      "Face ID / 指紋ログインの登録が完了しました。\n\n" +
-      "次回からログイン画面で\n" +
-      "「Face ID / 指紋でログイン」\n" +
-      "を利用できます。"
-    );
-
-
-  } catch (error) {
-
-    console.error(
-      "Passkey登録エラー",
-      error
-    );
-
-
-    const errorMessage =
-      error?.message ||
-      String(error);
-
-
-    /*
-     * ユーザーがFace ID等を
-     * キャンセルした場合は
-     * エラー画面を出さない
-     */
-
-    const lowerMessage =
-      errorMessage.toLowerCase();
-
-
-    if (
-      !lowerMessage.includes(
-        "cancel"
-      ) &&
-      !lowerMessage.includes(
-        "abort"
-      )
-    ) {
-
-      alert(
-        "Face ID / 指紋ログインの登録に失敗しました。\n\n" +
-        errorMessage
-      );
-
-    }
-
-  }
-
-}
-
-async function issueStaffInvite(staffId) {
-
-  try {
-
-    /* ==================================================
-       招待発行前の確認
-    ================================================== */
-
-    
-
-
-    /* ==================================================
-       招待リンク発行
-    ================================================== */
-
-    const { data, error } =
-      await supabaseClient.rpc(
-        "issue_staff_invite",
-        {
-          target_staff_id: staffId
-        }
-      );
-
-
-    if (error) {
-
-      console.error(
-        "招待発行エラー",
-        error
-      );
-
-      alert(
-        "招待リンクの発行に失敗しました。\n\n" +
-        error.message
-      );
-
-      return;
-
-    }
-
-
-    if (
-      !data ||
-      !data.length ||
-      !data[0].token
-    ) {
-
-      alert(
-        "招待リンクを作成できませんでした。"
-      );
-
-      return;
-
-    }
-
-
-    const token =
-      data[0].token;
-
-
-    const inviteUrl =
-      window.location.origin +
-      window.location.pathname +
-      "?invite=" +
-      encodeURIComponent(token);
-
-
-    /* ==================================================
-       招待リンクをコピー
-    ================================================== */
-
-    try {
-
-      await navigator.clipboard.writeText(
-        inviteUrl
-      );
-
-
-      alert(
-        "招待リンクをコピーしました。\n\n" +
-        "このリンクを職員本人に送ってください。"
-      );
-
-
-    } catch (clipboardError) {
-
-      console.warn(
-        "クリップボードへのコピーに失敗しました",
-        clipboardError
-      );
-
-
-      /* ==================================================
-         iPhoneなどでコピーできない場合
-      ================================================== */
-
-      window.prompt(
-        "招待リンクをコピーしてください。",
-        inviteUrl
-      );
-
-    }
-
-
-    console.log(
-      "招待リンク",
-      inviteUrl
-    );
-
-
-  } catch (error) {
-
-    console.error(
-      "招待リンク発行エラー",
-      error
-    );
-
-
-    alert(
-      "招待リンクの発行に失敗しました。\n\n" +
-      (error?.message ||
-        String(error))
-    );
-
-  }
-
-}
-
-
-/* ==================================================
-   ログイン画面表示
-================================================== */
-
-function showLoginPage(message = "") {
-
-  console.log("ログイン画面を表示");
-
-hideInitialLoading();
-  /* =====================================================
-     ① アプリ本体を完全に隠す
-     ===================================================== */
-
-  const app =
-    document.getElementById("app");
-
-  if (app) {
-
-    app.style.setProperty(
-      "display",
-      "none",
-      "important"
-    );
-
-    app.style.setProperty(
-      "visibility",
-      "hidden",
-      "important"
-    );
-
-    app.style.setProperty(
-      "opacity",
-      "0",
-      "important"
-    );
-
-    app.style.setProperty(
-      "pointer-events",
-      "none",
-      "important"
-    );
-  }
-
-
-  /* =====================================================
-     ② ログイン画面を表示
-     ===================================================== */
-
-  const loginPage =
-    document.getElementById("loginPage");
-
-  if (loginPage) {
-
-    loginPage.style.setProperty(
-      "display",
-      "flex",
-      "important"
-    );
-
-    loginPage.style.setProperty(
-      "visibility",
-      "visible",
-      "important"
-    );
-
-    loginPage.style.setProperty(
-      "opacity",
-      "1",
-      "important"
-    );
-
-    loginPage.style.setProperty(
-      "pointer-events",
-      "auto",
-      "important"
-    );
-  }
-
-
-  /* =====================================================
-     ③ ログインメッセージ
-     ===================================================== */
-
-  const loginMessage =
-    document.getElementById("loginMessage");
-
-  if (loginMessage) {
-
-    loginMessage.textContent =
-      message || "";
-
-  }
-
-
-  /* =====================================================
-     ④ 画面を一番上へ
-     ===================================================== */
-
-  window.scrollTo(0, 0);
-
-  if (loginPage) {
-    loginPage.scrollTop = 0;
-  }
-}
-
-async function logout() {
-
-  console.log("★ ログアウト開始");
-
-  try {
-
-    /* =====================================================
-       ① 次回起動時にログイン画面を表示するフラグを設定
-       ===================================================== */
-
-    sessionStorage.setItem(
-      "forceLoginScreen",
-      "true"
-    );
-
-
-    /* =====================================================
-       ② Supabaseからログアウト
-       ===================================================== */
-
-    const {
-      data: { session }
-    } =
-      await supabaseClient.auth.getSession();
-
-    console.log(
-      "★ 現在のセッション：",
-      session
-    );
-
-
-    if (session) {
-
-      const { error } =
-        await supabaseClient.auth.signOut({
-          scope: "global"
-        });
-
-
-      if (error) {
-
-        console.error(
-          "★ Supabaseログアウトエラー",
-          error
-        );
-
-        /*
-         * すでにログアウト済みなら
-         * そのままログイン画面へ進む
-         */
-        if (
-          !String(error.message).includes(
-            "Auth session missing"
-          )
-        ) {
-
-          throw error;
-
-        }
-
-      } else {
-
-        console.log(
-          "★ Supabaseログアウト成功"
-        );
-
-      }
-
-    } else {
-
-      console.log(
-        "★ セッションなし → ログアウト済み"
-      );
-
-    }
-
-
-    /* =====================================================
-       ③ 現在の組織情報をクリア
-       ===================================================== */
-
-    currentOrganization = null;
-
-
-    /* =====================================================
-       ④ ページを再読み込み
-       
-       → init() が実行される
-       → forceLoginScreen === "true"
-       → ログイン画面を表示
-       ===================================================== */
-
-    console.log(
-      "★ ログアウト完了 → ログイン画面へ移動"
-    );
-
-    window.location.reload();
-
-
-  } catch (error) {
-
-    console.error(
-      "★ ログアウト処理エラー",
-      error
-    );
-
-
-    /*
-     * エラーになった場合は、
-     * ログイン画面フラグを解除
-     */
-    sessionStorage.removeItem(
-      "forceLoginScreen"
-    );
-
-
-    alert(
-      "ログアウトに失敗しました。\n\n" +
-      "エラー：" +
-      (error?.message || String(error))
-    );
-
-  }
-
-}
-
-function setupLogoutButton() {
-
-  const button =
-    document.getElementById("logoutButton");
-
-  if (!button) {
-    return;
-  }
-
-
-  button.onclick = async function() {
-
-    const confirmed =
-      confirm(
-        "ログアウトしますか？"
-      );
-
-    if (!confirmed) {
-      return;
-    }
-
-
-    try {
-
-      console.log(
-        "★ ログアウト開始"
-      );
-
-
-      /* =================================================
-         ① ログアウト後はログイン画面を表示する
-         ================================================= */
-
-      sessionStorage.setItem(
-        "forceLoginScreen",
-        "true"
-      );
-
-
-      /* =================================================
-         ② 現在の職場情報を消す
-         ================================================= */
-
-      currentOrganization = null;
-
-
-      /* =================================================
-         ③ アプリ内のローカルデータを消す
-         ================================================= */
-
-      localStorage.removeItem(
-        STORAGE_KEY
-      );
-
-
-      /* =================================================
-         ④ 新規職場登録途中の情報を消す
-         ================================================= */
-
-      sessionStorage.removeItem(
-        "pendingOrganizationName"
-      );
-
-      sessionStorage.removeItem(
-        "pendingStaffName"
-      );
-
-
-      /* =================================================
-         ⑤ Supabaseからログアウト
-         ================================================= */
-
-      const {
-        error
-      } =
-        await supabaseClient.auth.signOut({
-          scope: "global"
-        });
-
-
-      if (error) {
-
-        throw error;
-
-      }
-
-
-      console.log(
-        "★ Supabaseログアウト完了"
-      );
-
-
-      /* =================================================
-         ⑥ セッション確認
-         ================================================= */
-
-      const {
-        data: {
-          session
-        }
-      } =
-        await supabaseClient.auth.getSession();
-
-
-      if (session) {
-
-        console.warn(
-          "⚠️ セッションがまだ残っています"
-        );
-
-      } else {
-
-        console.log(
-          "★ セッション完全消去確認"
-        );
-
-      }
-
-
-      /* =================================================
-         ⑦ ページを再読み込み
-         
-         init() が実行され、
-         forceLoginScreen === "true"
-         を検出してログイン画面を表示する
-         ================================================= */
-
-      console.log(
-        "★ ログイン画面へ移動します"
-      );
-
-
-      window.location.reload();
-
-    }
-
-
-    catch (error) {
-
-      console.error(
-        "ログアウトエラー",
-        error
-      );
-
-
-      /*
-       * エラーの場合は
-       * ログイン画面フラグを解除
-       */
-
-      sessionStorage.removeItem(
-        "forceLoginScreen"
-      );
-
-
-      alert(
-        "ログアウトに失敗しました。\n\n" +
-        (
-          error?.message ||
-          String(error)
-        )
-      );
-
-    }
-
-  };
-
-}
-
 /* =========================================================
-   職場完全削除
+   認証状態取得
    ========================================================= */
 
-/* ---------------------------------------------------------
-   職場完全削除ボタンの表示設定
-   --------------------------------------------------------- */
+async function getCurrentSession() {
 
-function setupOrganizationDangerZone() {
+  try {
 
-  const dangerZone =
-    document.getElementById(
-      "organizationDangerZone"
+    const {
+      data,
+      error
+    } =
+      await supabaseClient.auth.getSession();
+
+    if (error) {
+
+      console.error(
+        "認証セッション取得エラー:",
+        error
+      );
+
+      return null;
+
+    }
+
+    return data?.session || null;
+
+  } catch (error) {
+
+    console.error(
+      "getCurrentSession エラー:",
+      error
     );
 
-  const deleteButton =
-    document.getElementById(
-      "deleteOrganizationButton"
-    );
+    return null;
 
-  if (!dangerZone || !deleteButton) {
-    return;
   }
-
-  /*
-   * 管理者だけ表示
-   */
-
-  const isAdmin =
-    currentOrganization &&
-    currentOrganization.role === "admin";
-
-  if (!isAdmin) {
-
-    dangerZone.style.display = "none";
-
-    return;
-  }
-
-  dangerZone.style.display = "block";
-
-  /*
-   * クリック処理
-   */
-
-  deleteButton.onclick =
-    async function() {
-
-      await deleteCurrentOrganization();
-
-    };
 
 }
 
 
-/* ---------------------------------------------------------
-   職場完全削除
-   --------------------------------------------------------- */
+/* =========================================================
+   現在ユーザー取得
+   ========================================================= */
 
-async function deleteCurrentOrganization() {
+async function getCurrentUser() {
 
-  if (!currentOrganization) {
+  const session =
+    await getCurrentSession();
 
-    alert(
-      "現在の職場情報を取得できません。"
-    );
+  if (!session?.user) {
 
-    return;
+    currentUser = null;
+
+    return null;
+
   }
 
+  currentUser =
+    session.user;
 
-  /*
-   * 管理者チェック
-   */
+  return currentUser;
 
-  if (
-    currentOrganization.role !== "admin"
-  ) {
-
-    alert(
-      "管理者のみ職場を削除できます。"
-    );
-
-    return;
-  }
+}
 
 
-  /*
-   * 職場名
-   */
+/* =========================================================
+   ログイン状態確認
+   ========================================================= */
 
-  const organizationName =
-    currentOrganization.name;
+async function isAuthenticated() {
 
+  const session =
+    await getCurrentSession();
 
-  /*
-   * 1回目の確認
-   */
+  return !!session;
 
-  const firstConfirm =
-    confirm(
-      "【重要】\n\n" +
-      "この職場を完全に削除します。\n\n" +
-      "削除されるもの：\n" +
-      "・勤務表\n" +
-      "・職員\n" +
-      "・勤務形態\n" +
-      "・休暇設定\n" +
-      "・休業設定\n" +
-      "・職場設定\n" +
-      "・招待情報\n" +
-      "・この職場に紐づくアプリのログインアカウント\n\n" +
-      "この操作は元に戻せません。\n\n" +
-      "本当に削除しますか？"
-    );
+}
 
 
-  if (!firstConfirm) {
-    return;
-  }
+/* =========================================================
+   一時保存
+   新規職場登録を開始したあと、
+   認証画面へ移動しても職場情報を保持する
+   ========================================================= */
 
+function savePendingOrganization(
+  organizationName,
+  staffName
+) {
 
-  /*
-   * 職場名を入力してもらう
-   */
+  if (organizationName) {
 
-  const confirmationName =
-    prompt(
-      "削除を実行するには、\n" +
-      "職場名をそのまま入力してください。\n\n" +
-      "職場名：\n" +
+    sessionStorage.setItem(
+      "pendingOrganizationName",
       organizationName
     );
 
-
-  /*
-   * キャンセル
-   */
-
-  if (confirmationName === null) {
-    return;
   }
 
+  if (staffName) {
 
-  /*
-   * 職場名確認
-   */
-
-  if (
-    confirmationName.trim() !==
-    organizationName
-  ) {
-
-    alert(
-      "職場名が一致しません。\n\n" +
-      "職場の削除を中止しました。"
+    sessionStorage.setItem(
+      "pendingStaffName",
+      staffName
     );
-
-    return;
-  }
-
-
-  /*
-   * 最終確認
-   */
-
-  const finalConfirm =
-    confirm(
-      "最終確認です。\n\n" +
-      "「" +
-      organizationName +
-      "」を完全に削除します。\n\n" +
-      "本当に実行しますか？"
-    );
-
-
-  if (!finalConfirm) {
-    return;
-  }
-
-
-  /*
-   * ボタンを無効化
-   */
-
-  const deleteButton =
-    document.getElementById(
-      "deleteOrganizationButton"
-    );
-
-  if (deleteButton) {
-
-    deleteButton.disabled = true;
-
-    deleteButton.textContent =
-      "削除しています…";
-
-    deleteButton.style.opacity =
-      "0.6";
-
-  }
-
-
-  cloudOperationBusy = true;
-
-
-  try {
-
-    /*
-     * 現在のログインセッション確認
-     */
-
-    const {
-      data: {
-        session
-      }
-    } =
-      await supabaseClient.auth.getSession();
-
-
-    if (!session) {
-
-      throw new Error(
-        "ログイン情報を取得できませんでした。"
-      );
-
-    }
-
-
-    /*
-     * Edge Functionを呼び出す
-     */
-
-    const response =
-      await fetch(
-        SUPABASE_URL +
-        "/functions/v1/delete-organization-completely",
-        {
-          method: "POST",
-
-          headers: {
-            "Content-Type":
-              "application/json",
-
-            "Authorization":
-              "Bearer " +
-              session.access_token
-          },
-
-          body: JSON.stringify({
-
-            organization_id:
-              currentOrganization.id,
-
-            confirmation_name:
-              confirmationName.trim()
-
-          })
-
-        }
-      );
-
-
-    /*
-     * レスポンス取得
-     */
-
-    const result =
-      await response.json();
-
-
-    /*
-     * エラー
-     */
-
-    if (!response.ok) {
-
-      throw new Error(
-        result?.error ||
-        "職場の削除に失敗しました。"
-      );
-
-    }
-
-
-    if (!result?.success) {
-
-      throw new Error(
-        result?.error ||
-        "職場の削除結果を確認できませんでした。"
-      );
-
-    }
-
-
-    console.log(
-      "職場完全削除完了",
-      result
-    );
-
-
-    /*
-     * ローカルデータを削除
-     */
-
-    localStorage.removeItem(
-      STORAGE_KEY
-    );
-
-
-    /*
-     * 現在の職場情報をクリア
-     */
-
-    currentOrganization = null;
-
-
-    /*
-     * Supabaseログアウト
-     *
-     * Edge Function側で現在ユーザーの
-     * Authアカウントが削除された場合も、
-     * ここでローカルセッションを消します。
-     */
-
-    try {
-
-      await supabaseClient.auth.signOut();
-
-    } catch (signOutError) {
-
-      console.warn(
-        "ログアウト処理",
-        signOutError
-      );
-
-    }
-
-
-    /*
-     * 完了メッセージ
-     */
-
-    alert(
-      "「" +
-      organizationName +
-      "」を完全に削除しました。\n\n" +
-      "ログイン画面に戻ります。"
-    );
-
-
-    /*
-     * ログイン画面へ
-     */
-
-    showLoginPage(
-      "職場を削除しました。"
-    );
-
-
-    /*
-     * Googleログイン・新規登録ボタンを再設定
-     */
-
-    setupGoogleLogin();
-     setupEmailLogin();
-
-    setupAppleLogin();
-
-    setupNewOrganizationButton();
-
-
-  } catch (error) {
-
-    console.error(
-      "職場完全削除エラー",
-      error
-    );
-
-
-    alert(
-      "職場の削除に失敗しました。\n\n" +
-      (
-        error?.message ||
-        String(error)
-      )
-    );
-
-
-  } finally {
-
-    finishCloudOperation();
-
-
-    /*
-     * エラーだった場合は
-     * ボタンを元に戻す
-     */
-
-    if (deleteButton) {
-
-      deleteButton.disabled = false;
-
-      deleteButton.textContent =
-        "職場を完全に削除";
-
-      deleteButton.style.opacity =
-        "1";
-
-    }
 
   }
 
 }
 
-/* ==================================================
-   勤務表アプリ表示
-================================================== */
+
+/* =========================================================
+   一時保存した職場名取得
+   ========================================================= */
+
+function getPendingOrganizationName() {
+
+  return sessionStorage.getItem(
+    "pendingOrganizationName"
+  ) || "";
+
+}
+
+
+/* =========================================================
+   一時保存した登録者名取得
+   ========================================================= */
+
+function getPendingStaffName() {
+
+  return sessionStorage.getItem(
+    "pendingStaffName"
+  ) || "";
+
+}
+
+
+/* =========================================================
+   一時保存した職場情報を削除
+   ========================================================= */
+
+function clearPendingOrganization() {
+
+  sessionStorage.removeItem(
+    "pendingOrganizationName"
+  );
+
+  sessionStorage.removeItem(
+    "pendingStaffName"
+  );
+
+}
+
+
+/* =========================================================
+   ログイン画面表示
+   ========================================================= */
+
+function showLoginPage() {
+
+  const loginPage =
+    document.getElementById(
+      "loginPage"
+    );
+
+  const appContainer =
+    document.getElementById(
+      "appContainer"
+    );
+
+  if (loginPage) {
+
+    loginPage.style.display =
+      "block";
+
+  }
+
+  if (appContainer) {
+
+    appContainer.style.display =
+      "none";
+
+  }
+
+}
+
+
+/* =========================================================
+   アプリ画面表示
+   ========================================================= */
 
 function showApp() {
 
@@ -2376,12 +310,10 @@ function showApp() {
       "loginPage"
     );
 
-
-  const app =
+  const appContainer =
     document.getElementById(
-      "app"
+      "appContainer"
     );
-
 
   if (loginPage) {
 
@@ -2390,496 +322,679 @@ function showApp() {
 
   }
 
+  if (appContainer) {
 
-  if (app) {
-
-    app.style.display =
-      "";
-
-   setupOrganizationDangerZone();
+    appContainer.style.display =
+      "block";
 
   }
 
-
-  /* =====================================================
-     管理者かどうか
-  ===================================================== */
-
-  const isAdmin =
-    currentOrganization &&
-    currentOrganization.role === "admin";
-
-
-  /* =====================================================
-     ナビゲーション
-  ===================================================== */
-
-  document
-    .querySelectorAll(
-      ".nav-button"
-    )
-    .forEach(
-      button => {
-
-        const page =
-          button.dataset.page;
-
-        if (
-          isAdmin ||
-          page === "schedule"
-        ) {
-
-          button.style.display =
-            "";
-
-        } else {
-
-          button.style.display =
-            "none";
-
-        }
-
-      }
-    );
-
-
-  /* =====================================================
-     月消去・年度消去
-  ===================================================== */
-
-  const deleteMonthButton =
-    document.getElementById(
-      "deleteMonthButton"
-    );
-
-
-  const deleteFiscalYearButton =
-    document.getElementById(
-      "deleteFiscalYearButton"
-    );
-
-
-  if (deleteMonthButton) {
-
-    deleteMonthButton.style.display =
-      isAdmin
-        ? ""
-        : "none";
-
-  }
-
-
-  if (deleteFiscalYearButton) {
-
-    deleteFiscalYearButton.style.display =
-      isAdmin
-        ? ""
-        : "none";
-
-  }
-
-
-  /* =====================================================
-     職員の場合は必ず勤務表を表示
-  ===================================================== */
-
-  if (!isAdmin) {
-
-    showPage(
-      "schedule"
-    );
-
-  }
-   
 }
 
-async function loginWithApple() {
 
-  const button =
-    document.getElementById(
-      "appleLoginButton"
-    );
+/* =========================================================
+   認証後の共通処理
+   ========================================================= */
 
-  /*
-   * Appleログインを開始したので、
-   * ログアウト後の強制ログイン画面フラグを解除
-   */
-  sessionStorage.removeItem(
-    "forceLoginScreen"
+async function continueAfterAuthentication() {
+
+  console.log(
+    "★ 認証後共通処理開始"
   );
 
 
-  const message =
-    document.getElementById(
-      "loginMessage"
+  /*
+   * 現在ユーザー取得
+   */
+
+  const user =
+    await getCurrentUser();
+
+
+  if (!user) {
+
+    console.warn(
+      "認証済みユーザーを取得できませんでした"
     );
 
+    showLoginPage();
 
-  if (button) {
-
-    button.disabled = true;
-    button.style.opacity = "0.6";
+    return;
 
   }
 
 
-  if (message) {
+  /*
+   * 新規職場登録途中の場合
+   */
 
-    message.textContent =
-      "Appleログイン画面を開いています…";
+  const pendingOrganizationName =
+    getPendingOrganizationName();
 
-  }
-
-
-  try {
-
-    /*
-      招待リンクのトークンを取得
-    */
-    const inviteToken =
-      new URLSearchParams(
-        window.location.search
-      ).get("invite");
+  const pendingStaffName =
+    getPendingStaffName();
 
 
-    /*
-      通常ログインなら通常のURLへ戻す
-      招待ログインなら invite を付けたまま戻す
-    */
-    let redirectUrl =
-      "https://mya24950-dotcom.github.io/kinmu-app/";
+  if (
+    pendingOrganizationName &&
+    pendingStaffName
+  ) {
 
-
-    if (inviteToken) {
-
-      redirectUrl +=
-        "?invite=" +
-        encodeURIComponent(
-          inviteToken
-        );
-
-    }
-
-
-    const { error } =
-      await supabaseClient.auth.signInWithOAuth({
-        provider: "apple",
-
-        options: {
-
-          redirectTo:
-            redirectUrl
-
-        }
-
-      });
-
-
-    if (error) {
-
-      throw error;
-
-    }
-
-
-  } catch (error) {
-
-    console.error(
-      "Appleログインエラー",
-      error
+    console.log(
+      "★ 新規職場登録を継続します"
     );
 
+    await createOrganizationAfterAuthentication(
+      pendingOrganizationName,
+      pendingStaffName
+    );
 
-    if (message) {
-
-      message.textContent =
-        "Appleログインに失敗しました。";
-
-    }
-
-
-    if (button) {
-
-      button.disabled = false;
-      button.style.opacity = "1";
-
-    }
+    return;
 
   }
+
+
+  /*
+   * 通常ログインの場合
+   */
+
+  currentOrganization =
+    await getCurrentOrganization();
+
+
+  /*
+   * 招待登録がある場合
+   */
+
+  const inviteHandled =
+    await handleInviteAfterLogin();
+
+  if (inviteHandled) {
+
+    return;
+
+  }
+
+
+  /*
+   * 組織が取得できない場合
+   */
+
+  if (!currentOrganization) {
+
+    console.warn(
+      "所属職場がありません"
+    );
+
+    showLoginPage();
+
+    return;
+
+  }
+
+
+  /*
+   * 通常のアプリ起動
+   */
+
+  showApp();
+
+
+  /*
+   * Supabaseからデータ取得
+   */
+
+  await loadAllFromSupabase();
+
+
+  /*
+   * 勤務表その他を描画
+   */
+
+  renderAll();
+
+
+  /*
+   * 初期ローディング終了
+   */
+
+  hideInitialLoading();
 
 }
 
-async function loginWithEmail() {
 
-  const emailInput =
-    document.getElementById(
-      "loginEmailInput"
-    );
+/* =========================================================
+   Supabase認証状態監視
+   ========================================================= */
 
-  const passwordInput =
-    document.getElementById(
-      "loginPasswordInput"
-    );
+function setupAuthStateListener() {
 
-  const message =
-    document.getElementById(
-      "loginMessage"
-    );
+  supabaseClient.auth.onAuthStateChange(
+    async (event, session) => {
 
-  const button =
-    document.getElementById(
-      "emailLoginButton"
-    );
+      console.log(
+        "★ Auth State:",
+        event
+      );
 
 
-  const email =
-    emailInput?.value.trim();
+      /*
+       * ログイン
+       */
 
-  const password =
-    passwordInput?.value;
+      if (
+        event === "SIGNED_IN" &&
+        session?.user
+      ) {
+
+        /*
+         * 認証処理中に二重実行しない
+         */
+
+        if (authenticationBusy) {
+
+          return;
+
+        }
+
+        authenticationBusy = true;
+
+        try {
+
+          await continueAfterAuthentication();
+
+        } finally {
+
+          authenticationBusy = false;
+
+        }
+
+        return;
+
+      }
 
 
-  if (!email) {
+      /*
+       * ログアウト
+       */
 
-    if (message) {
-      message.textContent =
-        "メールアドレスを入力してください。";
+      if (
+        event === "SIGNED_OUT"
+      ) {
+
+        currentUser =
+          null;
+
+        currentOrganization =
+          null;
+
+        showLoginPage();
+
+        return;
+
+      }
+
     }
+  );
+
+}
+
+
+/* =========================================================
+   初期化
+   ========================================================= */
+
+document.addEventListener(
+  "DOMContentLoaded",
+  init
+);
+
+
+async function init() {
+
+  if (appInitializing) {
 
     return;
 
   }
 
-
-  if (!password) {
-
-    if (message) {
-      message.textContent =
-        "パスワードを入力してください。";
-    }
-
-    return;
-
-  }
-
-
-  if (button) {
-
-    button.disabled = true;
-    button.style.opacity = "0.6";
-
-  }
-
-
-  if (message) {
-
-    message.textContent =
-      "ログインしています…";
-
-  }
+  appInitializing = true;
 
 
   try {
 
     console.log(
-      "★ メールアドレスログイン開始"
+      "★ 勤務表アプリ起動"
     );
 
 
-    sessionStorage.removeItem(
-      "forceLoginScreen"
+    /*
+     * 認証状態監視
+     */
+
+    setupAuthStateListener();
+
+
+    /*
+     * 現在のセッション確認
+     */
+
+    const session =
+      await getCurrentSession();
+
+
+    /*
+     * ログイン済み
+     */
+
+    if (session?.user) {
+
+      console.log(
+        "★ ログイン済み"
+      );
+
+      currentUser =
+        session.user;
+
+      await continueAfterAuthentication();
+
+      return;
+
+    }
+
+
+    /*
+     * 未ログイン
+     */
+
+    console.log(
+      "★ 未ログイン"
     );
 
 
-    const {
-      data,
+    showLoginPage();
+
+
+    /*
+     * ログイン関係イベント
+     */
+
+    setupLoginEvents();
+
+
+    /*
+     * 新規職場登録
+     */
+
+    setupNewOrganizationButton();
+
+
+    /*
+     * メール新規登録
+     */
+
+    setupEmailRegistration();
+
+
+    hideInitialLoading();
+
+
+  } catch (error) {
+
+    console.error(
+      "★ 初期化エラー:",
       error
-    } =
-      await supabaseClient.auth.signInWithPassword({
+    );
 
-        email:
-          email,
+    showLoginPage();
 
-        password:
-          password
+    hideInitialLoading();
 
-      });
+  } finally {
+
+    appInitializing = false;
+
+  }
+
+}
+
+/* =========================================================
+   第2部：メール新規登録・メールログイン
+   ========================================================= */
 
 
-    if (error) {
+/* =========================================================
+   メール登録・ログインのDOM取得
+   ========================================================= */
 
-      throw error;
+function getEmailInput() {
+
+  return document.getElementById(
+    "emailInput"
+  );
+
+}
+
+
+function getPasswordInput() {
+
+  return document.getElementById(
+    "passwordInput"
+  );
+
+}
+
+
+function getPasswordConfirmInput() {
+
+  return document.getElementById(
+    "passwordConfirmInput"
+  );
+
+}
+
+
+/* =========================================================
+   メッセージ表示
+   ========================================================= */
+
+function showAuthMessage(message) {
+
+  /*
+   * 現在の画面で使用しているメッセージ欄を優先
+   */
+
+  const messageElements = [
+
+    document.getElementById(
+      "loginMessage"
+    ),
+
+    document.getElementById(
+      "authMessage"
+    ),
+
+    document.getElementById(
+      "registrationMessage"
+    )
+
+  ];
+
+  const element =
+    messageElements.find(
+      item => item
+    );
+
+  if (element) {
+
+    element.textContent =
+      message;
+
+  }
+
+}
+
+
+/* =========================================================
+   メールアドレス取得
+   ========================================================= */
+
+function getEnteredEmail() {
+
+  const input =
+    getEmailInput();
+
+  if (!input) {
+
+    return "";
+
+  }
+
+  return input.value.trim();
+
+}
+
+
+/* =========================================================
+   パスワード取得
+   ========================================================= */
+
+function getEnteredPassword() {
+
+  const input =
+    getPasswordInput();
+
+  if (!input) {
+
+    return "";
+
+  }
+
+  return input.value;
+
+}
+
+
+/* =========================================================
+   パスワード確認取得
+   ========================================================= */
+
+function getEnteredPasswordConfirm() {
+
+  const input =
+    getPasswordConfirmInput();
+
+  if (!input) {
+
+    return "";
+
+  }
+
+  return input.value;
+
+}
+
+
+/* =========================================================
+   メールアドレス簡易チェック
+   ========================================================= */
+
+function validateEmail(email) {
+
+  if (!email) {
+
+    showAuthMessage(
+      "メールアドレスを入力してください。"
+    );
+
+    return false;
+
+  }
+
+
+  const emailPattern =
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+
+  if (
+    !emailPattern.test(email)
+  ) {
+
+    showAuthMessage(
+      "正しいメールアドレスを入力してください。"
+    );
+
+    return false;
+
+  }
+
+
+  return true;
+
+}
+
+
+/* =========================================================
+   パスワードチェック
+   ========================================================= */
+
+function validatePassword(password) {
+
+  if (!password) {
+
+    showAuthMessage(
+      "パスワードを入力してください。"
+    );
+
+    return false;
+
+  }
+
+
+  /*
+   * Supabaseのパスワードポリシーに合わせて
+   * 必要な場合はここを変更する。
+   *
+   * 現段階では最低6文字。
+   */
+
+  if (password.length < 6) {
+
+    showAuthMessage(
+      "パスワードは6文字以上で入力してください。"
+    );
+
+    return false;
+
+  }
+
+
+  return true;
+
+}
+
+
+/* =========================================================
+   パスワード確認
+   ========================================================= */
+
+function validatePasswordConfirmation(
+  password,
+  passwordConfirm
+) {
+
+  if (!passwordConfirm) {
+
+    showAuthMessage(
+      "パスワード（確認）を入力してください。"
+    );
+
+    return false;
+
+  }
+
+
+  if (
+    password !== passwordConfirm
+  ) {
+
+    showAuthMessage(
+      "パスワードが一致していません。"
+    );
+
+    return false;
+
+  }
+
+
+  return true;
+
+}
+
+
+/* =========================================================
+   メール新規登録
+   ========================================================= */
+
+async function registerWithEmail() {
+
+  if (authenticationBusy) {
+
+    return;
+
+  }
+
+
+  authenticationBusy = true;
+
+
+  try {
+
+    const email =
+      getEnteredEmail();
+
+    const password =
+      getEnteredPassword();
+
+    const passwordConfirm =
+      getEnteredPasswordConfirm();
+
+
+    /*
+     * 入力チェック
+     */
+
+    if (!validateEmail(email)) {
+
+      return;
+
+    }
+
+
+    if (!validatePassword(password)) {
+
+      return;
 
     }
 
 
     if (
-      !data ||
-      !data.session
+      !validatePasswordConfirmation(
+        password,
+        passwordConfirm
+      )
     ) {
 
-      throw new Error(
-        "ログインセッションを取得できませんでした。"
-      );
+      return;
 
     }
+
+
+    /*
+     * 新規職場登録途中なら、
+     * 職場情報を確認して保持する
+     */
+
+    const organizationName =
+      getPendingOrganizationName();
+
+    const staffName =
+      getPendingStaffName();
 
 
     console.log(
-      "★ メールアドレスログイン成功",
-      data.user?.email
+      "★ メール新規登録開始"
     );
 
 
-    window.location.reload();
-
-
-  } catch (error) {
-
-    console.error(
-      "メールアドレスログインエラー",
-      error
+    showAuthMessage(
+      "アカウントを作成しています……"
     );
 
 
-    if (message) {
-
-      message.textContent =
-        "メールアドレスまたはパスワードが正しくありません。";
-
-    }
-
-
-    if (button) {
-
-      button.disabled = false;
-      button.style.opacity = "1";
-
-    }
-
-  }
-
-}
-
-function setupEmailLogin() {
-
-  const button =
-    document.getElementById(
-      "emailLoginButton"
-    );
-
-
-  if (!button) {
-
-    console.log(
-      "★ emailLoginButton が見つかりません"
-    );
-
-    return;
-
-  }
-
-
-  button.addEventListener(
-    "click",
-    loginWithEmail
-  );
-
-
-  console.log(
-    "★ メールログイン設定完了"
-  );
-
-}
-
-async function registerWithEmail() {
-
-  const emailInput =
-    document.getElementById(
-      "registerEmailInput"
-    );
-
-  const passwordInput =
-    document.getElementById(
-      "registerPasswordInput"
-    );
-
-  const message =
-    document.getElementById(
-      "loginMessage"
-    );
-
-  const button =
-    document.getElementById(
-      "emailRegisterButton"
-    );
-
-
-  const email =
-    emailInput?.value.trim();
-
-  const password =
-    passwordInput?.value;
-
-
-  if (!email) {
-
-    if (message) {
-      message.textContent =
-        "メールアドレスを入力してください。";
-    }
-
-    return;
-
-  }
-
-
-  if (!password) {
-
-    if (message) {
-      message.textContent =
-        "パスワードを入力してください。";
-    }
-
-    return;
-
-  }
-
-
-  if (password.length < 6) {
-
-    if (message) {
-      message.textContent =
-        "パスワードは6文字以上で入力してください。";
-    }
-
-    return;
-
-  }
-
-
-  if (button) {
-
-    button.disabled = true;
-    button.style.opacity = "0.6";
-
-  }
-
-
-  if (message) {
-
-    message.textContent =
-      "アカウントを登録しています…";
-
-  }
-
-
-  try {
-
-    console.log(
-      "★ メールアドレス新規登録開始"
-    );
-
+    /*
+     * Supabaseメール登録
+     */
 
     const {
       data,
@@ -2887,18 +1002,45 @@ async function registerWithEmail() {
     } =
       await supabaseClient.auth.signUp({
 
-        email:
-          email,
+        email: email,
 
-        password:
-          password
+        password: password
 
       });
 
 
     if (error) {
 
+      console.error(
+        "メール新規登録エラー:",
+        error
+      );
+
       throw error;
+
+    }
+
+
+    console.log(
+      "★ メール新規登録成功:",
+      data.user
+    );
+
+
+    /*
+     * 新規職場登録の途中だった場合、
+     * 念のため職場情報を保存
+     */
+
+    if (
+      organizationName &&
+      staffName
+    ) {
+
+      savePendingOrganization(
+        organizationName,
+        staffName
+      );
 
     }
 
@@ -2912,12 +1054,21 @@ async function registerWithEmail() {
       !data.session
     ) {
 
-      if (message) {
+      showAuthMessage(
+        "確認メールを送信しました。メールを確認して登録を完了してください。"
+      );
 
-        message.textContent =
-          "確認メールを送信しました。メール内のリンクを開いて登録を完了してください。";
 
-      }
+      /*
+       * 確認メール後に戻ってきたときのため、
+       * メールアドレスだけ保持
+       */
+
+      sessionStorage.setItem(
+        "pendingRegistrationEmail",
+        email
+      );
+
 
       return;
 
@@ -2928,155 +1079,572 @@ async function registerWithEmail() {
      * メール確認不要の場合
      */
 
-    if (
-      data.session
-    ) {
+    if (data.session) {
 
-      sessionStorage.removeItem(
-        "forceLoginScreen"
-      );
+      currentUser =
+        data.user;
 
 
-      console.log(
-        "★ メールアドレス新規登録成功"
-      );
-
-
-      window.location.reload();
+      await continueAfterAuthentication();
 
     }
-
 
   } catch (error) {
 
     console.error(
-      "メールアドレス登録エラー",
+      "★ メール新規登録失敗:",
       error
     );
 
 
-    if (message) {
+    let message =
+      "メールアドレスでの新規登録に失敗しました。";
 
-      message.textContent =
-        "アカウント登録に失敗しました。\n" +
-        (error?.message || String(error));
+
+    /*
+     * Supabaseの代表的なエラーを
+     * 利用者向けに変更
+     */
+
+    if (
+      error?.message?.toLowerCase()
+        .includes("already registered")
+    ) {
+
+      message =
+        "このメールアドレスはすでに登録されています。";
 
     }
 
+
+    if (
+      error?.message?.toLowerCase()
+        .includes("password")
+    ) {
+
+      message =
+        "パスワードを確認してください。";
+
+    }
+
+
+    showAuthMessage(
+      message
+    );
 
   } finally {
 
-    if (button) {
-
-      button.disabled = false;
-      button.style.opacity = "1";
-
-    }
+    authenticationBusy = false;
 
   }
 
 }
 
-/* ==================================================
-   Googleログイン設定
-================================================== */
 
-async function loginWithGoogle() {
+/* =========================================================
+   メールログイン
+   ========================================================= */
 
-  const button =
-    document.getElementById(
-      "googleLoginButton"
-    );
+async function loginWithEmail() {
 
+  if (authenticationBusy) {
 
-  /*
-   * Googleログインを開始したので、
-   * ログアウト後の強制ログイン画面フラグを解除
-   */
-
-  sessionStorage.removeItem(
-    "forceLoginScreen"
-  );
-
-
-  const message =
-    document.getElementById(
-      "loginMessage"
-    );
-
-
-  if (button) {
-
-    button.disabled = true;
-    button.style.opacity = "0.6";
+    return;
 
   }
 
 
-  if (message) {
-
-    message.textContent =
-      "Googleログイン画面を開いています…";
-
-  }
+  authenticationBusy = true;
 
 
   try {
 
-    /*
-      招待リンクのトークンを取得
-    */
+    const email =
+      getEnteredEmail();
 
-    const inviteToken =
-      new URLSearchParams(
-        window.location.search
-      ).get("invite");
+    const password =
+      getEnteredPassword();
 
 
     /*
-      通常ログインなら通常のURLへ戻す
-      招待ログインなら invite を付けたまま戻す
-    */
+     * 入力チェック
+     */
 
-    let redirectUrl =
-      "https://mya24950-dotcom.github.io/kinmu-app/";
+    if (!validateEmail(email)) {
 
-
-    if (inviteToken) {
-
-      redirectUrl +=
-        "?invite=" +
-        encodeURIComponent(
-          inviteToken
-        );
+      return;
 
     }
 
 
-    const { error } =
+    if (!password) {
+
+      showAuthMessage(
+        "パスワードを入力してください。"
+      );
+
+      return;
+
+    }
+
+
+    showAuthMessage(
+      "ログインしています……"
+    );
+
+
+    /*
+     * Supabaseメールログイン
+     */
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient.auth.signInWithPassword({
+
+        email: email,
+
+        password: password
+
+      });
+
+
+    if (error) {
+
+      console.error(
+        "メールログインエラー:",
+        error
+      );
+
+      throw error;
+
+    }
+
+
+    currentUser =
+      data.user;
+
+
+    console.log(
+      "★ メールログイン成功:",
+      currentUser
+    );
+
+
+    /*
+     * 認証後はGoogleと同じ処理へ
+     */
+
+    await continueAfterAuthentication();
+
+  } catch (error) {
+
+    console.error(
+      "★ メールログイン失敗:",
+      error
+    );
+
+
+    let message =
+      "メールアドレスまたはパスワードを確認してください。";
+
+
+    if (
+      error?.message
+        ?.toLowerCase()
+        .includes("email not confirmed")
+    ) {
+
+      message =
+        "メールアドレスの確認が完了していません。確認メールをご確認ください。";
+
+    }
+
+
+    showAuthMessage(
+      message
+    );
+
+  } finally {
+
+    authenticationBusy = false;
+
+  }
+
+}
+
+
+/* =========================================================
+   メール確認後の処理
+   ========================================================= */
+
+async function handleEmailConfirmation() {
+
+  try {
+
+    const session =
+      await getCurrentSession();
+
+
+    if (!session?.user) {
+
+      return false;
+
+    }
+
+
+    currentUser =
+      session.user;
+
+
+    /*
+     * 保持していたメールアドレスを削除
+     */
+
+    sessionStorage.removeItem(
+      "pendingRegistrationEmail"
+    );
+
+
+    /*
+     * 認証後共通処理
+     */
+
+    await continueAfterAuthentication();
+
+
+    return true;
+
+  } catch (error) {
+
+    console.error(
+      "メール確認後処理エラー:",
+      error
+    );
+
+    return false;
+
+  }
+
+}
+
+
+/* =========================================================
+   メール新規登録フォーム表示
+   ========================================================= */
+
+function showEmailRegistration() {
+
+  const loginForm =
+    document.getElementById(
+      "emailLoginForm"
+    );
+
+  const registrationForm =
+    document.getElementById(
+      "emailRegistrationForm"
+    );
+
+
+  if (loginForm) {
+
+    loginForm.style.display =
+      "none";
+
+  }
+
+
+  if (registrationForm) {
+
+    registrationForm.style.display =
+      "block";
+
+  }
+
+
+  showAuthMessage("");
+
+}
+
+
+/* =========================================================
+   メールログインフォーム表示
+   ========================================================= */
+
+function showEmailLogin() {
+
+  const loginForm =
+    document.getElementById(
+      "emailLoginForm"
+    );
+
+  const registrationForm =
+    document.getElementById(
+      "emailRegistrationForm"
+    );
+
+
+  if (registrationForm) {
+
+    registrationForm.style.display =
+      "none";
+
+  }
+
+
+  if (loginForm) {
+
+    loginForm.style.display =
+      "block";
+
+  }
+
+
+  showAuthMessage("");
+
+}
+
+
+/* =========================================================
+   メール認証イベント設定
+   ========================================================= */
+
+function setupEmailRegistration() {
+
+  /*
+   * 新規登録ボタン
+   */
+
+  const registerButton =
+    document.getElementById(
+      "emailRegisterButton"
+    );
+
+
+  if (registerButton) {
+
+    registerButton.onclick =
+      async () => {
+
+        await registerWithEmail();
+
+      };
+
+  }
+
+
+  /*
+   * メールログインボタン
+   */
+
+  const loginButton =
+    document.getElementById(
+      "emailLoginButton"
+    );
+
+
+  if (loginButton) {
+
+    loginButton.onclick =
+      async () => {
+
+        await loginWithEmail();
+
+      };
+
+  }
+
+
+  /*
+   * 「新規登録はこちら」
+   */
+
+  const showRegisterButton =
+    document.getElementById(
+      "showEmailRegistrationButton"
+    );
+
+
+  if (showRegisterButton) {
+
+    showRegisterButton.onclick =
+      () => {
+
+        showEmailRegistration();
+
+      };
+
+  }
+
+
+  /*
+   * 「ログインはこちら」
+   */
+
+  const showLoginButton =
+    document.getElementById(
+      "showEmailLoginButton"
+    );
+
+
+  if (showLoginButton) {
+
+    showLoginButton.onclick =
+      () => {
+
+        showEmailLogin();
+
+      };
+
+  }
+
+}
+
+
+/* =========================================================
+   メール認証関連のイベントをまとめて設定
+   ========================================================= */
+
+function setupEmailAuth() {
+
+  setupEmailRegistration();
+
+}
+
+
+/* =========================================================
+   Enterキーでメールログイン・登録
+   ========================================================= */
+
+function setupEmailKeyboardEvents() {
+
+  const inputs = [
+
+    getEmailInput(),
+
+    getPasswordInput(),
+
+    getPasswordConfirmInput()
+
+  ];
+
+
+  inputs.forEach(input => {
+
+    if (!input) {
+
+      return;
+
+    }
+
+
+    input.addEventListener(
+      "keydown",
+      event => {
+
+        if (
+          event.key !== "Enter"
+        ) {
+
+          return;
+
+        }
+
+
+        /*
+         * 確認パスワードが表示されている場合は
+         * 新規登録として扱う
+         */
+
+        const registrationForm =
+          document.getElementById(
+            "emailRegistrationForm"
+          );
+
+
+        if (
+          registrationForm &&
+          registrationForm.style.display !==
+            "none"
+        ) {
+
+          registerWithEmail();
+
+        } else {
+
+          loginWithEmail();
+
+        }
+
+      }
+    );
+
+  });
+
+}
+
+/* =========================================================
+   第3部：Google新規登録・Googleログイン
+   ========================================================= */
+
+
+/* =========================================================
+   Google認証開始
+   ========================================================= */
+
+async function loginWithGoogle() {
+
+  if (authenticationBusy) {
+    return;
+  }
+
+  authenticationBusy = true;
+
+  try {
+
+    console.log(
+      "★ Google認証開始"
+    );
+
+
+    /*
+     * 新規職場登録からGoogle認証する場合、
+     * 職場情報はsessionStorageに保存済み。
+     *
+     * 通常ログインの場合は何も保存されていない。
+     */
+
+
+    showAuthMessage(
+      "Googleアカウントを確認しています……"
+    );
+
+
+    /*
+     * 認証後に戻ってくるURL
+     */
+
+    const redirectTo =
+      window.location.origin +
+      window.location.pathname;
+
+
+    /*
+     * Google OAuth
+     */
+
+    const {
+      data,
+      error
+    } =
       await supabaseClient.auth.signInWithOAuth({
 
         provider: "google",
 
         options: {
 
-          redirectTo:
-            redirectUrl,
-
-          /*
-           * Googleログイン画面で
-           * アカウントを選択させる
-           *
-           * ログアウト後に前回のGoogleアカウントを
-           * そのまま自動使用しないため
-           */
-
-          queryParams: {
-
-            prompt:
-              "select_account"
-
-          }
+          redirectTo: redirectTo
 
         }
 
@@ -3085,437 +1653,615 @@ async function loginWithGoogle() {
 
     if (error) {
 
+      console.error(
+        "★ Google認証エラー:",
+        error
+      );
+
       throw error;
 
     }
 
 
+    console.log(
+      "★ Google OAuth開始"
+    );
+
+
   } catch (error) {
 
     console.error(
-      "Googleログインエラー",
+      "★ Googleログイン／新規登録エラー:",
       error
     );
 
 
-    if (message) {
-
-      message.textContent =
-        "Googleログインに失敗しました。";
-
-    }
+    showAuthMessage(
+      "Googleアカウントでの認証に失敗しました。"
+    );
 
 
-    if (button) {
+  } finally {
 
-      button.disabled = false;
-      button.style.opacity = "1";
+    /*
+     * OAuthの場合、ページ遷移するので
+     * ここでfalseに戻して問題ない。
+     */
 
-    }
+    authenticationBusy = false;
 
   }
 
 }
 
-function setupAppleLogin() {
 
-  const button =
-    document.getElementById(
-      "appleLoginButton"
-    );
+/* =========================================================
+   Google新規登録
+   ========================================================= */
 
-  if (!button) {
+async function registerWithGoogle() {
+
+  /*
+   * Googleの新規登録も、
+   * Googleログインと同じOAuthを使用する。
+   *
+   * 違いは「認証前に職場情報を保存しているか」。
+   */
+
+  const organizationName =
+    getPendingOrganizationName();
+
+  const staffName =
+    getPendingStaffName();
+
+
+  /*
+   * 職場登録画面から来た場合
+   */
+
+  if (
+    organizationName &&
+    staffName
+  ) {
 
     console.log(
-      "Appleログインボタンが見つかりません"
+      "★ Googleによる新規職場登録を開始"
     );
+
+
+    await loginWithGoogle();
 
     return;
 
   }
 
-  button.disabled = false;
-  button.style.opacity = "1";
 
-  button.onclick =
-    function () {
+  /*
+   * 職場登録情報がない場合でも
+   * Googleアカウント自体の新規登録／ログインは可能。
+   */
 
-      console.log(
-        "★ Appleログインボタンが押されました"
-      );
+  console.log(
+    "★ Googleアカウント登録を開始"
+  );
 
-      loginWithApple();
 
-    };
+  await loginWithGoogle();
 
 }
+
+
+/* =========================================================
+   Googleボタン設定
+   ========================================================= */
 
 function setupGoogleLogin() {
 
-  const button =
-    document.getElementById("googleLoginButton");
+  /*
+   * 既存HTMLのGoogleログインボタン
+   */
 
-  if (!button) {
-    console.log("Googleログインボタンが見つかりません");
-    return;
+  const googleLoginButton =
+    document.getElementById(
+      "googleLoginButton"
+    );
+
+
+  if (
+    googleLoginButton
+  ) {
+
+    googleLoginButton.onclick =
+      async () => {
+
+        await loginWithGoogle();
+
+      };
+
   }
 
-  button.disabled = false;
-  button.style.opacity = "1";
 
-  button.onclick = function () {
+  /*
+   * 新規登録用Googleボタン
+   *
+   * HTML側で
+   * googleRegisterButton
+   * を使用する場合はこちら。
+   */
 
-    console.log("★ Googleログインボタンが押されました");
+  const googleRegisterButton =
+    document.getElementById(
+      "googleRegisterButton"
+    );
 
-    loginWithGoogle();
+
+  if (
+    googleRegisterButton
+  ) {
+
+    googleRegisterButton.onclick =
+      async () => {
+
+        await registerWithGoogle();
+
+      };
+
+  }
+
+}
+
+
+/* =========================================================
+   Google OAuth後のURL確認
+   ========================================================= */
+
+async function handleOAuthCallback() {
+
+  try {
+
+    /*
+     * SupabaseがOAuth認証結果を処理したあと、
+     * 現在のセッションを取得する。
+     */
+
+    const session =
+      await getCurrentSession();
+
+
+    if (!session?.user) {
+
+      return false;
+
+    }
+
+
+    console.log(
+      "★ OAuth認証完了"
+    );
+
+
+    currentUser =
+      session.user;
+
+
+    /*
+     * Googleから戻ってきた場合も、
+     * メール認証と同じ共通処理へ。
+     */
+
+    await continueAfterAuthentication();
+
+
+    return true;
+
+  } catch (error) {
+
+    console.error(
+      "★ OAuthコールバック処理エラー:",
+      error
+    );
+
+    showAuthMessage(
+      "認証後の処理に失敗しました。"
+    );
+
+    return false;
+
+  }
+
+}
+
+
+/* =========================================================
+   Googleアカウント情報取得
+   ========================================================= */
+
+function getGoogleUserInfo(user) {
+
+  if (!user) {
+
+    return null;
+
+  }
+
+
+  const metadata =
+    user.user_metadata || {};
+
+
+  return {
+
+    id:
+      user.id || "",
+
+    email:
+      user.email || "",
+
+    name:
+      metadata.full_name ||
+      metadata.name ||
+      "",
+
+    avatar:
+      metadata.avatar_url ||
+      metadata.picture ||
+      ""
 
   };
 
 }
 
-async function createNewOrganization() {
 
-  const organizationNameInput =
-    document.getElementById(
-      "organizationNameInput"
-    );
+/* =========================================================
+   Google表示名取得
+   ========================================================= */
 
-  const staffNameInput =
-    document.getElementById(
-      "organizationStaffNameInput"
-    );
+function getGoogleDisplayName(user) {
 
-  const organizationName =
-    organizationNameInput
-      ? organizationNameInput.value.trim()
-      : "";
+  const googleUser =
+    getGoogleUserInfo(user);
 
-  const staffName =
-    staffNameInput
-      ? staffNameInput.value.trim()
-      : "";
 
-  // ==========================================
-  // 入力チェック
-  // ==========================================
+  if (
+    !googleUser
+  ) {
 
-  if (!organizationName) {
+    return "";
 
-    alert("職場名を入力してください。");
-
-    organizationNameInput?.focus();
-
-    return;
-  }
-
-  if (!staffName) {
-
-    alert("登録者名を入力してください。");
-
-    staffNameInput?.focus();
-
-    return;
   }
 
 
-  try {
+  return googleUser.name || "";
 
-    // ==========================================
-    // 現在のログイン状態を確認
-    // Google / Apple / Azure 共通
-    // ==========================================
-
-    const {
-      data: {
-        session
-      }
-    } =
-      await supabaseClient.auth.getSession();
+}
 
 
-    // ==========================================
-    // まだログインしていない場合
-    // ==========================================
+/* =========================================================
+   Googleメールアドレス取得
+   ========================================================= */
 
-if (!session) {
+function getGoogleEmail(user) {
 
-  // ==========================================
-  // 職場登録情報を一時保存
-  // ==========================================
+  const googleUser =
+    getGoogleUserInfo(user);
 
-  sessionStorage.setItem(
-    "pendingOrganizationName",
-    organizationName
-  );
 
-  sessionStorage.setItem(
-    "pendingStaffName",
-    staffName
-  );
+  if (
+    !googleUser
+  ) {
+
+    return "";
+
+  }
+
+
+  return googleUser.email || "";
+
+}
+
+
+/* =========================================================
+   Google認証後のユーザー確認
+   ========================================================= */
+
+async function processGoogleAuthentication() {
+
+  const user =
+    await getCurrentUser();
+
+
+  if (!user) {
+
+    console.warn(
+      "★ Googleユーザーを取得できません"
+    );
+
+    return false;
+
+  }
+
+
+  const googleInfo =
+    getGoogleUserInfo(user);
 
 
   console.log(
-    "★ 職場名を保存",
-    organizationName
-  );
-
-  console.log(
-    "★ 登録者名を保存",
-    staffName
+    "★ Googleユーザー:",
+    googleInfo
   );
 
 
-  // ==========================================
-  // ログイン画面を表示
-  // Google / Apple
-  // ==========================================
+  /*
+   * ここでは職場を直接作らない。
+   *
+   * 新規職場登録の場合も、
+   * continueAfterAuthentication()
+   * → createOrganizationAfterAuthentication()
+   *
+   * という共通ルートを使用する。
+   */
 
-  const loginMainView =
+  await continueAfterAuthentication();
+
+
+  return true;
+
+}
+
+
+/* =========================================================
+   Google新規登録用ボタンの表示
+   ========================================================= */
+
+function showGoogleRegistration() {
+
+  const googleLoginArea =
     document.getElementById(
-      "loginMainView"
+      "googleLoginArea"
     );
 
-  const newOrganizationForm =
+  const googleRegistrationArea =
     document.getElementById(
-      "newOrganizationForm"
-    );
-
-  const loginMessage =
-    document.getElementById(
-      "loginMessage"
+      "googleRegistrationArea"
     );
 
 
-  // 新規職場登録フォームを隠す
-  if (newOrganizationForm) {
+  if (
+    googleLoginArea
+  ) {
 
-    newOrganizationForm.style.display =
+    googleLoginArea.style.display =
       "none";
 
   }
 
 
-  // ログイン画面を表示
-  if (loginMainView) {
+  if (
+    googleRegistrationArea
+  ) {
 
-    loginMainView.style.display =
-      "";
-
-  }
-
-
-  // ログインメッセージ
-  if (loginMessage) {
-
-    loginMessage.textContent =
-      "職場登録を続けるため、ログインしてください。";
+    googleRegistrationArea.style.display =
+      "block";
 
   }
 
 
-  // ==========================================
-  // Googleログインボタン
-  // ==========================================
-
-  const googleButton =
-    document.getElementById(
-      "googleLoginButton"
-    );
-
-  if (googleButton) {
-
-    googleButton.style.display = "";
-
-  }
-
-
-  // ==========================================
-  // Appleログインボタン
-  // ==========================================
-
-  const appleButton =
-    document.getElementById(
-      "appleLoginButton"
-    );
-
-  if (appleButton) {
-
-    appleButton.style.display = "";
-
-  }
-
-
-  console.log(
-    "★ 新規職場登録用ログイン画面を表示しました"
-  );
-
-
-  return;
-}
-
-    // ==========================================
-    // すでにログイン済み
-    // ==========================================
-    // Google / Apple / Azure どの認証でも
-    // ここから先は共通処理
-    // ==========================================
-
-    console.log(
-      "★ すでにログイン済みです"
-    );
-
-    console.log(
-      "★ 認証ユーザーID:",
-      session.user.id
-    );
-
-
-    // ==========================================
-    // 職場 + 管理者を作成
-    // ==========================================
-
-    const {
-      data,
-      error
-    } =
-      await supabaseClient.rpc(
-        "create_organization_and_admin",
-        {
-          new_org_name:
-            organizationName,
-
-          new_staff_name:
-            staffName
-        }
-      );
-
-
-    if (error) {
-      throw error;
-    }
-
-
-    // ==========================================
-    // 登録結果確認
-    // ==========================================
-
-    if (
-      !data ||
-      !data.length
-    ) {
-
-      throw new Error(
-        "職場の登録結果を取得できませんでした。"
-      );
-    }
-
-
-    const result =
-      data[0];
-
-
-    // ==========================================
-    // 現在の職場をセット
-    // ==========================================
-
-    currentOrganization = {
-
-      id:
-        result.organization_id,
-
-      name:
-        result.organization_name,
-
-      role:
-        "admin"
-
-    };
-
-
-    // ==========================================
-    // 完了メッセージ
-    // ==========================================
-
-    alert(
-      `${result.organization_name}を登録しました。\n\n` +
-      `${result.staff_name}さんを登録者として職員管理に登録しました。`
-    );
-
-
-    // ==========================================
-    // アプリ表示
-    // ==========================================
-
-    showApp();
-
-    loadLocalData();
-
-    bindEvents();
-
-    setupLogoutButton();
-
-
-    // ==========================================
-    // Supabaseからデータ読み込み
-    // ==========================================
-
-    await loadAllFromSupabase();
-
-    renderAll();
-
-    loadPublicHolidays();
-
-
-    // ==========================================
-    // Realtime
-    // ==========================================
-
-    setupRealtime();
-
-
-    // ==========================================
-    // 自動同期
-    // ==========================================
-
-    startAutoSync();
-
-
-    // ==========================================
-    // タブ復帰時同期
-    // ==========================================
-
-    setupVisibilitySync();
-
-
-  } catch (error) {
-
-    console.error(
-      "職場新規登録エラー",
-      error
-    );
-
-
-    alert(
-      "職場の登録に失敗しました。\n\n" +
-      (
-        error?.message ||
-        String(error)
-      )
-    );
-
-  }
+  showAuthMessage("");
 
 }
 
-/* =================================================
-   新規職場登録画面
-================================================= */
+
+/* =========================================================
+   Googleログイン画面表示
+   ========================================================= */
+
+function showGoogleLogin() {
+
+  const googleLoginArea =
+    document.getElementById(
+      "googleLoginArea"
+    );
+
+  const googleRegistrationArea =
+    document.getElementById(
+      "googleRegistrationArea"
+    );
+
+
+  if (
+    googleRegistrationArea
+  ) {
+
+    googleRegistrationArea.style.display =
+      "none";
+
+  }
+
+
+  if (
+    googleLoginArea
+  ) {
+
+    googleLoginArea.style.display =
+      "block";
+
+  }
+
+
+  showAuthMessage("");
+
+}
+
+
+/* =========================================================
+   認証方式選択画面
+   ========================================================= */
+
+function showRegistrationPage() {
+
+  /*
+   * 新規職場登録から来た場合、
+   * ここで認証方式を選択する。
+   */
+
+  const registrationPage =
+    document.getElementById(
+      "registrationPage"
+    );
+
+
+  const loginPage =
+    document.getElementById(
+      "loginPage"
+    );
+
+
+  if (
+    loginPage
+  ) {
+
+    loginPage.style.display =
+      "none";
+
+  }
+
+
+  if (
+    registrationPage
+  ) {
+
+    registrationPage.style.display =
+      "block";
+
+  }
+
+
+  showAuthMessage("");
+
+}
+
+
+/* =========================================================
+   認証方式選択画面を閉じる
+   ========================================================= */
+
+function hideRegistrationPage() {
+
+  const registrationPage =
+    document.getElementById(
+      "registrationPage"
+    );
+
+
+  if (
+    registrationPage
+  ) {
+
+    registrationPage.style.display =
+      "none";
+
+  }
+
+
+  showLoginPage();
+
+}
+
+
+/* =========================================================
+   Google登録開始
+   ========================================================= */
+
+function startGoogleRegistration() {
+
+  /*
+   * 職場情報が保存されていれば、
+   * 認証後にその職場を作成する。
+   */
+
+  const organizationName =
+    getPendingOrganizationName();
+
+  const staffName =
+    getPendingStaffName();
+
+
+  if (
+    !organizationName ||
+    !staffName
+  ) {
+
+    console.warn(
+      "★ Google登録時の職場情報がありません"
+    );
+
+  }
+
+
+  registerWithGoogle();
+
+}
+
+
+/* =========================================================
+   Google認証イベントをまとめて設定
+   ========================================================= */
+
+function setupGoogleAuth() {
+
+  setupGoogleLogin();
+
+}
+
+/* =========================================================
+   第4部：新規職場登録
+   ========================================================= */
+
+
+/* =========================================================
+   新規職場登録ボタンの設定
+   ========================================================= */
 
 function setupNewOrganizationButton() {
 
-  const newOrganizationButton =
+  const button =
     document.getElementById(
-      "newOrganizationButton"
+      "createOrganizationButton"
+    );
+
+  if (!button) {
+
+    console.warn(
+      "createOrganizationButton が見つかりません"
+    );
+
+    return;
+
+  }
+
+
+  /*
+   * 既存イベントとの二重登録を防ぐ
+   */
+
+  button.onclick = async () => {
+
+    await createNewOrganization();
+
+  };
+
+}
+
+
+/* =========================================================
+   新規職場登録画面を表示
+   ========================================================= */
+
+function showNewOrganizationForm() {
+
+  const form =
+    document.getElementById(
+      "newOrganizationForm"
     );
 
   const loginMainView =
@@ -3523,15 +2269,26 @@ function setupNewOrganizationButton() {
       "loginMainView"
     );
 
-  const newOrganizationForm =
-    document.getElementById(
-      "newOrganizationForm"
-    );
 
-  const cancelOrganizationButton =
-    document.getElementById(
-      "cancelOrganizationButton"
-    );
+  if (loginMainView) {
+
+    loginMainView.style.display =
+      "none";
+
+  }
+
+
+  if (form) {
+
+    form.style.display =
+      "block";
+
+  }
+
+
+  /*
+   * 入力欄を空にする
+   */
 
   const organizationNameInput =
     document.getElementById(
@@ -3543,200 +2300,2381 @@ function setupNewOrganizationButton() {
       "organizationStaffNameInput"
     );
 
-  const createOrganizationButton =
+
+  if (organizationNameInput) {
+
+    organizationNameInput.value =
+      "";
+
+  }
+
+
+  if (organizationStaffNameInput) {
+
+    organizationStaffNameInput.value =
+      "";
+
+  }
+
+
+  showAuthMessage("");
+
+}
+
+
+/* =========================================================
+   新規職場登録画面を閉じる
+   ========================================================= */
+
+function hideNewOrganizationForm() {
+
+  const form =
     document.getElementById(
-      "createOrganizationButton"
+      "newOrganizationForm"
     );
 
+  if (form) {
 
-  if (
-    !newOrganizationButton ||
-    !loginMainView ||
-    !newOrganizationForm
-  ) {
-    return;
-  }
-
-
-  /* -----------------------------------------
-     新規登録画面を開く
-  ----------------------------------------- */
-
-  newOrganizationButton.onclick =
-    function() {
-
-      loginMainView.style.display =
-        "none";
-
-      newOrganizationForm.style.display =
-        "";
-
-      if (organizationNameInput) {
-
-        organizationNameInput.value =
-          "";
-
-      }
-
-      if (organizationStaffNameInput) {
-
-        organizationStaffNameInput.value =
-          "";
-
-      }
-
-      if (organizationNameInput) {
-
-        organizationNameInput.focus();
-
-      }
-
-    };
-
-
-  /* -----------------------------------------
-     戻る
-  ----------------------------------------- */
-
-  if (cancelOrganizationButton) {
-
-    cancelOrganizationButton.onclick =
-      function() {
-
-        newOrganizationForm.style.display =
-          "none";
-
-        loginMainView.style.display =
-          "";
-
-        if (organizationNameInput) {
-
-          organizationNameInput.value =
-            "";
-
-        }
-
-        if (organizationStaffNameInput) {
-
-          organizationStaffNameInput.value =
-            "";
-
-        }
-
-      };
+    form.style.display =
+      "none";
 
   }
 
 
-  /* -----------------------------------------
-     職場を登録する
-  ----------------------------------------- */
+  const loginMainView =
+    document.getElementById(
+      "loginMainView"
+    );
 
-  if (createOrganizationButton) {
+  if (loginMainView) {
 
-    createOrganizationButton.onclick =
-      function() {
-
-        createNewOrganization();
-
-      };
+    loginMainView.style.display =
+      "block";
 
   }
 
 }
 
-async function handleInviteAfterLogin() {
 
-  const params =
-    new URLSearchParams(
-      window.location.search
-    );
+/* =========================================================
+   新規職場登録
+   ========================================================= */
 
+async function createNewOrganization() {
 
-  const inviteToken =
-    params.get("invite");
+  if (organizationCreating) {
 
-
-  if (!inviteToken) {
-
-    return false;
+    return;
 
   }
 
 
-  console.log(
-    "★ 招待リンクを検出しました"
-  );
+  /*
+   * 入力欄
+   */
+
+  const organizationNameInput =
+    document.getElementById(
+      "organizationNameInput"
+    );
+
+
+  const organizationStaffNameInput =
+    document.getElementById(
+      "organizationStaffNameInput"
+    );
+
+
+  const organizationName =
+    organizationNameInput
+      ?.value
+      ?.trim() || "";
+
+
+  const staffName =
+    organizationStaffNameInput
+      ?.value
+      ?.trim() || "";
+
+
+  /*
+   * 職場名チェック
+   */
+
+  if (!organizationName) {
+
+    showAuthMessage(
+      "職場名を入力してください。"
+    );
+
+    organizationNameInput?.focus();
+
+    return;
+
+  }
+
+
+  /*
+   * 登録者名チェック
+   */
+
+  if (!staffName) {
+
+    showAuthMessage(
+      "登録者名を入力してください。"
+    );
+
+    organizationStaffNameInput?.focus();
+
+    return;
+
+  }
+
+
+  organizationCreating = true;
 
 
   try {
 
-    const { data, error } =
-      await supabaseClient.rpc(
-        "accept_staff_invite",
-        {
-  target_invite_token:
-    inviteToken
+    console.log(
+      "★ 新規職場登録開始"
+    );
+
+    console.log(
+      "職場名:",
+      organizationName
+    );
+
+    console.log(
+      "登録者名:",
+      staffName
+    );
+
+
+    /*
+     * 現在ログインしているか確認
+     */
+
+    const session =
+      await getCurrentSession();
+
+
+    /* =====================================================
+       未ログイン
+       ===================================================== */
+
+    if (!session?.user) {
+
+      console.log(
+        "★ 未認証 → 認証方式選択へ"
+      );
+
+
+      /*
+       * 職場情報を一時保存
+       */
+
+      savePendingOrganization(
+        organizationName,
+        staffName
+      );
+
+
+      /*
+       * 新規登録画面へ
+       */
+
+      showRegistrationPage();
+
+
+      return;
+
+    }
+
+
+    /* =====================================================
+       すでにログイン済み
+       ===================================================== */
+
+    console.log(
+      "★ 認証済み → 直接職場を作成"
+    );
+
+
+    await createOrganizationAfterAuthentication(
+      organizationName,
+      staffName
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "★ 新規職場登録エラー:",
+      error
+    );
+
+
+    showAuthMessage(
+      "職場登録の準備中にエラーが発生しました。"
+    );
+
+
+  } finally {
+
+    organizationCreating = false;
+
+  }
+
 }
+
+
+/* =========================================================
+   認証後の職場作成
+   ========================================================= */
+
+async function createOrganizationAfterAuthentication(
+  organizationName,
+  staffName
+) {
+
+  if (organizationCreating) {
+
+    return;
+
+  }
+
+
+  organizationCreating = true;
+
+
+  try {
+
+    console.log(
+      "★ 認証後の職場作成開始"
+    );
+
+
+    /*
+     * 現在のセッション取得
+     */
+
+    const session =
+      await getCurrentSession();
+
+
+    if (!session?.user) {
+
+      throw new Error(
+        "ログイン情報を取得できませんでした。"
+      );
+
+    }
+
+
+    currentUser =
+      session.user;
+
+
+    /*
+     * 入力値を整理
+     */
+
+    organizationName =
+      String(
+        organizationName || ""
+      ).trim();
+
+
+    staffName =
+      String(
+        staffName || ""
+      ).trim();
+
+
+    if (!organizationName) {
+
+      throw new Error(
+        "職場名がありません。"
+      );
+
+    }
+
+
+    if (!staffName) {
+
+      throw new Error(
+        "登録者名がありません。"
+      );
+
+    }
+
+
+    showAuthMessage(
+      "職場を登録しています……"
+    );
+
+
+    console.log(
+      "★ create_organization_and_admin 実行"
+    );
+
+
+    /* =====================================================
+       職場作成RPC
+       ===================================================== */
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient.rpc(
+        "create_organization_and_admin",
+        {
+
+          new_org_name:
+            organizationName,
+
+          new_staff_name:
+            staffName
+
+        }
       );
 
 
     if (error) {
 
       console.error(
-        "招待受け入れエラー",
+        "★ 職場作成RPCエラー:",
         error
       );
 
+      throw error;
 
-      alert(
-        "招待リンクの登録に失敗しました。\n\n" +
-        error.message
+    }
+
+
+    console.log(
+      "★ 職場作成RPC結果:",
+      data
+    );
+
+
+    /* =====================================================
+       RPC結果から組織情報取得
+       ===================================================== */
+
+    let organizationResult =
+      null;
+
+
+    /*
+     * RPCが配列を返す場合
+     */
+
+    if (
+      Array.isArray(data)
+    ) {
+
+      organizationResult =
+        data[0] || null;
+
+    } else {
+
+      organizationResult =
+        data || null;
+
+    }
+
+
+    if (
+      !organizationResult
+    ) {
+
+      throw new Error(
+        "職場登録結果を取得できませんでした。"
+      );
+
+    }
+
+
+    /* =====================================================
+       currentOrganization設定
+       ===================================================== */
+
+    currentOrganization = {
+
+      id:
+        organizationResult.organization_id ??
+        organizationResult.id ??
+        null,
+
+      name:
+        organizationResult.organization_name ??
+        organizationName,
+
+      role:
+        "admin"
+
+    };
+
+
+    console.log(
+      "★ currentOrganization:",
+      currentOrganization
+    );
+
+
+    /*
+     * 組織IDが取得できなかった場合は停止
+     */
+
+    if (
+      !currentOrganization.id
+    ) {
+
+      throw new Error(
+        "職場IDを取得できませんでした。"
+      );
+
+    }
+
+
+    /* =====================================================
+       一時保存を削除
+       ===================================================== */
+
+    clearPendingOrganization();
+
+
+    /* =====================================================
+       アプリ起動
+       ===================================================== */
+
+    console.log(
+      "★ 新規職場登録完了"
+    );
+
+
+    showAuthMessage(
+      ""
+    );
+
+
+    /*
+     * ログイン画面を閉じる
+     */
+
+    const loginMainView =
+      document.getElementById(
+        "loginMainView"
       );
 
 
-      return false;
+    if (loginMainView) {
+
+      loginMainView.style.display =
+        "none";
+
+    }
+
+
+    const registrationPage =
+      document.getElementById(
+        "registrationPage"
+      );
+
+
+    if (registrationPage) {
+
+      registrationPage.style.display =
+        "none";
+
+    }
+
+
+    const newOrganizationForm =
+      document.getElementById(
+        "newOrganizationForm"
+      );
+
+
+    if (newOrganizationForm) {
+
+      newOrganizationForm.style.display =
+        "none";
+
+    }
+
+
+    /*
+     * メインアプリ表示
+     */
+
+    showApp();
+
+
+    /* =====================================================
+       既存の勤務表初期化処理
+       ===================================================== */
+
+    /*
+     * 現在のアプリに存在する処理を順番に実行
+     */
+
+    if (
+      typeof loadLocalData ===
+      "function"
+    ) {
+
+      loadLocalData();
+
+    }
+
+
+    if (
+      typeof bindEvents ===
+      "function"
+    ) {
+
+      bindEvents();
+
+    }
+
+
+    if (
+      typeof setupLogoutButton ===
+      "function"
+    ) {
+
+      setupLogoutButton();
+
+    }
+
+
+    if (
+      typeof loadAllFromSupabase ===
+      "function"
+    ) {
+
+      await loadAllFromSupabase();
+
+    }
+
+
+    if (
+      typeof renderAll ===
+      "function"
+    ) {
+
+      renderAll();
+
+    }
+
+
+    if (
+      typeof loadPublicHolidays ===
+      "function"
+    ) {
+
+      await loadPublicHolidays();
+
+    }
+
+
+    if (
+      typeof setupRealtime ===
+      "function"
+    ) {
+
+      setupRealtime();
+
+    }
+
+
+    if (
+      typeof startAutoSync ===
+      "function"
+    ) {
+
+      startAutoSync();
+
+    }
+
+
+    if (
+      typeof setupVisibilitySync ===
+      "function"
+    ) {
+
+      setupVisibilitySync();
+
+    }
+
+
+    /*
+     * 初期ローディング終了
+     */
+
+    hideInitialLoading();
+
+
+  } catch (error) {
+
+    console.error(
+      "★ 認証後の職場作成エラー:",
+      error
+    );
+
+
+    /*
+     * エラーになった場合、
+     * currentOrganizationは無効にしないようにする。
+     */
+
+    showAuthMessage(
+      error?.message ||
+      "職場の登録に失敗しました。"
+    );
+
+
+    /*
+     * エラー時は一時保存を残す。
+     *
+     * 再読み込みしても
+     * 職場情報を失わないようにする。
+     */
+
+    savePendingOrganization(
+      organizationName,
+      staffName
+    );
+
+
+  } finally {
+
+    organizationCreating = false;
+
+  }
+
+}
+
+
+/* =========================================================
+   新規職場登録キャンセル
+   ========================================================= */
+
+function cancelNewOrganization() {
+
+  clearPendingOrganization();
+
+  hideNewOrganizationForm();
+
+  showAuthMessage("");
+
+}
+
+
+/* =========================================================
+   新規職場登録イベント
+   ========================================================= */
+
+function setupOrganizationFormEvents() {
+
+  const createButton =
+    document.getElementById(
+      "createOrganizationButton"
+    );
+
+
+  if (createButton) {
+
+    createButton.onclick =
+      async () => {
+
+        await createNewOrganization();
+
+      };
+
+  }
+
+
+  const cancelButton =
+    document.getElementById(
+      "cancelOrganizationButton"
+    );
+
+
+  if (cancelButton) {
+
+    cancelButton.onclick =
+      () => {
+
+        cancelNewOrganization();
+
+      };
+
+  }
+
+}
+
+
+/* =========================================================
+   認証方式選択から新規職場登録へ戻る
+   ========================================================= */
+
+function returnToOrganizationForm() {
+
+  const pendingOrganizationName =
+    getPendingOrganizationName();
+
+
+  const pendingStaffName =
+    getPendingStaffName();
+
+
+  if (
+    pendingOrganizationName &&
+    pendingStaffName
+  ) {
+
+    showNewOrganizationForm();
+
+
+    const organizationNameInput =
+      document.getElementById(
+        "organizationNameInput"
+      );
+
+
+    const organizationStaffNameInput =
+      document.getElementById(
+        "organizationStaffNameInput"
+      );
+
+
+    if (
+      organizationNameInput
+    ) {
+
+      organizationNameInput.value =
+        pendingOrganizationName;
+
+    }
+
+
+    if (
+      organizationStaffNameInput
+    ) {
+
+      organizationStaffNameInput.value =
+        pendingStaffName;
+
+    }
+
+    return;
+
+  }
+
+
+  hideNewOrganizationForm();
+
+}
+
+
+/* =========================================================
+   新規職場登録関連イベント
+   ========================================================= */
+
+function setupOrganizationRegistration() {
+
+  setupNewOrganizationButton();
+
+  setupOrganizationFormEvents();
+
+}
+
+/* =========================================================
+   第5部：職場・職員・権限・招待処理
+   ========================================================= */
+
+
+/* =========================================================
+   現在の職場を取得
+   ========================================================= */
+
+async function getCurrentOrganization() {
+
+  try {
+
+    const user =
+      await getCurrentUser();
+
+    if (!user) {
+
+      console.warn(
+        "★ 現在ユーザーがいません"
+      );
+
+      return null;
+
+    }
+
+
+    /*
+     * 既にcurrentOrganizationが存在する場合
+     * そのまま使用する
+     */
+
+    if (
+      currentOrganization?.id
+    ) {
+
+      return currentOrganization;
+
+    }
+
+
+    /* =====================================================
+       ユーザーが所属している職場を取得
+       ===================================================== */
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient
+        .from("organization_members")
+        .select(`
+          organization_id,
+          role,
+          organizations (
+            id,
+            name
+          )
+        `)
+        .eq(
+          "user_id",
+          user.id
+        )
+        .limit(1);
+
+
+    if (error) {
+
+      console.error(
+        "★ 所属職場取得エラー:",
+        error
+      );
+
+      return null;
 
     }
 
 
     if (
       !data ||
-      !data.length
+      data.length === 0
     ) {
 
-      alert(
-        "招待リンクの登録結果を取得できませんでした。"
+      console.log(
+        "★ 所属している職場がありません"
       );
 
+      currentOrganization =
+        null;
+
+      return null;
+
+    }
+
+
+    const membership =
+      data[0];
+
+
+    const organization =
+      membership.organizations;
+
+
+    if (!organization) {
+
+      console.warn(
+        "★ 職場情報がありません"
+      );
+
+      currentOrganization =
+        null;
+
+      return null;
+
+    }
+
+
+    currentOrganization = {
+
+      id:
+        organization.id,
+
+      name:
+        organization.name,
+
+      role:
+        membership.role || "staff"
+
+    };
+
+
+    console.log(
+      "★ 現在の職場:",
+      currentOrganization
+    );
+
+
+    return currentOrganization;
+
+
+  } catch (error) {
+
+    console.error(
+      "★ getCurrentOrganization エラー:",
+      error
+    );
+
+    return null;
+
+  }
+
+}
+
+
+/* =========================================================
+   現在の組織ID取得
+   ========================================================= */
+
+function getCurrentOrganizationId() {
+
+  return (
+    currentOrganization?.id ||
+    null
+  );
+
+}
+
+
+/* =========================================================
+   現在の職場名取得
+   ========================================================= */
+
+function getCurrentOrganizationName() {
+
+  return (
+    currentOrganization?.name ||
+    ""
+  );
+
+}
+
+
+/* =========================================================
+   現在のユーザーID取得
+   ========================================================= */
+
+function getCurrentUserId() {
+
+  return (
+    currentUser?.id ||
+    null
+  );
+
+}
+
+
+/* =========================================================
+   現在のユーザーのメールアドレス取得
+   ========================================================= */
+
+function getCurrentUserEmail() {
+
+  return (
+    currentUser?.email ||
+    ""
+  );
+
+}
+
+
+/* =========================================================
+   現在のユーザーの表示名取得
+   ========================================================= */
+
+function getCurrentUserDisplayName() {
+
+  if (!currentUser) {
+
+    return "";
+
+  }
+
+
+  const metadata =
+    currentUser.user_metadata ||
+    {};
+
+
+  return (
+    metadata.full_name ||
+    metadata.name ||
+    metadata.display_name ||
+    ""
+  );
+
+}
+
+
+/* =========================================================
+   管理者かどうか
+   ========================================================= */
+
+function isOrganizationAdmin() {
+
+  const role =
+    currentOrganization?.role;
+
+
+  return (
+    role === "admin" ||
+    role === "owner"
+  );
+
+}
+
+
+/* =========================================================
+   職員管理権限
+   ========================================================= */
+
+function canManageStaff() {
+
+  return isOrganizationAdmin();
+
+}
+
+
+/* =========================================================
+   勤務表設定権限
+   ========================================================= */
+
+function canManageSchedule() {
+
+  return isOrganizationAdmin();
+
+}
+
+
+/* =========================================================
+   職場設定権限
+   ========================================================= */
+
+function canManageOrganization() {
+
+  return isOrganizationAdmin();
+
+}
+
+
+/* =========================================================
+   現在ユーザーの職員ID取得
+   ========================================================= */
+
+async function getCurrentStaffId() {
+
+  try {
+
+    const userId =
+      getCurrentUserId();
+
+
+    const organizationId =
+      getCurrentOrganizationId();
+
+
+    if (
+      !userId ||
+      !organizationId
+    ) {
+
+      return null;
+
+    }
+
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient
+        .from("staff")
+        .select("id")
+        .eq(
+          "user_id",
+          userId
+        )
+        .eq(
+          "organization_id",
+          organizationId
+        )
+        .maybeSingle();
+
+
+    if (error) {
+
+      console.error(
+        "★ 現在職員ID取得エラー:",
+        error
+      );
+
+      return null;
+
+    }
+
+
+    return data?.id || null;
+
+
+  } catch (error) {
+
+    console.error(
+      "★ getCurrentStaffId エラー:",
+      error
+    );
+
+    return null;
+
+  }
+
+}
+
+
+/* =========================================================
+   現在ユーザーの職員情報取得
+   ========================================================= */
+
+async function getCurrentStaff() {
+
+  try {
+
+    const userId =
+      getCurrentUserId();
+
+
+    const organizationId =
+      getCurrentOrganizationId();
+
+
+    if (
+      !userId ||
+      !organizationId
+    ) {
+
+      return null;
+
+    }
+
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient
+        .from("staff")
+        .select("*")
+        .eq(
+          "user_id",
+          userId
+        )
+        .eq(
+          "organization_id",
+          organizationId
+        )
+        .maybeSingle();
+
+
+    if (error) {
+
+      console.error(
+        "★ 現在職員情報取得エラー:",
+        error
+      );
+
+      return null;
+
+    }
+
+
+    return data || null;
+
+
+  } catch (error) {
+
+    console.error(
+      "★ getCurrentStaff エラー:",
+      error
+    );
+
+    return null;
+
+  }
+
+}
+
+
+/* =========================================================
+   職場の職員一覧取得
+   ========================================================= */
+
+async function loadOrganizationStaff() {
+
+  try {
+
+    const organizationId =
+      getCurrentOrganizationId();
+
+
+    if (!organizationId) {
+
+      console.warn(
+        "★ 組織IDがないため職員を取得できません"
+      );
+
+      return [];
+
+    }
+
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient
+        .from("staff")
+        .select("*")
+        .eq(
+          "organization_id",
+          organizationId
+        )
+        .order(
+          "id",
+          {
+            ascending: true
+          }
+        );
+
+
+    if (error) {
+
+      console.error(
+        "★ 職員一覧取得エラー:",
+        error
+      );
+
+      return [];
+
+    }
+
+
+    return data || [];
+
+
+  } catch (error) {
+
+    console.error(
+      "★ loadOrganizationStaff エラー:",
+      error
+    );
+
+    return [];
+
+  }
+
+}
+
+
+/* =========================================================
+   職場名を画面へ表示
+   ========================================================= */
+
+function updateOrganizationNameDisplay() {
+
+  const organizationName =
+    getCurrentOrganizationName();
+
+
+  /*
+   * 左上の職場名
+   */
+
+  const elements = [
+
+    document.getElementById(
+      "organizationName"
+    ),
+
+    document.getElementById(
+      "headerOrganizationName"
+    ),
+
+    document.getElementById(
+      "currentOrganizationName"
+    )
+
+  ];
+
+
+  elements.forEach(
+    element => {
+
+      if (!element) {
+        return;
+      }
+
+      element.textContent =
+        organizationName;
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   現在ユーザー名を画面へ表示
+   ========================================================= */
+
+function updateCurrentUserDisplay() {
+
+  const user =
+    currentUser;
+
+
+  if (!user) {
+
+    return;
+
+  }
+
+
+  const metadata =
+    user.user_metadata || {};
+
+
+  const displayName =
+    metadata.full_name ||
+    metadata.name ||
+    metadata.display_name ||
+    user.email ||
+    "";
+
+
+  const elements = [
+
+    document.getElementById(
+      "currentUserName"
+    ),
+
+    document.getElementById(
+      "userName"
+    ),
+
+    document.getElementById(
+      "loginUserName"
+    )
+
+  ];
+
+
+  elements.forEach(
+    element => {
+
+      if (!element) {
+        return;
+      }
+
+      element.textContent =
+        displayName;
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   職場情報を画面へ反映
+   ========================================================= */
+
+function updateOrganizationUI() {
+
+  updateOrganizationNameDisplay();
+
+  updateCurrentUserDisplay();
+
+}
+
+
+/* =========================================================
+   招待コード取得
+   ========================================================= */
+
+function getInviteCodeFromURL() {
+
+  try {
+
+    const url =
+      new URL(
+        window.location.href
+      );
+
+
+    /*
+     * ?invite=xxxxx
+     */
+
+    const queryInvite =
+      url.searchParams.get(
+        "invite"
+      );
+
+
+    if (queryInvite) {
+
+      return queryInvite.trim();
+
+    }
+
+
+    /*
+     * #invite=xxxxx
+     */
+
+    const hash =
+      window.location.hash;
+
+
+    if (
+      hash.startsWith("#invite=")
+    ) {
+
+      return decodeURIComponent(
+        hash.substring(8)
+      ).trim();
+
+    }
+
+
+    return "";
+
+  } catch (error) {
+
+    console.error(
+      "★ 招待コード取得エラー:",
+      error
+    );
+
+    return "";
+
+  }
+
+}
+
+
+/* =========================================================
+   招待コードを保存
+   ========================================================= */
+
+function savePendingInviteCode(
+  inviteCode
+) {
+
+  if (!inviteCode) {
+
+    return;
+
+  }
+
+
+  sessionStorage.setItem(
+    "pendingInviteCode",
+    inviteCode
+  );
+
+}
+
+
+/* =========================================================
+   保存された招待コード取得
+   ========================================================= */
+
+function getPendingInviteCode() {
+
+  return (
+    sessionStorage.getItem(
+      "pendingInviteCode"
+    ) || ""
+  );
+
+}
+
+
+/* =========================================================
+   招待コード削除
+   ========================================================= */
+
+function clearPendingInviteCode() {
+
+  sessionStorage.removeItem(
+    "pendingInviteCode"
+  );
+
+}
+
+
+/* =========================================================
+   招待コードの初期確認
+   ========================================================= */
+
+function setupInviteHandling() {
+
+  const inviteCode =
+    getInviteCodeFromURL();
+
+
+  if (!inviteCode) {
+
+    return;
+
+  }
+
+
+  console.log(
+    "★ 招待コードを検出:",
+    inviteCode
+  );
+
+
+  savePendingInviteCode(
+    inviteCode
+  );
+
+}
+
+
+/* =========================================================
+   ログイン後の招待処理
+   ========================================================= */
+
+async function handleInviteAfterLogin() {
+
+  try {
+
+    const inviteCode =
+      getPendingInviteCode();
+
+
+    if (!inviteCode) {
 
       return false;
 
     }
 
 
-    const result =
-      data[0];
+    const user =
+      await getCurrentUser();
+
+
+    if (!user) {
+
+      return false;
+
+    }
 
 
     console.log(
-      "★ 招待受け入れ成功",
-      result
-    );
-
-
-    alert(
-      `${result.staff_name}さんとして登録しました。`
+      "★ 招待処理開始"
     );
 
 
     /*
-      招待トークンをURLから削除
-    */
-    window.history.replaceState(
-      {},
-      document.title,
-      window.location.pathname
+     * 現在の実際の招待RPCがある場合は、
+     * ここから呼び出す。
+     *
+     * RPC名・引数は現在のDB定義を優先する。
+     */
+
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient.rpc(
+        "accept_organization_invite",
+        {
+          invite_code:
+            inviteCode
+        }
+      );
+
+
+    if (error) {
+
+      console.error(
+        "★ 招待処理RPCエラー:",
+        error
+      );
+
+      return false;
+
+    }
+
+
+    console.log(
+      "★ 招待処理完了:",
+      data
+    );
+
+
+    /*
+     * 招待コードを削除
+     */
+
+    clearPendingInviteCode();
+
+
+    /*
+     * 所属職場を再取得
+     */
+
+    currentOrganization =
+      null;
+
+
+    currentOrganization =
+      await getCurrentOrganization();
+
+
+    /*
+     * アプリ表示
+     */
+
+    if (
+      currentOrganization
+    ) {
+
+      showApp();
+
+      await loadAllFromSupabase();
+
+      renderAll();
+
+      updateOrganizationUI();
+
+      hideInitialLoading();
+
+      return true;
+
+    }
+
+
+    return false;
+
+
+  } catch (error) {
+
+    console.error(
+      "★ 招待処理エラー:",
+      error
+    );
+
+    return false;
+
+  }
+
+}
+
+
+/* =========================================================
+   ログアウト
+   ========================================================= */
+
+async function logout() {
+
+  try {
+
+    console.log(
+      "★ ログアウト開始"
+    );
+
+
+    const {
+      error
+    } =
+      await supabaseClient.auth.signOut();
+
+
+    if (error) {
+
+      console.error(
+        "★ ログアウトエラー:",
+        error
+      );
+
+      return;
+
+    }
+
+
+    /*
+     * アプリ側の状態をクリア
+     */
+
+    currentUser =
+      null;
+
+    currentOrganization =
+      null;
+
+
+    /*
+     * 一時的な新規登録情報を削除
+     */
+
+    clearPendingOrganization();
+
+
+    /*
+     * ログイン画面へ
+     */
+
+    showLoginPage();
+
+
+    console.log(
+      "★ ログアウト完了"
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "★ logout エラー:",
+      error
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   ログアウトボタン設定
+   ========================================================= */
+
+function setupLogoutButton() {
+
+  const buttons = [
+
+    document.getElementById(
+      "logoutButton"
+    ),
+
+    document.getElementById(
+      "logoutBtn"
+    )
+
+  ];
+
+
+  buttons.forEach(
+    button => {
+
+      if (!button) {
+        return;
+      }
+
+
+      button.onclick =
+        async () => {
+
+          await logout();
+
+        };
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   権限による画面制御
+   ========================================================= */
+
+function updatePermissionUI() {
+
+  const isAdmin =
+    isOrganizationAdmin();
+
+
+  /*
+   * 管理者専用ボタン
+   */
+
+  const adminElements = [
+
+    document.getElementById(
+      "staffSettingsButton"
+    ),
+
+    document.getElementById(
+      "shiftTypeSettingsButton"
+    ),
+
+    document.getElementById(
+      "organizationSettingsButton"
+    ),
+
+    document.getElementById(
+      "companyHolidaySettingsButton"
+    )
+
+  ];
+
+
+  adminElements.forEach(
+    element => {
+
+      if (!element) {
+        return;
+      }
+
+
+      element.style.display =
+        isAdmin
+          ? ""
+          : "none";
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   職場・ユーザー情報をまとめて初期化
+   ========================================================= */
+
+async function initializeOrganizationContext() {
+
+  try {
+
+    currentUser =
+      await getCurrentUser();
+
+
+    if (!currentUser) {
+
+      currentOrganization =
+        null;
+
+      return false;
+
+    }
+
+
+    currentOrganization =
+      await getCurrentOrganization();
+
+
+    if (!currentOrganization) {
+
+      console.warn(
+        "★ 所属職場を取得できません"
+      );
+
+      return false;
+
+    }
+
+
+    updateOrganizationUI();
+
+    updatePermissionUI();
+
+
+    return true;
+
+
+  } catch (error) {
+
+    console.error(
+      "★ 組織コンテキスト初期化エラー:",
+      error
+    );
+
+    return false;
+
+  }
+
+}
+
+/* =========================================================
+   第6部：Supabaseデータ読み込み・共通データ処理
+   ========================================================= */
+
+
+/* =========================================================
+   Supabaseデータ読み込み中フラグ
+   ========================================================= */
+
+let supabaseLoading = false;
+
+
+/* =========================================================
+   Supabase保存中フラグ
+   ========================================================= */
+
+let supabaseSaving = false;
+
+
+/* =========================================================
+   現在の組織IDを確認
+   ========================================================= */
+
+async function ensureOrganizationContext() {
+
+  /*
+   * currentOrganizationが既にある場合
+   */
+
+  if (
+    currentOrganization?.id
+  ) {
+
+    return currentOrganization;
+
+  }
+
+
+  /*
+   * なければ取得
+   */
+
+  const organization =
+    await getCurrentOrganization();
+
+
+  if (!organization?.id) {
+
+    console.warn(
+      "★ 組織情報を取得できませんでした"
+    );
+
+    return null;
+
+  }
+
+
+  currentOrganization =
+    organization;
+
+
+  return organization;
+
+}
+
+
+/* =========================================================
+   Supabaseから全データを読み込む
+   ========================================================= */
+
+async function loadAllFromSupabase() {
+
+  if (supabaseLoading) {
+
+    console.log(
+      "★ Supabase読み込み中のためスキップ"
+    );
+
+    return false;
+
+  }
+
+
+  supabaseLoading = true;
+
+
+  try {
+
+    console.log(
+      "★ Supabaseからデータ読み込み開始"
+    );
+
+
+    /*
+     * 組織確認
+     */
+
+    const organization =
+      await ensureOrganizationContext();
+
+
+    if (!organization?.id) {
+
+      console.warn(
+        "★ 組織IDがないため読み込みできません"
+      );
+
+      return false;
+
+    }
+
+
+    const organizationId =
+      organization.id;
+
+
+    /* =====================================================
+       職員
+       ===================================================== */
+
+    const {
+      data: staffData,
+      error: staffError
+    } =
+      await supabaseClient
+        .from("staff")
+        .select("*")
+        .eq(
+          "organization_id",
+          organizationId
+        )
+        .order(
+          "id",
+          {
+            ascending: true
+          }
+        );
+
+
+    if (staffError) {
+
+      console.error(
+        "★ 職員読み込みエラー:",
+        staffError
+      );
+
+    } else {
+
+      appData.staff =
+        staffData || [];
+
+    }
+
+
+    /* =====================================================
+       勤務形態
+       ===================================================== */
+
+    const {
+      data: shiftTypeData,
+      error: shiftTypeError
+    } =
+      await supabaseClient
+        .from("shift_types")
+        .select("*")
+        .eq(
+          "organization_id",
+          organizationId
+        )
+        .order(
+          "id",
+          {
+            ascending: true
+          }
+        );
+
+
+    if (shiftTypeError) {
+
+      console.error(
+        "★ 勤務形態読み込みエラー:",
+        shiftTypeError
+      );
+
+    } else {
+
+      appData.shiftTypes =
+        shiftTypeData || [];
+
+    }
+
+
+    /* =====================================================
+       休暇種類
+       ===================================================== */
+
+    const {
+      data: leaveTypeData,
+      error: leaveTypeError
+    } =
+      await supabaseClient
+        .from("leave_types")
+        .select("*")
+        .eq(
+          "organization_id",
+          organizationId
+        )
+        .order(
+          "id",
+          {
+            ascending: true
+          }
+        );
+
+
+    if (leaveTypeError) {
+
+      console.error(
+        "★ 休暇種類読み込みエラー:",
+        leaveTypeError
+      );
+
+    } else {
+
+      appData.leaveTypes =
+        leaveTypeData || [];
+
+    }
+
+
+    /* =====================================================
+       会社休日
+       ===================================================== */
+
+    const {
+      data: holidayData,
+      error: holidayError
+    } =
+      await supabaseClient
+        .from("company_holidays")
+        .select(
+          "id,name,start_date,end_date,created_at"
+        )
+        .eq(
+          "organization_id",
+          organizationId
+        )
+        .order(
+          "start_date",
+          {
+            ascending: true
+          }
+        );
+
+
+    if (holidayError) {
+
+      console.error(
+        "★ 会社休日読み込みエラー:",
+        holidayError
+      );
+
+    } else {
+
+      appData.companyHolidays =
+        holidayData || [];
+
+    }
+
+
+    /* =====================================================
+       勤務データ
+       ===================================================== */
+
+    const {
+      data: shiftData,
+      error: shiftError
+    } =
+      await supabaseClient
+        .from("work_shifts")
+        .select("*")
+        .eq(
+          "organization_id",
+          organizationId
+        );
+
+
+    if (shiftError) {
+
+      console.error(
+        "★ 勤務データ読み込みエラー:",
+        shiftError
+      );
+
+    } else {
+
+      /*
+       * 勤務表用オブジェクトへ変換
+       */
+
+      appData.shifts =
+        {};
+
+
+      (shiftData || [])
+        .forEach(
+          shift => {
+
+            /*
+             * 現在のアプリで使用している
+             * staff_name + work_date形式を維持
+             */
+
+            const staffName =
+              shift.staff_name || "";
+
+
+            const workDate =
+              shift.work_date || "";
+
+
+            if (
+              !staffName ||
+              !workDate
+            ) {
+
+              return;
+
+            }
+
+
+            if (
+              !appData.shifts[staffName]
+            ) {
+
+              appData.shifts[staffName] =
+                {};
+
+            }
+
+
+            appData.shifts[staffName][workDate] =
+              {
+
+                id:
+                  shift.id,
+
+                staff_name:
+                  shift.staff_name,
+
+                work_date:
+                  shift.work_date,
+
+                shift_name:
+                  shift.shift_name,
+
+                excel_shift:
+                  shift.excel_shift,
+
+                leave_type:
+                  shift.leave_type,
+
+                note:
+                  shift.note
+
+              };
+
+          }
+        );
+
+    }
+
+
+    /* =====================================================
+       設定
+       ===================================================== */
+
+    const {
+      data: settingData,
+      error: settingError
+    } =
+      await supabaseClient
+        .from("app_settings")
+        .select(
+          "setting_name,setting_value"
+        )
+        .eq(
+          "organization_id",
+          organizationId
+        );
+
+
+    if (settingError) {
+
+      console.error(
+        "★ アプリ設定読み込みエラー:",
+        settingError
+      );
+
+    } else {
+
+      /*
+       * 明け時間
+       */
+
+      const akeStart =
+        settingData?.find(
+          item =>
+            item.setting_name ===
+            "ake_start"
+        );
+
+
+      const akeEnd =
+        settingData?.find(
+          item =>
+            item.setting_name ===
+            "ake_end"
+        );
+
+
+      if (akeStart?.setting_value) {
+
+        appData.akeTime.start =
+          akeStart.setting_value;
+
+      }
+
+
+      if (akeEnd?.setting_value) {
+
+        appData.akeTime.end =
+          akeEnd.setting_value;
+
+      }
+
+    }
+
+
+    /*
+     * ローカルストレージにも保存
+     */
+
+    saveLocalData();
+
+
+    console.log(
+      "★ Supabaseデータ読み込み完了"
     );
 
 
@@ -3746,193 +4684,53 @@ async function handleInviteAfterLogin() {
   } catch (error) {
 
     console.error(
-      "招待受け入れ処理エラー",
+      "★ loadAllFromSupabase エラー:",
       error
     );
-
-
-    alert(
-      "招待リンクの処理に失敗しました。\n\n" +
-      error.message
-    );
-
 
     return false;
 
+
+  } finally {
+
+    supabaseLoading = false;
+
   }
 
 }
 
-/* ==================================================
-   現在の職場を取得
-================================================== */
 
-async function getCurrentOrganization(
-  userId
-) {
+/* =========================================================
+   ローカル保存
+   ========================================================= */
 
-  if (!supabaseClient) {
+function saveLocalData() {
 
-    throw new Error(
-      "Supabaseが初期化されていません"
+  try {
+
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(
+        appData
+      )
     );
 
-  }
 
-
-  const {
-    data,
-    error
-  } =
-    await supabaseClient
-
-      .from(
-        "organization_members"
-      )
-
-      .select(
-        `
-          organization_id,
-          role,
-          organizations (
-            id,
-            name,
-            created_at
-          )
-        `
-      )
-
-      .eq(
-        "user_id",
-        userId
-      )
-
-      .limit(1);
-   
-  if (error) {
+  } catch (error) {
 
     console.error(
-      "職場情報取得エラー",
+      "★ ローカル保存エラー:",
       error
     );
 
-    throw error;
-
   }
-
-
-  if (
-    !data ||
-    data.length === 0
-  ) {
-
-    return null;
-
-  }
-
-
-  const member =
-    data[0];
-
-
-  if (
-    !member.organizations
-  ) {
-
-    return null;
-
-  }
-
-
-  return {
-
-    id:
-      member.organizations.id,
-
-    name:
-      member.organizations.name,
-
-    created_at:
-      member.organizations.created_at,
-
-    role:
-      member.role
-
-  };
 
 }
 
-/* ==================================================
-   ログイン中の職員IDを取得
-================================================== */
 
-async function getCurrentStaffId() {
-
-  if (!supabaseClient) {
-    return null;
-  }
-
-  if (!currentOrganization) {
-    return null;
-  }
-
-  const {
-    data: {
-      user
-    }
-  } =
-    await supabaseClient.auth.getUser();
-
-  if (!user) {
-    return null;
-  }
-
-  const {
-    data,
-    error
-  } =
-    await supabaseClient
-      .from("organization_members")
-      .select("staff_id")
-      .eq(
-        "organization_id",
-        currentOrganization.id
-      )
-      .eq(
-        "user_id",
-        user.id
-      )
-      .not(
-        "staff_id",
-        "is",
-        null
-      )
-      .limit(1);
-
-  if (error) {
-
-    console.error(
-      "ログイン中の職員情報取得エラー",
-      error
-    );
-
-    return null;
-  }
-
-  if (
-    !data ||
-    data.length === 0
-  ) {
-
-    return null;
-  }
-
-  return data[0].staff_id;
-}
-
-/* ==================================================
-   ローカルデータ読み込み
-================================================== */
+/* =========================================================
+   ローカル読み込み
+   ========================================================= */
 
 function loadLocalData() {
 
@@ -3946,655 +4744,188 @@ function loadLocalData() {
 
     if (!saved) {
 
-      return;
+      return false;
 
     }
 
 
     const parsed =
-      JSON.parse(saved);
-
-
-    appData.companyHolidays =
-      Array.isArray(
-        parsed.companyHolidays
-      )
-        ? parsed.companyHolidays
-        : [];
-
-
-    appData.leaveTypes =
-      Array.isArray(
-        parsed.leaveTypes
-      )
-        ? parsed.leaveTypes
-        : [];
-
-
-    appData.akeTime =
-      parsed.akeTime &&
-      typeof parsed.akeTime ===
-        "object"
-
-        ? {
-
-            start:
-              parsed.akeTime.start ||
-              "05:30",
-
-            end:
-              parsed.akeTime.end ||
-              "11:15"
-
-          }
-
-        : {
-
-            start: "05:30",
-
-            end: "11:15"
-
-          };
-
-
-  } catch (error) {
-
-    console.error(
-      "ローカルデータ読み込みエラー",
-      error
-    );
-
-  }
-
-}
-
-
-/* ==================================================
-   ローカル保存
-================================================== */
-
-function saveLocalData() {
-
-  try {
-
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify({
-
-        companyHolidays:
-          appData.companyHolidays,
-
-        leaveTypes:
-          appData.leaveTypes,
-
-        akeTime:
-          appData.akeTime
-
-      })
-    );
-
-
-  } catch (error) {
-
-    console.error(
-      "ローカル保存エラー",
-      error
-    );
-
-  }
-
-}
-
-
-/* ==================================================
-   Supabaseから全データ取得
-================================================== */
-
-async function loadAllFromSupabase() {
-
-  if (!supabaseClient) {
-
-    throw new Error(
-      "Supabaseクライアントがありません"
-    );
-
-  }
-
-
-  /* ==================================================
-     職員
-  ================================================== */
-
-  const staffResult =
-    await supabaseClient
-      .from("staff")
-      .select(
-        "id,name,created_at,sort_order,calendar_token"
+      JSON.parse(
+        saved
       );
 
 
-  if (staffResult.error) {
-
-    throw staffResult.error;
-
-  }
-
-
-  /* ==================================================
-     勤務形態
-  ================================================== */
-
-  const shiftResult =
-    await supabaseClient
-      .from("shift_types")
-      .select(
-        "id,name,created_at,start_time,end_time,break_time"
-      )
-      .order(
-        "created_at",
-        {
-          ascending: true
-        }
-      );
-
-
-  if (shiftResult.error) {
-
-    throw shiftResult.error;
-
-  }
-
-
-  /* ==================================================
-     勤務
-  ================================================== */
-
-  const workResult =
-    await supabaseClient
-      .from("work_shifts")
-      .select(
-        "id,staff_name,work_date,shift_name,leave_type"
-      );
-
-
-  if (workResult.error) {
-
-    throw workResult.error;
-
-  }
-
-
-  /* ==================================================
-     休暇
-  ================================================== */
-
-  const leaveResult =
-    await supabaseClient
-      .from("leave_types")
-      .select(
-        "id,name,color,created_at"
-      )
-      .order(
-        "created_at",
-        {
-          ascending: true
-        }
-      );
-
-
-  if (leaveResult.error) {
-
-  console.error(
-    "leave_types取得エラー:",
-    leaveResult.error
-  );
-
-
-
-}
-
-
-  /* ==================================================
-     休業
-  ================================================== */
-
-  const holidayResult =
-    await supabaseClient
-      .from("company_holidays")
-      .select(
-        "id,name,start_date,end_date,created_at"
-      )
-      .order(
-        "start_date",
-        {
-          ascending: true
-        }
-      );
-
-
-  if (holidayResult.error) {
-
-    console.error(
-      "company_holidays取得エラー:",
-      holidayResult.error
-    );
-
-  }
-
-
-  /* ==================================================
-     職員
-  ================================================== */
-
-  const rawStaff =
-    (staffResult.data || [])
-      .map(
-        (row, index) => ({
-
-          id:
-            row.id,
-
-          name:
-            String(
-              row.name || ""
-            ),
-
-          sort_order:
-            row.sort_order !== null &&
-            row.sort_order !== undefined
-
-              ? Number(
-                  row.sort_order
-                )
-
-              : null,
-
-          calendar_token:
-            row.calendar_token || "",
-
-          created_at:
-            row.created_at || "",
-
-          originalIndex:
-            index
-
-        })
-      )
-      .filter(
-        row =>
-          row.name &&
-          row.name !== "明"
-      );
-
-
-  rawStaff.sort(
-    (a, b) => {
-
-      const aHas =
-        Number.isFinite(
-          a.sort_order
-        );
-
-
-      const bHas =
-        Number.isFinite(
-          b.sort_order
-        );
-
-
-      if (
-        aHas &&
-        bHas
-      ) {
-
-        if (
-          a.sort_order !==
-          b.sort_order
-        ) {
-
-          return (
-            a.sort_order -
-            b.sort_order
-          );
-
-        }
-
-      }
-
-
-      if (
-        aHas &&
-        !bHas
-      ) {
-
-        return -1;
-
-      }
-
-
-      if (
-        !aHas &&
-        bHas
-      ) {
-
-        return 1;
-
-      }
-
-
-      if (
-        a.created_at &&
-        b.created_at
-      ) {
-
-        const result =
-          String(
-            a.created_at
-          ).localeCompare(
-            String(
-              b.created_at
-            )
-          );
-
-
-        if (
-          result !== 0
-        ) {
-
-          return result;
-
-        }
-
-      }
-
-
-      return (
-        a.originalIndex -
-        b.originalIndex
-      );
+    if (
+      !parsed ||
+      typeof parsed !== "object"
+    ) {
+
+      return false;
 
     }
-  );
 
 
-  appData.staff =
-    rawStaff.map(
-      row => ({
+    /*
+     * 現在の構造を維持しながら
+     * データを反映
+     */
 
-        id:
-          row.id,
+    appData = {
 
-        name:
-          row.name,
+      ...appData,
 
-        sort_order:
-          row.sort_order,
-
-        calendar_token:
-          row.calendar_token || ""
-
-      })
-    );
-
-
-  /* ==================================================
-     勤務形態
-  ================================================== */
-
-  appData.shiftTypes =
-    (shiftResult.data || [])
-      .map(
-        row => ({
-
-          id:
-            row.id,
-
-          name:
-            String(
-              row.name || ""
-            ),
-
-          start:
-            String(
-              row.start_time || ""
-            ),
-
-          end:
-            String(
-              row.end_time || ""
-            ),
-
-          break:
-            String(
-              row.break_time || ""
-            )
-
-        })
-      )
-      .filter(
-        row =>
-          row.name &&
-          row.name !== "明"
-      );
-
-
-  /* ==================================================
-     休暇
-  ================================================== */
-  if (
-    !leaveResult.error
-  ) {
-
-    appData.leaveTypes =
-      (leaveResult.data || [])
-        .map(
-          row => ({
-
-            id:
-              row.id,
-
-            name:
-              String(
-                row.name || ""
-              ),
-
-            color:
-              String(
-                row.color ||
-                "#FFD54F"
-              ),
-
-            created_at:
-              row.created_at || ""
-
-          })
-        )
-        .filter(
-          row =>
-            row.name
-        );
-
-  }
-
-
-  /* ==================================================
-     勤務データ
-  ================================================== */
-
-  appData.shifts =
-    {};
-
-
-  appData.staff.forEach(
-    staff => {
-
-      appData.shifts[
-        staff.name
-      ] = {};
-
-    }
-  );
-
-
-  (workResult.data || [])
-    .forEach(
-      row => {
-
-        if (
-          !row.staff_name ||
-          !row.work_date
-        ) {
-
-          return;
-
-        }
-
-
-        if (
-          !appData.shifts[
-            row.staff_name
-          ]
-        ) {
-
-          appData.shifts[
-            row.staff_name
-          ] = {};
-
-        }
-
-
-        appData.shifts[
-          row.staff_name
-        ][
-          row.work_date
-        ] = {
-
-          shiftName:
-            row.shift_name || "",
-
-          leaveType:
-            row.leave_type || ""
-
-        };
-
-      }
-    );
-
-
-  /* ==================================================
-     休業
-  ================================================== */
-
-  if (
-    !holidayResult.error
-  ) {
-
-    appData.companyHolidays =
-      (holidayResult.data || [])
-        .map(
-          row => ({
-
-            id:
-              row.id,
-
-            name:
-              String(
-                row.name || ""
-              ),
-
-            start:
-              String(
-                row.start_date || ""
-              ),
-
-            end:
-              String(
-                row.end_date || ""
-              )
-
-          })
-        )
-        .filter(
-          row =>
-            row.name &&
-            row.start &&
-            row.end
-        )
-        .sort(
-          (a, b) =>
-            a.start.localeCompare(
-              b.start
-            )
-        );
-
-  }
-
-
-  /* ==================================================
-     明け時間
-  ================================================== */
-
-  const akeResult =
-    await supabaseClient
-      .from("app_settings")
-      .select(
-        "setting_name,setting_value"
-      );
-
-
-  if (
-    !akeResult.error
-  ) {
-
-    let akeStart =
-      "05:30";
-
-    let akeEnd =
-      "11:15";
-
-
-    (akeResult.data || [])
-      .forEach(
-        row => {
-
-          if (
-            row.setting_name ===
-            "ake_start"
-          ) {
-
-            akeStart =
-              row.setting_value ||
-              "05:30";
-
-          }
-
-
-          if (
-            row.setting_name ===
-            "ake_end"
-          ) {
-
-            akeEnd =
-              row.setting_value ||
-              "11:15";
-
-          }
-
-        }
-      );
-
-
-    appData.akeTime = {
-
-      start:
-        akeStart,
-
-      end:
-        akeEnd
+      ...parsed
 
     };
 
+
+    /*
+     * 配列が壊れていた場合の保護
+     */
+
+    if (
+      !Array.isArray(
+        appData.staff
+      )
+    ) {
+
+      appData.staff =
+        [];
+
+    }
+
+
+    if (
+      !Array.isArray(
+        appData.shiftTypes
+      )
+    ) {
+
+      appData.shiftTypes =
+        [];
+
+    }
+
+
+    if (
+      !Array.isArray(
+        appData.leaveTypes
+      )
+    ) {
+
+      appData.leaveTypes =
+        [];
+
+    }
+
+
+    if (
+      !Array.isArray(
+        appData.companyHolidays
+      )
+    ) {
+
+      appData.companyHolidays =
+        [];
+
+    }
+
+
+    if (
+      !appData.shifts ||
+      typeof appData.shifts !==
+        "object"
+    ) {
+
+      appData.shifts =
+        {};
+
+    }
+
+
+    console.log(
+      "★ ローカルデータ読み込み完了"
+    );
+
+
+    return true;
+
+
+  } catch (error) {
+
+    console.error(
+      "★ ローカル読み込みエラー:",
+      error
+    );
+
+    return false;
+
   }
+
+}
+
+
+/* =========================================================
+   勤務データ1件取得
+   ========================================================= */
+
+function getShiftData(
+  staffName,
+  workDate
+) {
+
+  if (
+    !staffName ||
+    !workDate
+  ) {
+
+    return null;
+
+  }
+
+
+  return (
+    appData
+      .shifts?.[staffName]
+      ?.[workDate] ||
+    null
+  );
+
+}
+
+
+/* =========================================================
+   勤務データ1件をローカルへ設定
+   ========================================================= */
+
+function setShiftData(
+  staffName,
+  workDate,
+  shiftData
+) {
+
+  if (
+    !staffName ||
+    !workDate
+  ) {
+
+    return;
+
+  }
+
+
+  if (
+    !appData.shifts[staffName]
+  ) {
+
+    appData.shifts[staffName] =
+      {};
+
+  }
+
+
+  appData.shifts[staffName][workDate] =
+    shiftData;
 
 
   saveLocalData();
@@ -4602,323 +4933,302 @@ async function loadAllFromSupabase() {
 }
 
 
-/* ==================================================
-   Realtime
-================================================== */
+/* =========================================================
+   勤務データ1件を削除
+   ========================================================= */
 
-function setupRealtime() {
+function deleteLocalShiftData(
+  staffName,
+  workDate
+) {
 
-  if (!supabaseClient) {
+  if (
+    !appData.shifts?.[staffName]
+  ) {
 
     return;
 
   }
 
 
-  if (
-    realtimeChannel
-  ) {
+  delete appData
+    .shifts[staffName][workDate];
 
-    try {
 
-      supabaseClient.removeChannel(
-        realtimeChannel
-      );
+  saveLocalData();
 
-    } catch (error) {
+}
 
-      console.warn(
-        "Realtime旧チャンネル削除エラー",
+
+/* =========================================================
+   全ローカルデータクリア
+   ========================================================= */
+
+function clearLocalAppData() {
+
+  appData = {
+
+    staff: [],
+
+    shiftTypes: [],
+
+    leaveTypes: [],
+
+    companyHolidays: [],
+
+    shifts: {},
+
+    akeTime: {
+
+      start: "05:30",
+
+      end: "11:15"
+
+    }
+
+  };
+
+
+  saveLocalData();
+
+}
+
+
+/* =========================================================
+   Supabaseへの共通保存前チェック
+   ========================================================= */
+
+async function ensureCanSaveToSupabase() {
+
+  const session =
+    await getCurrentSession();
+
+
+  if (!session?.user) {
+
+    console.warn(
+      "★ 未ログインのため保存できません"
+    );
+
+    return false;
+
+  }
+
+
+  const organization =
+    await ensureOrganizationContext();
+
+
+  if (!organization?.id) {
+
+    console.warn(
+      "★ 組織情報がないため保存できません"
+    );
+
+    return false;
+
+  }
+
+
+  return true;
+
+}
+
+
+/* =========================================================
+   会社休日をSupabaseから再読み込み
+   ========================================================= */
+
+async function reloadCompanyHolidays() {
+
+  const organizationId =
+    getCurrentOrganizationId();
+
+
+  if (!organizationId) {
+
+    return [];
+
+  }
+
+
+  try {
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient
+        .from("company_holidays")
+        .select(
+          "id,name,start_date,end_date,created_at"
+        )
+        .eq(
+          "organization_id",
+          organizationId
+        )
+        .order(
+          "start_date",
+          {
+            ascending: true
+          }
+        );
+
+
+    if (error) {
+
+      console.error(
+        "★ 会社休日再読み込みエラー:",
         error
       );
 
+      return [];
+
     }
 
 
-    realtimeChannel =
-      null;
+    appData.companyHolidays =
+      data || [];
+
+
+    saveLocalData();
+
+
+    return appData.companyHolidays;
+
+
+  } catch (error) {
+
+    console.error(
+      "★ reloadCompanyHolidays エラー:",
+      error
+    );
+
+    return [];
+
+  }
+
+}
+
+
+/* =========================================================
+   アプリ設定取得
+   ========================================================= */
+
+async function loadAppSettings() {
+
+  const organizationId =
+    getCurrentOrganizationId();
+
+
+  if (!organizationId) {
+
+    return false;
 
   }
 
 
-  realtimeChannel =
-    supabaseClient
-      .channel(
-        "kinmu-app-realtime"
-      )
+  try {
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient
+        .from("app_settings")
+        .select(
+          "setting_name,setting_value"
+        )
+        .eq(
+          "organization_id",
+          organizationId
+        );
 
 
-      /* -----------------------------------------------
-         職員
-      ------------------------------------------------ */
+    if (error) {
 
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "staff"
-        },
-        payload => {
-
-          console.log(
-            "Realtime staff:",
-            payload
-          );
-
-
-          scheduleRealtimeReload();
-
-        }
-      )
-
-
-      /* -----------------------------------------------
-         勤務
-      ------------------------------------------------ */
-
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "work_shifts"
-        },
-        payload => {
-
-          console.log(
-            "Realtime work_shifts:",
-            payload
-          );
-
-
-          scheduleRealtimeReload();
-
-        }
-      )
-
-
-      /* -----------------------------------------------
-         勤務形態
-      ------------------------------------------------ */
-
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "shift_types"
-        },
-        payload => {
-
-          console.log(
-            "Realtime shift_types:",
-            payload
-          );
-
-
-          scheduleRealtimeReload();
-
-        }
-      )
-
-
-      /* -----------------------------------------------
-         休暇
-      ------------------------------------------------ */
-
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "leave_types"
-        },
-        payload => {
-
-          console.log(
-            "Realtime leave_types:",
-            payload
-          );
-
-
-          scheduleRealtimeReload();
-
-        }
-      )
-
-
-      /* -----------------------------------------------
-         休業
-      ------------------------------------------------ */
-
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "company_holidays"
-        },
-        payload => {
-
-          console.log(
-            "Realtime company_holidays:",
-            payload
-          );
-
-
-          scheduleRealtimeReload();
-
-        }
-      )
-
-
-      /* -----------------------------------------------
-         明け時間
-      ------------------------------------------------ */
-
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "app_settings"
-        },
-        payload => {
-
-          console.log(
-            "Realtime app_settings:",
-            payload
-          );
-
-
-          scheduleRealtimeReload();
-
-        }
-      )
-
-
-      .subscribe(
-        status => {
-
-          console.log(
-            "Supabase Realtime STATUS:",
-            status
-          );
-
-
-          if (
-            status ===
-            "SUBSCRIBED"
-          ) {
-
-            console.log(
-              "★ Realtime接続成功"
-            );
-
-          }
-
-
-          if (
-            status ===
-              "CHANNEL_ERROR" ||
-            status ===
-              "TIMED_OUT" ||
-            status ===
-              "CLOSED"
-          ) {
-
-            console.warn(
-              "Realtime接続エラー。再接続します。"
-            );
-
-
-            setTimeout(
-              () => {
-
-                if (
-                  document.visibilityState ===
-                  "visible"
-                ) {
-
-                  setupRealtime();
-
-                }
-
-              },
-              3000
-            );
-
-          }
-
-        }
+      console.error(
+        "★ アプリ設定取得エラー:",
+        error
       );
 
-}
+      return false;
+
+    }
 
 
-/* ==================================================
-   Realtime更新予約
-================================================== */
+    const akeStart =
+      data?.find(
+        item =>
+          item.setting_name ===
+          "ake_start"
+      );
 
-function scheduleRealtimeReload() {
 
-  /*
-    保存中でも通知を捨てない
-  */
+    const akeEnd =
+      data?.find(
+        item =>
+          item.setting_name ===
+          "ake_end"
+      );
 
-  if (
-    cloudOperationBusy
-  ) {
 
-    realtimeReloadPending =
-      true;
+    if (akeStart?.setting_value) {
 
-    console.log(
-      "Realtime更新を保留しました"
+      appData.akeTime.start =
+        akeStart.setting_value;
+
+    }
+
+
+    if (akeEnd?.setting_value) {
+
+      appData.akeTime.end =
+        akeEnd.setting_value;
+
+    }
+
+
+    saveLocalData();
+
+
+    return true;
+
+
+  } catch (error) {
+
+    console.error(
+      "★ loadAppSettings エラー:",
+      error
     );
 
-    return;
+    return false;
 
   }
 
-
-  clearTimeout(
-    realtimeReloadTimer
-  );
-
-
-  realtimeReloadTimer =
-    setTimeout(
-      async () => {
-
-        await reloadFromSupabase();
-
-      },
-      300
-    );
-
 }
 
 
-/* ==================================================
-   Supabase再読み込み
-================================================== */
+/* =========================================================
+   Supabaseから最新状態を取得して画面更新
+   ========================================================= */
 
 async function reloadFromSupabase() {
 
-  if (cloudOperationBusy) {
+  /*
+   * 保存処理中の場合は
+   * 現在のデータを上書きしない。
+   */
 
-    realtimeReloadPending = true;
+  if (
+    typeof cloudOperationBusy !==
+      "undefined" &&
+    cloudOperationBusy
+  ) {
 
-    return;
-
-  }
-
-
-  if (realtimeUpdating) {
-
-    realtimeReloadPending = true;
+    console.log(
+      "★ クラウド処理中のため再読み込みを保留"
+    );
 
     return;
 
@@ -4927,5746 +5237,2098 @@ async function reloadFromSupabase() {
 
   try {
 
-    realtimeUpdating = true;
+    const success =
+      await loadAllFromSupabase();
 
 
-    await loadAllFromSupabase();
+    if (!success) {
 
-    await renderAll();
+      return;
 
-
-  } catch (error) {
-
-    console.error(
-      "Supabase再読み込みエラー",
-      error
-    );
-
-
-  } finally {
-
-    realtimeUpdating = false;
-
-  }
-
-}
-
-
-/* ==================================================
-   保存完了後のRealtime処理
-================================================== */
-
-function finishCloudOperation() {
-
-  cloudOperationBusy =
-    false;
-
-
-  if (
-    realtimeReloadPending
-  ) {
-
-    realtimeReloadPending =
-      false;
+    }
 
 
     /*
-      自分自身の保存後にも
-      Supabaseから最新状態を取得する。
+     * 既存の描画処理
+     */
 
-      これにより
+    if (
+      typeof renderAll ===
+      "function"
+    ) {
 
-      端末Aで保存
-      ↓
-      Supabase保存
-      ↓
-      端末AもSupabaseから再取得
-      ↓
-      他端末もRealtimeで取得
-
-      という流れになる。
-    */
-
-    setTimeout(
-      () => {
-
-        reloadFromSupabase();
-
-      },
-      100
-    );
-
-  }
-
-}
-
-
-/* ==================================================
-   自動同期
-================================================== */
-
-function startAutoSync() {
-
-  if (
-    autoSyncTimer
-  ) {
-
-    clearInterval(
-      autoSyncTimer
-    );
-
-  }
-
-
-  autoSyncTimer =
-    setInterval(
-      async () => {
-
-        if (
-          !supabaseClient
-        ) {
-
-          return;
-
-        }
-
-
-        if (
-          cloudOperationBusy
-        ) {
-
-          /*
-            10秒同期でも保存中は
-            次回に回す
-          */
-
-          realtimeReloadPending =
-            true;
-
-          return;
-
-        }
-
-
-        if (
-          document.visibilityState !==
-          "visible"
-        ) {
-
-          return;
-
-        }
-
-
-        await reloadFromSupabase();
-
-      },
-      10000
-    );
-
-}
-
-
-/* ==================================================
-   画面復帰時同期
-================================================== */
-
-function setupVisibilitySync() {
-
-  document.addEventListener(
-    "visibilitychange",
-    async () => {
-
-      if (
-        document.visibilityState !==
-        "visible"
-      ) {
-
-        return;
-
-      }
-
-
-      setTimeout(
-        async () => {
-
-          await reloadFromSupabase();
-
-
-          setupRealtime();
-
-        },
-        300
-      );
+      renderAll();
 
     }
-  );
-
-}
-
-
-function showPage(page) {
-
-  console.log("showPage:", page);
-
-  /* =====================================================
-     ① ログイン画面を完全に隠す
-     ===================================================== */
-
-  const loginPage =
-    document.getElementById("loginPage");
-
-  if (loginPage) {
-
-    loginPage.style.setProperty(
-      "display",
-      "none",
-      "important"
-    );
-
-    loginPage.style.setProperty(
-      "visibility",
-      "hidden",
-      "important"
-    );
-
-    loginPage.style.setProperty(
-      "opacity",
-      "0",
-      "important"
-    );
-
-    loginPage.style.setProperty(
-      "pointer-events",
-      "none",
-      "important"
-    );
-  }
-
-
-  /* =====================================================
-     ② アプリ本体を表示
-     ===================================================== */
-
-  const app =
-    document.getElementById("app");
-
-  if (app) {
-
-    app.style.setProperty(
-      "display",
-      "block",
-      "important"
-    );
-
-    app.style.setProperty(
-      "visibility",
-      "visible",
-      "important"
-    );
-
-    app.style.setProperty(
-      "opacity",
-      "1",
-      "important"
-    );
-
-    app.style.setProperty(
-      "pointer-events",
-      "auto",
-      "important"
-    );
-  }
-
-
-  /* =====================================================
-     ③ すべてのページを一旦非表示
-     ===================================================== */
-
-  document
-    .querySelectorAll(".page")
-    .forEach(function(element) {
-
-      element.style.display = "none";
-
-    });
-
-
-  /* =====================================================
-     ④ 表示するページを取得
-     ===================================================== */
-
-  const targetPage =
-    document.getElementById(page + "Page");
-
-
-  if (!targetPage) {
-
-    console.error(
-      "ページが見つかりません:",
-      page + "Page"
-    );
-
-    return;
-  }
-
-
-  /* =====================================================
-     ⑤ 選択されたページを表示
-     ===================================================== */
-
-  targetPage.style.display = "block";
-
-
-  /* =====================================================
-     ⑥ ナビボタンのactiveをリセット
-     ===================================================== */
-
-  document
-    .querySelectorAll(".nav-button")
-    .forEach(function(button) {
-
-      button.classList.remove("active");
-
-    });
-
-
-  /* =====================================================
-     ⑦ 現在のページのボタンをactiveにする
-     ===================================================== */
-
-  const activeButton =
-    document.querySelector(
-      '.nav-button[data-page="' +
-      page +
-      '"]'
-    );
-
-
-  if (activeButton) {
-
-    activeButton.classList.add("active");
-
-  }
-
-
-  /* =====================================================
-     ⑧ ページごとの表示処理
-     ===================================================== */
-
-  if (page === "schedule") {
-
-    if (typeof renderSchedule === "function") {
-      renderSchedule();
-    }
-
-  }
-
-  else if (page === "staff") {
-
-    if (typeof renderStaffList === "function") {
-      renderStaffList();
-    }
-
-  }
-
-  else if (page === "leave") {
-
-    if (typeof renderLeaveList === "function") {
-      renderLeaveList();
-    }
-
-  }
-
-  else if (page === "shift") {
-
-    if (typeof renderShiftList === "function") {
-      renderShiftList();
-    }
-
-  }
-
-  else if (page === "holiday") {
-
-    if (typeof renderHolidayList === "function") {
-      renderHolidayList();
-    }
-
-  }
-
-
-  /* =====================================================
-     ⑨ シフトメニューを閉じる
-     ===================================================== */
-
-  if (typeof hideShiftMenu === "function") {
-
-    hideShiftMenu();
-
-  }
-
-
-  /* =====================================================
-     ⑩ ページ上部へ
-     ===================================================== */
-
-  window.scrollTo(0, 0);
-}
-
-/* ==================================================
-   イベント
-================================================== */
-
-function bindEvents() {
-
-  document
-    .querySelectorAll(
-      ".nav-button"
-    )
-    .forEach(
-      button => {
-
-        button.addEventListener(
-          "click",
-          () => {
-
-            showPage(
-              button.dataset.page
-            );
-
-          }
-        );
-
-      }
-    );
-
-
-  const prev =
-    document.getElementById(
-      "prevMonth"
-    );
-
-
-  if (prev) {
-
-    prev.addEventListener(
-      "click",
-      () => {
-
-        currentDate.setMonth(
-          currentDate.getMonth() - 1
-        );
-
-
-        renderSchedule();
-
-      }
-    );
-
-  }
-
-
-  const next =
-    document.getElementById(
-      "nextMonth"
-    );
-
-
-  if (next) {
-
-    next.addEventListener(
-      "click",
-      () => {
-
-        currentDate.setMonth(
-          currentDate.getMonth() + 1
-        );
-
-
-        renderSchedule();
-
-      }
-    );
-
-  }
-
-
-  const addStaff =
-    document.getElementById(
-      "addStaffButton"
-    );
-
-
-  if (addStaff) {
-
-    addStaff.addEventListener(
-      "click",
-      addOrUpdateStaff
-    );
-
-  }
-
-
-  const addShift =
-    document.getElementById(
-      "addShiftButton"
-    );
-
-
-  if (addShift) {
-
-    addShift.addEventListener(
-      "click",
-      addOrUpdateShift
-    );
-
-  }
-
-
-  const addLeave =
-    document.getElementById(
-      "addLeaveButton"
-    );
-
-
-  if (addLeave) {
-
-    addLeave.addEventListener(
-      "click",
-      addOrUpdateLeave
-    );
-
-  }
-
-
-  const addHoliday =
-    document.getElementById(
-      "addCompanyHolidayButton"
-    );
-
-
-  if (addHoliday) {
-
-    addHoliday.addEventListener(
-      "click",
-      addCompanyHoliday
-    );
-
-  }
-
-
-  const saveAke =
-    document.getElementById(
-      "saveAkeTimeButton"
-    );
-
-
-  if (saveAke) {
-
-    saveAke.addEventListener(
-      "click",
-      saveAkeTime
-    );
-
-  }
-
-
-  const calendarCancel =
-    document.getElementById(
-      "calendarCancelButton"
-    );
-
-
-  if (calendarCancel) {
-
-    calendarCancel.addEventListener(
-      "click",
-      closeCalendarModal
-    );
-
-  }
-
-
-  const calendarOK =
-    document.getElementById(
-      "calendarOKButton"
-    );
-
-
-  if (calendarOK) {
-
-    calendarOK.addEventListener(
-      "click",
-      subscribeStaffCalendar
-    );
-
-  }
-
-
-  const deleteMonth =
-    document.getElementById(
-      "deleteMonthButton"
-    );
-
-
-  if (deleteMonth) {
-
-    deleteMonth.addEventListener(
-      "click",
-      deleteCurrentMonth
-    );
-
-  }
-
-
-  const deleteFiscal =
-    document.getElementById(
-      "deleteFiscalYearButton"
-    );
-
-
-  if (deleteFiscal) {
-
-    deleteFiscal.addEventListener(
-      "click",
-      deleteFiscalYear
-    );
-
-  }
-
-
-  document.addEventListener(
-    "click",
-    e => {
-
-      const menu =
-        document.getElementById(
-          "shiftMenu"
-        );
-
-
-      if (!menu) {
-
-        return;
-
-      }
-
-
-      if (
-        !menu.contains(
-          e.target
-        ) &&
-        !e.target.closest(
-          ".schedule-cell"
-        )
-      ) {
-
-        hideShiftMenu();
-
-      }
-
-    }
-  );
-
-}
-
-　/* ==================================================
-   ページ切り替え
-================================================== */
-
-function showLoginPage(message = "") {
-
-    console.log("ログイン画面を表示");
-
-    // ==========================================
-    // アプリ本体を非表示
-    // ==========================================
-
-    const app = document.getElementById("app");
-
-    if (app) {
-        app.style.setProperty(
-            "display",
-            "none",
-            "important"
-        );
-
-        app.style.setProperty(
-            "visibility",
-            "hidden",
-            "important"
-        );
-    }
-
-
-    // ==========================================
-    // ログイン画面を表示
-    // ==========================================
-
-    const loginPage =
-        document.getElementById("loginPage");
-
-    if (loginPage) {
-
-        loginPage.style.setProperty(
-            "display",
-            "flex",
-            "important"
-        );
-
-        loginPage.style.setProperty(
-            "visibility",
-            "visible",
-            "important"
-        );
-
-        loginPage.style.setProperty(
-            "pointer-events",
-            "auto",
-            "important"
-        );
-    }
-
-
-    // ==========================================
-    // ログインメッセージ
-    // ==========================================
-
-    const loginMessage =
-        document.getElementById("loginMessage");
-
-    if (loginMessage) {
-        loginMessage.textContent = message || "";
-    }
-
-
-    // ==========================================
-    // ログイン画面の先頭へ
-    // ==========================================
-
-    window.scrollTo(0, 0);
-
-    if (loginPage) {
-        loginPage.scrollTop = 0;
-    }
-}
-
-
-/* ==================================================
-   全体描画
-================================================== */
-
-async function renderAll() {
-
-  await renderSchedule();
-
-  await renderStaffList();
-
-  renderLeaveList();
-
-  renderShiftList();
-
-  renderHolidayList();
-
-
-  const start =
-    document.getElementById(
-      "akeStartInput"
-    );
-
-  const end =
-    document.getElementById(
-      "akeEndInput"
-    );
-
-
-  if (start) {
-
-    start.value =
-      appData.akeTime.start;
-
-  }
-
-
-  if (end) {
-
-    end.value =
-      appData.akeTime.end;
-
-  }
-
-}
-
-
-/* ==================================================
-   日付
-================================================== */
-
-function getDateKey(
-  year,
-  month,
-  day
-) {
-
-  return (
-    `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`
-  );
-
-}
-
-
-function getDaysInMonth(
-  year,
-  month
-) {
-
-  return new Date(
-    year,
-    month,
-    0
-  ).getDate();
-
-}
-
-
-function formatDateJP(
-  dateKey
-) {
-
-  const [
-    y,
-    m,
-    d
-  ] =
-    dateKey
-      .split("-")
-      .map(Number);
-
-
-  return `${y}/${m}/${d}`;
-
-}
-
-
-/* ==================================================
-   休業・祝日
-================================================== */
-
-function isCompanyHoliday(
-  dateKey
-) {
-
-  return appData.companyHolidays.some(
-    h =>
-      dateKey >= h.start &&
-      dateKey <= h.end
-  );
-
-}
-
-
-function getCompanyHoliday(
-  dateKey
-) {
-
-  return appData.companyHolidays.find(
-    h =>
-      dateKey >= h.start &&
-      dateKey <= h.end
-  );
-
-}
-
-
-function isPublicHoliday(
-  dateKey
-) {
-
-  return !!publicHolidays[
-    dateKey
-  ];
-
-}
-
-
-/* ==================================================
-   勤務データ取得
-================================================== */
-
-function getStoredShift(
-  staffName,
-  dateKey
-) {
-
-  const name =
-    getStaffName(
-      staffName
-    );
-
-
-  const data =
-    appData.shifts[name] &&
-    appData.shifts[name][dateKey];
-
-
-  if (!data) {
-
-    return "";
-
-  }
-
-
-  if (
-    typeof data ===
-    "string"
-  ) {
-
-    return data;
-
-  }
-
-
-  return data.shiftName || "";
-
-}
-
-
-function getStoredLeave(
-  staffName,
-  dateKey
-) {
-
-  const name =
-    getStaffName(
-      staffName
-    );
-
-
-  const data =
-    appData.shifts[name] &&
-    appData.shifts[name][dateKey];
-
-
-  if (!data) {
-
-    return "";
-
-  }
-
-
-  if (
-    typeof data ===
-    "string"
-  ) {
-
-    return "";
-
-  }
-
-
-  return data.leaveType || "";
-
-}
-
-
-function setStoredShift(
-  staffName,
-  dateKey,
-  shiftName,
-  leaveType
-) {
-
-  const name =
-    getStaffName(
-      staffName
-    );
-
-
-  if (
-    !appData.shifts[name]
-  ) {
-
-    appData.shifts[name] =
-      {};
-
-  }
-
-
-  if (
-    shiftName ||
-    leaveType
-  ) {
-
-    appData.shifts[name][
-      dateKey
-    ] = {
-
-      shiftName:
-        shiftName || "",
-
-      leaveType:
-        leaveType || ""
-
-    };
-
-  } else {
-
-    delete appData.shifts[
-      name
-    ][dateKey];
-
-  }
-
-}
-
-
-/* ==================================================
-   職員名
-================================================== */
-
-function getStaffName(
-  staff
-) {
-
-  if (
-    typeof staff ===
-    "string"
-  ) {
-
-    return staff;
-
-  }
-
-
-  if (
-    staff &&
-    typeof staff ===
-      "object" &&
-    staff.name
-  ) {
-
-    return String(
-      staff.name
-    );
-
-  }
-
-
-  return String(
-    staff ?? ""
-  );
-
-}
-
-
-/* ==================================================
-   自動「明」
-================================================== */
-
-function getDisplayShift(
-  staffName,
-  dateKey
-) {
-
-  const stored =
-    getStoredShift(
-      staffName,
-      dateKey
-    );
-
-
-  const [
-    year,
-    month,
-    day
-  ] =
-    dateKey
-      .split("-")
-      .map(Number);
-
-
-  const current =
-    new Date(
-      year,
-      month - 1,
-      day
-    );
-
-
-  const previous =
-    new Date(
-      current
-    );
-
-
-  previous.setDate(
-    previous.getDate() - 1
-  );
-
-
-  const prevKey =
-    getDateKey(
-      previous.getFullYear(),
-      previous.getMonth() + 1,
-      previous.getDate()
-    );
-
-
-  const previousShift =
-    getStoredShift(
-      staffName,
-      prevKey
-    );
-
-
-  if (
-    previousShift &&
-    (
-      previousShift.includes("宿") ||
-      previousShift.includes("夜")
-    )
-  ) {
-
-    return "明";
-
-  }
-
-
-  return stored;
-
-}
-
-
-/* ==================================================
-   休暇色
-================================================== */
-
-function getLeaveType(
-  leaveName
-) {
-
-  if (!leaveName) {
-
-    return null;
-
-  }
-
-
-  return appData.leaveTypes.find(
-    leave =>
-      String(leave.name) ===
-      String(leaveName)
-  ) || null;
-
-}
-
-
-function getLeaveColor(
-  leaveName
-) {
-
-  const leave =
-    getLeaveType(
-      leaveName
-    );
-
-
-  if (
-    leave &&
-    leave.color
-  ) {
-
-    return leave.color;
-
-  }
-
-
-  return "";
-
-}
-
-
-/* ==================================================
-   集計用勤務形態正規化
-================================================== */
-
-function normalizeShiftNameForTotal(
-  value
-) {
-
-  const text =
-    String(
-      value ?? ""
-    ).trim();
-
-
-  if (!text) {
-
-    return "";
-
-  }
-
-
-  if (
-    text === "明"
-  ) {
-
-    return "明";
-
-  }
-
-
-  const shiftNames =
-    Array.isArray(
-      appData.shiftTypes
-    )
-
-      ? [
-          ...new Set(
-            appData.shiftTypes
-              .map(
-                shift =>
-                  String(
-                    shift?.name ??
-                    ""
-                  ).trim()
-              )
-              .filter(
-                name =>
-                  name &&
-                  name !== "明"
-              )
-          )
-        ]
-
-      : [];
-
-
-  if (
-    shiftNames.length === 0
-  ) {
-
-    return text;
-
-  }
-
-
-  const candidates =
-    shiftNames
-      .filter(
-        name =>
-          text.startsWith(
-            name
-          )
-      )
-      .sort(
-        (a, b) =>
-          b.length -
-          a.length
-      );
-
-
-  if (
-    candidates.length === 0
-  ) {
-
-    return text;
-
-  }
-
-
-  const shorterCandidates =
-    candidates.filter(
-      name =>
-        name.length <
-        text.length
-    );
-
-
-  if (
-    shorterCandidates.length > 0
-  ) {
-
-    shorterCandidates.sort(
-      (a, b) =>
-        b.length -
-        a.length
-    );
-
-
-    return shorterCandidates[0];
-
-  }
-
-
-  return candidates[0];
-
-}
-
-
-/* ==================================================
-   合計列用勤務形態一覧
-================================================== */
-
-function getTotalShiftTypes() {
-
-  const result =
-    [];
-
-  const seen =
-    new Set();
-
-
-  if (
-    !Array.isArray(
-      appData.shiftTypes
-    )
-  ) {
-
-    return result;
-
-  }
-
-
-  appData.shiftTypes.forEach(
-    shift => {
-
-      if (!shift) {
-
-        return;
-
-      }
-
-
-      const originalName =
-        String(
-          shift.name ??
-          ""
-        ).trim();
-
-
-      if (
-        !originalName ||
-        originalName === "明"
-      ) {
-
-        return;
-
-      }
-
-
-      const baseName =
-        normalizeShiftNameForTotal(
-          originalName
-        );
-
-
-      if (
-        !baseName ||
-        baseName === "明"
-      ) {
-
-        return;
-
-      }
-
-
-      if (
-        seen.has(
-          baseName
-        )
-      ) {
-
-        return;
-
-      }
-
-
-      seen.add(
-        baseName
-      );
-
-
-      const exactBase =
-        appData.shiftTypes.find(
-          item =>
-            String(
-              item?.name ??
-              ""
-            ).trim() ===
-            baseName
-        );
-
-
-      result.push(
-        exactBase ||
-        {
-          ...shift,
-          name:
-            baseName
-        }
-      );
-
-    }
-  );
-
-
-  return result;
-
-}
-
-
-/* =========================================================
-   休暇一覧（勤務表の下）
-   ========================================================= */
-
-function renderLeaveLegend() {
-
-  const table =
-    document.getElementById(
-      "scheduleTable"
-    );
-
-  if (!table) {
-    return;
-  }
-
-
-  /* ---------------------------------------------------------
-     休暇一覧のコンテナを取得・作成
-     --------------------------------------------------------- */
-
-  let legend =
-    document.getElementById(
-      "leaveLegend"
-    );
-
-
-  if (!legend) {
-
-    legend =
-      document.createElement(
-        "div"
-      );
-
-    legend.id =
-      "leaveLegend";
-
-
-    /* 基本レイアウト */
-
-    legend.style.marginTop =
-      "10px";
-
-    legend.style.marginBottom =
-      "10px";
-
-    legend.style.padding =
-      "10px 12px";
-
-    legend.style.borderRadius =
-      "10px";
-
-    legend.style.boxSizing =
-      "border-box";
-
-    legend.style.display =
-      "flex";
-
-    legend.style.flexWrap =
-      "wrap";
-
-    legend.style.alignItems =
-      "center";
-
-    legend.style.gap =
-      "8px 14px";
 
 
     /*
-      色はCSS側で管理する。
-      ダークモードのCSSが適用できるように
-      インラインで白色を指定しない。
-    */
-
-    legend.classList.add(
-      "leave-legend"
-    );
-
+     * 固定レイヤーも更新
+     */
 
     if (
-      table.parentElement
-    ) {
-
-      table.parentElement.insertBefore(
-        legend,
-        table.nextSibling
-      );
-
-    }
-
-  }
-
-
-  /* ---------------------------------------------------------
-     休暇データがない場合
-     --------------------------------------------------------- */
-
-  if (
-    !Array.isArray(
-      appData.leaveTypes
-    ) ||
-    appData.leaveTypes.length ===
-      0
-  ) {
-
-    legend.style.display =
-      "none";
-
-    legend.innerHTML =
-      "";
-
-    return;
-
-  }
-
-
-  /* ---------------------------------------------------------
-     表示
-     --------------------------------------------------------- */
-
-  legend.style.display =
-    "flex";
-
-  legend.style.flexWrap =
-    "wrap";
-
-  legend.style.alignItems =
-    "center";
-
-  legend.style.gap =
-    "8px 14px";
-
-
-  /* ---------------------------------------------------------
-     タイトル
-     「休暇設定」と同じカレンダー＋チェックアイコン
-     --------------------------------------------------------- */
-
-  let html =
-    `
-      <div
-        class="leave-legend-title"
-        style="
-          width:100%;
-          font-weight:700;
-          font-size:14px;
-          margin-bottom:2px;
-          display:flex;
-          align-items:center;
-          gap:6px;
-        "
-      >
-
-        <svg
-          class="section-icon"
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-          style="
-            width:20px;
-            height:20px;
-            flex-shrink:0;
-          "
-        >
-
-          <rect
-            x="3"
-            y="4"
-            width="18"
-            height="17"
-            rx="3"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.8"
-          />
-
-          <line
-            x1="7"
-            y1="2.5"
-            x2="7"
-            y2="6"
-            stroke="currentColor"
-            stroke-width="1.8"
-            stroke-linecap="round"
-          />
-
-          <line
-            x1="17"
-            y1="2.5"
-            x2="17"
-            y2="6"
-            stroke="currentColor"
-            stroke-width="1.8"
-            stroke-linecap="round"
-          />
-
-          <line
-            x1="3"
-            y1="9"
-            x2="21"
-            y2="9"
-            stroke="currentColor"
-            stroke-width="1.8"
-          />
-
-          <path
-            d="M8 15l2.3 2.3L16.5 11"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.9"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-
-        </svg>
-
-
-        <span>
-          休暇一覧
-        </span>
-
-      </div>
-    `;
-
-
-  /* ---------------------------------------------------------
-     休暇一覧
-     --------------------------------------------------------- */
-
-  appData.leaveTypes.forEach(
-    leave => {
-
-      const color =
-        leave.color ||
-        "#FFD54F";
-
-
-      html +=
-        `
-          <div
-            class="leave-legend-item"
-            style="
-              display:flex;
-              align-items:center;
-              gap:6px;
-              min-height:28px;
-            "
-          >
-
-            <!-- 休暇色 -->
-
-            <span
-              class="leave-legend-color"
-              style="
-                display:inline-flex;
-                align-items:center;
-                justify-content:center;
-                min-width:20px;
-                width:20px;
-                height:20px;
-                border-radius:5px;
-                background:${escapeHtml(
-                  color
-                )};
-                border:1px solid rgba(0,0,0,.18);
-                box-sizing:border-box;
-                flex-shrink:0;
-              "
-            ></span>
-
-
-            <!-- 休暇名 -->
-
-            <span
-              class="leave-legend-name"
-              style="
-                font-size:13px;
-                line-height:1.3;
-                white-space:nowrap;
-              "
-            >
-              ${escapeHtml(
-                leave.name
-              )}
-            </span>
-
-          </div>
-        `;
-
-    }
-  );
-
-
-  /* ---------------------------------------------------------
-     HTMLを反映
-     --------------------------------------------------------- */
-
-  legend.innerHTML =
-    html;
-
-}
-
-/* ==================================================
-   勤務表
-================================================== */
-
-async function renderSchedule() {
-
-  // ログイン中の職員ID
-  let currentStaffId = null;
-
-  try {
-    currentStaffId =
-      await getCurrentStaffId();
-  } catch (error) {
-    console.error(
-      "ログイン中の職員ID取得エラー",
-      error
-    );
-  }
-   
-  const table =
-    document.getElementById(
-      "scheduleTable"
-    );
-
-
-  const monthLabel =
-    document.getElementById(
-      "currentMonth"
-    );
-
-
-  if (!table) {
-
-    return;
-
-  }
-
-
-  const year =
-    currentDate.getFullYear();
-
-
-  const month =
-    currentDate.getMonth() + 1;
-
-
-  const days =
-    getDaysInMonth(
-      year,
-      month
-    );
-
-
-  if (monthLabel) {
-
-    monthLabel.textContent =
-      `${year}年${month}月`;
-
-  }
-
-
-  /* ==================================================
-     列幅
-  ================================================== */
-
-  const staffColumnWidth =
-    90;
-
-
-  const dateColumnWidth =
-    window.innerWidth <= 600
-      ? 48
-      : 52;
-
-
-  const totalColumnWidth =
-    window.innerWidth <= 600
-      ? 52
-      : 58;
-
-
-  const totalShiftTypes =
-    getTotalShiftTypes();
-
-
-  let html =
-    "";
-
-
-  /* ==================================================
-     colgroup
-  ================================================== */
-
-  html +=
-    "<colgroup>";
-
-
-  html += `
-    <col
-      class="staff-column"
-      style="
-        width:${staffColumnWidth}px;
-        min-width:${staffColumnWidth}px;
-        max-width:${staffColumnWidth}px;
-      "
-    >
-  `;
-
-
-  for (
-    let day = 1;
-    day <= days;
-    day++
-  ) {
-
-    html += `
-      <col
-        class="date-column"
-        style="
-          width:${dateColumnWidth}px;
-          min-width:${dateColumnWidth}px;
-          max-width:${dateColumnWidth}px;
-        "
-      >
-    `;
-
-  }
-
-
-  totalShiftTypes.forEach(
-    () => {
-
-      html += `
-        <col
-          class="total-column"
-          style="
-            width:${totalColumnWidth}px;
-            min-width:${totalColumnWidth}px;
-            max-width:${totalColumnWidth}px;
-          "
-        >
-
-        <col
-          class="total-column"
-          style="
-            width:${totalColumnWidth}px;
-            min-width:${totalColumnWidth}px;
-            max-width:${totalColumnWidth}px;
-          "
-        >
-      `;
-
-    }
-  );
-
-
-  html +=
-    "</colgroup>";
-
-
-  /* ==================================================
-     ヘッダー
-  ================================================== */
-
-  html +=
-    "<thead><tr>";
-
-
-  html += `
-    <th
-      class="staff-header"
-      rowspan="2"
-      style="
-        width:${staffColumnWidth}px;
-        min-width:${staffColumnWidth}px;
-        max-width:${staffColumnWidth}px;
-
-        position:sticky;
-        left:0;
-
-        z-index:300;
-
-        background:#f2f2f7;
-
-        box-sizing:border-box;
-
-        border-right:1px solid #d1d1d6;
-      "
-    >
-      職員
-    </th>
-  `;
-
-
-  for (
-    let day = 1;
-    day <= days;
-    day++
-  ) {
-
-    const dateKey =
-      getDateKey(
-        year,
-        month,
-        day
-      );
-
-
-    const week =
-      new Date(
-        year,
-        month - 1,
-        day
-      ).getDay();
-
-
-    let cls =
-      "date-header";
-
-
-    if (
-      isCompanyHoliday(
-        dateKey
-      )
-    ) {
-
-      cls +=
-        " company-holiday";
-
-    } else if (
-      week === 0 ||
-      isPublicHoliday(
-        dateKey
-      )
-    ) {
-
-      cls +=
-        " sunday";
-
-    } else if (
-      week === 6
-    ) {
-
-      cls +=
-        " saturday";
-
-    }
-
-
-    html += `
-      <th
-        class="${cls}"
-        rowspan="2"
-        style="
-          width:${dateColumnWidth}px;
-          min-width:${dateColumnWidth}px;
-          max-width:${dateColumnWidth}px;
-
-          box-sizing:border-box;
-        "
-      >
-        <span class="day-number">
-          ${day}
-        </span>
-
-        <br>
-
-        <span class="day-week">
-          ${
-            [
-              "日",
-              "月",
-              "火",
-              "水",
-              "木",
-              "金",
-              "土"
-            ][week]
-          }
-        </span>
-      </th>
-    `;
-
-  }
-
-
-  totalShiftTypes.forEach(
-    shift => {
-
-      html += `
-        <th
-          colspan="2"
-          class="shift-header"
-        >
-          ${escapeHtml(
-            shift.name
-          )}
-        </th>
-      `;
-
-    }
-  );
-
-
-  html +=
-    "</tr><tr>";
-
-
-  totalShiftTypes.forEach(
-    () => {
-
-      html += `
-        <th
-          class="total-header"
-          style="
-            width:${totalColumnWidth}px;
-            min-width:${totalColumnWidth}px;
-            max-width:${totalColumnWidth}px;
-
-            box-sizing:border-box;
-          "
-        >
-          合計
-        </th>
-
-        <th
-          class="total-header"
-          style="
-            width:${totalColumnWidth}px;
-            min-width:${totalColumnWidth}px;
-            max-width:${totalColumnWidth}px;
-
-            box-sizing:border-box;
-          "
-        >
-          累計
-        </th>
-      `;
-
-    }
-  );
-
-
-  html +=
-    "</tr></thead><tbody>";
-
-
-  /* ==================================================
-     職員
-  ================================================== */
-
-  appData.staff.forEach(
-    staff => {
-
-      const staffName =
-        getStaffName(
-          staff
-        );
-
-
-    const isCurrentUser =
-  currentStaffId &&
-  staff.id === currentStaffId;
-
-html += `
-  <tr
-    class="staff-row ${
-      isCurrentUser
-        ? "current-user-staff-row"
-        : ""
-    }"
-    data-staff-row="${escapeHtml(
-      staffName
-    )}"
-  >
-`;
-
-
-      html += `
-        <th
-          class="staff-cell staff-name-cell"
-          data-staff="${escapeHtml(
-            staffName
-          )}"
-          style="
-            width:${staffColumnWidth}px;
-            min-width:${staffColumnWidth}px;
-            max-width:${staffColumnWidth}px;
-
-            position:sticky;
-            left:0;
-
-            z-index:200;
-
-            background:#ffffff;
-
-            box-sizing:border-box;
-
-            border-right:1px solid #d1d1d6;
-          "
-        >
-          ${escapeHtml(
-            staffName
-          )}
-        </th>
-      `;
-
-
-      /* ==================================================
-         日付
-      ================================================== */
-
-      for (
-        let day = 1;
-        day <= days;
-        day++
-      ) {
-
-        const dateKey =
-          getDateKey(
-            year,
-            month,
-            day
-          );
-
-
-        const week =
-          new Date(
-            year,
-            month - 1,
-            day
-          ).getDay();
-
-
-        let cls =
-          "schedule-cell";
-
-
-        if (
-          isCompanyHoliday(
-            dateKey
-          )
-        ) {
-
-          cls +=
-            " company-holiday";
-
-        } else if (
-          week === 0 ||
-          isPublicHoliday(
-            dateKey
-          )
-        ) {
-
-          cls +=
-            " sunday";
-
-        } else if (
-          week === 6
-        ) {
-
-          cls +=
-            " saturday";
-
-        }
-
-
-        const display =
-          getDisplayShift(
-            staffName,
-            dateKey
-          );
-
-
-        const leaveName =
-          getStoredLeave(
-            staffName,
-            dateKey
-          );
-
-
-        const leaveColor =
-          getLeaveColor(
-            leaveName
-          );
-
-
-        const backgroundStyle =
-          leaveColor
-            ? `background:${escapeHtml(
-                leaveColor
-              )} !important;`
-            : "";
-
-
-        html += `
-          <td
-            class="${cls}"
-            data-staff="${escapeHtml(
-              staffName
-            )}"
-            data-date="${dateKey}"
-
-            style="
-              width:${dateColumnWidth}px;
-              min-width:${dateColumnWidth}px;
-              max-width:${dateColumnWidth}px;
-
-              box-sizing:border-box;
-
-              ${backgroundStyle}
-            "
-          >
-            ${escapeHtml(
-              display
-            )}
-          </td>
-        `;
-
-      }
-
-
-      /* ==================================================
-         合計・累計
-      ================================================== */
-
-      totalShiftTypes.forEach(
-        shift => {
-
-          const monthly =
-            calculateMonthlyTotal(
-              staffName,
-              shift.name,
-              year,
-              month
-            );
-
-
-          const fiscal =
-            calculateFiscalTotal(
-              staffName,
-              shift.name,
-              year,
-              month
-            );
-
-
-          html += `
-            <td
-              class="total-cell"
-              style="
-                width:${totalColumnWidth}px;
-                min-width:${totalColumnWidth}px;
-                max-width:${totalColumnWidth}px;
-
-                box-sizing:border-box;
-              "
-            >
-              ${monthly}
-            </td>
-
-            <td
-              class="total-cell"
-              style="
-                width:${totalColumnWidth}px;
-                min-width:${totalColumnWidth}px;
-                max-width:${totalColumnWidth}px;
-
-                box-sizing:border-box;
-              "
-            >
-              ${fiscal}
-            </td>
-          `;
-
-        }
-      );
-
-
-      html +=
-        "</tr>";
-
-    }
-  );
-
-
-  html +=
-    "</tbody>";
-
-
-  /* ==================================================
-     テーブル設定
-  ================================================== */
-
-  table.style.borderCollapse =
-    "separate";
-
-
-  table.style.borderSpacing =
-    "0";
-
-
-  table.style.tableLayout =
-    "fixed";
-
-
-  const requiredTableWidth =
-    staffColumnWidth +
-    days *
-      dateColumnWidth +
-    totalShiftTypes.length *
-      2 *
-      totalColumnWidth;
-
-
-  table.style.width =
-    requiredTableWidth +
-    "px";
-
-
-  table.style.minWidth =
-    requiredTableWidth +
-    "px";
-
-
-  table.style.maxWidth =
-    "none";
-
-
-  /* ==================================================
-     HTML反映
-  ================================================== */
-
-  table.innerHTML =
-    html;
-
-
-  /* ==================================================
-     イベント
-  ================================================== */
-
-  bindScheduleCells();
-
-  bindStaffNameCells();
-
-
-  /* ==================================================
-     休暇一覧
-  ================================================== */
-
-  renderLeaveLegend();
-
-
-  /* ==================================================
-     固定ヘッダー
-  ================================================== */
-
-  updateScheduleFixedLayers();
-
-}
-
-
-/* =========================================================
-   固定レイヤー作成
-========================================================= */
-
-function createScheduleFixedLayers() {
-
-  const table =
-    document.getElementById(
-      "scheduleTable"
-    );
-
-
-  if (!table) {
-
-    return;
-
-  }
-
-
-  const thead =
-    table.querySelector(
-      "thead"
-    );
-
-
-  const tbody =
-    table.querySelector(
-      "tbody"
-    );
-
-
-  const wrapper =
-    table.closest(
-      ".table-wrapper"
-    );
-
-
-  if (
-    !thead ||
-    !wrapper
-  ) {
-
-    return;
-
-  }
-
-
-  /* ==================================================
-     既存削除
-  ================================================== */
-
-  if (
-    scheduleFixedHeader
-  ) {
-
-    scheduleFixedHeader.remove();
-
-    scheduleFixedHeader =
-      null;
-
-    scheduleFixedHeaderTable =
-      null;
-
-  }
-
-
-  if (
-    scheduleFixedStaffColumn
-  ) {
-
-    scheduleFixedStaffColumn.remove();
-
-    scheduleFixedStaffColumn =
-      null;
-
-    scheduleFixedStaffTable =
-      null;
-
-  }
-
-
-  /* ==================================================
-     固定ヘッダー
-  ================================================== */
-
-  const fixedHeader =
-    document.createElement(
-      "div"
-    );
-
-
-  fixedHeader.id =
-    "scheduleFixedHeader";
-
-
-  fixedHeader.style.position =
-    "fixed";
-
-
-  fixedHeader.style.display =
-    "none";
-
-
-  fixedHeader.style.overflow =
-    "hidden";
-
-
-  fixedHeader.style.margin =
-    "0";
-
-
-  fixedHeader.style.padding =
-    "0";
-
-
-  fixedHeader.style.background =
-    "#f8f8fa";
-
-
-  fixedHeader.style.zIndex =
-    "999";
-
-
-  fixedHeader.style.pointerEvents =
-    "none";
-
-
-  fixedHeader.style.boxSizing =
-    "border-box";
-
-
-  const fixedHeaderTable =
-    document.createElement(
-      "table"
-    );
-
-
-  fixedHeaderTable.style.borderCollapse =
-    "separate";
-
-
-  fixedHeaderTable.style.borderSpacing =
-    "0";
-
-
-  fixedHeaderTable.style.tableLayout =
-    "fixed";
-
-
-  fixedHeaderTable.style.margin =
-    "0";
-
-
-  fixedHeaderTable.style.padding =
-    "0";
-
-
-  fixedHeaderTable.style.position =
-    "relative";
-
-
-  const originalColgroup =
-    table.querySelector(
-      "colgroup"
-    );
-
-
-  if (originalColgroup) {
-
-    fixedHeaderTable.appendChild(
-      originalColgroup.cloneNode(
-        true
-      )
-    );
-
-  }
-
-
-  const fixedThead =
-    thead.cloneNode(
-      true
-    );
-
-
-  fixedHeaderTable.appendChild(
-    fixedThead
-  );
-
-
-  fixedHeader.appendChild(
-    fixedHeaderTable
-  );
-
-
-  document.body.appendChild(
-    fixedHeader
-  );
-
-
-  scheduleFixedHeader =
-    fixedHeader;
-
-
-  scheduleFixedHeaderTable =
-    fixedHeaderTable;
-
-
-  /* ==================================================
-     固定職員列
-  ================================================== */
-
-  const fixedStaff =
-    document.createElement(
-      "div"
-    );
-
-
-  fixedStaff.id =
-    "scheduleFixedStaffColumn";
-
-
-  fixedStaff.style.position =
-    "fixed";
-
-
-  fixedStaff.style.display =
-    "none";
-
-
-  fixedStaff.style.overflow =
-    "hidden";
-
-
-  fixedStaff.style.margin =
-    "0";
-
-
-  fixedStaff.style.padding =
-    "0";
-
-
-  fixedStaff.style.background =
-    "#ffffff";
-
-
-  fixedStaff.style.zIndex =
-    "1000";
-
-
-  fixedStaff.style.pointerEvents =
-    "none";
-
-
-  fixedStaff.style.boxSizing =
-    "border-box";
-
-
-  const fixedStaffTable =
-    document.createElement(
-      "table"
-    );
-
-
-  fixedStaffTable.style.borderCollapse =
-    "separate";
-
-
-  fixedStaffTable.style.borderSpacing =
-    "0";
-
-
-  fixedStaffTable.style.tableLayout =
-    "fixed";
-
-
-  fixedStaffTable.style.margin =
-    "0";
-
-
-  fixedStaffTable.style.padding =
-    "0";
-
-
-  fixedStaffTable.style.position =
-    "relative";
-
-
-  /* ==================================================
-     職員ヘッダー
-  ================================================== */
-
-  const fixedStaffThead =
-    document.createElement(
-      "thead"
-    );
-
-
-  const headerRows =
-    Array.from(
-      thead.querySelectorAll(
-        "tr"
-      )
-    );
-
-
-  headerRows.forEach(
-    (originalRow, rowIndex) => {
-
-      const newRow =
-        document.createElement(
-          "tr"
-        );
-
-
-      const staffCell =
-        originalRow.querySelector(
-          ".staff-header"
-        );
-
-
-      if (
-        rowIndex === 0 &&
-        staffCell
-      ) {
-
-        const cloned =
-          staffCell.cloneNode(
-            true
-          );
-
-
-        cloned.style.position =
-          "static";
-
-
-        cloned.style.left =
-          "auto";
-
-
-        cloned.style.top =
-          "auto";
-
-
-        cloned.style.zIndex =
-          "1";
-
-
-        newRow.appendChild(
-          cloned
-        );
-
-      }
-
-
-      fixedStaffThead.appendChild(
-        newRow
-      );
-
-    }
-  );
-
-
-  /* ==================================================
-     職員名
-  ================================================== */
-
-  const fixedStaffTbody =
-    document.createElement(
-      "tbody"
-    );
-
-
-  if (tbody) {
-
-    const staffRows =
-      tbody.querySelectorAll(
-        "tr"
-      );
-
-
-    staffRows.forEach(
-      originalRow => {
-
-        const staffCell =
-          originalRow.querySelector(
-            ".staff-name-cell"
-          );
-
-
-        if (!staffCell) {
-
-          return;
-
-        }
-
-
-        const newRow =
-          document.createElement(
-            "tr"
-          );
-
-
-        const cloned =
-          staffCell.cloneNode(
-            true
-          );
-
-
-        cloned.style.position =
-          "static";
-
-
-        cloned.style.left =
-          "auto";
-
-
-        cloned.style.top =
-          "auto";
-
-
-        cloned.style.zIndex =
-          "1";
-
-
-        newRow.appendChild(
-          cloned
-        );
-
-
-        fixedStaffTbody.appendChild(
-          newRow
-        );
-
-      }
-    );
-
-  }
-
-
-  fixedStaffTable.appendChild(
-    fixedStaffThead
-  );
-
-
-  fixedStaffTable.appendChild(
-    fixedStaffTbody
-  );
-
-
-  fixedStaff.appendChild(
-    fixedStaffTable
-  );
-
-
-  document.body.appendChild(
-    fixedStaff
-  );
-
-
-  scheduleFixedStaffColumn =
-    fixedStaff;
-
-
-  scheduleFixedStaffTable =
-    fixedStaffTable;
-
-
-  syncScheduleFixedLayers();
-
-}
-
-
-/* =========================================================
-   固定レイヤーサイズ同期
-========================================================= */
-
-function syncScheduleFixedLayers() {
-
-  const table =
-    document.getElementById(
-      "scheduleTable"
-    );
-
-
-  if (!table) {
-
-    return;
-
-  }
-
-
-  /* ==================================================
-     固定ヘッダー
-  ================================================== */
-
-  if (
-    scheduleFixedHeaderTable
-  ) {
-
-    const tableRect =
-      table.getBoundingClientRect();
-
-
-    scheduleFixedHeaderTable.style.width =
-      tableRect.width +
-      "px";
-
-
-    scheduleFixedHeaderTable.style.minWidth =
-      tableRect.width +
-      "px";
-
-
-    scheduleFixedHeaderTable.style.maxWidth =
-      tableRect.width +
-      "px";
-
-
-    const originalCols =
-      table.querySelectorAll(
-        "colgroup col"
-      );
-
-
-    const fixedCols =
-      scheduleFixedHeaderTable.querySelectorAll(
-        "colgroup col"
-      );
-
-
-    originalCols.forEach(
-      (originalCol, index) => {
-
-        const fixedCol =
-          fixedCols[index];
-
-
-        if (!fixedCol) {
-
-          return;
-
-        }
-
-
-        const width =
-          originalCol
-            .getBoundingClientRect()
-            .width;
-
-
-        fixedCol.style.width =
-          width +
-          "px";
-
-
-        fixedCol.style.minWidth =
-          width +
-          "px";
-
-
-        fixedCol.style.maxWidth =
-          width +
-          "px";
-
-      }
-    );
-
-
-    const originalCells =
-      table.querySelectorAll(
-        "thead th"
-      );
-
-
-    const fixedCells =
-      scheduleFixedHeaderTable.querySelectorAll(
-        "thead th"
-      );
-
-
-    originalCells.forEach(
-      (originalCell, index) => {
-
-        const fixedCell =
-          fixedCells[index];
-
-
-        if (!fixedCell) {
-
-          return;
-
-        }
-
-
-        const rect =
-          originalCell
-            .getBoundingClientRect();
-
-
-        const style =
-          window.getComputedStyle(
-            originalCell
-          );
-
-
-        fixedCell.style.width =
-          rect.width +
-          "px";
-
-
-        fixedCell.style.minWidth =
-          rect.width +
-          "px";
-
-
-        fixedCell.style.maxWidth =
-          rect.width +
-          "px";
-
-
-        fixedCell.style.height =
-          rect.height +
-          "px";
-
-
-        fixedCell.style.boxSizing =
-          "border-box";
-
-
-        fixedCell.style.padding =
-          style.padding;
-
-
-        fixedCell.style.borderTop =
-          style.borderTop;
-
-
-        fixedCell.style.borderRight =
-          style.borderRight;
-
-
-        fixedCell.style.borderBottom =
-          style.borderBottom;
-
-
-        fixedCell.style.borderLeft =
-          style.borderLeft;
-
-
-        fixedCell.style.background =
-          style.background;
-
-
-        fixedCell.style.font =
-          style.font;
-
-
-        fixedCell.style.fontSize =
-          style.fontSize;
-
-
-        fixedCell.style.fontWeight =
-          style.fontWeight;
-
-
-        fixedCell.style.color =
-          style.color;
-
-
-        fixedCell.style.textAlign =
-          style.textAlign;
-
-
-        fixedCell.style.verticalAlign =
-          style.verticalAlign;
-
-
-        if (
-          fixedCell.classList.contains(
-            "staff-header"
-          )
-        ) {
-
-          fixedCell.style.visibility =
-            "visible";
-
-             
-
-        }
-
-      }
-    );
-
-  }
-
-
-  /* ==================================================
-     固定職員列
-  ================================================== */
-
-  if (
-    scheduleFixedStaffTable
-  ) {
-
-    const originalStaffHeader =
-      table.querySelector(
-        "thead .staff-header"
-      );
-
-
-    const originalStaffCells =
-      table.querySelectorAll(
-        "tbody .staff-name-cell"
-      );
-
-
-    let staffWidth =
-      0;
-
-
-    if (
-      originalStaffHeader
-    ) {
-
-      staffWidth =
-        originalStaffHeader
-          .getBoundingClientRect()
-          .width;
-
-    } else if (
-      originalStaffCells.length > 0
-    ) {
-
-      staffWidth =
-        originalStaffCells[0]
-          .getBoundingClientRect()
-          .width;
-
-    }
-
-
-    scheduleFixedStaffTable.style.width =
-      staffWidth +
-      "px";
-
-
-    scheduleFixedStaffTable.style.minWidth =
-      staffWidth +
-      "px";
-
-
-    scheduleFixedStaffTable.style.maxWidth =
-      staffWidth +
-      "px";
-
-
-    const fixedStaffHeader =
-      scheduleFixedStaffTable.querySelector(
-        "thead .staff-header"
-      );
-
-
-    if (
-      fixedStaffHeader &&
-      originalStaffHeader
-    ) {
-
-      const originalRect =
-        originalStaffHeader
-          .getBoundingClientRect();
-
-
-      const originalStyle =
-        window.getComputedStyle(
-          originalStaffHeader
-        );
-
-
-      fixedStaffHeader.style.width =
-        originalRect.width +
-        "px";
-
-
-      fixedStaffHeader.style.minWidth =
-        originalRect.width +
-        "px";
-
-
-      fixedStaffHeader.style.maxWidth =
-        originalRect.width +
-        "px";
-
-
-      fixedStaffHeader.style.height =
-        originalRect.height +
-        "px";
-
-
-      fixedStaffHeader.style.boxSizing =
-        "border-box";
-
-
-      fixedStaffHeader.style.padding =
-        originalStyle.padding;
-
-
-      fixedStaffHeader.style.borderTop =
-        originalStyle.borderTop;
-
-
-      fixedStaffHeader.style.borderRight =
-        originalStyle.borderRight;
-
-
-      fixedStaffHeader.style.borderBottom =
-        originalStyle.borderBottom;
-
-
-      fixedStaffHeader.style.borderLeft =
-        originalStyle.borderLeft;
-
-
-      fixedStaffHeader.style.background =
-        originalStyle.background;
-
-
-      fixedStaffHeader.style.font =
-        originalStyle.font;
-
-
-      fixedStaffHeader.style.fontSize =
-        originalStyle.fontSize;
-
-
-      fixedStaffHeader.style.fontWeight =
-        originalStyle.fontWeight;
-
-
-      fixedStaffHeader.style.color =
-        originalStyle.color;
-
-
-      fixedStaffHeader.style.textAlign =
-        originalStyle.textAlign;
-
-
-      fixedStaffHeader.style.verticalAlign =
-        originalStyle.verticalAlign;
-
-
-      fixedStaffHeader.style.visibility =
-        "visible";
-
-    }
-
-
-    const fixedStaffCells =
-      scheduleFixedStaffTable.querySelectorAll(
-        "tbody .staff-name-cell"
-      );
-
-
-    originalStaffCells.forEach(
-      (originalCell, index) => {
-
-        const fixedCell =
-          fixedStaffCells[index];
-
-
-        if (!fixedCell) {
-
-          return;
-
-        }
-
-
-        const rect =
-          originalCell
-            .getBoundingClientRect();
-
-
-        const style =
-          window.getComputedStyle(
-            originalCell
-          );
-
-
-        fixedCell.style.width =
-          staffWidth +
-          "px";
-
-
-        fixedCell.style.minWidth =
-          staffWidth +
-          "px";
-
-
-        fixedCell.style.maxWidth =
-          staffWidth +
-          "px";
-
-
-        fixedCell.style.height =
-          rect.height +
-          "px";
-
-
-        fixedCell.style.boxSizing =
-          "border-box";
-
-
-        fixedCell.style.padding =
-          style.padding;
-
-
-        fixedCell.style.borderTop =
-          style.borderTop;
-
-
-        fixedCell.style.borderRight =
-          style.borderRight;
-
-
-        fixedCell.style.borderBottom =
-          style.borderBottom;
-
-
-        fixedCell.style.borderLeft =
-          style.borderLeft;
-
-
-        fixedCell.style.background =
-          style.background;
-
-
-        fixedCell.style.font =
-          style.font;
-
-
-        fixedCell.style.fontSize =
-          style.fontSize;
-
-
-        fixedCell.style.fontWeight =
-          style.fontWeight;
-
-
-        fixedCell.style.color =
-          style.color;
-
-
-        fixedCell.style.textAlign =
-          style.textAlign;
-
-
-        fixedCell.style.verticalAlign =
-          style.verticalAlign;
-
-      }
-    );
-
-
-    const originalRows =
-      table.querySelectorAll(
-        "tbody tr"
-      );
-
-
-    const fixedRows =
-      scheduleFixedStaffTable.querySelectorAll(
-        "tbody tr"
-      );
-
-
-    originalRows.forEach(
-      (originalRow, index) => {
-
-        const fixedRow =
-          fixedRows[index];
-
-
-        if (!fixedRow) {
-
-          return;
-
-        }
-
-
-        const height =
-          originalRow
-            .getBoundingClientRect()
-            .height;
-
-
-        fixedRow.style.height =
-          height +
-          "px";
-
-      }
-    );
-
-  }
-
-}
-
-/* =========================================================
-   固定レイヤー位置更新
-========================================================= */
-
-function updateScheduleFixedLayers() {
-
-  const table =
-    document.getElementById(
-      "scheduleTable"
-    );
-
-
-  if (!table) {
-
-    hideScheduleFixedLayers();
-
-    return;
-
-  }
-
-
-  const thead =
-    table.querySelector(
-      "thead"
-    );
-
-
-  const wrapper =
-    table.closest(
-      ".table-wrapper"
-    );
-
-
-  if (
-    !thead ||
-    !wrapper
-  ) {
-
-    hideScheduleFixedLayers();
-
-    return;
-
-  }
-
-
-  if (
-    !scheduleFixedHeader ||
-    !scheduleFixedStaffColumn
-  ) {
-
-    createScheduleFixedLayers();
-
-  }
-
-
-  if (
-    !scheduleFixedHeader ||
-    !scheduleFixedStaffColumn
-  ) {
-
-    return;
-
-  }
-
-
-  const appHeader =
-    document.querySelector(
-      ".header"
-    );
-
-
-  let topOffset =
-    0;
-
-
-  if (appHeader) {
-
-    const headerRect =
-      appHeader.getBoundingClientRect();
-
-
-    topOffset =
-      Math.max(
-        0,
-        headerRect.bottom
-      );
-
-  }
-
-
-  const tableRect =
-    table.getBoundingClientRect();
-
-
-  const theadRect =
-    thead.getBoundingClientRect();
-
-
-  const wrapperRect =
-    wrapper.getBoundingClientRect();
-
-
-  const headerHeight =
-    theadRect.height;
-
-
-  if (
-    headerHeight <= 0
-  ) {
-
-    hideScheduleFixedLayers();
-
-    return;
-
-  }
-
-
-  if (
-    tableRect.top >=
-    topOffset
-  ) {
-
-    hideScheduleFixedLayers();
-
-    return;
-
-  }
-
-
-  if (
-    tableRect.bottom <=
-    topOffset +
-    headerHeight
-  ) {
-
-    hideScheduleFixedLayers();
-
-    return;
-
-  }
-
-
-  scheduleFixedHeader.style.display =
-    "block";
-
-
-  scheduleFixedHeader.style.left =
-    wrapperRect.left +
-    "px";
-
-
-  scheduleFixedHeader.style.top =
-    topOffset +
-    "px";
-
-
-  scheduleFixedHeader.style.width =
-    wrapperRect.width +
-    "px";
-
-
-  scheduleFixedHeader.style.height =
-    headerHeight +
-    "px";
-
-
-  scheduleFixedHeaderTable.style.transform =
-    "translate3d(" +
-    (-wrapper.scrollLeft) +
-    "px, 0, 0)";
-
-   // 「職員」見出しだけ横方向にも固定
-const fixedStaffHeader =
-  scheduleFixedHeaderTable.querySelector(
-    "thead .staff-header"
-  );
-
-if (fixedStaffHeader) {
-
-  fixedStaffHeader.style.transform =
-    "translate3d(" +
-    wrapper.scrollLeft +
-    "px, 0, 0)";
-
-}
-
-
- // 職員名列は縦方向には固定しない。
-// 元のscheduleTableのsticky(left:0)だけで
-// 横方向のみ固定させる。
-if (scheduleFixedStaffColumn) {
-  scheduleFixedStaffColumn.style.display = "none";
-}
-
-
-  syncScheduleFixedLayers();
-
-}
-
-
-/* ==================================================
-   固定レイヤー非表示
-================================================== */
-
-function hideScheduleFixedLayers() {
-
-  if (
-    scheduleFixedHeader
-  ) {
-
-    scheduleFixedHeader.style.display =
-      "none";
-
-  }
-
-
-  if (
-    scheduleFixedStaffColumn
-  ) {
-
-    scheduleFixedStaffColumn.style.display =
-      "none";
-
-  }
-
-}
-
-
-/* =========================================================
-   スクロール監視
-========================================================= */
-
-window.addEventListener(
-  "scroll",
-  updateScheduleFixedLayers,
-  {
-    passive: true
-  }
-);
-
-
-document.addEventListener(
-  "scroll",
-  event => {
-
-    const wrapper =
-      event.target &&
-      event.target.closest
-        ? event.target.closest(
-            ".table-wrapper"
-          )
-        : null;
-
-
-    if (
-      wrapper &&
-      scheduleFixedHeader
+      typeof updateScheduleFixedLayers ===
+      "function"
     ) {
 
       updateScheduleFixedLayers();
 
     }
 
-  },
-  {
-    passive: true,
-    capture: true
-  }
-);
-
-
-window.addEventListener(
-  "resize",
-  () => {
-
-    updateScheduleFixedLayers();
-
-  },
-  {
-    passive: true
-  }
-);
-
-
-/* ==================================================
-   固定レイヤー用CSS
-================================================== */
-
-if (
-  !document.getElementById(
-    "scheduleFixedLayerStyle"
-  )
-) {
-
-  const style =
-    document.createElement(
-      "style"
-    );
-
-
-  style.id =
-    "scheduleFixedLayerStyle";
-
-
-  style.textContent = `
-
-    .table-wrapper {
-      position: relative;
-      overflow-x: auto;
-      overflow-y: visible;
-    }
-
-    #scheduleTable .staff-header {
-      position: sticky !important;
-      left: 0 !important;
-      z-index: 300 !important;
-      background: #f2f2f7 !important;
-      box-sizing: border-box;
-    }
-
-    #scheduleTable .staff-name-cell {
-      position: sticky !important;
-      left: 0 !important;
-      z-index: 200 !important;
-      background: #ffffff !important;
-      box-sizing: border-box;
-    }
-
-    #scheduleFixedHeader {
-      box-sizing: border-box;
-      overflow: hidden;
-    }
-
-    #scheduleFixedHeader table {
-      border-collapse: separate;
-      border-spacing: 0;
-      table-layout: fixed;
-    }
-
-    #scheduleFixedStaffColumn {
-      box-sizing: border-box;
-      overflow: hidden;
-    }
-
-    #scheduleFixedStaffColumn table {
-      border-collapse: separate;
-      border-spacing: 0;
-      table-layout: fixed;
-    }
-
-    #scheduleFixedStaffColumn .staff-header,
-    #scheduleFixedStaffColumn .staff-name-cell {
-      box-sizing: border-box;
-    }
-
-  `;
-
-
-  document.head.appendChild(
-    style
-  );
-
-}
-
-
-/* ==================================================
-   勤務セル
-================================================== */
-
-async function bindScheduleCells() {
-
-  /* ==================================================
-     ログイン中の職員IDを取得
-  ================================================== */
-
-  let currentStaffId = null;
-
-  try {
-
-    currentStaffId =
-      await getCurrentStaffId();
 
   } catch (error) {
 
     console.error(
-      "ログイン中の職員ID取得エラー",
+      "★ reloadFromSupabase エラー:",
       error
     );
 
   }
 
+}
 
-  /* ==================================================
-     管理者か職員か
-  ================================================== */
-
-  const isAdmin =
-    currentOrganization &&
-    currentOrganization.role === "admin";
+/* =========================================================
+   第7部：勤務データ保存・変更・削除・Realtime
+   ========================================================= */
 
 
-  /* ==================================================
-     職員の場合、自分の職員名を取得
-  ================================================== */
+/* =========================================================
+   勤務保存中フラグ
+   ========================================================= */
 
-  let currentStaffName = null;
+let savingShift = false;
 
-  if (!isAdmin && currentStaffId) {
 
-    const currentStaff =
-      appData.staff.find(
-        staff =>
-          staff.id === currentStaffId
-      );
+/* =========================================================
+   勤務データの保存
+   ========================================================= */
 
-    if (currentStaff) {
+async function saveShiftToSupabase(
+  staffName,
+  workDate,
+  shiftName,
+  excelShift,
+  leaveType = null,
+  note = null
+) {
 
-      currentStaffName =
-        getStaffName(
-          currentStaff
-        );
+  if (savingShift) {
 
-    }
+    console.log(
+      "★ 勤務保存処理中のためスキップ"
+    );
+
+    return false;
 
   }
 
 
-  /* ==================================================
-     セルクリック
-  ================================================== */
-
-  document
-    .querySelectorAll(
-      ".schedule-cell"
-    )
-    .forEach(
-      cell => {
-
-        cell.addEventListener(
-          "click",
-          e => {
-
-            e.stopPropagation();
+  savingShift = true;
 
 
-            /* ==========================================
-               職員の場合
-               自分以外のセルは選択不可
-            ========================================== */
+  try {
 
-            if (!isAdmin) {
+    /*
+     * ログイン・組織確認
+     */
 
-              const cellStaffName =
-                cell.dataset.staff;
-
-              if (
-                !currentStaffName ||
-                cellStaffName !== currentStaffName
-              ) {
-
-                return;
-
-              }
-
-            }
+    const canSave =
+      await ensureCanSaveToSupabase();
 
 
-            /* ==========================================
-               前に選択していたセルの枠を消す
-            ========================================== */
+    if (!canSave) {
 
-            if (selectedCell) {
+      return false;
 
-              selectedCell.classList.remove(
-                "selected-cell"
-              );
-
-            }
+    }
 
 
-            /* ==========================================
-               今タップしたセルを選択
-            ========================================== */
-
-            selectedCell =
-              cell;
-
-            selectedCell.classList.add(
-              "selected-cell"
-            );
+    const organizationId =
+      getCurrentOrganizationId();
 
 
-            /* ==========================================
-               管理者
-               → 勤務変更モード
+    if (!organizationId) {
 
-               職員
-               → 休暇モード
-            ========================================== */
+      console.error(
+        "★ organization_id がありません"
+      );
 
-            if (isAdmin) {
+      return false;
 
-              shiftMenuMode =
-                "shift";
-
-            } else {
-
-              shiftMenuMode =
-                "leave";
-
-            }
+    }
 
 
-            showShiftMenu(
-              cell,
-              cell.dataset.staff,
-              cell.dataset.date
-            );
+    /*
+     * 必須項目確認
+     */
 
+    if (
+      !staffName ||
+      !workDate
+    ) {
+
+      console.error(
+        "★ 職員名または勤務日がありません"
+      );
+
+      return false;
+
+    }
+
+
+    /*
+     * 重要
+     *
+     * shift_name と excel_shift は
+     * 必ず同じ保存処理で扱う。
+     */
+
+    const record = {
+
+      organization_id:
+        organizationId,
+
+      staff_name:
+        staffName,
+
+      work_date:
+        workDate,
+
+      shift_name:
+        shiftName || null,
+
+      excel_shift:
+        excelShift || null,
+
+      leave_type:
+        leaveType || null,
+
+      note:
+        note || null
+
+    };
+
+
+    console.log(
+      "★ 勤務保存:",
+      record
+    );
+
+
+    /*
+     * 同じ職員・同じ日付が存在する場合は更新
+     * 存在しなければ新規登録
+     */
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient
+        .from("work_shifts")
+        .upsert(
+          record,
+          {
+            onConflict:
+              "staff_name,work_date"
           }
-        );
+        )
+        .select()
+        .single();
+
+
+    if (error) {
+
+      console.error(
+        "★ 勤務保存エラー:",
+        error
+      );
+
+      return false;
+
+    }
+
+
+    /*
+     * アプリ側にも即時反映
+     */
+
+    setShiftData(
+      staffName,
+      workDate,
+      {
+
+        id:
+          data?.id,
+
+        staff_name:
+          staffName,
+
+        work_date:
+          workDate,
+
+        shift_name:
+          shiftName || null,
+
+        excel_shift:
+          excelShift || null,
+
+        leave_type:
+          leaveType || null,
+
+        note:
+          note || null
 
       }
     );
 
-}
 
-
-/* ==================================================
-   職員名
-================================================== */
-
-function bindStaffNameCells() {
-
-  document
-    .querySelectorAll(
-      ".staff-name-cell"
-    )
-    .forEach(
-      cell => {
-
-        cell.addEventListener(
-          "click",
-          () => {
-
-            openCalendarConfirm(
-              cell.dataset.staff
-            );
-
-          }
-        );
-
-      }
+    console.log(
+      "★ 勤務保存完了"
     );
 
+
+    return true;
+
+
+  } catch (error) {
+
+    console.error(
+      "★ saveShiftToSupabase エラー:",
+      error
+    );
+
+    return false;
+
+
+  } finally {
+
+    savingShift = false;
+
+  }
+
 }
 
 
-/* ==================================================
-   勤務メニュー表示
-================================================== */
+/* =========================================================
+   勤務変更
+   ========================================================= */
 
-function showShiftMenu(
-  cell,
+async function updateShift(
   staffName,
-  dateKey
+  workDate,
+  shiftName,
+  excelShift,
+  leaveType = null,
+  note = null
 ) {
 
-  const menu =
-    document.getElementById(
-      "shiftMenu"
+  /*
+   * Realtimeが保存途中のデータを
+   * 上書きしないようにする
+   */
+
+  cloudOperationBusy = true;
+
+
+  try {
+
+    const result =
+      await saveShiftToSupabase(
+        staffName,
+        workDate,
+        shiftName,
+        excelShift,
+        leaveType,
+        note
+      );
+
+
+    if (!result) {
+
+      return false;
+
+    }
+
+
+    /*
+     * 画面更新
+     */
+
+    if (
+      typeof renderAll ===
+      "function"
+    ) {
+
+      renderAll();
+
+    }
+
+
+    return true;
+
+
+  } finally {
+
+    cloudOperationBusy = false;
+
+  }
+
+}
+
+
+/* =========================================================
+   勤務削除
+   ========================================================= */
+
+async function deleteShiftFromSupabase(
+  staffName,
+  workDate
+) {
+
+  if (savingShift) {
+
+    return false;
+
+  }
+
+
+  savingShift = true;
+
+  cloudOperationBusy = true;
+
+
+  try {
+
+    const canSave =
+      await ensureCanSaveToSupabase();
+
+
+    if (!canSave) {
+
+      return false;
+
+    }
+
+
+    const organizationId =
+      getCurrentOrganizationId();
+
+
+    if (!organizationId) {
+
+      return false;
+
+    }
+
+
+    /*
+     * organization_idも条件に入れる。
+     *
+     * 他の職場のデータを削除しないため。
+     */
+
+    const {
+      error
+    } =
+      await supabaseClient
+        .from("work_shifts")
+        .delete()
+        .eq(
+          "organization_id",
+          organizationId
+        )
+        .eq(
+          "staff_name",
+          staffName
+        )
+        .eq(
+          "work_date",
+          workDate
+        );
+
+
+    if (error) {
+
+      console.error(
+        "★ 勤務削除エラー:",
+        error
+      );
+
+      return false;
+
+    }
+
+
+    /*
+     * ローカル側も削除
+     */
+
+    deleteLocalShiftData(
+      staffName,
+      workDate
     );
 
 
-  const buttons =
-    document.getElementById(
-      "shiftMenuButtons"
+    /*
+     * 画面更新
+     */
+
+    if (
+      typeof renderAll ===
+      "function"
+    ) {
+
+      renderAll();
+
+    }
+
+
+    console.log(
+      "★ 勤務削除完了"
     );
 
+
+    return true;
+
+
+  } catch (error) {
+
+    console.error(
+      "★ deleteShiftFromSupabase エラー:",
+      error
+    );
+
+    return false;
+
+
+  } finally {
+
+    savingShift = false;
+
+    cloudOperationBusy = false;
+
+  }
+
+}
+
+
+/* =========================================================
+   勤務データを取得
+   ========================================================= */
+
+async function fetchShiftFromSupabase(
+  staffName,
+  workDate
+) {
+
+  const organizationId =
+    getCurrentOrganizationId();
+
+
+  if (!organizationId) {
+
+    return null;
+
+  }
+
+
+  try {
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient
+        .from("work_shifts")
+        .select("*")
+        .eq(
+          "organization_id",
+          organizationId
+        )
+        .eq(
+          "staff_name",
+          staffName
+        )
+        .eq(
+          "work_date",
+          workDate
+        )
+        .maybeSingle();
+
+
+    if (error) {
+
+      console.error(
+        "★ 勤務取得エラー:",
+        error
+      );
+
+      return null;
+
+    }
+
+
+    return data || null;
+
+
+  } catch (error) {
+
+    console.error(
+      "★ fetchShiftFromSupabase エラー:",
+      error
+    );
+
+    return null;
+
+  }
+
+}
+
+
+/* =========================================================
+   勤務変更時の共通処理
+   ========================================================= */
+
+async function changeShift(
+  staffName,
+  workDate,
+  shiftName,
+  excelShift
+) {
+
+  /*
+   * shift_name と excel_shift を
+   * 必ず同時に変更する。
+   */
+
+  console.log(
+    "★ 勤務変更:",
+    {
+      staffName,
+      workDate,
+      shiftName,
+      excelShift
+    }
+  );
+
+
+  return await updateShift(
+    staffName,
+    workDate,
+    shiftName,
+    excelShift
+  );
+
+}
+
+
+/* =========================================================
+   Realtime再読み込み予約
+   ========================================================= */
+
+function scheduleRealtimeReload() {
+
+  /*
+   * 既存タイマーを解除
+   */
 
   if (
-    !menu ||
-    !buttons
+    realtimeReloadTimer
   ) {
+
+    clearTimeout(
+      realtimeReloadTimer
+    );
+
+  }
+
+
+  realtimeReloadPending =
+    true;
+
+
+  realtimeReloadTimer =
+    setTimeout(
+      async () => {
+
+        realtimeReloadTimer =
+          null;
+
+
+        /*
+         * 保存処理中なら、
+         * 今は読み込まない。
+         */
+
+        if (
+          cloudOperationBusy ||
+          savingShift ||
+          realtimeUpdating
+        ) {
+
+          console.log(
+            "★ 保存中のためRealtime再読み込みを保留"
+          );
+
+          return;
+
+        }
+
+
+        realtimeReloadPending =
+          false;
+
+
+        realtimeUpdating =
+          true;
+
+
+        try {
+
+          await reloadFromSupabase();
+
+
+        } catch (error) {
+
+          console.error(
+            "★ Realtime再読み込みエラー:",
+            error
+          );
+
+
+        } finally {
+
+          realtimeUpdating =
+            false;
+
+        }
+
+      },
+
+      300
+
+    );
+
+}
+
+
+/* =========================================================
+   Realtime変更処理
+   ========================================================= */
+
+function handleRealtimeChange(
+  payload
+) {
+
+  console.log(
+    "★ Supabase Realtime変更:",
+    payload
+  );
+
+
+  /*
+   * INSERT / UPDATE / DELETE
+   * すべて同じ再読み込み処理へ。
+   */
+
+  scheduleRealtimeReload();
+
+}
+
+
+/* =========================================================
+   Realtime接続
+   ========================================================= */
+
+function setupRealtime() {
+
+  /*
+   * Supabaseクライアントがなければ終了
+   */
+
+  if (!supabaseClient) {
+
+    console.warn(
+      "★ Supabaseクライアントがありません"
+    );
 
     return;
 
   }
 
 
-  /* ==================================================
-     管理者か職員か判定
-  ================================================== */
+  /*
+   * 既存チャンネルがあれば解除
+   */
 
-  const isAdmin =
-    currentOrganization &&
-    currentOrganization.role ===
-      "admin";
+  if (
+    window.scheduleRealtimeChannel
+  ) {
+
+    supabaseClient
+      .removeChannel(
+        window.scheduleRealtimeChannel
+      );
+
+  }
 
 
   /*
-     職員の場合は必ず休暇モード
-  */
+   * 現在の組織を取得
+   */
 
-  if (!isAdmin) {
+  const organizationId =
+    getCurrentOrganizationId();
 
-    shiftMenuMode =
-      "leave";
+
+  if (!organizationId) {
+
+    console.log(
+      "★ 組織未選択のためRealtime接続を保留"
+    );
+
+    return;
 
   }
 
 
-  buttons.innerHTML =
-    "";
+  /*
+   * work_shifts
+   */
 
+  window.scheduleRealtimeChannel =
+    supabaseClient
+      .channel(
+        "work-shifts-" +
+        organizationId
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "work_shifts",
+          filter:
+            "organization_id=eq." +
+            organizationId
+        },
+        handleRealtimeChange
+      )
+      .subscribe(
+        status => {
 
-  /* ==================================================
-     勤務形態モード
-     ※ 管理者のみ
-  ================================================== */
-
-  if (
-    shiftMenuMode ===
-      "shift" &&
-    isAdmin
-  ) {
-
-    appData.shiftTypes.forEach(
-      shift => {
-
-        const button =
-          document.createElement(
-            "button"
+          console.log(
+            "★ Realtime:",
+            status
           );
 
-
-        button.type =
-          "button";
-
-
-        button.textContent =
-          shift.name;
-
-
-        button.className =
-          "shift-menu-button";
-
-
-        button.addEventListener(
-          "click",
-          async e => {
-
-            e.stopPropagation();
-
-
-            await saveWorkShift(
-              staffName,
-              dateKey,
-              shift.name
-            );
-
-
-            hideShiftMenu();
-
-          }
-        );
-
-
-        buttons.appendChild(
-          button
-        );
-
-      }
-    );
-
-
-    /* ==================================================
-       勤務削除
-    ================================================== */
-
-    const deleteShiftButton =
-      document.createElement(
-        "button"
+        }
       );
-
-
-    deleteShiftButton.type =
-      "button";
-
-
-    deleteShiftButton.textContent =
-      "🗑️ 勤務削除";
-
-
-    deleteShiftButton.className =
-      "shift-menu-button";
-
-
-    deleteShiftButton.style.width =
-      "100%";
-
-
-    deleteShiftButton.style.minWidth =
-      "100%";
-
-
-    deleteShiftButton.style.gridColumn =
-      "1 / -1";
-
-
-    deleteShiftButton.style.boxSizing =
-      "border-box";
-
-
-    deleteShiftButton.style.background =
-      "#6f42c1";
-
-
-    deleteShiftButton.style.color =
-      "#ffffff";
-
-
-    deleteShiftButton.style.borderColor =
-      "#59339d";
-
-
-    deleteShiftButton.style.fontWeight =
-      "700";
-
-
-    deleteShiftButton.addEventListener(
-      "click",
-      async e => {
-
-        e.stopPropagation();
-
-
-        await saveWorkShift(
-          staffName,
-          dateKey,
-          ""
-        );
-
-
-        menu.style.display =
-          "none";
-
-
-        renderSchedule();
-
-      }
-    );
-
-
-    buttons.appendChild(
-      deleteShiftButton
-    );
-
-
-    /* ==================================================
-       キャンセル
-    ================================================== */
-
-    const cancelButton =
-      document.createElement(
-        "button"
-      );
-
-
-    cancelButton.type =
-      "button";
-
-
-    cancelButton.textContent =
-      "キャンセル";
-
-
-    cancelButton.className =
-      "shift-menu-button";
-
-
-    cancelButton.style.width =
-      "100%";
-
-
-    cancelButton.style.minWidth =
-      "100%";
-
-
-    cancelButton.style.gridColumn =
-      "1 / -1";
-
-
-    cancelButton.style.boxSizing =
-      "border-box";
-
-
-    cancelButton.style.background =
-      "#dc3545";
-
-
-    cancelButton.style.color =
-      "#ffffff";
-
-
-    cancelButton.style.borderColor =
-      "#c82333";
-
-
-    cancelButton.style.fontWeight =
-      "700";
-
-
-    cancelButton.addEventListener(
-      "click",
-      e => {
-
-        e.stopPropagation();
-
-        hideShiftMenu();
-
-      }
-    );
-
-
-    buttons.appendChild(
-      cancelButton
-    );
-
-
-    /* ==================================================
-       休暇
-    ================================================== */
-
-    const leaveButton =
-      document.createElement(
-        "button"
-      );
-
-
-    leaveButton.type =
-      "button";
-
-
-    leaveButton.textContent =
-      "🏖️ 休暇";
-
-
-    leaveButton.className =
-      "shift-menu-button";
-
-
-    leaveButton.style.width =
-      "100%";
-
-
-    leaveButton.style.minWidth =
-      "100%";
-
-
-    leaveButton.style.gridColumn =
-      "1 / -1";
-
-
-    leaveButton.style.boxSizing =
-      "border-box";
-
-
-    leaveButton.style.background =
-      "#28a745";
-
-
-    leaveButton.style.color =
-      "#ffffff";
-
-
-    leaveButton.style.borderColor =
-      "#218838";
-
-
-    leaveButton.style.fontWeight =
-      "700";
-
-
-    leaveButton.addEventListener(
-      "click",
-      e => {
-
-        e.stopPropagation();
-
-
-        shiftMenuMode =
-          "leave";
-
-
-        showShiftMenu(
-          cell,
-          staffName,
-          dateKey
-        );
-
-      }
-    );
-
-
-    buttons.appendChild(
-      leaveButton
-    );
-
-
-    const title =
-      menu.querySelector(
-        ".shift-menu-title"
-      );
-
-
-    if (title) {
-
-      title.textContent =
-        "勤務を選択";
-
-    }
-
-  }
-
-
-  /* ==================================================
-     休暇モード
-  ================================================== */
-
-  else {
-
-    const title =
-      menu.querySelector(
-        ".shift-menu-title"
-      );
-
-
-    if (title) {
-
-      title.textContent =
-        "🏖️ 休暇を選択";
-
-    }
-
-
-    /* -----------------------------------------------
-       休暇なし
-    ------------------------------------------------ */
-
-    if (
-      appData.leaveTypes.length ===
-      0
-    ) {
-
-      const empty =
-        document.createElement(
-          "div"
-        );
-
-
-      empty.textContent =
-        "登録された休暇がありません";
-
-
-      empty.style.padding =
-        "12px";
-
-
-      empty.style.textAlign =
-        "center";
-
-
-      empty.style.color =
-        "#666";
-
-
-      buttons.appendChild(
-        empty
-      );
-
-    }
-
-
-    /* -----------------------------------------------
-       休暇一覧
-    ------------------------------------------------ */
-
-    appData.leaveTypes.forEach(
-      leave => {
-
-        const button =
-          document.createElement(
-            "button"
-          );
-
-
-        button.type =
-          "button";
-
-
-        button.className =
-          "shift-menu-button";
-
-
-        button.textContent =
-          leave.name;
-
-
-        button.style.background =
-          leave.color ||
-          "#FFD54F";
-
-
-        button.style.color =
-          "#000000";
-
-
-        button.style.boxSizing =
-          "border-box";
-
-
-        button.addEventListener(
-          "click",
-          async e => {
-
-            e.stopPropagation();
-
-
-            await saveLeave(
-              staffName,
-              dateKey,
-              leave.name
-            );
-
-
-            hideShiftMenu();
-
-          }
-        );
-
-
-        buttons.appendChild(
-          button
-        );
-
-      }
-    );
-
-
-    /* -----------------------------------------------
-       休暇解除
-    ------------------------------------------------ */
-
-    const removeLeaveButton =
-      document.createElement(
-        "button"
-      );
-
-
-    removeLeaveButton.type =
-      "button";
-
-
-    removeLeaveButton.textContent =
-      "休暇を解除";
-
-
-    removeLeaveButton.className =
-      "shift-menu-button";
-
-
-    removeLeaveButton.addEventListener(
-      "click",
-      async e => {
-
-        e.stopPropagation();
-
-
-        await saveLeave(
-          staffName,
-          dateKey,
-          ""
-        );
-
-
-        hideShiftMenu();
-
-      }
-    );
-
-
-    buttons.appendChild(
-      removeLeaveButton
-    );
-
-
-    /* -----------------------------------------------
-       キャンセル
-    ------------------------------------------------ */
-
-    const cancelButton =
-      document.createElement(
-        "button"
-      );
-
-
-    cancelButton.type =
-      "button";
-
-
-    cancelButton.textContent =
-      "キャンセル";
-
-
-    cancelButton.className =
-      "shift-menu-button";
-
-
-    cancelButton.style.width =
-      "100%";
-
-
-    cancelButton.style.minWidth =
-      "100%";
-
-
-    cancelButton.style.gridColumn =
-      "1 / -1";
-
-
-    cancelButton.style.boxSizing =
-      "border-box";
-
-
-    cancelButton.style.background =
-      "#dc3545";
-
-
-    cancelButton.style.color =
-      "#ffffff";
-
-
-    cancelButton.style.borderColor =
-      "#c82333";
-
-
-    cancelButton.style.fontWeight =
-      "700";
-
-
-    cancelButton.addEventListener(
-      "click",
-      e => {
-
-        e.stopPropagation();
-
-
-        hideShiftMenu();
-
-      }
-    );
-
-
-    buttons.appendChild(
-      cancelButton
-    );
-
-  }
-
-
-  /* ==================================================
-     メニュー位置
-  ================================================== */
-
-  menu.style.display =
-    "grid";
-
-
-  const rect =
-    cell.getBoundingClientRect();
-
-
-  const menuWidth =
-    Math.min(
-      190,
-      window.innerWidth - 20
-    );
-
-
-  menu.style.width =
-    menuWidth +
-    "px";
-
-
-  let left =
-    rect.right + 6;
-
-
-  if (
-    left +
-      menuWidth >
-    window.innerWidth - 10
-  ) {
-
-    left =
-      rect.left -
-      menuWidth -
-      6;
-
-  }
-
-
-  if (
-    left < 10
-  ) {
-
-    left =
-      10;
-
-  }
-
-
-  let top =
-    rect.top;
-
-
-  const menuHeight =
-    menu.offsetHeight ||
-    250;
-
-
-  if (
-    top +
-      menuHeight >
-    window.innerHeight - 10
-  ) {
-
-    top =
-      window.innerHeight -
-      menuHeight -
-      10;
-
-  }
-
-
-  if (
-    top < 10
-  ) {
-
-    top =
-      10;
-
-  }
-
-
-  menu.style.position =
-    "fixed";
-
-
-  menu.style.left =
-    left +
-    "px";
-
-
-  menu.style.top =
-    top +
-    "px";
-
-
-  menu.style.zIndex =
-    "9999";
 
 }
 
 
-/* ==================================================
-   メニューを閉じる
-================================================== */
+/* =========================================================
+   Realtime停止
+   ========================================================= */
 
-function hideShiftMenu() {
+async function stopRealtime() {
 
-  const menu =
+  if (
+    window.scheduleRealtimeChannel
+  ) {
+
+    try {
+
+      await supabaseClient
+        .removeChannel(
+          window.scheduleRealtimeChannel
+        );
+
+    } catch (error) {
+
+      console.error(
+        "★ Realtime停止エラー:",
+        error
+      );
+
+    }
+
+
+    window.scheduleRealtimeChannel =
+      null;
+
+  }
+
+}
+
+
+/* =========================================================
+   組織変更後のRealtime再接続
+   ========================================================= */
+
+async function restartRealtime() {
+
+  await stopRealtime();
+
+  setupRealtime();
+
+}
+
+
+/* =========================================================
+   認証後のデータ読み込み
+   ========================================================= */
+
+async function initializeAfterLogin() {
+
+  console.log(
+    "★ ログイン後のアプリ初期化"
+  );
+
+
+  const organization =
+    await ensureOrganizationContext();
+
+
+  if (!organization?.id) {
+
+    console.log(
+      "★ 組織がまだありません"
+    );
+
+    return false;
+
+  }
+
+
+  /*
+   * 最新データを取得
+   */
+
+  const loaded =
+    await loadAllFromSupabase();
+
+
+  if (!loaded) {
+
+    console.warn(
+      "★ データ読み込みに失敗しました"
+    );
+
+  }
+
+
+  /*
+   * Realtime開始
+   */
+
+  setupRealtime();
+
+
+  /*
+   * 既存の描画処理
+   */
+
+  if (
+    typeof renderAll ===
+    "function"
+  ) {
+
+    renderAll();
+
+  }
+
+
+  /*
+   * 固定レイヤー
+   */
+
+  if (
+    typeof updateScheduleFixedLayers ===
+    "function"
+  ) {
+
+    updateScheduleFixedLayers();
+
+  }
+
+
+  return true;
+
+}
+
+/* =========================================================
+   第8部：アプリ起動・セッション復元・ログアウト
+   ========================================================= */
+
+
+/* =========================================================
+   初期化状態
+   ========================================================= */
+
+let appInitialized = false;
+
+
+/* =========================================================
+   初期ローディング画面を消す
+   ========================================================= */
+
+function hideInitialLoading() {
+
+  const loading =
     document.getElementById(
-      "shiftMenu"
+      "initialLoadingScreen"
     );
 
 
-  if (menu) {
+  if (loading) {
 
-    menu.style.display =
+    loading.remove();
+
+  }
+
+}
+
+
+/* =========================================================
+   ログイン画面表示
+   ========================================================= */
+
+function showLoginScreen() {
+
+  const loginScreen =
+    document.getElementById(
+      "loginScreen"
+    );
+
+
+  const appScreen =
+    document.getElementById(
+      "appScreen"
+    );
+
+
+  if (loginScreen) {
+
+    loginScreen.style.display =
+      "flex";
+
+  }
+
+
+  if (appScreen) {
+
+    appScreen.style.display =
+      "none";
+
+  }
+
+}
+
+
+/* =========================================================
+   アプリ画面表示
+   ========================================================= */
+
+function showAppScreen() {
+
+  const loginScreen =
+    document.getElementById(
+      "loginScreen"
+    );
+
+
+  const appScreen =
+    document.getElementById(
+      "appScreen"
+    );
+
+
+  if (loginScreen) {
+
+    loginScreen.style.display =
       "none";
 
   }
 
 
-  selectedCell =
-    null;
+  if (appScreen) {
 
+    appScreen.style.display =
+      "block";
 
-  shiftMenuMode =
-    "shift";
+  }
 
 }
 
 
-/* ==================================================
-   勤務保存
-================================================== */
+/* =========================================================
+   現在のログインセッション取得
+   ========================================================= */
 
-async function saveWorkShift(
-  staffName,
-  dateKey,
-  shiftName
-) {
+async function getCurrentSession() {
 
   if (!supabaseClient) {
 
-    alert(
-      "Supabaseに接続されていません。"
+    console.error(
+      "★ Supabaseクライアントがありません"
     );
 
-    return;
+    return null;
 
   }
 
 
-  const name =
-    getStaffName(
-      staffName
-    );
-
-
-  cloudOperationBusy =
-    true;
-
-
   try {
 
-    const existing =
+    const {
+      data,
+      error
+    } =
       await supabaseClient
-        .from("work_shifts")
-        .select(
-          "id,leave_type"
-        )
-        .eq(
-          "staff_name",
-          name
-        )
-        .eq(
-          "work_date",
-          dateKey
-        )
-        .order(
-          "id",
-          {
-            ascending: true
-          }
-        )
-        .limit(1);
+        .auth
+        .getSession();
 
 
-    if (
-      existing.error
-    ) {
+    if (error) {
 
-      throw existing.error;
+      console.error(
+        "★ セッション取得エラー:",
+        error
+      );
+
+      return null;
 
     }
 
 
-    const existingRow =
-      existing.data &&
-      existing.data.length
-        ? existing.data[0]
-        : null;
-
-
-    /* ==================================================
-       勤務削除
-    ================================================== */
-
-    if (!shiftName) {
-
-      if (existingRow) {
-
-        /*
-          仕様：
-          「勤務削除」は勤務形態だけ削除。
-          休暇は残す。
-        */
-
-        if (
-          existingRow.leave_type
-        ) {
-
-          const result =
-            await supabaseClient
-              .from("work_shifts")
-              .update({
-
-                shift_name:
-                  "",
-
-                leave_type:
-                  existingRow.leave_type
-
-              })
-              .eq(
-                "id",
-                existingRow.id
-              );
-
-
-          if (
-            result.error
-          ) {
-
-            throw result.error;
-
-          }
-
-
-          setStoredShift(
-            name,
-            dateKey,
-            "",
-            existingRow.leave_type
-          );
-
-        } else {
-
-          const result =
-            await supabaseClient
-              .from("work_shifts")
-              .delete()
-              .eq(
-                "id",
-                existingRow.id
-              );
-
-
-          if (
-            result.error
-          ) {
-
-            throw result.error;
-
-          }
-
-
-          setStoredShift(
-            name,
-            dateKey,
-            "",
-            ""
-          );
-
-        }
-
-      }
-
-
-      renderSchedule();
-
-
-      return;
-
-    }
-
-
-    const leaveType =
-      existingRow
-        ? existingRow.leave_type ||
-          ""
-        : "";
-
-
-    /* ==================================================
-       既存勤務更新
-    ================================================== */
-
-    if (existingRow) {
-
-      const result =
-        await supabaseClient
-          .from("work_shifts")
-          .update({
-
-            shift_name:
-              shiftName,
-
-            leave_type:
-              leaveType || null
-
-          })
-          .eq(
-            "id",
-            existingRow.id
-          );
-
-
-      if (
-        result.error
-      ) {
-
-        throw result.error;
-
-      }
-
-    }
-
-
-    /* ==================================================
-       新規勤務
-    ================================================== */
-
-    else {
-
-      const result =
-        await supabaseClient
-          .from("work_shifts")
-          .insert({
-
-            staff_name:
-              name,
-
-            work_date:
-              dateKey,
-
-            shift_name:
-              shiftName,
-
-            leave_type:
-              null,
-
-             organization_id:
-        currentOrganization.id
-
-          });
-
-
-      if (
-        result.error
-      ) {
-
-        throw result.error;
-
-      }
-
-    }
-
-
-    setStoredShift(
-      name,
-      dateKey,
-      shiftName,
-      leaveType
-    );
-
-
-    renderSchedule();
+    return data?.session ||
+      null;
 
 
   } catch (error) {
 
     console.error(
-      "勤務保存エラー",
+      "★ getCurrentSession エラー:",
       error
     );
 
-
-    alert(
-      "勤務の保存に失敗しました。"
-    );
-
-  } finally {
-
-    finishCloudOperation();
+    return null;
 
   }
 
 }
 
 
-/* ==================================================
-   休暇保存
-==============================================
-/* ==================================================
-   休暇保存
-================================================== */
+/* =========================================================
+   ログインユーザー取得
+   ========================================================= */
 
-async function saveLeave(
-  staffName,
-  dateKey,
-  leaveName
-) {
+async function getCurrentUser() {
 
   if (!supabaseClient) {
 
-    alert(
-      "Supabaseに接続されていません。"
+    return null;
+
+  }
+
+
+  try {
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient
+        .auth
+        .getUser();
+
+
+    if (error) {
+
+      console.error(
+        "★ ユーザー取得エラー:",
+        error
+      );
+
+      return null;
+
+    }
+
+
+    return data?.user ||
+      null;
+
+
+  } catch (error) {
+
+    console.error(
+      "★ getCurrentUser エラー:",
+      error
     );
+
+    return null;
+
+  }
+
+}
+
+
+/* =========================================================
+   認証状態変更
+   ========================================================= */
+
+function setupAuthStateListener() {
+
+  if (!supabaseClient) {
 
     return;
 
   }
 
 
-  const name =
-    getStaffName(
-      staffName
-    );
+  /*
+   * 同じリスナーを二重登録しない
+   */
+
+  if (
+    window.authStateSubscription
+  ) {
+
+    return;
+
+  }
 
 
-  cloudOperationBusy =
-    true;
+  const {
+    data
+  } =
+    supabaseClient
+      .auth
+      .onAuthStateChange(
+        async (
+          event,
+          session
+        ) => {
 
-
-  try {
-
-    /* ==================================================
-       一般職員
-       自分の休暇だけRPC経由で変更
-    ================================================== */
-
-    if (
-      currentOrganization &&
-      currentOrganization.role !== "admin"
-    ) {
-
-      /* -----------------------------------------------
-         休暇解除
-      ------------------------------------------------ */
-
-      if (!leaveName) {
-
-        const result =
-          await supabaseClient.rpc(
-            "clear_my_leave",
-            {
-              target_date:
-                dateKey
-            }
+          console.log(
+            "★ Auth State:",
+            event
           );
 
 
-        if (result.error) {
+          /*
+           * ログイン
+           */
 
-          throw result.error;
+          if (
+            event ===
+              "SIGNED_IN" &&
+            session?.user
+          ) {
 
-        }
+            /*
+             * OAuthのコールバック直後は
+             * セッションが確定するまで
+             * 少し待つ必要がある場合がある。
+             */
 
-      }
+            setTimeout(
+              async () => {
 
-      /* -----------------------------------------------
-         休暇登録
-      ------------------------------------------------ */
+                await handleAuthenticatedUser(
+                  session.user
+                );
 
-      else {
-
-        const result =
-          await supabaseClient.rpc(
-            "set_my_leave",
-            {
-              target_date:
-                dateKey,
-
-              target_leave_type:
-                leaveName
-            }
-          );
-
-
-        if (result.error) {
-
-          throw result.error;
-
-        }
-
-      }
-
-
-      /* -----------------------------------------------
-         Supabaseから最新データを取得
-      ------------------------------------------------ */
-
-      await loadAllFromSupabase();
-
-      renderSchedule();
-
-      return;
-
-    }
-
-
-    /* ==================================================
-       管理者
-       今までどおり直接work_shiftsを操作
-    ================================================== */
-
-    const existing =
-      await supabaseClient
-        .from("work_shifts")
-        .select(
-          "id,shift_name,leave_type"
-        )
-        .eq(
-          "staff_name",
-          name
-        )
-        .eq(
-          "work_date",
-          dateKey
-        )
-        .order(
-          "id",
-          {
-            ascending: true
-          }
-        )
-        .limit(1);
-
-
-    if (
-      existing.error
-    ) {
-
-      throw existing.error;
-
-    }
-
-
-    const row =
-      existing.data &&
-      existing.data.length
-        ? existing.data[0]
-        : null;
-
-
-    /* ==================================================
-       休暇解除
-    ================================================== */
-
-    if (!leaveName) {
-
-      if (row) {
-
-        /*
-          勤務形態は絶対に変更しない
-        */
-
-        const result =
-          await supabaseClient
-            .from("work_shifts")
-            .update({
-
-              leave_type:
-                null
-
-            })
-            .eq(
-              "id",
-              row.id
+              },
+              0
             );
 
 
-        if (
-          result.error
-        ) {
+            return;
 
-          throw result.error;
+          }
+
+
+          /*
+           * トークン更新
+           */
+
+          if (
+            event ===
+              "TOKEN_REFRESHED"
+          ) {
+
+            console.log(
+              "★ セッション更新"
+            );
+
+            return;
+
+          }
+
+
+          /*
+           * ログアウト
+           */
+
+          if (
+            event ===
+              "SIGNED_OUT"
+          ) {
+
+            await handleSignedOut();
+
+          }
 
         }
+      );
 
 
-        setStoredShift(
-          name,
-          dateKey,
-          row.shift_name ||
-            "",
-          ""
-        );
+  window.authStateSubscription =
+    data?.subscription ||
+    null;
 
-      }
+}
 
 
-      renderSchedule();
+/* =========================================================
+   認証済みユーザー処理
+   ========================================================= */
+
+async function handleAuthenticatedUser(
+  user
+) {
+
+  if (!user) {
+
+    return false;
+
+  }
+
+
+  console.log(
+    "★ 認証済みユーザー:",
+    user.email
+  );
+
+
+  /*
+   * ログインユーザー情報を保存
+   */
+
+  window.currentUser =
+    user;
+
+
+  /*
+   * まず現在の組織を確認
+   */
+
+  let organization =
+    await getCurrentOrganization();
+
+
+  /*
+   * 組織がある場合
+   */
+
+  if (organization?.id) {
+
+    currentOrganization =
+      organization;
+
+
+    console.log(
+      "★ 所属組織:",
+      organization
+    );
+
+
+    /*
+     * アプリを表示
+     */
+
+    showAppScreen();
+
+
+    /*
+     * 最新データ読み込み
+     */
+
+    await initializeAfterLogin();
+
+
+    /*
+     * 初期化済み
+     */
+
+    appInitialized =
+      true;
+
+
+    hideInitialLoading();
+
+
+    return true;
+
+  }
+
+
+  /*
+   * 組織がない場合
+   *
+   * 新規職場登録途中の可能性がある。
+   */
+
+  console.log(
+    "★ 所属組織がありません"
+  );
+
+
+  /*
+   * 保留中の新規職場登録があるか確認
+   */
+
+  const pendingOrganization =
+    getPendingOrganizationRegistration();
+
+
+  if (
+    pendingOrganization
+  ) {
+
+    console.log(
+      "★ 新規職場登録を続行"
+    );
+
+
+    showAppScreen();
+
+
+    /*
+     * メール・Google・Apple・Azure
+     * 共通の職場作成処理
+     */
+
+    const created =
+      await createNewOrganization(
+        pendingOrganization
+      );
+
+
+    if (created) {
+
+      clearPendingOrganizationRegistration();
+
+
+      await initializeAfterLogin();
+
+
+      appInitialized =
+        true;
+
+
+      hideInitialLoading();
+
+
+      return true;
+
+    }
+
+  }
+
+
+  /*
+   * 組織がない通常ログインの場合
+   */
+
+  console.log(
+    "★ 職場未登録ユーザー"
+  );
+
+
+  /*
+   * 既存の職場選択・新規職場登録画面を表示
+   */
+
+  if (
+    typeof showOrganizationSelection ===
+      "function"
+  ) {
+
+    showOrganizationSelection();
+
+  } else if (
+    typeof showOrganizationRegistration ===
+      "function"
+  ) {
+
+    showOrganizationRegistration();
+
+  }
+
+
+  hideInitialLoading();
+
+
+  return false;
+
+}
+
+
+/* =========================================================
+   ログアウト処理
+   ========================================================= */
+
+async function logout() {
+
+  if (!supabaseClient) {
+
+    return;
+
+  }
+
+
+  try {
+
+    /*
+     * Realtime停止
+     */
+
+    if (
+      typeof stopRealtime ===
+      "function"
+    ) {
+
+      await stopRealtime();
+
+    }
+
+
+    /*
+     * Supabaseログアウト
+     */
+
+    const {
+      error
+    } =
+      await supabaseClient
+        .auth
+        .signOut();
+
+
+    if (error) {
+
+      console.error(
+        "★ ログアウトエラー:",
+        error
+      );
 
       return;
 
     }
 
 
-    /* ==================================================
-       既存勤務がある場合
-       勤務形態は変更しない
-    ================================================== */
+    /*
+     * ローカル状態をクリア
+     */
 
-    if (row) {
+    currentOrganization =
+      null;
 
-      const result =
-        await supabaseClient
-          .from("work_shifts")
-          .update({
+    window.currentUser =
+      null;
 
-            leave_type:
-              leaveName
-
-          })
-          .eq(
-            "id",
-            row.id
-          );
+    appInitialized =
+      false;
 
 
-      if (
-        result.error
-      ) {
+    /*
+     * 画面をログイン画面へ
+     */
 
-        throw result.error;
-
-      }
+    showLoginScreen();
 
 
-      setStoredShift(
-        name,
-        dateKey,
-        row.shift_name ||
-          "",
-        leaveName
-      );
-
-    }
-
-
-    /* ==================================================
-       勤務がない場合
-       休暇だけ登録
-    ================================================== */
-
-    else {
-
-      const result =
-        await supabaseClient
-          .from("work_shifts")
-          .insert({
-
-            staff_name:
-              name,
-
-            work_date:
-              dateKey,
-
-            shift_name:
-              "",
-
-            leave_type:
-              leaveName,
-
-            organization_id:
-              currentOrganization.id
-
-          });
-
-
-      if (
-        result.error
-      ) {
-
-        throw result.error;
-
-      }
-
-
-      setStoredShift(
-        name,
-        dateKey,
-        "",
-        leaveName
-      );
-
-    }
-
-
-    renderSchedule();
+    console.log(
+      "★ ログアウト完了"
+    );
 
 
   } catch (error) {
 
     console.error(
-      "休暇保存エラー",
+      "★ logout エラー:",
+      error
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   ログアウト後処理
+   ========================================================= */
+
+async function handleSignedOut() {
+
+  console.log(
+    "★ SIGNED_OUT"
+  );
+
+
+  currentOrganization =
+    null;
+
+  window.currentUser =
+    null;
+
+  appInitialized =
+    false;
+
+
+  /*
+   * Realtime停止
+   */
+
+  if (
+    typeof stopRealtime ===
+    "function"
+  ) {
+
+    await stopRealtime();
+
+  }
+
+
+  /*
+   * ログイン画面へ
+   */
+
+  showLoginScreen();
+
+
+  hideInitialLoading();
+
+}
+
+
+/* =========================================================
+   ログアウトボタン設定
+   ========================================================= */
+
+function setupLogoutButton() {
+
+  /*
+   * HTML側の既存ボタンを探す
+   */
+
+  const buttons =
+    document.querySelectorAll(
+      '[data-action="logout"],' +
+      '#logoutButton,' +
+      '#logoutBtn'
+    );
+
+
+  buttons.forEach(
+    button => {
+
+      /*
+       * 二重登録防止
+       */
+
+      if (
+        button.dataset.logoutBound ===
+        "true"
+      ) {
+
+        return;
+
+      }
+
+
+      button.dataset.logoutBound =
+        "true";
+
+
+      button.addEventListener(
+        "click",
+        async event => {
+
+          event.preventDefault();
+
+
+          await logout();
+
+        }
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   起動時の認証確認
+   ========================================================= */
+
+async function restoreAuthentication() {
+
+  console.log(
+    "★ 認証状態確認開始"
+  );
+
+
+  /*
+   * セッション取得
+   */
+
+  const session =
+    await getCurrentSession();
+
+
+  /*
+   * セッションなし
+   */
+
+  if (!session?.user) {
+
+    console.log(
+      "★ 未ログイン"
+    );
+
+
+    currentOrganization =
+      null;
+
+
+    showLoginScreen();
+
+
+    hideInitialLoading();
+
+
+    return false;
+
+  }
+
+
+  /*
+   * セッションあり
+   */
+
+  console.log(
+    "★ セッション復元:",
+    session.user.email
+  );
+
+
+  /*
+   * 認証済みユーザーとして処理
+   */
+
+  return await handleAuthenticatedUser(
+    session.user
+  );
+
+}
+
+
+/* =========================================================
+   アプリ初期化
+   ========================================================= */
+
+async function init() {
+
+  if (appInitialized) {
+
+    return;
+
+  }
+
+
+  console.log(
+    "★ 勤務表アプリ起動"
+  );
+
+
+  try {
+
+    /*
+     * Supabase確認
+     */
+
+    if (!supabaseClient) {
+
+      console.error(
+        "★ Supabaseが初期化されていません"
+      );
+
+      showLoginScreen();
+
+      hideInitialLoading();
+
+      return;
+
+    }
+
+
+    /*
+     * ローカルデータは
+     * 先に読み込んでおく。
+     *
+     * オフライン時の表示にも利用する。
+     */
+
+    loadLocalData();
+
+
+    /*
+     * 認証状態監視
+     */
+
+    setupAuthStateListener();
+
+
+    /*
+     * ログアウトボタン
+     */
+
+    setupLogoutButton();
+
+
+    /*
+     * セッション復元
+     */
+
+    await restoreAuthentication();
+
+
+    console.log(
+      "★ 初期化完了"
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "★ init エラー:",
       error
     );
 
 
-    alert(
-      "休暇の保存に失敗しました。\n\n" +
-      "エラー：" +
-      (error.message || error)
-    );
+    showLoginScreen();
+
 
   } finally {
 
-    finishCloudOperation();
+    hideInitialLoading();
 
   }
 
 }
 
 
-/* ==================================================
-   月間集計
-================================================== */
+/* =========================================================
+   DOM読み込み完了
+   ========================================================= */
 
-function calculateMonthlyTotal(
-  staffName,
-  shiftName,
-  year,
-  month
-) {
-
-  const days =
-    getDaysInMonth(
-      year,
-      month
-    );
+document.addEventListener(
+  "DOMContentLoaded",
+  init
+);
 
 
-  let total =
-    0;
+/* =========================================================
+   第9部：メール認証
+   ・メール新規登録
+   ・メールログイン
+   ・メール確認後の処理
+   ・パスワードリセット
+   ========================================================= */
 
 
-  const targetShift =
-    normalizeShiftNameForTotal(
-      shiftName
-    );
+/* =========================================================
+   メール登録・ログイン処理中フラグ
+   ========================================================= */
+
+let emailAuthBusy = false;
 
 
-  for (
-    let day = 1;
-    day <= days;
-    day++
-  ) {
+/* =========================================================
+   メールアドレス取得
+   ========================================================= */
 
-    const dateKey =
-      getDateKey(
-        year,
-        month,
-        day
-      );
-
-
-    const display =
-      getDisplayShift(
-        staffName,
-        dateKey
-      );
-
-
-    const normalizedDisplay =
-      normalizeShiftNameForTotal(
-        display
-      );
-
-
-    if (
-      normalizedDisplay ===
-        targetShift &&
-      normalizedDisplay !==
-        "明"
-    ) {
-
-      total++;
-
-    }
-
-  }
-
-
-  return total;
-
-}
-
-
-/* ==================================================
-   年度累計
-================================================== */
-
-function calculateFiscalTotal(
-  staffName,
-  shiftName,
-  year,
-  month
-) {
-
-  let total =
-    0;
-
-
-  const fiscalStartYear =
-    month >= 4
-      ? year
-      : year - 1;
-
-
-  const targetShift =
-    normalizeShiftNameForTotal(
-      shiftName
-    );
-
-
-  const startDate =
-    new Date(
-      fiscalStartYear,
-      3,
-      1
-    );
-
-
-  const endDate =
-    new Date(
-      year,
-      month - 1,
-      getDaysInMonth(
-        year,
-        month
-      )
-    );
-
-
-  const current =
-    new Date(
-      startDate
-    );
-
-
-  while (
-    current <=
-    endDate
-  ) {
-
-    const dateKey =
-      getDateKey(
-        current.getFullYear(),
-        current.getMonth() + 1,
-        current.getDate()
-      );
-
-
-    const display =
-      getDisplayShift(
-        staffName,
-        dateKey
-      );
-
-
-    const normalizedDisplay =
-      normalizeShiftNameForTotal(
-        display
-      );
-
-
-    if (
-      normalizedDisplay ===
-        targetShift &&
-      normalizedDisplay !==
-        "明"
-    ) {
-
-      total++;
-
-    }
-
-
-    current.setDate(
-      current.getDate() + 1
-    );
-
-  }
-
-
-  return total;
-
-}
-
-
-/* ==================================================
-   職員追加・編集
-================================================== */
-
-async function addOrUpdateStaff() {
+function getEmailValue() {
 
   const input =
     document.getElementById(
-      "staffNameInput"
+      "email"
+    ) ||
+    document.getElementById(
+      "loginEmail"
+    ) ||
+    document.getElementById(
+      "registerEmail"
     );
+
 
   if (!input) {
-    return;
+
+    return "";
+
   }
 
-  const name =
-    input.value.trim();
 
-  if (!name) {
-    alert(
-      "職員名を入力してください"
+  return input.value
+    .trim();
+
+}
+
+
+/* =========================================================
+   パスワード取得
+   ========================================================= */
+
+function getPasswordValue() {
+
+  const input =
+    document.getElementById(
+      "password"
+    ) ||
+    document.getElementById(
+      "loginPassword"
+    ) ||
+    document.getElementById(
+      "registerPassword"
     );
-    return;
+
+
+  if (!input) {
+
+    return "";
+
   }
 
-  if (
-    name === "明"
-  ) {
-    alert(
-      "「明」は登録できません"
-    );
-    return;
+
+  return input.value;
+
+}
+
+
+/* =========================================================
+   メールアドレスの簡易チェック
+   ========================================================= */
+
+function validateEmail(
+  email
+) {
+
+  if (!email) {
+
+    return false;
+
   }
 
-  const duplicate =
-    appData.staff.some(
-      (staff, index) =>
-        getStaffName(staff) ===
-          name &&
-        index !==
-          editingStaffIndex
-    );
 
-  if (duplicate) {
-    alert(
-      "同じ職員名は登録できません"
-    );
-    return;
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    .test(email);
+
+}
+
+
+/* =========================================================
+   パスワードチェック
+   ========================================================= */
+
+function validatePassword(
+  password
+) {
+
+  /*
+   * Supabase側の設定を最終的な判定とする。
+   * ここでは空欄だけチェック。
+   */
+
+  if (!password) {
+
+    return false;
+
   }
 
-  cloudOperationBusy =
+
+  return true;
+
+}
+
+
+/* =========================================================
+   メール新規登録
+   ========================================================= */
+
+async function signUpWithEmail() {
+
+  if (emailAuthBusy) {
+
+    return false;
+
+  }
+
+
+  emailAuthBusy =
     true;
 
+
   try {
 
-    if (
-      editingStaffIndex >= 0
-    ) {
-
-      /* =========================================
-         既存職員の編集
-         ========================================= */
-
-      const oldStaff =
-        appData.staff[
-          editingStaffIndex
-        ];
-
-      const oldName =
-        getStaffName(
-          oldStaff
-        );
-
-      if (
-        oldName !== name
-      ) {
-
-        const workResult =
-          await supabaseClient
-            .from("work_shifts")
-            .update({
-              staff_name:
-                name
-            })
-            .eq(
-              "staff_name",
-              oldName
-            );
-
-        if (
-          workResult.error
-        ) {
-          throw workResult.error;
-        }
-
-      }
-
-      const result =
-        await supabaseClient
-          .from("staff")
-          .update({
-            name
-          })
-          .eq(
-            "id",
-            oldStaff.id
-          );
-
-      if (
-        result.error
-      ) {
-        throw result.error;
-      }
-
-      editingStaffIndex =
-        -1;
-
-    } else {
-
-      /* =========================================
-         新規職員の追加
-         ========================================= */
-
-      const maxOrder =
-        appData.staff.reduce(
-          (max, staff) => {
-
-            const value =
-              Number(
-                staff.sort_order
-              );
-
-            return Number.isFinite(
-              value
-            )
-              ? Math.max(
-                  max,
-                  value
-                )
-              : max;
-
-          },
-          -1
-        );
-
-      /* -----------------------------------------
-         ① staff に職員を追加
-         ----------------------------------------- */
-
-      const result =
-        await supabaseClient
-          .from("staff")
-          .insert({
-            name,
-            sort_order:
-              maxOrder + 1,
-            organization_id:
-              currentOrganization.id
-          })
-          .select("id")
-          .single();
-
-      if (
-        result.error
-      ) {
-        throw result.error;
-      }
-
-      const newStaff =
-  result.data;
-
-if (
-  !newStaff ||
-  !newStaff.id
-) {
-  throw new Error(
-    "新しく追加した職員のIDを取得できませんでした。"
-  );
-}
+    const email =
+      getEmailValue();
 
 
-/* -----------------------------------------
-   ② organization_members に所属情報を追加
-   ----------------------------------------- */
+    const password =
+      getPasswordValue();
 
-const memberResult =
-  await supabaseClient
-    .from("organization_members")
-    .insert({
-      organization_id:
-        currentOrganization.id,
-      staff_id:
-        newStaff.id,
-      role:
-        "staff"
-    });
 
-if (
-  memberResult.error
-) {
-  throw memberResult.error;
-}
+    /*
+     * 入力確認
+     */
 
-   }
+    if (!validateEmail(email)) {
 
-    /* =========================================
-       入力欄をリセット
-       ========================================= */
-
-    input.value =
-      "";
-
-    const button =
-      document.getElementById(
-        "addStaffButton"
+      alert(
+        "正しいメールアドレスを入力してください。"
       );
 
-    if (button) {
-      button.textContent =
-        "追加";
+      return false;
+
     }
 
-    /* =========================================
-       最新データを再取得
-       ========================================= */
 
-    await loadAllFromSupabase();
+    if (!validatePassword(password)) {
 
-    renderStaffList();
+      alert(
+        "パスワードを入力してください。"
+      );
 
-    renderSchedule();
+      return false;
 
-  } catch (error) {
+    }
 
-    console.error(
-      "職員保存エラー",
+
+    /*
+     * 新規職場登録情報が入力されている場合は
+     * 認証後にcreateNewOrganization()へ渡せるよう
+     * 先に保存する。
+     */
+
+    savePendingOrganizationRegistration();
+
+
+    console.log(
+      "★ メールアドレス新規登録開始"
+    );
+
+
+    /*
+     * Supabase Auth
+     */
+
+    const {
+      data,
       error
-    );
+    } =
+      await supabaseClient
+        .auth
+        .signUp({
 
-    alert(
-      "職員の保存に失敗しました。\n\n" +
-      (
-        error?.message ||
-        String(error)
-      )
-    );
+          email:
+            email,
 
-  } finally {
+          password:
+            password
 
-    finishCloudOperation();
-
-  }
-
-}
+        });
 
 
-/* ==================================================
-   職員並び順保存
-================================================== */
+    if (error) {
 
-async function saveStaffOrder() {
+      console.error(
+        "★ メール新規登録エラー:",
+        error
+      );
 
-  try {
 
-    for (
-      let i = 0;
-      i < appData.staff.length;
-      i++
+      alert(
+        getAuthErrorMessage(
+          error
+        )
+      );
+
+
+      return false;
+
+    }
+
+
+    /*
+     * userが存在する場合
+     */
+
+    if (data?.user) {
+
+      window.currentUser =
+        data.user;
+
+    }
+
+
+    /*
+     * メール確認が必要な設定の場合
+     */
+
+    if (
+      data?.user &&
+      !data?.session
     ) {
 
-      const result =
-        await supabaseClient
-          .from("staff")
-          .update({
-
-            sort_order:
-              i
-
-          })
-          .eq(
-            "id",
-            appData.staff[i].id
-          );
+      alert(
+        "確認メールを送信しました。\n\n" +
+        "メール内の確認リンクを開いて、" +
+        "登録を完了してください。"
+      );
 
 
-      if (
-        result.error
-      ) {
+      /*
+       * ログイン画面へ戻す
+       */
 
-        throw result.error;
-
-      }
+      showLoginScreen();
 
 
-      appData.staff[i]
-        .sort_order =
-        i;
+      return true;
+
+    }
+
+
+    /*
+     * メール確認不要の場合
+     *
+     * そのまま共通認証処理へ。
+     */
+
+    if (
+      data?.session?.user
+    ) {
+
+      await handleAuthenticatedUser(
+        data.session.user
+      );
 
     }
 
@@ -10677,7 +7339,4677 @@ async function saveStaffOrder() {
   } catch (error) {
 
     console.error(
-      "職員並び順保存エラー",
+      "★ signUpWithEmail エラー:",
+      error
+    );
+
+
+    alert(
+      getAuthErrorMessage(
+        error
+      )
+    );
+
+
+    return false;
+
+
+  } finally {
+
+    emailAuthBusy =
+      false;
+
+  }
+
+}
+
+
+/* =========================================================
+   メールログイン
+   ========================================================= */
+
+async function signInWithEmail() {
+
+  if (emailAuthBusy) {
+
+    return false;
+
+  }
+
+
+  emailAuthBusy =
+    true;
+
+
+  try {
+
+    const email =
+      getEmailValue();
+
+
+    const password =
+      getPasswordValue();
+
+
+    /*
+     * 入力確認
+     */
+
+    if (!validateEmail(email)) {
+
+      alert(
+        "正しいメールアドレスを入力してください。"
+      );
+
+      return false;
+
+    }
+
+
+    if (!validatePassword(password)) {
+
+      alert(
+        "パスワードを入力してください。"
+      );
+
+      return false;
+
+    }
+
+
+    console.log(
+      "★ メールログイン開始"
+    );
+
+
+    /*
+     * Supabase Auth
+     */
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient
+        .auth
+        .signInWithPassword({
+
+          email:
+            email,
+
+          password:
+            password
+
+        });
+
+
+    if (error) {
+
+      console.error(
+        "★ メールログインエラー:",
+        error
+      );
+
+
+      alert(
+        getAuthErrorMessage(
+          error
+        )
+      );
+
+
+      return false;
+
+    }
+
+
+    /*
+     * セッション確認
+     */
+
+    if (
+      data?.session?.user
+    ) {
+
+      await handleAuthenticatedUser(
+        data.session.user
+      );
+
+    }
+
+
+    return true;
+
+
+  } catch (error) {
+
+    console.error(
+      "★ signInWithEmail エラー:",
+      error
+    );
+
+
+    alert(
+      getAuthErrorMessage(
+        error
+      )
+    );
+
+
+    return false;
+
+
+  } finally {
+
+    emailAuthBusy =
+      false;
+
+  }
+
+}
+
+
+/* =========================================================
+   メール確認後のセッション処理
+   ========================================================= */
+
+async function handleEmailConfirmation() {
+
+  try {
+
+    const session =
+      await getCurrentSession();
+
+
+    if (!session?.user) {
+
+      return false;
+
+    }
+
+
+    console.log(
+      "★ メール確認済み"
+    );
+
+
+    /*
+     * メール確認後も
+     * Google等と同じ処理へ。
+     */
+
+    return await handleAuthenticatedUser(
+      session.user
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "★ メール確認処理エラー:",
+      error
+    );
+
+    return false;
+
+  }
+
+}
+
+
+/* =========================================================
+   パスワードリセットメール送信
+   ========================================================= */
+
+async function sendPasswordResetEmail() {
+
+  if (emailAuthBusy) {
+
+    return false;
+
+  }
+
+
+  emailAuthBusy =
+    true;
+
+
+  try {
+
+    const email =
+      getEmailValue();
+
+
+    if (!validateEmail(email)) {
+
+      alert(
+        "パスワードを再設定するメールアドレスを入力してください。"
+      );
+
+      return false;
+
+    }
+
+
+    console.log(
+      "★ パスワードリセットメール送信"
+    );
+
+
+    /*
+     * 現在のアプリURLを取得
+     */
+
+    const redirectTo =
+      window.location.origin +
+      window.location.pathname;
+
+
+    const {
+      error
+    } =
+      await supabaseClient
+        .auth
+        .resetPasswordForEmail(
+          email,
+          {
+            redirectTo:
+              redirectTo
+          }
+        );
+
+
+    if (error) {
+
+      console.error(
+        "★ パスワードリセットエラー:",
+        error
+      );
+
+
+      alert(
+        getAuthErrorMessage(
+          error
+        )
+      );
+
+
+      return false;
+
+    }
+
+
+    alert(
+      "パスワード再設定用のメールを送信しました。\n\n" +
+      "メールをご確認ください。"
+    );
+
+
+    return true;
+
+
+  } catch (error) {
+
+    console.error(
+      "★ sendPasswordResetEmail エラー:",
+      error
+    );
+
+
+    alert(
+      getAuthErrorMessage(
+        error
+      )
+    );
+
+
+    return false;
+
+
+  } finally {
+
+    emailAuthBusy =
+      false;
+
+  }
+
+}
+
+
+/* =========================================================
+   パスワード変更
+   ========================================================= */
+
+async function updatePassword(
+  newPassword
+) {
+
+  if (!newPassword) {
+
+    alert(
+      "新しいパスワードを入力してください。"
+    );
+
+    return false;
+
+  }
+
+
+  try {
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient
+        .auth
+        .updateUser({
+
+          password:
+            newPassword
+
+        });
+
+
+    if (error) {
+
+      console.error(
+        "★ パスワード変更エラー:",
+        error
+      );
+
+
+      alert(
+        getAuthErrorMessage(
+          error
+        )
+      );
+
+
+      return false;
+
+    }
+
+
+    alert(
+      "パスワードを変更しました。"
+    );
+
+
+    return true;
+
+
+  } catch (error) {
+
+    console.error(
+      "★ updatePassword エラー:",
+      error
+    );
+
+
+    alert(
+      getAuthErrorMessage(
+        error
+      )
+    );
+
+
+    return false;
+
+  }
+
+}
+
+
+/* =========================================================
+   認証エラーメッセージ
+   ========================================================= */
+
+function getAuthErrorMessage(
+  error
+) {
+
+  const message =
+    String(
+      error?.message ||
+      ""
+    )
+      .toLowerCase();
+
+
+  /*
+   * メールアドレス重複
+   */
+
+  if (
+    message.includes(
+      "already registered"
+    ) ||
+    message.includes(
+      "user already exists"
+    )
+  ) {
+
+    return (
+      "このメールアドレスはすでに登録されています。\n" +
+      "ログインをお試しください。"
+    );
+
+  }
+
+
+  /*
+   * メールまたはパスワード
+   */
+
+  if (
+    message.includes(
+      "invalid login credentials"
+    )
+  ) {
+
+    return (
+      "メールアドレスまたはパスワードが正しくありません。"
+    );
+
+  }
+
+
+  /*
+   * メール確認
+   */
+
+  if (
+    message.includes(
+      "email not confirmed"
+    )
+  ) {
+
+    return (
+      "メールアドレスの確認が完了していません。\n" +
+      "確認メールをご確認ください。"
+    );
+
+  }
+
+
+  /*
+   * パスワードが短い
+   */
+
+  if (
+    message.includes(
+      "password"
+    ) &&
+    (
+      message.includes(
+        "at least"
+      ) ||
+      message.includes(
+        "characters"
+      )
+    )
+  ) {
+
+    return (
+      "パスワードの文字数が不足しています。"
+    );
+
+  }
+
+
+  /*
+   * メール形式
+   */
+
+  if (
+    message.includes(
+      "invalid email"
+    )
+  ) {
+
+    return (
+      "メールアドレスの形式が正しくありません。"
+    );
+
+  }
+
+
+  /*
+   * その他
+   */
+
+  return (
+    error?.message ||
+    "認証処理中にエラーが発生しました。"
+  );
+
+}
+
+
+/* =========================================================
+   メール認証ボタンのイベント設定
+   ========================================================= */
+
+function setupEmailAuthEvents() {
+
+  /*
+   * 新規登録
+   */
+
+  const registerButtons =
+    document.querySelectorAll(
+      '[data-action="email-signup"],' +
+      '#emailSignupButton,' +
+      '#emailRegisterButton'
+    );
+
+
+  registerButtons.forEach(
+    button => {
+
+      if (
+        button.dataset.emailBound ===
+        "true"
+      ) {
+
+        return;
+
+      }
+
+
+      button.dataset.emailBound =
+        "true";
+
+
+      button.addEventListener(
+        "click",
+        async event => {
+
+          event.preventDefault();
+
+
+          await signUpWithEmail();
+
+        }
+      );
+
+    }
+  );
+
+
+  /*
+   * ログイン
+   */
+
+  const loginButtons =
+    document.querySelectorAll(
+      '[data-action="email-login"],' +
+      '#emailLoginButton,' +
+      '#loginButton'
+    );
+
+
+  loginButtons.forEach(
+    button => {
+
+      if (
+        button.dataset.emailLoginBound ===
+        "true"
+      ) {
+
+        return;
+
+      }
+
+
+      button.dataset.emailLoginBound =
+        "true";
+
+
+      button.addEventListener(
+        "click",
+        async event => {
+
+          event.preventDefault();
+
+
+          await signInWithEmail();
+
+        }
+      );
+
+    }
+  );
+
+
+  /*
+   * パスワード再設定
+   */
+
+  const resetButtons =
+    document.querySelectorAll(
+      '[data-action="password-reset"],' +
+      '#passwordResetButton,' +
+      '#forgotPasswordButton'
+    );
+
+
+  resetButtons.forEach(
+    button => {
+
+      if (
+        button.dataset.resetBound ===
+        "true"
+      ) {
+
+        return;
+
+      }
+
+
+      button.dataset.resetBound =
+        "true";
+
+
+      button.addEventListener(
+        "click",
+        async event => {
+
+          event.preventDefault();
+
+
+          await sendPasswordResetEmail();
+
+        }
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   第8部のinitから呼び出す
+   ========================================================= */
+
+function setupEmailAuthentication() {
+
+  setupEmailAuthEvents();
+
+}
+
+/* =========================================================
+   第10部：Google認証
+   ・Googleログイン
+   ・Google新規職場登録
+   ・OAuthコールバック処理
+   ========================================================= */
+
+
+/* =========================================================
+   Google認証処理中フラグ
+   ========================================================= */
+
+let googleAuthBusy = false;
+
+
+/* =========================================================
+   Google OAuth開始
+   ========================================================= */
+
+async function signInWithGoogle(
+  mode = "login"
+) {
+
+  if (googleAuthBusy) {
+
+    return false;
+
+  }
+
+
+  googleAuthBusy =
+    true;
+
+
+  try {
+
+    /*
+     * Supabaseクライアント確認
+     */
+
+    if (!supabaseClient) {
+
+      console.error(
+        "★ Supabaseクライアントがありません"
+      );
+
+      alert(
+        "サーバーに接続できません。"
+      );
+
+      return false;
+
+    }
+
+
+    /*
+     * 新規職場登録の場合
+     *
+     * Google認証後にcreateNewOrganization()
+     * へ渡すため、入力済みの職場情報を保存。
+     */
+
+    if (
+      mode ===
+      "register"
+    ) {
+
+      const saved =
+        savePendingOrganizationRegistration();
+
+
+      if (!saved) {
+
+        console.warn(
+          "★ 新規職場登録情報を保存できませんでした"
+        );
+
+      }
+
+    }
+
+
+    /*
+     * OAuthから戻ってくるURL
+     *
+     * 現在のページへ戻す。
+     */
+
+    const redirectTo =
+      window.location.origin +
+      window.location.pathname;
+
+
+    console.log(
+      "★ Google OAuth開始"
+    );
+
+
+    /*
+     * Supabase Google OAuth
+     */
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient
+        .auth
+        .signInWithOAuth({
+
+          provider:
+            "google",
+
+          options: {
+
+            redirectTo:
+              redirectTo,
+
+            queryParams: {
+
+              access_type:
+                "offline",
+
+              prompt:
+                "select_account"
+
+            }
+
+          }
+
+        });
+
+
+    if (error) {
+
+      console.error(
+        "★ Google OAuthエラー:",
+        error
+      );
+
+
+      alert(
+        getAuthErrorMessage(
+          error
+        )
+      );
+
+
+      return false;
+
+    }
+
+
+    console.log(
+      "★ Google OAuthへ移動:",
+      data?.url
+    );
+
+
+    /*
+     * signInWithOAuth()が
+     * ブラウザを遷移させるため、
+     * 通常ここから先はOAuth復帰後に実行される。
+     */
+
+    return true;
+
+
+  } catch (error) {
+
+    console.error(
+      "★ signInWithGoogle エラー:",
+      error
+    );
+
+
+    alert(
+      getAuthErrorMessage(
+        error
+      )
+    );
+
+
+    return false;
+
+
+  } finally {
+
+    googleAuthBusy =
+      false;
+
+  }
+
+}
+
+
+/* =========================================================
+   Googleログイン
+   ========================================================= */
+
+async function loginWithGoogle() {
+
+  return await signInWithGoogle(
+    "login"
+  );
+
+}
+
+
+/* =========================================================
+   Googleで新規職場登録
+   ========================================================= */
+
+async function registerOrganizationWithGoogle() {
+
+  /*
+   * 職場情報を保存してからGoogleへ。
+   */
+
+  const saved =
+    savePendingOrganizationRegistration();
+
+
+  if (!saved) {
+
+    console.warn(
+      "★ 新規職場登録情報を確認してください"
+    );
+
+    return false;
+
+  }
+
+
+  return await signInWithGoogle(
+    "register"
+  );
+
+}
+
+
+/* =========================================================
+   OAuthコールバック判定
+   ========================================================= */
+
+function isOAuthCallback() {
+
+  const url =
+    new URL(
+      window.location.href
+    );
+
+
+  /*
+   * PKCE方式の場合
+   */
+
+  if (
+    url.searchParams.has(
+      "code"
+    )
+  ) {
+
+    return true;
+
+  }
+
+
+  /*
+   * 古いImplicit Flow等の
+   * hash形式にも対応
+   */
+
+  const hash =
+    window.location.hash;
+
+
+  if (
+    hash &&
+    (
+      hash.includes(
+        "access_token="
+      ) ||
+      hash.includes(
+        "refresh_token="
+      )
+    )
+  ) {
+
+    return true;
+
+  }
+
+
+  return false;
+
+}
+
+
+/* =========================================================
+   OAuthコールバック処理
+   ========================================================= */
+
+async function handleOAuthCallback() {
+
+  if (!isOAuthCallback()) {
+
+    return false;
+
+  }
+
+
+  console.log(
+    "★ OAuthコールバック検出"
+  );
+
+
+  try {
+
+    /*
+     * SupabaseがURLのcodeを処理して
+     * セッションを確立する。
+     */
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient
+        .auth
+        .exchangeCodeForSession(
+          new URL(
+            window.location.href
+          )
+            .searchParams
+            .get(
+              "code"
+            )
+        );
+
+
+    /*
+     * codeが存在しない場合は
+     * 既にSupabaseがセッションを復元している
+     * 可能性がある。
+     */
+
+    if (
+      error &&
+      !new URL(
+        window.location.href
+      )
+        .searchParams
+        .get(
+          "code"
+        )
+    ) {
+
+      console.warn(
+        "★ OAuthセッション確認へ移行:",
+        error
+      );
+
+    } else if (error) {
+
+      console.error(
+        "★ OAuthコード交換エラー:",
+        error
+      );
+
+      alert(
+        getAuthErrorMessage(
+          error
+        )
+      );
+
+      return false;
+
+    }
+
+
+    /*
+     * URLをきれいにする
+     *
+     * codeを残したままにしない。
+     */
+
+    const cleanUrl =
+      window.location.origin +
+      window.location.pathname;
+
+
+    window.history.replaceState(
+      {},
+      document.title,
+      cleanUrl
+    );
+
+
+    /*
+     * セッション取得
+     */
+
+    const session =
+      await getCurrentSession();
+
+
+    if (!session?.user) {
+
+      console.error(
+        "★ OAuth後にセッションを取得できません"
+      );
+
+
+      alert(
+        "Google認証は完了しましたが、ログイン情報を取得できませんでした。\n" +
+        "もう一度お試しください。"
+      );
+
+
+      return false;
+
+    }
+
+
+    /*
+     * Google認証後も
+     * メール認証と同じ処理へ。
+     */
+
+    console.log(
+      "★ Google認証完了:",
+      session.user.email
+    );
+
+
+    await handleAuthenticatedUser(
+      session.user
+    );
+
+
+    return true;
+
+
+  } catch (error) {
+
+    console.error(
+      "★ handleOAuthCallback エラー:",
+      error
+    );
+
+
+    alert(
+      "Google認証後の処理でエラーが発生しました。\n" +
+      "もう一度お試しください。"
+    );
+
+
+    return false;
+
+  }
+
+}
+
+
+/* =========================================================
+   Googleボタンのイベント設定
+   ========================================================= */
+
+function setupGoogleAuthEvents() {
+
+  /*
+   * Googleログイン
+   */
+
+  const loginButtons =
+    document.querySelectorAll(
+      '[data-action="google-login"],' +
+      '#googleLoginButton,' +
+      '#googleSignInButton'
+    );
+
+
+  loginButtons.forEach(
+    button => {
+
+      if (
+        button.dataset.googleLoginBound ===
+        "true"
+      ) {
+
+        return;
+
+      }
+
+
+      button.dataset.googleLoginBound =
+        "true";
+
+
+      button.addEventListener(
+        "click",
+        async event => {
+
+          event.preventDefault();
+
+
+          await loginWithGoogle();
+
+        }
+      );
+
+    }
+  );
+
+
+  /*
+   * Googleで新規職場登録
+   */
+
+  const registerButtons =
+    document.querySelectorAll(
+      '[data-action="google-register"],' +
+      '#googleRegisterButton,' +
+      '#googleOrganizationRegisterButton'
+    );
+
+
+  registerButtons.forEach(
+    button => {
+
+      if (
+        button.dataset.googleRegisterBound ===
+        "true"
+      ) {
+
+        return;
+
+      }
+
+
+      button.dataset.googleRegisterBound =
+        "true";
+
+
+      button.addEventListener(
+        "click",
+        async event => {
+
+          event.preventDefault();
+
+
+          await registerOrganizationWithGoogle();
+
+        }
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   Google認証セットアップ
+   ========================================================= */
+
+function setupGoogleAuthentication() {
+
+  setupGoogleAuthEvents();
+
+}
+
+
+/* =========================================================
+   OAuth対応版init
+   ========================================================= */
+
+async function initializeAuthentication() {
+
+  /*
+   * OAuthから戻ってきた場合
+   */
+
+  if (
+    isOAuthCallback()
+  ) {
+
+    console.log(
+      "★ OAuthコールバック処理"
+    );
+
+
+    const handled =
+      await handleOAuthCallback();
+
+
+    if (handled) {
+
+      return true;
+
+    }
+
+  }
+
+
+  /*
+   * 通常起動
+   */
+
+  return await restoreAuthentication();
+
+}
+
+
+/* =========================================================
+   第11部：新規職場登録 共通処理
+   ・職場名
+   ・管理者職員名
+   ・メール / Google / Apple / Azure 共通
+   ・create_organization_and_admin
+   ========================================================= */
+
+
+/* =========================================================
+   新規職場登録情報を保存するキー
+   ========================================================= */
+
+const PENDING_ORGANIZATION_KEY =
+  "pendingOrganizationRegistration";
+
+
+/* =========================================================
+   新規職場登録情報を取得
+   ========================================================= */
+
+function getOrganizationRegistrationValues() {
+
+  /*
+   * 職場名
+   */
+
+  const organizationInput =
+    document.getElementById(
+      "organizationName"
+    ) ||
+    document.getElementById(
+      "newOrganizationName"
+    ) ||
+    document.getElementById(
+      "companyName"
+    );
+
+
+  /*
+   * 管理者の職員名
+   */
+
+  const staffInput =
+    document.getElementById(
+      "staffName"
+    ) ||
+    document.getElementById(
+      "newStaffName"
+    ) ||
+    document.getElementById(
+      "adminStaffName"
+    );
+
+
+  const organizationName =
+    organizationInput
+      ?.value
+      ?.trim() ||
+    "";
+
+
+  const staffName =
+    staffInput
+      ?.value
+      ?.trim() ||
+    "";
+
+
+  return {
+
+    organizationName:
+      organizationName,
+
+    staffName:
+      staffName
+
+  };
+
+}
+
+
+/* =========================================================
+   新規職場登録情報の入力確認
+   ========================================================= */
+
+function validateOrganizationRegistration(
+  values
+) {
+
+  if (
+    !values?.organizationName
+  ) {
+
+    alert(
+      "職場名を入力してください。"
+    );
+
+    return false;
+
+  }
+
+
+  if (
+    !values?.staffName
+  ) {
+
+    alert(
+      "管理者の職員名を入力してください。"
+    );
+
+    return false;
+
+  }
+
+
+  return true;
+
+}
+
+
+/* =========================================================
+   新規職場登録情報を一時保存
+   ========================================================= */
+
+function savePendingOrganizationRegistration() {
+
+  try {
+
+    const values =
+      getOrganizationRegistrationValues();
+
+
+    /*
+     * 入力欄が現在の画面に存在しない場合
+     * 既に保存済みの情報を維持する。
+     */
+
+    if (
+      !values.organizationName ||
+      !values.staffName
+    ) {
+
+      const existing =
+        getPendingOrganizationRegistration();
+
+
+      if (existing) {
+
+        return true;
+
+      }
+
+
+      /*
+       * 新規登録画面から呼ばれた場合は
+       * 入力不足として扱う。
+       */
+
+      if (
+        document.getElementById(
+          "organizationName"
+        ) ||
+        document.getElementById(
+          "newOrganizationName"
+        ) ||
+        document.getElementById(
+          "companyName"
+        )
+      ) {
+
+        return false;
+
+      }
+
+    }
+
+
+    const data = {
+
+      organizationName:
+        values.organizationName,
+
+      staffName:
+        values.staffName,
+
+      createdAt:
+        new Date().toISOString()
+
+    };
+
+
+    localStorage.setItem(
+      PENDING_ORGANIZATION_KEY,
+      JSON.stringify(
+        data
+      )
+    );
+
+
+    console.log(
+      "★ 新規職場登録情報を一時保存:",
+      data
+    );
+
+
+    return true;
+
+
+  } catch (error) {
+
+    console.error(
+      "★ 新規職場登録情報保存エラー:",
+      error
+    );
+
+    return false;
+
+  }
+
+}
+
+
+/* =========================================================
+   保留中の新規職場登録情報を取得
+   ========================================================= */
+
+function getPendingOrganizationRegistration() {
+
+  try {
+
+    const saved =
+      localStorage.getItem(
+        PENDING_ORGANIZATION_KEY
+      );
+
+
+    if (!saved) {
+
+      return null;
+
+    }
+
+
+    const data =
+      JSON.parse(
+        saved
+      );
+
+
+    if (
+      !data ||
+      !data.organizationName ||
+      !data.staffName
+    ) {
+
+      return null;
+
+    }
+
+
+    return data;
+
+
+  } catch (error) {
+
+    console.error(
+      "★ 保留中職場情報取得エラー:",
+      error
+    );
+
+    return null;
+
+  }
+
+}
+
+
+/* =========================================================
+   保留中の新規職場登録情報を削除
+   ========================================================= */
+
+function clearPendingOrganizationRegistration() {
+
+  try {
+
+    localStorage.removeItem(
+      PENDING_ORGANIZATION_KEY
+    );
+
+
+    console.log(
+      "★ 保留中の職場登録情報を削除"
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "★ 保留情報削除エラー:",
+      error
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   新規職場作成中フラグ
+   ========================================================= */
+
+let creatingOrganization =
+  false;
+
+
+/* =========================================================
+   新規職場作成
+   ========================================================= */
+
+async function createNewOrganization(
+  registrationData = null
+) {
+
+  if (creatingOrganization) {
+
+    console.log(
+      "★ 職場作成処理中です"
+    );
+
+    return false;
+
+  }
+
+
+  creatingOrganization =
+    true;
+
+
+  cloudOperationBusy =
+    true;
+
+
+  try {
+
+    /*
+     * 認証ユーザー確認
+     */
+
+    const user =
+      await getCurrentUser();
+
+
+    if (!user) {
+
+      console.error(
+        "★ 認証ユーザーが存在しません"
+      );
+
+      alert(
+        "ログイン情報を確認できませんでした。"
+      );
+
+      return false;
+
+    }
+
+
+    /*
+     * 登録情報を取得
+     */
+
+    const values =
+      registrationData ||
+      getPendingOrganizationRegistration();
+
+
+    if (!values) {
+
+      console.error(
+        "★ 新規職場登録情報がありません"
+      );
+
+      return false;
+
+    }
+
+
+    const organizationName =
+      values.organizationName
+        ?.trim();
+
+
+    const staffName =
+      values.staffName
+        ?.trim();
+
+
+    if (
+      !organizationName ||
+      !staffName
+    ) {
+
+      alert(
+        "職場名と職員名を入力してください。"
+      );
+
+      return false;
+
+    }
+
+
+    console.log(
+      "★ 新規職場作成開始",
+      {
+        organizationName,
+        staffName,
+        userId: user.id
+      }
+    );
+
+
+    /*
+     * =====================================================
+     * 重要
+     *
+     * 職場作成は認証方式によって分けない。
+     *
+     * Email
+     * Google
+     * Apple
+     * Azure
+     *
+     * すべて同じRPCを使用する。
+     * =====================================================
+     */
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient
+        .rpc(
+          "create_organization_and_admin",
+          {
+            new_org_name:
+              organizationName,
+
+            new_staff_name:
+              staffName
+          }
+        );
+
+
+    if (error) {
+
+      console.error(
+        "★ 新規職場作成RPCエラー:",
+        error
+      );
+
+
+      /*
+       * よくあるエラーを分かりやすく表示
+       */
+
+      const message =
+        String(
+          error.message ||
+          ""
+        );
+
+
+      if (
+        message
+          .toLowerCase()
+          .includes(
+            "duplicate"
+          )
+      ) {
+
+        alert(
+          "この職場名はすでに登録されている可能性があります。"
+        );
+
+      } else {
+
+        alert(
+          "職場の登録に失敗しました。\n\n" +
+          message
+        );
+
+      }
+
+
+      return false;
+
+    }
+
+
+    console.log(
+      "★ 新規職場作成完了:",
+      data
+    );
+
+
+    /*
+     * RPCの返却値から
+     * organization_idを取得
+     */
+
+    let organizationId =
+      null;
+
+
+    if (
+      typeof data ===
+      "string"
+    ) {
+
+      organizationId =
+        data;
+
+    } else if (
+      data?.organization_id
+    ) {
+
+      organizationId =
+        data.organization_id;
+
+    } else if (
+      data?.id
+    ) {
+
+      organizationId =
+        data.id;
+
+    } else if (
+      Array.isArray(data) &&
+      data[0]
+    ) {
+
+      organizationId =
+        data[0].organization_id ||
+        data[0].id ||
+        null;
+
+    }
+
+
+    /*
+     * organization_idが取得できなかった場合
+     *
+     * RPCが正常終了していても、
+     * currentOrganizationを設定できないので
+     * ここでは勝手に別の組織を選ばない。
+     */
+
+    if (!organizationId) {
+
+      console.warn(
+        "★ RPCは成功しましたがorganization_idを取得できませんでした"
+      );
+
+
+      /*
+       * RPC後にユーザーの所属組織を再取得
+       */
+
+      const organization =
+        await getCurrentOrganization();
+
+
+      if (organization?.id) {
+
+        currentOrganization =
+          organization;
+
+      }
+
+    } else {
+
+      /*
+       * organization_idから
+       * 組織情報を取得
+       */
+
+      const {
+        data:
+          organization,
+        error:
+          organizationError
+      } =
+        await supabaseClient
+          .from("organizations")
+          .select("*")
+          .eq(
+            "id",
+            organizationId
+          )
+          .maybeSingle();
+
+
+      if (organizationError) {
+
+        console.error(
+          "★ 作成した組織取得エラー:",
+          organizationError
+        );
+
+      } else if (
+        organization
+      ) {
+
+        currentOrganization =
+          organization;
+
+      }
+
+    }
+
+
+    /*
+     * 組織情報が最終的に取得できたか確認
+     */
+
+    if (
+      !currentOrganization?.id
+    ) {
+
+      console.error(
+        "★ 作成した職場をcurrentOrganizationに設定できません"
+      );
+
+
+      alert(
+        "職場は登録されましたが、職場情報を取得できませんでした。\n" +
+        "一度ログアウトして再度ログインしてください。"
+      );
+
+
+      return false;
+
+    }
+
+
+    /*
+     * 登録成功
+     */
+
+    clearPendingOrganizationRegistration();
+
+
+    console.log(
+      "★ currentOrganization:",
+      currentOrganization
+    );
+
+
+    /*
+     * アプリデータを初期化
+     *
+     * 新規職場なので、以前の職場の
+     * ローカルデータを混ぜない。
+     */
+
+    clearLocalAppData();
+
+
+    /*
+     * 新しい職場のデータを読み込む
+     */
+
+    await loadAllFromSupabase();
+
+
+    /*
+     * Realtime接続
+     */
+
+    await restartRealtime();
+
+
+    /*
+     * アプリ表示
+     */
+
+    showAppScreen();
+
+
+    if (
+      typeof renderAll ===
+      "function"
+    ) {
+
+      renderAll();
+
+    }
+
+
+    if (
+      typeof updateScheduleFixedLayers ===
+      "function"
+    ) {
+
+      updateScheduleFixedLayers();
+
+    }
+
+
+    console.log(
+      "★ 新規職場登録処理完了"
+    );
+
+
+    return true;
+
+
+  } catch (error) {
+
+    console.error(
+      "★ createNewOrganization エラー:",
+      error
+    );
+
+
+    alert(
+      "新規職場登録中にエラーが発生しました。\n\n" +
+      (
+        error?.message ||
+        "不明なエラー"
+      )
+    );
+
+
+    return false;
+
+
+  } finally {
+
+    creatingOrganization =
+      false;
+
+    cloudOperationBusy =
+      false;
+
+  }
+
+}
+
+
+/* =========================================================
+   新規職場登録ボタン
+   ========================================================= */
+
+async function submitNewOrganizationRegistration() {
+
+  /*
+   * 入力値確認
+   */
+
+  const values =
+    getOrganizationRegistrationValues();
+
+
+  if (
+    !validateOrganizationRegistration(
+      values
+    )
+  ) {
+
+    return false;
+
+  }
+
+
+  /*
+   * 入力情報を保存
+   */
+
+  const saved =
+    savePendingOrganizationRegistration();
+
+
+  if (!saved) {
+
+    alert(
+      "職場登録情報を保存できませんでした。"
+    );
+
+    return false;
+
+  }
+
+
+  /*
+   * 現在の認証状態を確認
+   */
+
+  const user =
+    await getCurrentUser();
+
+
+  /*
+   * まだ認証していない場合
+   *
+   * 認証方法を選択する画面へ。
+   */
+
+  if (!user) {
+
+    if (
+      typeof showRegistrationAuthChoice ===
+      "function"
+    ) {
+
+      showRegistrationAuthChoice();
+
+    }
+
+
+    return true;
+
+  }
+
+
+  /*
+   * 既に認証済みなら
+   * そのまま職場作成。
+   */
+
+  return await createNewOrganization(
+    values
+  );
+
+}
+
+
+/* =========================================================
+   新規職場登録イベント
+   ========================================================= */
+
+function setupOrganizationRegistrationEvents() {
+
+  const buttons =
+    document.querySelectorAll(
+      '[data-action="organization-register"],' +
+      '#organizationRegisterButton,' +
+      '#newOrganizationRegisterButton,' +
+      '#createOrganizationButton'
+    );
+
+
+  buttons.forEach(
+    button => {
+
+      if (
+        button.dataset.organizationRegisterBound ===
+        "true"
+      ) {
+
+        return;
+
+      }
+
+
+      button.dataset.organizationRegisterBound =
+        "true";
+
+
+      button.addEventListener(
+        "click",
+        async event => {
+
+          event.preventDefault();
+
+
+          await submitNewOrganizationRegistration();
+
+        }
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   新規職場登録セットアップ
+   ========================================================= */
+
+function setupOrganizationRegistration() {
+
+  setupOrganizationRegistrationEvents();
+
+}
+
+/* =========================================================
+   第12部：認証画面・新規職場登録画面
+   ========================================================= */
+
+
+/* =========================================================
+   認証画面取得
+   ========================================================= */
+
+function getAuthElement(
+  ...ids
+) {
+
+  for (const id of ids) {
+
+    const element =
+      document.getElementById(id);
+
+
+    if (element) {
+
+      return element;
+
+    }
+
+  }
+
+
+  return null;
+
+}
+
+
+/* =========================================================
+   すべての認証画面を非表示
+   ========================================================= */
+
+function hideAllAuthScreens() {
+
+  const screens = [
+
+    "loginScreen",
+
+    "registerScreen",
+
+    "organizationRegistrationScreen",
+
+    "registrationAuthChoice",
+
+    "forgotPasswordScreen",
+
+    "passwordResetScreen"
+
+  ];
+
+
+  screens.forEach(
+    id => {
+
+      const element =
+        document.getElementById(id);
+
+
+      if (element) {
+
+        element.style.display =
+          "none";
+
+      }
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   ログイン画面
+   ========================================================= */
+
+function showLoginScreen() {
+
+  hideAllAuthScreens();
+
+
+  const loginScreen =
+    getAuthElement(
+      "loginScreen"
+    );
+
+
+  if (loginScreen) {
+
+    loginScreen.style.display =
+      "flex";
+
+  }
+
+
+  const appScreen =
+    getAuthElement(
+      "appScreen"
+    );
+
+
+  if (appScreen) {
+
+    appScreen.style.display =
+      "none";
+
+  }
+
+}
+
+
+/* =========================================================
+   メール新規登録画面
+   ========================================================= */
+
+function showEmailRegistration() {
+
+  hideAllAuthScreens();
+
+
+  const screen =
+    getAuthElement(
+      "registerScreen",
+      "emailRegistrationScreen"
+    );
+
+
+  if (screen) {
+
+    screen.style.display =
+      "flex";
+
+  }
+
+
+  const appScreen =
+    getAuthElement(
+      "appScreen"
+    );
+
+
+  if (appScreen) {
+
+    appScreen.style.display =
+      "none";
+
+  }
+
+}
+
+
+/* =========================================================
+   新規職場登録画面
+   ========================================================= */
+
+function showOrganizationRegistration() {
+
+  hideAllAuthScreens();
+
+
+  const screen =
+    getAuthElement(
+      "organizationRegistrationScreen",
+      "newOrganizationScreen",
+      "organizationRegisterScreen"
+    );
+
+
+  if (screen) {
+
+    screen.style.display =
+      "flex";
+
+  }
+
+
+  const appScreen =
+    getAuthElement(
+      "appScreen"
+    );
+
+
+  if (appScreen) {
+
+    appScreen.style.display =
+      "none";
+
+  }
+
+}
+
+
+/* =========================================================
+   新規職場登録の認証方法選択
+   ========================================================= */
+
+function showRegistrationAuthChoice() {
+
+  /*
+   * 職場情報は既に
+   * localStorageへ保存されている。
+   */
+
+  hideAllAuthScreens();
+
+
+  const screen =
+    getAuthElement(
+      "registrationAuthChoice",
+      "organizationAuthChoice",
+      "registerAuthChoice"
+    );
+
+
+  if (screen) {
+
+    screen.style.display =
+      "flex";
+
+  }
+
+
+  const appScreen =
+    getAuthElement(
+      "appScreen"
+    );
+
+
+  if (appScreen) {
+
+    appScreen.style.display =
+      "none";
+
+  }
+
+}
+
+
+/* =========================================================
+   パスワード再設定画面
+   ========================================================= */
+
+function showForgotPasswordScreen() {
+
+  hideAllAuthScreens();
+
+
+  const screen =
+    getAuthElement(
+      "forgotPasswordScreen",
+      "passwordResetScreen"
+    );
+
+
+  if (screen) {
+
+    screen.style.display =
+      "flex";
+
+  }
+
+}
+
+
+/* =========================================================
+   アプリ画面
+   ========================================================= */
+
+function showAppScreen() {
+
+  hideAllAuthScreens();
+
+
+  const appScreen =
+    getAuthElement(
+      "appScreen"
+    );
+
+
+  if (appScreen) {
+
+    appScreen.style.display =
+      "block";
+
+  }
+
+}
+
+
+/* =========================================================
+   新規職場登録 → 認証方法選択
+   ========================================================= */
+
+async function startOrganizationRegistration() {
+
+  const values =
+    getOrganizationRegistrationValues();
+
+
+  if (
+    !validateOrganizationRegistration(
+      values
+    )
+  ) {
+
+    return false;
+
+  }
+
+
+  /*
+   * 職場名・職員名を保存
+   */
+
+  const saved =
+    savePendingOrganizationRegistration();
+
+
+  if (!saved) {
+
+    alert(
+      "職場登録情報を保存できませんでした。"
+    );
+
+    return false;
+
+  }
+
+
+  /*
+   * 認証方法選択画面へ
+   */
+
+  showRegistrationAuthChoice();
+
+
+  return true;
+
+}
+
+
+/* =========================================================
+   メールで新規職場登録開始
+   ========================================================= */
+
+async function startEmailOrganizationRegistration() {
+
+  /*
+   * 職場登録情報を確認
+   */
+
+  const pending =
+    getPendingOrganizationRegistration();
+
+
+  if (!pending) {
+
+    /*
+     * まだ保存されていなければ
+     * 現在の入力欄から保存。
+     */
+
+    const saved =
+      savePendingOrganizationRegistration();
+
+
+    if (!saved) {
+
+      alert(
+        "職場名と職員名を入力してください。"
+      );
+
+      return false;
+
+    }
+
+  }
+
+
+  /*
+   * メール登録画面
+   */
+
+  showEmailRegistration();
+
+
+  return true;
+
+}
+
+
+/* =========================================================
+   Googleで新規職場登録開始
+   ========================================================= */
+
+async function startGoogleOrganizationRegistration() {
+
+  /*
+   * 職場情報確認
+   */
+
+  const pending =
+    getPendingOrganizationRegistration();
+
+
+  if (!pending) {
+
+    const saved =
+      savePendingOrganizationRegistration();
+
+
+    if (!saved) {
+
+      alert(
+        "職場名と職員名を入力してください。"
+      );
+
+      return false;
+
+    }
+
+  }
+
+
+  /*
+   * Google認証開始
+   */
+
+  return await registerOrganizationWithGoogle();
+
+}
+
+
+/* =========================================================
+   ログイン画面へ戻る
+   ========================================================= */
+
+function backToLoginScreen() {
+
+  showLoginScreen();
+
+}
+
+
+/* =========================================================
+   新規職場登録画面へ戻る
+   ========================================================= */
+
+function backToOrganizationRegistration() {
+
+  showOrganizationRegistration();
+
+}
+
+
+/* =========================================================
+   認証方法選択 → メール
+   ========================================================= */
+
+function setupRegistrationEmailButton() {
+
+  const buttons =
+    document.querySelectorAll(
+      '[data-action="registration-email"],' +
+      '#registrationEmailButton,' +
+      '#emailOrganizationRegisterButton'
+    );
+
+
+  buttons.forEach(
+    button => {
+
+      if (
+        button.dataset.registrationEmailBound ===
+        "true"
+      ) {
+
+        return;
+
+      }
+
+
+      button.dataset.registrationEmailBound =
+        "true";
+
+
+      button.addEventListener(
+        "click",
+        async event => {
+
+          event.preventDefault();
+
+
+          await startEmailOrganizationRegistration();
+
+        }
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   認証方法選択 → Google
+   ========================================================= */
+
+function setupRegistrationGoogleButton() {
+
+  const buttons =
+    document.querySelectorAll(
+      '[data-action="registration-google"],' +
+      '#registrationGoogleButton,' +
+      '#googleOrganizationRegisterButton'
+    );
+
+
+  buttons.forEach(
+    button => {
+
+      if (
+        button.dataset.registrationGoogleBound ===
+        "true"
+      ) {
+
+        return;
+
+      }
+
+
+      button.dataset.registrationGoogleBound =
+        "true";
+
+
+      button.addEventListener(
+        "click",
+        async event => {
+
+          event.preventDefault();
+
+
+          await startGoogleOrganizationRegistration();
+
+        }
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   新規職場登録ボタン
+   ========================================================= */
+
+function setupStartOrganizationButton() {
+
+  const buttons =
+    document.querySelectorAll(
+      '[data-action="start-organization-registration"],' +
+      '#startOrganizationRegistration,' +
+      '#newOrganizationButton'
+    );
+
+
+  buttons.forEach(
+    button => {
+
+      if (
+        button.dataset.startOrganizationBound ===
+        "true"
+      ) {
+
+        return;
+
+      }
+
+
+      button.dataset.startOrganizationBound =
+        "true";
+
+
+      button.addEventListener(
+        "click",
+        async event => {
+
+          event.preventDefault();
+
+
+          await startOrganizationRegistration();
+
+        }
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   ログイン画面へ戻るボタン
+   ========================================================= */
+
+function setupBackToLoginButtons() {
+
+  const buttons =
+    document.querySelectorAll(
+      '[data-action="back-to-login"],' +
+      '#backToLoginButton,' +
+      '#backLoginButton'
+    );
+
+
+  buttons.forEach(
+    button => {
+
+      if (
+        button.dataset.backLoginBound ===
+        "true"
+      ) {
+
+        return;
+
+      }
+
+
+      button.dataset.backLoginBound =
+        "true";
+
+
+      button.addEventListener(
+        "click",
+        event => {
+
+          event.preventDefault();
+
+
+          backToLoginScreen();
+
+        }
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   認証画面セットアップ
+   ========================================================= */
+
+function setupAuthenticationScreens() {
+
+  setupStartOrganizationButton();
+
+  setupRegistrationEmailButton();
+
+  setupRegistrationGoogleButton();
+
+  setupBackToLoginButtons();
+
+}
+
+/* =========================================================
+   第13部：認証プロバイダー共通処理
+   ========================================================= */
+
+
+/* =========================================================
+   現在使用する認証方法
+   ========================================================= */
+
+let currentAuthProvider = null;
+
+
+/*
+ * 使用可能な認証方法
+ *
+ * email  ：メール
+ * google ：Google
+ * apple  ：Apple
+ * azure  ：Microsoft Azure
+ */
+
+const AUTH_PROVIDERS = {
+
+  EMAIL: "email",
+
+  GOOGLE: "google",
+
+  APPLE: "apple",
+
+  AZURE: "azure"
+
+};
+
+
+/* =========================================================
+   認証方法を保存
+   ========================================================= */
+
+function setCurrentAuthProvider(
+  provider
+) {
+
+  currentAuthProvider =
+    provider;
+
+
+  try {
+
+    sessionStorage.setItem(
+      "currentAuthProvider",
+      provider
+    );
+
+  } catch (error) {
+
+    console.warn(
+      "認証方法の保存に失敗:",
+      error
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   認証方法を取得
+   ========================================================= */
+
+function getCurrentAuthProvider() {
+
+  if (
+    currentAuthProvider
+  ) {
+
+    return currentAuthProvider;
+
+  }
+
+
+  try {
+
+    return sessionStorage.getItem(
+      "currentAuthProvider"
+    );
+
+  } catch (error) {
+
+    return null;
+
+  }
+
+}
+
+
+/* =========================================================
+   認証方法をクリア
+   ========================================================= */
+
+function clearCurrentAuthProvider() {
+
+  currentAuthProvider =
+    null;
+
+
+  try {
+
+    sessionStorage.removeItem(
+      "currentAuthProvider"
+    );
+
+  } catch (error) {
+
+    console.warn(
+      "認証方法の削除に失敗:",
+      error
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   OAuth認証かどうか
+   ========================================================= */
+
+function isOAuthProvider(
+  provider
+) {
+
+  return (
+
+    provider ===
+      AUTH_PROVIDERS.GOOGLE ||
+
+    provider ===
+      AUTH_PROVIDERS.APPLE ||
+
+    provider ===
+      AUTH_PROVIDERS.AZURE
+
+  );
+
+}
+
+
+/* =========================================================
+   新規職場登録中かどうか
+   ========================================================= */
+
+function isPendingOrganizationRegistration() {
+
+  const pending =
+    getPendingOrganizationRegistration();
+
+
+  return !!pending;
+
+}
+
+
+/* =========================================================
+   認証後の共通処理
+   ========================================================= */
+
+async function processAuthenticationSuccess(
+  user
+) {
+
+  if (!user) {
+
+    console.error(
+      "認証成功後のユーザー情報がありません"
+    );
+
+    return false;
+
+  }
+
+
+  console.log(
+    "★ 認証成功:",
+    user.email || user.id
+  );
+
+
+  /*
+   * 現在のユーザーを保存
+   */
+
+  window.currentUser =
+    user;
+
+
+  /*
+   * 新規職場登録情報が残っている場合
+   */
+
+  const pendingOrganization =
+    getPendingOrganizationRegistration();
+
+
+  if (
+    pendingOrganization
+  ) {
+
+    console.log(
+      "★ 新規職場登録情報を検出"
+    );
+
+
+    try {
+
+      const created =
+        await createNewOrganization(
+          pendingOrganization
+        );
+
+
+      if (created) {
+
+        clearCurrentAuthProvider();
+
+        return true;
+
+      }
+
+
+      console.error(
+        "★ 新規職場の作成に失敗"
+      );
+
+
+      return false;
+
+
+    } catch (error) {
+
+      console.error(
+        "★ 新規職場作成エラー:",
+        error
+      );
+
+
+      return false;
+
+    }
+
+  }
+
+
+  /*
+   * 通常ログイン
+   */
+
+  try {
+
+    const organization =
+      await getCurrentOrganization();
+
+
+    if (
+      organization
+    ) {
+
+      currentOrganization =
+        organization;
+
+
+      showAppScreen();
+
+
+      await initializeAfterLogin();
+
+
+      clearCurrentAuthProvider();
+
+
+      return true;
+
+    }
+
+
+  } catch (error) {
+
+    console.error(
+      "★ 職場情報取得エラー:",
+      error
+    );
+
+  }
+
+
+  /*
+   * 職場がまだ決まっていない場合
+   */
+
+  showOrganizationSelection();
+
+
+  clearCurrentAuthProvider();
+
+
+  return true;
+
+}
+
+
+/* =========================================================
+   メール認証成功
+   ========================================================= */
+
+async function processEmailAuthenticationSuccess(
+  user
+) {
+
+  setCurrentAuthProvider(
+    AUTH_PROVIDERS.EMAIL
+  );
+
+
+  return await processAuthenticationSuccess(
+    user
+  );
+
+}
+
+
+/* =========================================================
+   Google認証成功
+   ========================================================= */
+
+async function processGoogleAuthenticationSuccess(
+  user
+) {
+
+  setCurrentAuthProvider(
+    AUTH_PROVIDERS.GOOGLE
+  );
+
+
+  return await processAuthenticationSuccess(
+    user
+  );
+
+}
+
+
+/* =========================================================
+   Apple認証成功
+   ========================================================= */
+
+async function processAppleAuthenticationSuccess(
+  user
+) {
+
+  setCurrentAuthProvider(
+    AUTH_PROVIDERS.APPLE
+  );
+
+
+  return await processAuthenticationSuccess(
+    user
+  );
+
+}
+
+
+/* =========================================================
+   Azure認証成功
+   ========================================================= */
+
+async function processAzureAuthenticationSuccess(
+  user
+) {
+
+  setCurrentAuthProvider(
+    AUTH_PROVIDERS.AZURE
+  );
+
+
+  return await processAuthenticationSuccess(
+    user
+  );
+
+}
+
+
+/* =========================================================
+   OAuthプロバイダー開始
+   ========================================================= */
+
+async function startOAuthAuthentication(
+  provider,
+  options = {}
+) {
+
+  if (
+    !isOAuthProvider(provider)
+  ) {
+
+    console.error(
+      "未対応のOAuthプロバイダー:",
+      provider
+    );
+
+    return false;
+
+  }
+
+
+  setCurrentAuthProvider(
+    provider
+  );
+
+
+  /*
+   * 新規職場登録の場合、
+   * 職場情報を先に保存しておく
+   */
+
+  if (
+    options.organizationRegistration
+  ) {
+
+    const pending =
+      getPendingOrganizationRegistration();
+
+
+    if (!pending) {
+
+      const saved =
+        savePendingOrganizationRegistration();
+
+
+      if (!saved) {
+
+        alert(
+          "職場名と職員名を入力してください。"
+        );
+
+        clearCurrentAuthProvider();
+
+        return false;
+
+      }
+
+    }
+
+  }
+
+
+  /*
+   * Google
+   */
+
+  if (
+    provider ===
+    AUTH_PROVIDERS.GOOGLE
+  ) {
+
+    return await signInWithGoogle(
+      options.mode ||
+        "login"
+    );
+
+  }
+
+
+  /*
+   * Apple
+   *
+   * Supabase側でApple Providerを
+   * 有効にした後に使用する。
+   */
+
+  if (
+    provider ===
+    AUTH_PROVIDERS.APPLE
+  ) {
+
+    return await startAppleAuthentication(
+      options
+    );
+
+  }
+
+
+  /*
+   * Azure
+   *
+   * Supabase側でAzure Providerを
+   * 有効にした後に使用する。
+   */
+
+  if (
+    provider ===
+    AUTH_PROVIDERS.AZURE
+  ) {
+
+    return await startAzureAuthentication(
+      options
+    );
+
+  }
+
+
+  return false;
+
+}
+
+
+/* =========================================================
+   Apple認証
+   ========================================================= */
+
+async function startAppleAuthentication(
+  options = {}
+) {
+
+  if (
+    !supabaseClient
+  ) {
+
+    alert(
+      "サーバーに接続できません。"
+    );
+
+    return false;
+
+  }
+
+
+  try {
+
+    const redirectTo =
+      `${window.location.origin}${window.location.pathname}`;
+
+
+    const {
+      error
+    } =
+      await supabaseClient.auth.signInWithOAuth({
+
+        provider: "apple",
+
+        options: {
+
+          redirectTo:
+
+            options.redirectTo ||
+            redirectTo
+
+        }
+
+      });
+
+
+    if (error) {
+
+      console.error(
+        "Apple認証エラー:",
+        error
+      );
+
+
+      alert(
+        getAuthErrorMessage(
+          error
+        )
+      );
+
+
+      return false;
+
+    }
+
+
+    return true;
+
+
+  } catch (error) {
+
+    console.error(
+      "Apple認証開始エラー:",
+      error
+    );
+
+
+    alert(
+      getAuthErrorMessage(
+        error
+      )
+    );
+
+
+    return false;
+
+  }
+
+}
+
+
+/* =========================================================
+   Azure認証
+   ========================================================= */
+
+async function startAzureAuthentication(
+  options = {}
+) {
+
+  if (
+    !supabaseClient
+  ) {
+
+    alert(
+      "サーバーに接続できません。"
+    );
+
+    return false;
+
+  }
+
+
+  try {
+
+    const redirectTo =
+      `${window.location.origin}${window.location.pathname}`;
+
+
+    const {
+      error
+    } =
+      await supabaseClient.auth.signInWithOAuth({
+
+        provider: "azure",
+
+        options: {
+
+          redirectTo:
+
+            options.redirectTo ||
+            redirectTo
+
+        }
+
+      });
+
+
+    if (error) {
+
+      console.error(
+        "Azure認証エラー:",
+        error
+      );
+
+
+      alert(
+        getAuthErrorMessage(
+          error
+        )
+      );
+
+
+      return false;
+
+    }
+
+
+    return true;
+
+
+  } catch (error) {
+
+    console.error(
+      "Azure認証開始エラー:",
+      error
+    );
+
+
+    alert(
+      getAuthErrorMessage(
+        error
+      )
+    );
+
+
+    return false;
+
+  }
+
+}
+
+
+/* =========================================================
+   Googleで新規職場登録
+   ========================================================= */
+
+async function startGoogleOrganizationRegistrationV2() {
+
+  return await startOAuthAuthentication(
+
+    AUTH_PROVIDERS.GOOGLE,
+
+    {
+
+      mode: "register",
+
+      organizationRegistration:
+        true
+
+    }
+
+  );
+
+}
+
+
+/* =========================================================
+   Appleで新規職場登録
+   ========================================================= */
+
+async function startAppleOrganizationRegistration() {
+
+  return await startOAuthAuthentication(
+
+    AUTH_PROVIDERS.APPLE,
+
+    {
+
+      mode: "register",
+
+      organizationRegistration:
+        true
+
+    }
+
+  );
+
+}
+
+
+/* =========================================================
+   Azureで新規職場登録
+   ========================================================= */
+
+async function startAzureOrganizationRegistration() {
+
+  return await startOAuthAuthentication(
+
+    AUTH_PROVIDERS.AZURE,
+
+    {
+
+      mode: "register",
+
+      organizationRegistration:
+        true
+
+    }
+
+  );
+
+}
+
+
+/* =========================================================
+   Appleで通常ログイン
+   ========================================================= */
+
+async function loginWithApple() {
+
+  return await startOAuthAuthentication(
+
+    AUTH_PROVIDERS.APPLE,
+
+    {
+
+      mode: "login"
+
+    }
+
+  );
+
+}
+
+
+/* =========================================================
+   Azureで通常ログイン
+   ========================================================= */
+
+async function loginWithAzure() {
+
+  return await startOAuthAuthentication(
+
+    AUTH_PROVIDERS.AZURE,
+
+    {
+
+      mode: "login"
+
+    }
+
+  );
+
+}
+
+
+/* =========================================================
+   認証方法選択ボタン
+   ========================================================= */
+
+function setupProviderSelectionButtons() {
+
+  /*
+   * Google
+   */
+
+  document
+    .querySelectorAll(
+      '[data-auth-provider="google"]'
+    )
+    .forEach(
+      button => {
+
+        if (
+          button.dataset.providerBound ===
+          "true"
+        ) {
+
+          return;
+
+        }
+
+
+        button.dataset.providerBound =
+          "true";
+
+
+        button.addEventListener(
+          "click",
+          async event => {
+
+            event.preventDefault();
+
+
+            const registration =
+              isPendingOrganizationRegistration();
+
+
+            if (
+              registration
+            ) {
+
+              await startGoogleOrganizationRegistrationV2();
+
+            } else {
+
+              await startOAuthAuthentication(
+                AUTH_PROVIDERS.GOOGLE,
+                {
+                  mode: "login"
+                }
+              );
+
+            }
+
+          }
+        );
+
+      }
+    );
+
+
+  /*
+   * Apple
+   */
+
+  document
+    .querySelectorAll(
+      '[data-auth-provider="apple"]'
+    )
+    .forEach(
+      button => {
+
+        if (
+          button.dataset.providerBound ===
+          "true"
+        ) {
+
+          return;
+
+        }
+
+
+        button.dataset.providerBound =
+          "true";
+
+
+        button.addEventListener(
+          "click",
+          async event => {
+
+            event.preventDefault();
+
+
+            const registration =
+              isPendingOrganizationRegistration();
+
+
+            if (
+              registration
+            ) {
+
+              await startAppleOrganizationRegistration();
+
+            } else {
+
+              await loginWithApple();
+
+            }
+
+          }
+        );
+
+      }
+    );
+
+
+  /*
+   * Azure
+   */
+
+  document
+    .querySelectorAll(
+      '[data-auth-provider="azure"]'
+    )
+    .forEach(
+      button => {
+
+        if (
+          button.dataset.providerBound ===
+          "true"
+        ) {
+
+          return;
+
+        }
+
+
+        button.dataset.providerBound =
+          "true";
+
+
+        button.addEventListener(
+          "click",
+          async event => {
+
+            event.preventDefault();
+
+
+            const registration =
+              isPendingOrganizationRegistration();
+
+
+            if (
+              registration
+            ) {
+
+              await startAzureOrganizationRegistration();
+
+            } else {
+
+              await loginWithAzure();
+
+            }
+
+          }
+        );
+
+      }
+    );
+
+}
+
+
+/* =========================================================
+   認証共通セットアップ
+   ========================================================= */
+
+function setupAuthenticationProviderSystem() {
+
+  setupProviderSelectionButtons();
+
+}
+
+function setupAuthenticationScreens() {
+
+  setupStartOrganizationButton();
+
+  setupRegistrationEmailButton();
+
+  setupRegistrationGoogleButton();
+
+  setupBackToLoginButtons();
+
+  setupAuthenticationProviderSystem();
+
+}
+
+/* =========================================================
+   第14部：認証状態・OAuthコールバック
+   ========================================================= */
+
+
+/* =========================================================
+   認証状態確認
+   ========================================================= */
+
+async function getCurrentSession() {
+
+  if (!supabaseClient) {
+
+    console.error(
+      "★ Supabaseクライアントがありません"
+    );
+
+    return null;
+
+  }
+
+
+  try {
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient.auth.getSession();
+
+
+    if (error) {
+
+      console.error(
+        "★ セッション取得エラー:",
+        error
+      );
+
+      return null;
+
+    }
+
+
+    return data?.session || null;
+
+
+  } catch (error) {
+
+    console.error(
+      "★ getCurrentSession エラー:",
+      error
+    );
+
+    return null;
+
+  }
+
+}
+
+
+/* =========================================================
+   現在のユーザー取得
+   ========================================================= */
+
+async function getCurrentUser() {
+
+  const session =
+    await getCurrentSession();
+
+
+  if (
+    !session ||
+    !session.user
+  ) {
+
+    return null;
+
+  }
+
+
+  return session.user;
+
+}
+
+
+/* =========================================================
+   OAuthコールバック判定
+   ========================================================= */
+
+function isOAuthCallback() {
+
+  const url =
+    new URL(
+      window.location.href
+    );
+
+
+  /*
+   * PKCE方式
+   */
+
+  if (
+    url.searchParams.has("code")
+  ) {
+
+    return true;
+
+  }
+
+
+  /*
+   * Implicit Flow等で
+   * access_tokenがURLハッシュに入る場合
+   */
+
+  if (
+    window.location.hash &&
+    (
+      window.location.hash.includes(
+        "access_token"
+      ) ||
+      window.location.hash.includes(
+        "refresh_token"
+      )
+    )
+  ) {
+
+    return true;
+
+  }
+
+
+  return false;
+
+}
+
+
+/* =========================================================
+   OAuthコールバック処理
+   ========================================================= */
+
+async function handleOAuthCallback() {
+
+  if (!supabaseClient) {
+
+    return false;
+
+  }
+
+
+  const url =
+    new URL(
+      window.location.href
+    );
+
+
+  const code =
+    url.searchParams.get(
+      "code"
+    );
+
+
+  /*
+   * PKCEのcodeがある場合だけ交換する
+   */
+
+  if (code) {
+
+    try {
+
+      const {
+        data,
+        error
+      } =
+        await supabaseClient.auth
+          .exchangeCodeForSession(
+            code
+          );
+
+
+      if (error) {
+
+        console.error(
+          "★ OAuthセッション交換エラー:",
+          error
+        );
+
+        return false;
+
+      }
+
+
+      /*
+       * URLからcodeを削除
+       */
+
+      window.history.replaceState(
+        {},
+        document.title,
+        window.location.pathname
+      );
+
+
+      if (
+        data?.session?.user
+      ) {
+
+        await processAuthenticationSuccess(
+          data.session.user
+        );
+
+        return true;
+
+      }
+
+    } catch (error) {
+
+      console.error(
+        "★ OAuthコールバックエラー:",
+        error
+      );
+
+      return false;
+
+    }
+
+  }
+
+
+  /*
+   * SupabaseがURLからセッションを
+   * 自動取得できる場合
+   */
+
+  const session =
+    await getCurrentSession();
+
+
+  if (
+    session?.user
+  ) {
+
+    /*
+     * URLハッシュを削除
+     */
+
+    if (
+      window.location.hash
+    ) {
+
+      window.history.replaceState(
+        {},
+        document.title,
+        window.location.pathname
+      );
+
+    }
+
+
+    await processAuthenticationSuccess(
+      session.user
+    );
+
+
+    return true;
+
+  }
+
+
+  return false;
+
+}
+
+
+/* =========================================================
+   Auth State Change
+   ========================================================= */
+
+let authStateProcessing = false;
+
+
+function setupAuthStateListener() {
+
+  if (!supabaseClient) {
+
+    return;
+
+  }
+
+
+  if (
+    window.__shiftAuthListenerStarted
+  ) {
+
+    return;
+
+  }
+
+
+  window.__shiftAuthListenerStarted =
+    true;
+
+
+  supabaseClient.auth.onAuthStateChange(
+    async (
+      event,
+      session
+    ) => {
+
+      console.log(
+        "★ Auth状態:",
+        event
+      );
+
+
+      /*
+       * TOKEN_REFRESHED等では
+       * 画面を作り直さない
+       */
+
+      if (
+        event ===
+        "TOKEN_REFRESHED"
+      ) {
+
+        return;
+
+      }
+
+
+      /*
+       * サインアウト
+       */
+
+      if (
+        event ===
+        "SIGNED_OUT"
+      ) {
+
+        handleSignedOut();
+
+        return;
+
+      }
+
+
+      /*
+       * ログイン・登録・OAuth
+       */
+
+      if (
+        event === "SIGNED_IN" ||
+        event === "USER_UPDATED"
+      ) {
+
+        if (
+          authStateProcessing
+        ) {
+
+          return;
+
+        }
+
+
+        if (
+          !session?.user
+        ) {
+
+          return;
+
+        }
+
+
+        authStateProcessing =
+          true;
+
+
+        try {
+
+          await processAuthenticationSuccess(
+            session.user
+          );
+
+        } catch (error) {
+
+          console.error(
+            "★ Auth処理エラー:",
+            error
+          );
+
+        } finally {
+
+          authStateProcessing =
+            false;
+
+        }
+
+      }
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   サインアウト後
+   ========================================================= */
+
+function handleSignedOut() {
+
+  window.currentUser =
+    null;
+
+
+  currentOrganization =
+    null;
+
+
+  clearCurrentAuthProvider();
+
+
+  showLoginScreen();
+
+}
+
+
+/* =========================================================
+   認証復元
+   ========================================================= */
+
+async function restoreAuthentication() {
+
+  if (!supabaseClient) {
+
+    showLoginScreen();
+
+    return false;
+
+  }
+
+
+  /*
+   * OAuthコールバック中か確認
+   */
+
+  if (
+    isOAuthCallback()
+  ) {
+
+    const handled =
+      await handleOAuthCallback();
+
+
+    if (handled) {
+
+      return true;
+
+    }
+
+  }
+
+
+  /*
+   * 通常の既存セッション
+   */
+
+  const session =
+    await getCurrentSession();
+
+
+  if (
+    session?.user
+  ) {
+
+    await processAuthenticationSuccess(
+      session.user
+    );
+
+
+    return true;
+
+  }
+
+
+  showLoginScreen();
+
+
+  return false;
+
+}
+
+
+/* =========================================================
+   認証初期化
+   ========================================================= */
+
+async function initializeAuthentication() {
+
+  try {
+
+    /*
+     * OAuthコールバックまたは
+     * 保存済みセッションを処理
+     */
+
+    await restoreAuthentication();
+
+
+  } catch (error) {
+
+    console.error(
+      "★ 認証初期化エラー:",
+      error
+    );
+
+
+    showLoginScreen();
+
+  }
+
+}
+
+/* =========================================================
+   第15部：ログアウト・職場切り替え
+   ========================================================= */
+
+
+/* =========================================================
+   ログアウト
+   ========================================================= */
+
+async function logout() {
+
+  if (
+    !supabaseClient
+  ) {
+
+    handleSignedOut();
+
+    return;
+
+  }
+
+
+  try {
+
+    /*
+     * Realtime停止
+     */
+
+    if (
+      typeof stopRealtime ===
+      "function"
+    ) {
+
+      stopRealtime();
+
+    }
+
+
+    /*
+     * Supabaseからログアウト
+     */
+
+    const {
+      error
+    } =
+      await supabaseClient.auth.signOut();
+
+
+    if (error) {
+
+      console.error(
+        "★ ログアウトエラー:",
+        error
+      );
+
+      alert(
+        getAuthErrorMessage(
+          error
+        )
+      );
+
+      return;
+
+    }
+
+
+    /*
+     * ローカル状態をクリア
+     */
+
+    handleSignedOut();
+
+
+  } catch (error) {
+
+    console.error(
+      "★ logout エラー:",
+      error
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   ログアウトボタン
+   ========================================================= */
+
+function setupLogoutButton() {
+
+  const buttons =
+    document.querySelectorAll(
+      '[data-action="logout"],' +
+      '#logoutButton,' +
+      '#logoutBtn'
+    );
+
+
+  buttons.forEach(
+    button => {
+
+      if (
+        button.dataset.logoutBound ===
+        "true"
+      ) {
+
+        return;
+
+      }
+
+
+      button.dataset.logoutBound =
+        "true";
+
+
+      button.addEventListener(
+        "click",
+        async event => {
+
+          event.preventDefault();
+
+
+          await logout();
+
+        }
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   職場情報をクリア
+   ========================================================= */
+
+function clearCurrentOrganization() {
+
+  currentOrganization =
+    null;
+
+
+  /*
+   * 組織専用のローカルデータを消去
+   */
+
+  if (
+    typeof clearLocalAppData ===
+    "function"
+  ) {
+
+    clearLocalAppData();
+
+  }
+
+}
+
+
+/* =========================================================
+   職場選択画面
+   ========================================================= */
+
+function showOrganizationSelection() {
+
+  hideAllAuthScreens();
+
+
+  const screen =
+    getAuthElement(
+      "organizationSelectionScreen",
+      "organizationSelectScreen"
+    );
+
+
+  if (screen) {
+
+    screen.style.display =
+      "flex";
+
+  }
+
+
+  const appScreen =
+    getAuthElement(
+      "appScreen"
+    );
+
+
+  if (appScreen) {
+
+    appScreen.style.display =
+      "none";
+
+  }
+
+}
+
+
+/* =========================================================
+   職場切り替え
+   ========================================================= */
+
+async function switchOrganization(
+  organization
+) {
+
+  if (
+    !organization
+  ) {
+
+    return false;
+
+  }
+
+
+  currentOrganization =
+    organization;
+
+
+  clearLocalAppData();
+
+
+  try {
+
+    await loadAllFromSupabase();
+
+
+    showAppScreen();
+
+
+    renderAll();
+
+
+    if (
+      typeof restartRealtime ===
+      "function"
+    ) {
+
+      restartRealtime();
+
+    }
+
+
+    return true;
+
+
+  } catch (error) {
+
+    console.error(
+      "★ 職場切り替えエラー:",
       error
     );
 
@@ -10688,3533 +12020,228 @@ async function saveStaffOrder() {
 
 }
 
-　async function moveStaff(
-  index,
-  direction
-) {
-
-  const newIndex =
-    index +
-    direction;
+/* =========================================================
+   第16部：Supabaseデータ読み込み
+   ========================================================= */
 
 
-  if (
-    newIndex < 0 ||
-    newIndex >=
-      appData.staff.length
-  ) {
+/* =========================================================
+   組織ID取得
+   ========================================================= */
 
-    return;
-
-  }
-
+function getCurrentOrganizationId() {
 
   if (
-    cloudOperationBusy
+    !currentOrganization
   ) {
 
-    return;
+    return null;
 
   }
 
-
-  [
-    appData.staff[index],
-    appData.staff[newIndex]
-  ] = [
-
-    appData.staff[newIndex],
-    appData.staff[index]
-
-  ];
-
-
-  appData.staff =
-    appData.staff.map(
-      (staff, i) => ({
-
-        ...staff,
-
-        sort_order:
-          i
-
-      })
-    );
-
-
-  renderStaffList();
-
-  renderSchedule();
-
-
-  cloudOperationBusy =
-    true;
-
-
-  try {
-
-    if (
-      !await saveStaffOrder()
-    ) {
-
-      throw new Error(
-        "並び順保存失敗"
-      );
-
-    }
-
-  } catch (error) {
-
-    console.error(
-      error
-    );
-
-
-    alert(
-      "職員の並び順の保存に失敗しました。"
-    );
-
-
-    await loadAllFromSupabase();
-
-
-    renderStaffList();
-
-    renderSchedule();
-
-  } finally {
-
-    finishCloudOperation();
-
-  }
-
-}
-
-/* ==================================================
-   勤務形態追加・編集
-================================================== */
-
-async function addOrUpdateShift() {
-
-  const nameInput =
-    document.getElementById(
-      "shiftNameInput"
-    );
-
-  const startInput =
-    document.getElementById(
-      "shiftStartInput"
-    );
-
-  const endInput =
-    document.getElementById(
-      "shiftEndInput"
-    );
-
-  const breakInput =
-    document.getElementById(
-      "shiftBreakInput"
-    );
-
-
-  if (!nameInput) {
-    return;
-  }
-
-
-  const name =
-    nameInput.value.trim();
-
-  const start =
-    startInput?.value || "";
-
-  const end =
-    endInput?.value || "";
-
-  const breakTime =
-    breakInput?.value || "";
-
-
-  /* --------------------------------------------------
-     入力チェック
-  -------------------------------------------------- */
-
-  if (!name) {
-
-    alert(
-      "勤務形態名を入力してください"
-    );
-
-    return;
-
-  }
-
-
-  if (name === "明") {
-
-    alert(
-      "「明」は勤務形態として登録できません"
-    );
-
-    return;
-
-  }
-
-
-  /* --------------------------------------------------
-     重複チェック
-  -------------------------------------------------- */
-
-  const duplicate =
-    appData.shiftTypes.some(
-      (shift, index) =>
-        shift.name === name &&
-        index !== editingShiftIndex
-    );
-
-
-  if (duplicate) {
-
-    alert(
-      "同じ勤務形態名は登録できません"
-    );
-
-    return;
-
-  }
-
-
-  if (!supabaseClient) {
-
-    alert(
-      "Supabaseに接続されていません。"
-    );
-
-    return;
-
-  }
-
-
-  cloudOperationBusy =
-    true;
-
-
-  try {
-
-    /* =================================================
-       編集
-    ================================================= */
-
-    if (
-      editingShiftIndex >= 0
-    ) {
-
-      const oldShift =
-        appData.shiftTypes[
-          editingShiftIndex
-        ];
-
-
-      if (!oldShift) {
-
-        throw new Error(
-          "編集対象の勤務形態が見つかりません。"
-        );
-
-      }
-
-
-      const oldName =
-        oldShift.name;
-
-
-      /* -----------------------------------------------
-         勤務形態本体を更新
-      ----------------------------------------------- */
-
-      const result =
-        await supabaseClient
-          .from("shift_types")
-          .update({
-
-            name,
-
-            start:
-              start || null,
-
-            end:
-              end || null,
-
-            break:
-              breakTime || null
-
-          })
-          .eq(
-            "id",
-            oldShift.id
-          );
-
-
-      if (result.error) {
-
-        throw result.error;
-
-      }
-
-
-      /* -----------------------------------------------
-         勤務表で使用されている勤務形態名も変更
-      ----------------------------------------------- */
-
-      if (
-        oldName !== name
-      ) {
-
-        const workResult =
-          await supabaseClient
-            .from("work_shifts")
-            .update({
-
-              shift_name:
-                name
-
-            })
-            .eq(
-              "shift_name",
-              oldName
-            );
-
-
-        if (
-          workResult.error
-        ) {
-
-          throw workResult.error;
-
-        }
-
-      }
-
-
-      editingShiftIndex =
-        -1;
-
-    }
-
-    /* =================================================
-       新規追加
-    ================================================= */
-
-    else {
-
-      const maxOrder =
-        appData.shiftTypes.reduce(
-          (max, shift) => {
-
-            const value =
-              Number(
-                shift.sort_order
-              );
-
-
-            return Number.isFinite(
-              value
-            )
-              ? Math.max(
-                  max,
-                  value
-                )
-              : max;
-
-          },
-          -1
-        );
-
-
-      const result =
-        await supabaseClient
-          .from("shift_types")
-          .insert({
-
-            name,
-
-            start:
-              start || null,
-
-            end:
-              end || null,
-
-            break:
-              breakTime || null,
-
-            sort_order:
-              maxOrder + 1,
-
-            organization_id:
-              currentOrganization.id
-
-          });
-
-
-      if (result.error) {
-
-        throw result.error;
-
-      }
-
-    }
-
-
-    /* =================================================
-       入力欄をリセット
-    ================================================= */
-
-    nameInput.value =
-      "";
-
-    if (startInput) {
-
-      startInput.value =
-        "";
-
-    }
-
-    if (endInput) {
-
-      endInput.value =
-        "";
-
-    }
-
-    if (breakInput) {
-
-      breakInput.value =
-        "";
-
-    }
-
-
-    const button =
-      document.getElementById(
-        "addShiftButton"
-      );
-
-
-    if (button) {
-
-      button.textContent =
-        "勤務形態を追加";
-
-    }
-
-
-    /* =================================================
-       最新データを再取得
-    ================================================= */
-
-    await loadAllFromSupabase();
-
-
-    renderShiftList();
-
-    renderSchedule();
-
-
-  } catch (error) {
-
-    console.error(
-      "勤務形態保存エラー",
-      error
-    );
-
-
-    alert(
-      "勤務形態の保存に失敗しました。\n\n" +
-      (error?.message || String(error))
-    );
-
-
-  } finally {
-
-    finishCloudOperation();
-
-  }
-
-}
-
-/* ==================================================
-   職員一覧
-================================================== */
-async function renderStaffList() {
-
-  const list =
-    document.getElementById(
-      "staffList"
-    );
-
-  if (!list) {
-    return;
-  }
-
-
-  /*
-   * ログアウト後など、
-   * 職場情報がない場合は処理しない
-   */
-
-  if (
-    !currentOrganization ||
-    !currentOrganization.id
-  ) {
-
-    console.log(
-      "★ 職場情報がないため職員一覧の権限取得を中止します"
-    );
-
-    return;
-
-  }
-
-
-  /* =====================================================
-     職員ごとの権限情報を取得
-     
-     ※重要
-     ここでは現在表示されている職員一覧を消さない。
-     Supabaseから取得している間も、現在の一覧を表示したままにする。
-  ===================================================== */
-
-  let members = [];
-
-  try {
-
-    const {
-      data,
-      error
-    } =
-      await supabaseClient
-        .from("organization_members")
-        .select(
-          "staff_id, role, user_id"
-        )
-        .eq(
-          "organization_id",
-          currentOrganization.id
-        );
-
-    if (error) {
-      throw error;
-    }
-
-    members =
-      data || [];
-
-  } catch (error) {
-
-    console.error(
-      "職員権限情報取得エラー",
-      error
-    );
-
-    alert(
-      "職員の権限情報を取得できませんでした。\n\n" +
-      error.message
-    );
-
-    /*
-     * 取得に失敗しても、
-     * 現在表示されている一覧は消さない
-     */
-
-    return;
-  }
-
-
-  /* =====================================================
-     現在のユーザーが管理者か
-  ===================================================== */
-
-  const isAdmin =
-    currentOrganization &&
-    currentOrganization.role === "admin";
-
-
-  /* =====================================================
-     新しい職員一覧を一時的に作成
-     
-     ※ここでも現在の画面は変更しない
-  ===================================================== */
-
-  const newList =
-    document.createDocumentFragment();
-
-
-  /* =====================================================
-     職員一覧
-  ===================================================== */
-
-  appData.staff.forEach(
-    (staff, index) => {
-
-      const name =
-        getStaffName(
-          staff
-        );
-
-
-      /* -------------------------------------------------
-         この職員の権限情報
-      ------------------------------------------------- */
-
-      const member =
-        members.find(
-          item =>
-            item.staff_id ===
-            staff.id
-        );
-
-
-      const role =
-        member?.role ||
-        "staff";
-
-
-      /* -------------------------------------------------
-         表示する権限名
-      ------------------------------------------------- */
-
-      const roleLabel =
-        role === "admin"
-          ? "管理者"
-          : "職員";
-
-
-      const roleColor =
-        role === "admin"
-          ? "#007aff"
-          : "#666";
-
-
-      /* =================================================
-         職員1人分の行
-      ================================================= */
-
-      const item =
-        document.createElement(
-          "div"
-        );
-
-      item.className =
-        "list-item";
-
-
-      /* =================================================
-         管理者ログイン時
-      ================================================= */
-
-      if (isAdmin) {
-
-        item.innerHTML = `
-          <div style="
-            display:grid;
-            grid-template-columns:minmax(0,1fr) auto auto auto;
-            align-items:center;
-            width:100%;
-            column-gap:6px;
-          ">
-
-            <!-- 名前・役割 -->
-            <div style="
-              min-width:0;
-            ">
-
-              <div
-                class="list-item-title"
-                style="
-                  white-space:nowrap;
-                  overflow:hidden;
-                  text-overflow:ellipsis;
-                "
-              >
-                ${escapeHtml(name)}
-              </div>
-
-              <div
-                class="staff-role-label"
-                style="
-                  font-size:13px;
-                  color:${roleColor};
-                  font-weight:600;
-                  margin-top:4px;
-                "
-              >
-                （${roleLabel}）
-              </div>
-
-            </div>
-
-
-            <!-- ↑ ↓ -->
-            <div style="
-              display:flex;
-              gap:6px;
-              align-items:center;
-              justify-content:center;
-            ">
-
-              <button
-                type="button"
-                class="list-button move-staff-up-button"
-                ${index === 0 ? "disabled" : ""}
-              >
-                ↑
-              </button>
-
-              <button
-                type="button"
-                class="list-button move-staff-down-button"
-                ${
-                  index ===
-                  appData.staff.length - 1
-                    ? "disabled"
-                    : ""
-                }
-              >
-                ↓
-              </button>
-
-            </div>
-
-
-            <!-- 編集・削除 -->
-            <div style="
-              display:flex;
-              flex-direction:column;
-              gap:6px;
-              align-items:stretch;
-            ">
-
-              <button
-                type="button"
-                class="list-button edit-staff-button"
-              >
-                編集
-              </button>
-
-              <button
-                type="button"
-                class="list-button delete delete-staff-button"
-              >
-                削除
-              </button>
-
-            </div>
-
-
-            <!-- 管理者設定・招待リンク発行 -->
-            <div style="
-              display:flex;
-              flex-direction:column;
-              gap:6px;
-              align-items:stretch;
-            ">
-
-              <button
-                type="button"
-                class="list-button role-change-button"
-              >
-                管理者設定
-              </button>
-
-              <button
-                type="button"
-                class="list-button invite-staff-button"
-              >
-                招待リンク発行
-              </button>
-
-            </div>
-
-          </div>
-        `;
-
-
-        /* =================================================
-           上へ
-        ================================================= */
-
-        item
-          .querySelector(
-            ".move-staff-up-button"
-          )
-          ?.addEventListener(
-            "click",
-            () =>
-              moveStaff(
-                index,
-                -1
-              )
-          );
-
-
-        /* =================================================
-           下へ
-        ================================================= */
-
-        item
-          .querySelector(
-            ".move-staff-down-button"
-          )
-          ?.addEventListener(
-            "click",
-            () =>
-              moveStaff(
-                index,
-                1
-              )
-          );
-
-
-        /* =================================================
-           編集
-        ================================================= */
-
-        item
-          .querySelector(
-            ".edit-staff-button"
-          )
-          ?.addEventListener(
-            "click",
-            () => {
-
-              editingStaffIndex =
-                index;
-
-              const input =
-                document.getElementById(
-                  "staffNameInput"
-                );
-
-              if (input) {
-
-                input.value =
-                  name;
-
-                input.focus();
-
-              }
-
-              const button =
-                document.getElementById(
-                  "addStaffButton"
-                );
-
-              if (button) {
-
-                button.textContent =
-                  "職員を更新";
-
-              }
-
-            }
-          );
-
-
-        /* =================================================
-           管理者設定
-        ================================================= */
-
-        item
-          .querySelector(
-            ".role-change-button"
-          )
-          ?.addEventListener(
-            "click",
-            async () => {
-
-              const newRole =
-                role === "admin"
-                  ? "staff"
-                  : "admin";
-
-              const newRoleLabel =
-                newRole === "admin"
-                  ? "管理者"
-                  : "職員";
-
-
-              if (
-                !confirm(
-                  `${name}さんを「${newRoleLabel}」に変更しますか？`
-                )
-              ) {
-
-                return;
-
-              }
-
-
-              cloudOperationBusy =
-                true;
-
-
-              try {
-
-                const {
-                  error
-                } =
-                  await supabaseClient
-                    .rpc(
-                      "set_staff_role",
-                      {
-                        target_staff_id:
-                          staff.id,
-
-                        target_role:
-                          newRole
-                      }
-                    );
-
-
-                if (error) {
-                  throw error;
-                }
-
-
-                await loadAllFromSupabase();
-
-                await renderStaffList();
-
-
-              } catch (error) {
-
-                console.error(
-                  "権限変更エラー",
-                  error
-                );
-
-                alert(
-                  "権限の変更に失敗しました。\n\n" +
-                  error.message
-                );
-
-
-              } finally {
-
-                finishCloudOperation();
-
-              }
-
-            }
-          );
-
-
-        /* =================================================
-           招待リンク発行
-        ================================================= */
-
-        item
-          .querySelector(
-            ".invite-staff-button"
-          )
-          ?.addEventListener(
-            "click",
-            async () => {
-
-              if (
-                !confirm(
-                  `${name}さんの招待リンクを発行しますか？`
-                )
-              ) {
-
-                return;
-
-              }
-
-              await issueStaffInvite(
-                staff.id
-              );
-
-            }
-          );
-
-
-        /* =================================================
-           削除
-        ================================================= */
-
-        item
-          .querySelector(
-            ".delete-staff-button"
-          )
-          ?.addEventListener(
-            "click",
-            async () => {
-
-              if (
-                !confirm(
-                  `${name}を削除しますか？`
-                )
-              ) {
-
-                return;
-
-              }
-
-
-              cloudOperationBusy =
-                true;
-
-
-              try {
-
-                /* -----------------------------------------
-                   職員・勤務データ・ログインアカウントを削除
-                ----------------------------------------- */
-
-                const result =
-                  await supabaseClient
-                    .rpc(
-                      "delete_staff_and_account",
-                      {
-                        target_staff_id:
-                          staff.id
-                      }
-                    );
-
-
-                if (
-                  result.error
-                ) {
-
-                  throw result.error;
-
-                }
-
-
-                editingStaffIndex =
-                  -1;
-
-
-                await loadAllFromSupabase();
-
-                await renderStaffList();
-
-                renderSchedule();
-
-
-              } catch (error) {
-
-                console.error(
-                  "職員削除エラー",
-                  error
-                );
-
-                alert(
-                  "職員の削除に失敗しました。\n\n" +
-                  error.message
-                );
-
-
-              } finally {
-
-                finishCloudOperation();
-
-              }
-
-            }
-          );
-
-
-      } else {
-
-        /* =================================================
-           職員ログイン時
-        ================================================= */
-
-        item.innerHTML = `
-          <div style="
-            display:flex;
-            align-items:center;
-            width:100%;
-            gap:16px;
-          ">
-
-            <div
-              class="list-item-title"
-              style="
-                flex:1;
-                min-width:0;
-                white-space:nowrap;
-                overflow:hidden;
-                text-overflow:ellipsis;
-              "
-            >
-              ${escapeHtml(name)}
-            </div>
-
-            <div
-              class="staff-role-label"
-              style="
-                font-size:13px;
-                color:${roleColor};
-                font-weight:600;
-                white-space:nowrap;
-              "
-            >
-              ${roleLabel}
-            </div>
-
-          </div>
-        `;
-
-      }
-
-
-      /* =================================================
-         新しい一覧へ追加
-      ================================================= */
-
-      newList.appendChild(
-        item
-      );
-
-    }
-  );
-
-
-  /* =====================================================
-     人数
-  ===================================================== */
-
-  const count =
-    document.getElementById(
-      "staffCount"
-    );
-
-  if (count) {
-
-    count.textContent =
-      `${appData.staff.length}人`;
-
-  }
-
-
-  /* =====================================================
-     ここで初めて画面を入れ替える
-     
-     重要：
-     Supabase取得・職員一覧作成が全部終わった後なので、
-     「職員が一瞬消える」時間が発生しない。
-  ===================================================== */
-
-  list.replaceChildren(
-    newList
-  );
-
-}
-
-
-
-/* ==================================================
-   勤務形態一覧
-================================================== */
-
-function renderShiftList() {
-
-  const list =
-    document.getElementById(
-      "shiftList"
-    );
-
-
-  if (!list) {
-
-    return;
-
-  }
-
-
-  list.innerHTML =
-    "";
-
-
-  appData.shiftTypes.forEach(
-    (shift, index) => {
-
-      const item =
-        document.createElement(
-          "div"
-        );
-
-
-      item.className =
-        "list-item";
-
-
-      const timeText =
-        shift.start &&
-        shift.end
-
-          ? `${shift.start} ～ ${shift.end}`
-
-          : "";
-
-
-      item.innerHTML = `
-        <div class="list-item-main">
-
-          <div class="list-item-title">
-            ${escapeHtml(
-              shift.name
-            )}
-          </div>
-
-          <div class="list-item-sub">
-            ${escapeHtml(
-              timeText
-            )}
-          </div>
-
-        </div>
-
-        <div class="list-item-buttons">
-
-          <button
-            type="button"
-            class="list-button edit-shift-button"
-          >
-            編集
-          </button>
-
-          <button
-            type="button"
-            class="list-button delete delete-shift-button"
-          >
-            削除
-          </button>
-
-        </div>
-      `;
-
-
-      item
-        .querySelector(
-          ".edit-shift-button"
-        )
-        ?.addEventListener(
-          "click",
-          () => {
-
-            document.getElementById(
-              "shiftNameInput"
-            ).value =
-              shift.name;
-
-
-            document.getElementById(
-              "shiftStartInput"
-            ).value =
-              shift.start ||
-              "";
-
-
-            document.getElementById(
-              "shiftEndInput"
-            ).value =
-              shift.end ||
-              "";
-
-
-            document.getElementById(
-              "shiftBreakInput"
-            ).value =
-              shift.break ||
-              "";
-
-
-            editingShiftIndex =
-              index;
-
-
-            document.getElementById(
-              "addShiftButton"
-            ).textContent =
-              "勤務形態を更新";
-
-          }
-        );
-
-
-      item
-        .querySelector(
-          ".delete-shift-button"
-        )
-        ?.addEventListener(
-          "click",
-          async () => {
-
-            if (
-              !confirm(
-                `${shift.name}を削除しますか？`
-              )
-            ) {
-
-              return;
-
-            }
-
-
-            cloudOperationBusy =
-              true;
-
-
-            try {
-
-              const workResult =
-                await supabaseClient
-                  .from("work_shifts")
-                  .delete()
-                  .eq(
-                    "shift_name",
-                    shift.name
-                  );
-
-
-              if (
-                workResult.error
-              ) {
-
-                throw workResult.error;
-
-              }
-
-
-              const result =
-                await supabaseClient
-                  .from("shift_types")
-                  .delete()
-                  .eq(
-                    "id",
-                    shift.id
-                  );
-
-
-              if (
-                result.error
-              ) {
-
-                throw result.error;
-
-              }
-
-
-              editingShiftIndex =
-                -1;
-
-
-              await loadAllFromSupabase();
-
-
-              renderShiftList();
-
-              renderSchedule();
-
-
-            } catch (error) {
-
-              console.error(
-                "勤務形態削除エラー",
-                error
-              );
-
-
-              alert(
-                "勤務形態の削除に失敗しました。"
-              );
-
-            } finally {
-
-              finishCloudOperation();
-
-            }
-
-          }
-        );
-
-
-      list.appendChild(
-        item
-      );
-
-    }
-  );
-
-}
-
-
-/* ==================================================
-   休暇追加・編集
-================================================== */
-
-async function addOrUpdateLeave() {
-
-  const nameInput =
-    document.getElementById(
-      "leaveNameInput"
-    );
-
-
-  const colorInput =
-    document.getElementById(
-      "leaveColorInput"
-    );
-
-
-  if (!nameInput) {
-
-    return;
-
-  }
-
-
-  const name =
-    nameInput.value.trim();
-
-
-  const color =
-    colorInput?.value ||
-    "#FFD54F";
-
-
-  if (!name) {
-
-    alert(
-      "休暇名を入力してください"
-    );
-
-    return;
-
-  }
-
-
-  const duplicate =
-    appData.leaveTypes.some(
-      leave =>
-        leave.name === name &&
-        String(leave.id) !==
-          String(editingLeaveId)
-    );
-
-
-  if (duplicate) {
-
-    alert(
-      "同じ休暇名は登録できません"
-    );
-
-    return;
-
-  }
-
-
-  if (!supabaseClient) {
-
-    alert(
-      "Supabaseに接続されていません。"
-    );
-
-    return;
-
-  }
-
-
-  cloudOperationBusy =
-    true;
-
-
-  try {
-
-    if (
-      editingLeaveId
-    ) {
-
-      const oldLeave =
-        appData.leaveTypes.find(
-          leave =>
-            String(leave.id) ===
-            String(editingLeaveId)
-        );
-
-
-      const result =
-        await supabaseClient
-          .from("leave_types")
-          .update({
-
-            name,
-
-            color
-
-          })
-          .eq(
-            "id",
-            editingLeaveId
-          );
-
-
-      if (
-        result.error
-      ) {
-
-        throw result.error;
-
-      }
-
-
-      if (
-        oldLeave &&
-        oldLeave.name !== name
-      ) {
-
-        const workResult =
-          await supabaseClient
-            .from("work_shifts")
-            .update({
-
-              leave_type:
-                name
-
-            })
-            .eq(
-              "leave_type",
-              oldLeave.name
-            );
-
-
-        if (
-          workResult.error
-        ) {
-
-          throw workResult.error;
-
-        }
-
-      }
-
-
-      editingLeaveId =
-        null;
-
-    } else {
-
-      const result =
-        await supabaseClient
-          .from("leave_types")
-          .insert({
-
-            name,
-
-            color,
-
-             organization_id:
-        currentOrganization.id
-
-          });
-
-
-      if (
-        result.error
-      ) {
-
-        throw result.error;
-
-      }
-
-    }
-
-
-    nameInput.value =
-      "";
-
-
-    if (colorInput) {
-
-      colorInput.value =
-        "#FFD54F";
-
-    }
-
-
-    const button =
-      document.getElementById(
-        "addLeaveButton"
-      );
-
-
-    if (button) {
-
-      button.textContent =
-        "休暇を追加";
-
-    }
-
-
-    await loadAllFromSupabase();
-
-
-    renderLeaveList();
-
-    renderSchedule();
-
-
-  } catch (error) {
-
-    console.error(
-      "休暇保存エラー",
-      error
-    );
-
-
-    alert(
-      "休暇の保存に失敗しました。"
-    );
-
-  } finally {
-
-    finishCloudOperation();
-
-  }
-
-}
-
-
-/* ==================================================
-   休暇一覧
-================================================== */
-
-function renderLeaveList() {
-
-  const list =
-    document.getElementById(
-      "leaveList"
-    );
-
-
-  if (!list) {
-
-    return;
-
-  }
-
-
-  list.innerHTML =
-    "";
-
-
-  appData.leaveTypes.forEach(
-    leave => {
-
-      const item =
-        document.createElement(
-          "div"
-        );
-
-
-      item.className =
-        "list-item";
-
-
-      /* =================================================
-         休暇名
-      ================================================= */
-
-      item.innerHTML = `
-        <div
-          style="
-            display:flex;
-            align-items:center;
-            justify-content:space-between;
-            width:100%;
-            gap:12px;
-          "
-        >
-
-          <div
-            class="list-item-title"
-            style="
-              flex:1;
-              min-width:0;
-              white-space:nowrap;
-              overflow:hidden;
-              text-overflow:ellipsis;
-            "
-          >
-            ${escapeHtml(leave.name)}
-          </div>
-
-
-          <div
-            style="
-              width:28px;
-              height:28px;
-              border-radius:6px;
-              background:${leave.color || "#FFD54F"};
-              border:1px solid #ccc;
-              flex-shrink:0;
-            "
-          ></div>
-
-
-          <button
-            type="button"
-            class="list-button edit-leave-button"
-          >
-            編集
-          </button>
-
-
-          <button
-            type="button"
-            class="list-button delete delete-leave-button"
-          >
-            削除
-          </button>
-
-        </div>
-      `;
-
-
-      /* =================================================
-         編集
-      ================================================= */
-
-      item
-        .querySelector(
-          ".edit-leave-button"
-        )
-        ?.addEventListener(
-          "click",
-          () => {
-
-            const nameInput =
-              document.getElementById(
-                "leaveNameInput"
-              );
-
-
-            const colorInput =
-              document.getElementById(
-                "leaveColorInput"
-              );
-
-
-            if (nameInput) {
-
-              nameInput.value =
-                leave.name;
-
-              nameInput.focus();
-
-            }
-
-
-            if (colorInput) {
-
-              colorInput.value =
-                leave.color ||
-                "#FFD54F";
-
-            }
-
-
-            editingLeaveId =
-              leave.id;
-
-
-            const button =
-              document.getElementById(
-                "addLeaveButton"
-              );
-
-
-            if (button) {
-
-              button.textContent =
-                "休暇を更新";
-
-            }
-
-          }
-        );
-
-
-      /* =================================================
-         削除
-      ================================================= */
-
-      item
-        .querySelector(
-          ".delete-leave-button"
-        )
-        ?.addEventListener(
-          "click",
-          async () => {
-
-            if (
-              !confirm(
-                `${leave.name}を削除しますか？\nこの休暇を使用している勤務表からも休暇情報が解除されます。`
-              )
-            ) {
-
-              return;
-
-            }
-
-
-            cloudOperationBusy =
-              true;
-
-
-            try {
-
-              const workResult =
-                await supabaseClient
-                  .from("work_shifts")
-                  .update({
-
-                    leave_type:
-                      null
-
-                  })
-                  .eq(
-                    "leave_type",
-                    leave.name
-                  );
-
-
-              if (
-                workResult.error
-              ) {
-
-                throw workResult.error;
-
-              }
-
-
-              const result =
-                await supabaseClient
-                  .from("leave_types")
-                  .delete()
-                  .eq(
-                    "id",
-                    leave.id
-                  );
-
-
-              if (
-                result.error
-              ) {
-
-                throw result.error;
-
-              }
-
-
-              if (
-                String(
-                  editingLeaveId
-                ) ===
-                String(
-                  leave.id
-                )
-              ) {
-
-                editingLeaveId =
-                  null;
-
-              }
-
-
-              const button =
-                document.getElementById(
-                  "addLeaveButton"
-                );
-
-
-              if (button) {
-
-                button.textContent =
-                  "休暇を追加";
-
-              }
-
-
-              await loadAllFromSupabase();
-
-
-              renderLeaveList();
-
-              renderSchedule();
-
-
-            } catch (error) {
-
-              console.error(
-                "休暇削除エラー",
-                error
-              );
-
-
-              alert(
-                "休暇の削除に失敗しました。\n\n" +
-                error.message
-              );
-
-
-            } finally {
-
-              finishCloudOperation();
-
-            }
-
-          }
-        );
-
-
-      list.appendChild(
-        item
-      );
-
-    }
-  );
-
-}
-
-
-/* ==================================================
-   休業設定
-================================================== */
-
-async function addCompanyHoliday() {
-
-  const nameInput =
-    document.getElementById(
-      "companyHolidayName"
-    );
-
-
-  const startInput =
-    document.getElementById(
-      "companyHolidayStart"
-    );
-
-
-  const endInput =
-    document.getElementById(
-      "companyHolidayEnd"
-    );
-
-
-  if (
-    !nameInput ||
-    !startInput
-  ) {
-
-    return;
-
-  }
-
-
-  const name =
-    nameInput.value.trim();
-
-
-  const start =
-    startInput.value;
-
-
-  const end =
-    endInput?.value ||
-    start;
-
-
-  if (!name) {
-
-    alert(
-      "休業名を入力してください"
-    );
-
-    return;
-
-  }
-
-
-  if (!start) {
-
-    alert(
-      "開始日を入力してください"
-    );
-
-    return;
-
-  }
-
-
-  if (
-    start > end
-  ) {
-
-    alert(
-      "終了日は開始日以降にしてください"
-    );
-
-    return;
-
-  }
-
-
-  const overlap =
-    appData.companyHolidays.some(
-      h =>
-        (
-          !editingHolidayId ||
-          String(h.id) !==
-            String(editingHolidayId)
-        ) &&
-        start <= h.end &&
-        end >= h.start
-    );
-
-
-  if (overlap) {
-
-    alert(
-      "既に登録されている休業期間と重複しています"
-    );
-
-    return;
-
-  }
-
-
-  cloudOperationBusy =
-    true;
-
-
-  try {
-
-    if (
-      editingHolidayId
-    ) {
-
-      const result =
-        await supabaseClient
-          .from("company_holidays")
-          .update({
-
-            name,
-
-            start_date:
-              start,
-
-            end_date:
-              end
-
-             
-
-          })
-          .eq(
-            "id",
-            editingHolidayId
-          );
-
-
-      if (
-        result.error
-      ) {
-
-        throw result.error;
-
-      }
-
-
-      editingHolidayId =
-        null;
-
-    } else {
-
-      const result =
-        await supabaseClient
-          .from("company_holidays")
-          .insert({
-
-            name,
-
-            start_date:
-              start,
-
-            end_date:
-              end,
-
-             organization_id:
-  currentOrganization.id
-
-          });
-
-
-      if (
-        result.error
-      ) {
-
-        throw result.error;
-
-      }
-
-    }
-
-
-    nameInput.value =
-      "";
-
-
-    startInput.value =
-      "";
-
-
-    if (endInput) {
-
-      endInput.value =
-        "";
-
-    }
-
-
-    const button =
-      document.getElementById(
-        "addCompanyHolidayButton"
-      );
-
-
-    if (button) {
-
-      button.textContent =
-        "休業を登録";
-
-    }
-
-
-    await loadAllFromSupabase();
-
-
-    renderHolidayList();
-
-    renderSchedule();
-
-
-  } catch (error) {
-
-    console.error(
-      "休業設定保存エラー",
-      error
-    );
-
-
-    alert(
-      "休業設定の保存に失敗しました。"
-    );
-
-  } finally {
-
-    finishCloudOperation();
-
-  }
-
-}
-
-
-/* ==================================================
-   休業一覧
-================================================== */
-
-function renderHolidayList() {
-
-  const list =
-    document.getElementById(
-      "companyHolidayList"
-    );
-
-
-  if (!list) {
-
-    return;
-
-  }
-
-
-  list.innerHTML =
-    "";
-
-
-  appData.companyHolidays.forEach(
-    holiday => {
-
-      const item =
-        document.createElement(
-          "div"
-        );
-
-
-      item.className =
-        "list-item";
-
-
-      const dateText =
-        holiday.start ===
-        holiday.end
-
-          ? formatDateJP(
-              holiday.start
-            )
-
-          : `${formatDateJP(
-              holiday.start
-            )} ～ ${formatDateJP(
-              holiday.end
-            )}`;
-
-
-      item.innerHTML = `
-        <div class="list-item-main">
-
-          <div class="list-item-title">
-            ${escapeHtml(
-              holiday.name
-            )}
-          </div>
-
-          <div class="list-item-sub">
-            ${escapeHtml(
-              dateText
-            )}
-          </div>
-
-        </div>
-
-        <div class="list-item-buttons">
-
-          <button
-            type="button"
-            class="list-button edit-holiday-button"
-          >
-            編集
-          </button>
-
-          <button
-            type="button"
-            class="list-button delete delete-holiday-button"
-          >
-            削除
-          </button>
-
-        </div>
-      `;
-
-
-      item
-        .querySelector(
-          ".edit-holiday-button"
-        )
-        ?.addEventListener(
-          "click",
-          () => {
-
-            document.getElementById(
-              "companyHolidayName"
-            ).value =
-              holiday.name;
-
-
-            document.getElementById(
-              "companyHolidayStart"
-            ).value =
-              holiday.start;
-
-
-            document.getElementById(
-              "companyHolidayEnd"
-            ).value =
-              holiday.start ===
-              holiday.end
-                ? ""
-                : holiday.end;
-
-
-            editingHolidayId =
-              holiday.id;
-
-
-            const button =
-              document.getElementById(
-                "addCompanyHolidayButton"
-              );
-
-
-            if (button) {
-
-              button.textContent =
-                "休業を更新";
-
-            }
-
-          }
-        );
-
-
-      item
-        .querySelector(
-          ".delete-holiday-button"
-        )
-        ?.addEventListener(
-          "click",
-          async () => {
-
-            if (
-              !confirm(
-                `${holiday.name}を削除しますか？`
-              )
-            ) {
-
-              return;
-
-            }
-
-
-            cloudOperationBusy =
-              true;
-
-
-            try {
-
-              const result =
-                await supabaseClient
-                  .from(
-                    "company_holidays"
-                  )
-                  .delete()
-                  .eq(
-                    "id",
-                    holiday.id
-                  );
-
-
-              if (
-                result.error
-              ) {
-
-                throw result.error;
-
-              }
-
-
-              await loadAllFromSupabase();
-
-
-              renderHolidayList();
-
-              renderSchedule();
-
-
-            } catch (error) {
-
-              console.error(
-                "休業削除エラー",
-                error
-              );
-
-
-              alert(
-                "休業設定の削除に失敗しました。"
-              );
-
-            } finally {
-
-              finishCloudOperation();
-
-            }
-
-          }
-        );
-
-
-      list.appendChild(
-        item
-      );
-
-    }
-  );
-
-}
-
-
-/* ==================================================
-   明け時間
-================================================== */
-
-async function saveAkeTime() {
-
-  const start =
-    document.getElementById(
-      "akeStartInput"
-    );
-
-
-  const end =
-    document.getElementById(
-      "akeEndInput"
-    );
-
-
-  if (
-    !start ||
-    !end ||
-    !start.value ||
-    !end.value
-  ) {
-
-    alert(
-      "開始時間と終了時間を入力してください"
-    );
-
-    return;
-
-  }
-
-
-  if (
-    start.value >=
-    end.value
-  ) {
-
-    alert(
-      "明け時間の終了は開始より後にしてください"
-    );
-
-    return;
-
-  }
-
-
-  appData.akeTime = {
-
-    start:
-      start.value,
-
-    end:
-      end.value
-
-  };
-
-
-  saveLocalData();
-
-
-  if (
-    supabaseClient
-  ) {
-
-    cloudOperationBusy =
-      true;
-
-
-    try {
-
-      const result =
-        await supabaseClient
-          .from("app_settings")
-          .upsert(
-            [
-
-              {
-                setting_name:
-                  "ake_start",
-
-                setting_value:
-                  start.value
-              },
-
-              {
-                setting_name:
-                  "ake_end",
-
-                setting_value:
-                  end.value
-              }
-
-            ],
-            {
-              onConflict:
-                "setting_name"
-            }
-          );
-
-
-      if (
-        result.error
-      ) {
-
-        alert(
-          "明け時間をクラウドに保存できませんでした"
-        );
-
-        return;
-
-      }
-
-
-    } finally {
-
-      finishCloudOperation();
-
-    }
-
-  }
-
-
-  alert(
-    "明け時間を保存しました"
-  );
-
-}
-
-
-/* ==================================================
-   カレンダー
-================================================== */
-
-function openCalendarConfirm(
-  staffName
-) {
-
-  const name =
-    getStaffName(
-      staffName
-    );
-
-
-  const modal =
-    document.getElementById(
-      "calendarConfirm"
-    );
-
-
-  if (!modal) {
-
-    return;
-
-  }
-
-
-  modal.dataset.staff =
-    name;
-
-
-  const title =
-    document.getElementById(
-      "calendarConfirmTitle"
-    );
-
-
-  const text =
-    document.getElementById(
-      "calendarConfirmText"
-    );
-
-
-  if (title) {
-
-    title.textContent =
-      `${name}の勤務表`;
-
-  }
-
-
-  if (text) {
-
-    text.textContent =
-      `${name}の勤務カレンダーを登録しますか？`;
-
-  }
-
-
-  modal.style.display =
-    "flex";
-
-}
-
-
-/* ==================================================
-   webcal登録
-================================================== */
-
-function subscribeStaffCalendar() {
-
-  const modal =
-    document.getElementById(
-      "calendarConfirm"
-    );
-
-
-  if (!modal) {
-
-    return;
-
-  }
-
-
-  const staffName =
-    modal.dataset.staff;
-
-
-  const staff =
-    appData.staff.find(
-      item =>
-        getStaffName(item) ===
-        staffName
-    );
-
-
-  if (
-    !staff ||
-    !staff.calendar_token
-  ) {
-
-    alert(
-      "この職員のカレンダー情報がありません。"
-    );
-
-    return;
-
-  }
-
-
-  /*
-    ★ webcalを維持
-  */
-
-  const webcalUrl =
-    "webcal://" +
-    SUPABASE_URL.replace(
-      "https://",
-      ""
-    ) +
-    "/functions/v1/staff-calendar?token=" +
-    encodeURIComponent(
-      staff.calendar_token
-    );
-
-
-  closeCalendarModal();
-
-
-  window.location.href =
-    webcalUrl;
-
-}
-
-
-/* ==================================================
-   カレンダーモーダル
-================================================== */
-
-function closeCalendarModal() {
-
-  const modal =
-    document.getElementById(
-      "calendarConfirm"
-    );
-
-
-  if (modal) {
-
-    modal.style.display =
-      "none";
-
-  }
-
-}
-
-
-/* ==================================================
-   月削除
-================================================== */
-
-async function deleteCurrentMonth() {
-
-  const year =
-    currentDate.getFullYear();
-
-
-  const month =
-    currentDate.getMonth() +
-    1;
-
-
-  if (
-    !confirm(
-      `${year}年${month}月の勤務データを削除しますか？`
-    )
-  ) {
-
-    return;
-
-  }
-
-
-  const start =
-    getDateKey(
-      year,
-      month,
-      1
-    );
-
-
-  const end =
-    getDateKey(
-      year,
-      month,
-      getDaysInMonth(
-        year,
-        month
-      )
-    );
-
-
-  cloudOperationBusy =
-    true;
-
-
-  try {
-
-    const result =
-      await supabaseClient
-        .from("work_shifts")
-        .delete()
-        .gte(
-          "work_date",
-          start
-        )
-        .lte(
-          "work_date",
-          end
-        );
-
-
-    if (
-      result.error
-    ) {
-
-      throw result.error;
-
-    }
-
-
-    await loadAllFromSupabase();
-
-
-    renderSchedule();
-
-
-  } catch (error) {
-
-    console.error(
-      "月削除エラー",
-      error
-    );
-
-
-    alert(
-      "月の削除に失敗しました。"
-    );
-
-  } finally {
-
-    finishCloudOperation();
-
-  }
-
-}
-
-　/* ==================================================
-   年度削除
-================================================== */
-
-async function deleteFiscalYear() {
-
-  const year =
-    currentDate.getFullYear();
-
-
-  const month =
-    currentDate.getMonth() +
-    1;
-
-
-  const fiscalStart =
-    month >= 4
-      ? year
-      : year - 1;
-
-
-  if (
-    !confirm(
-      `${fiscalStart}年度の勤務データを削除しますか？`
-    )
-  ) {
-
-    return;
-
-  }
-
-
-  const start =
-    `${fiscalStart}-04-01`;
-
-
-  const end =
-    `${fiscalStart + 1}-03-31`;
-
-
-  cloudOperationBusy =
-    true;
-
-
-  try {
-
-    const result =
-      await supabaseClient
-        .from("work_shifts")
-        .delete()
-        .gte(
-          "work_date",
-          start
-        )
-        .lte(
-          "work_date",
-          end
-        );
-
-
-    if (
-      result.error
-    ) {
-
-      throw result.error;
-
-    }
-
-
-    await loadAllFromSupabase();
-
-
-    renderSchedule();
-
-
-  } catch (error) {
-
-    console.error(
-      "年度削除エラー",
-      error
-    );
-
-
-    alert(
-      "年度の削除に失敗しました。"
-    );
-
-  } finally {
-
-    finishCloudOperation();
-
-  }
-
-}
-
-
-/* ==================================================
-   公休日API
-================================================== */
-
-async function loadPublicHolidays() {
-
-  try {
-
-    const response =
-      await fetch(
-        "https://holidays-jp.github.io/api/v1/date.json"
-      );
-
-
-    if (!response.ok) {
-
-      throw new Error(
-        "祝日データ取得失敗"
-      );
-
-    }
-
-
-    publicHolidays =
-      await response.json();
-
-
-    renderSchedule();
-
-
-  } catch (error) {
-
-    console.warn(
-      "祝日データ取得失敗",
-      error
-    );
-
-  }
-
-}
-
-
-/* ==================================================
-   HTMLエスケープ
-================================================== */
-
-function escapeHtml(
-  value
-) {
-
-  return String(
-    value ?? ""
-  )
-    .replace(
-      /&/g,
-      "&amp;"
-    )
-    .replace(
-      /</g,
-      "&lt;"
-    )
-    .replace(
-      />/g,
-      "&gt;"
-    )
-    .replace(
-      /"/g,
-      "&quot;"
-    )
-    .replace(
-      /'/g,
-      "&#039;"
-    );
-
-}
-
-
-/* ==================================================
-   ICS関連
-================================================== */
-
-function exportCalendar() {
-
-  const modal =
-    document.getElementById(
-      "calendarConfirm"
-    );
-
-
-  if (!modal) {
-
-    return;
-
-  }
-
-
-  const staffName =
-    modal.dataset.staff;
-
-
-  if (!staffName) {
-
-    return;
-
-  }
-
-
-  const year =
-    currentDate.getFullYear();
-
-
-  const month =
-    currentDate.getMonth() +
-    1;
-
-
-  let ics =
-    "BEGIN:VCALENDAR\r\n";
-
-
-  ics +=
-    "VERSION:2.0\r\n";
-
-
-  ics +=
-    "PRODID:-//Kinmu App//JP\r\n";
-
-
-  ics +=
-    "CALSCALE:GREGORIAN\r\n";
-
-
-  const days =
-    getDaysInMonth(
-      year,
-      month
-    );
-
-
-  for (
-    let day = 1;
-    day <= days;
-    day++
-  ) {
-
-    const dateKey =
-      getDateKey(
-        year,
-        month,
-        day
-      );
-
-
-    const shiftName =
-      getDisplayShift(
-        staffName,
-        dateKey
-      );
-
-
-    if (!shiftName) {
-
-      continue;
-
-    }
-
-
-    const uid =
-      `${staffName}-${dateKey}-${Date.now()}@kinmu-app`;
-
-
-    const leaveName =
-      getStoredLeave(
-        staffName,
-        dateKey
-      );
-
-
-    let title =
-      shiftName;
-
-
-    if (leaveName) {
-
-      title +=
-        ` (${leaveName})`;
-
-    }
-
-
-    if (
-      shiftName ===
-      "休み"
-    ) {
-
-      ics +=
-        createAllDayEvent(
-          uid,
-          dateKey,
-          title,
-          staffName
-        );
-
-
-      continue;
-
-    }
-
-
-    if (
-      shiftName ===
-      "明"
-    ) {
-
-      ics +=
-        createTimedEvent(
-          uid,
-          dateKey,
-          title,
-          appData.akeTime.start,
-          appData.akeTime.end,
-          staffName
-        );
-
-
-      continue;
-
-    }
-
-
-    const shift =
-      appData.shiftTypes.find(
-        s =>
-          s.name ===
-          shiftName
-      );
-
-
-    if (!shift) {
-
-      continue;
-
-    }
-
-
-    if (
-      !shift.start ||
-      !shift.end
-    ) {
-
-      ics +=
-        createAllDayEvent(
-          uid,
-          dateKey,
-          title,
-          staffName
-        );
-
-    } else {
-
-      ics +=
-        createTimedEvent(
-          uid,
-          dateKey,
-          title,
-          shift.start,
-          shift.end,
-          staffName
-        );
-
-    }
-
-  }
-
-
-  ics +=
-    "END:VCALENDAR\r\n";
-
-
-  const blob =
-    new Blob(
-      [ics],
-      {
-        type:
-          "text/calendar;charset=utf-8"
-      }
-    );
-
-
-  const url =
-    URL.createObjectURL(
-      blob
-    );
-
-
-  const a =
-    document.createElement(
-      "a"
-    );
-
-
-  a.href =
-    url;
-
-
-  a.download =
-    `${staffName}_${year}年${month}月勤務表.ics`;
-
-
-  document.body.appendChild(
-    a
-  );
-
-
-  a.click();
-
-
-  a.remove();
-
-
-  URL.revokeObjectURL(
-    url
-  );
-
-
-  closeCalendarModal();
-
-}
-
-
-/* ==================================================
-   ICS 全日イベント
-================================================== */
-
-function createAllDayEvent(
-  uid,
-  dateKey,
-  title,
-  staffName
-) {
-
-  const date =
-    dateKey.replace(
-      /-/g,
-      ""
-    );
-
-
-  const next =
-    addOneDay(
-      dateKey
-    ).replace(
-      /-/g,
-      ""
-    );
-
-
-  let text =
-    "BEGIN:VEVENT\r\n";
-
-
-  text +=
-    `UID:${uid}\r\n`;
-
-
-  text +=
-    `DTSTAMP:${utcNow()}\r\n`;
-
-
-  text +=
-    `DTSTART;VALUE=DATE:${date}\r\n`;
-
-
-  text +=
-    `DTEND;VALUE=DATE:${next}\r\n`;
-
-
-  text +=
-    `SUMMARY:${escapeICS(
-      title
-    )}\r\n`;
-
-
-  text +=
-    `DESCRIPTION:${escapeICS(
-      getOtherStaffDescription(
-        staffName,
-        dateKey
-      )
-    )}\r\n`;
-
-
-  text +=
-    "END:VEVENT\r\n";
-
-
-  return text;
-
-}
-
-
-/* ==================================================
-   ICS 時間指定イベント
-================================================== */
-
-function createTimedEvent(
-  uid,
-  dateKey,
-  title,
-  start,
-  end,
-  staffName
-) {
-
-  const startDate =
-    makeDateTime(
-      dateKey,
-      start
-    );
-
-
-  let endDate =
-    makeDateTime(
-      dateKey,
-      end
-    );
-
-
-  if (
-    endDate <=
-    startDate
-  ) {
-
-    endDate =
-      new Date(
-        endDate
-      );
-
-
-    endDate.setDate(
-      endDate.getDate() +
-      1
-    );
-
-  }
-
-
-  let text =
-    "BEGIN:VEVENT\r\n";
-
-
-  text +=
-    `UID:${uid}\r\n`;
-
-
-  text +=
-    `DTSTAMP:${utcNow()}\r\n`;
-
-
-  text +=
-    `DTSTART:${formatUTC(
-      startDate
-    )}\r\n`;
-
-
-  text +=
-    `DTEND:${formatUTC(
-      endDate
-    )}\r\n`;
-
-
-  text +=
-    `SUMMARY:${escapeICS(
-      title
-    )}\r\n`;
-
-
-  text +=
-    `DESCRIPTION:${escapeICS(
-      getOtherStaffDescription(
-        staffName,
-        dateKey
-      )
-    )}\r\n`;
-
-
-  text +=
-    "END:VEVENT\r\n";
-
-
-  return text;
-
-}
-
-
-/* ==================================================
-   日時作成
-================================================== */
-
-function makeDateTime(
-  dateKey,
-  time
-) {
-
-  const [
-    y,
-    m,
-    d
-  ] =
-    dateKey
-      .split("-")
-      .map(Number);
-
-
-  const [
-    hh,
-    mm
-  ] =
-    time
-      .split(":")
-      .map(Number);
-
-
-  return new Date(
-    y,
-    m - 1,
-    d,
-    hh,
-    mm,
-    0
-  );
-
-}
-
-
-/* ==================================================
-   UTC変換
-================================================== */
-
-function formatUTC(
-  date
-) {
 
   return (
-    date.getUTCFullYear() +
-
-    String(
-      date.getUTCMonth() + 1
-    ).padStart(
-      2,
-      "0"
-    ) +
-
-    String(
-      date.getUTCDate()
-    ).padStart(
-      2,
-      "0"
-    ) +
-
-    "T" +
-
-    String(
-      date.getUTCHours()
-    ).padStart(
-      2,
-      "0"
-    ) +
-
-    String(
-      date.getUTCMinutes()
-    ).padStart(
-      2,
-      "0"
-    ) +
-
-    String(
-      date.getUTCSeconds()
-    ).padStart(
-      2,
-      "0"
-    ) +
-
-    "Z"
+    currentOrganization.id ||
+    currentOrganization.organization_id ||
+    null
   );
 
 }
 
 
-/* ==================================================
-   現在時刻UTC
-================================================== */
+/* =========================================================
+   Supabaseデータ読み込み
+   ========================================================= */
 
-function utcNow() {
+async function loadAllFromSupabase() {
 
-  return formatUTC(
-    new Date()
-  );
+  if (
+    !supabaseClient
+  ) {
 
-}
+    console.error(
+      "★ Supabase未接続"
+    );
 
+    return false;
 
-/* ==================================================
-   翌日
-================================================== */
-
-function addOneDay(
-  dateKey
-) {
-
-  const [
-    y,
-    m,
-    d
-  ] =
-    dateKey
-      .split("-")
-      .map(Number);
+  }
 
 
-  const date =
-    new Date(
-      y,
-      m - 1,
-      d
+  const organizationId =
+    getCurrentOrganizationId();
+
+
+  if (
+    !organizationId
+  ) {
+
+    console.warn(
+      "★ organization_id がありません"
+    );
+
+    return false;
+
+  }
+
+
+  try {
+
+    /*
+     * 既存の個別読み込み関数がある場合は
+     * それを利用する。
+     */
+
+    if (
+      typeof loadStaffFromSupabase ===
+      "function"
+    ) {
+
+      await loadStaffFromSupabase(
+        organizationId
+      );
+
+    }
+
+
+    if (
+      typeof loadShiftTypesFromSupabase ===
+      "function"
+    ) {
+
+      await loadShiftTypesFromSupabase(
+        organizationId
+      );
+
+    }
+
+
+    if (
+      typeof loadLeaveTypesFromSupabase ===
+      "function"
+    ) {
+
+      await loadLeaveTypesFromSupabase(
+        organizationId
+      );
+
+    }
+
+
+    if (
+      typeof loadCompanyHolidaysFromSupabase ===
+      "function"
+    ) {
+
+      await loadCompanyHolidaysFromSupabase(
+        organizationId
+      );
+
+    }
+
+
+    /*
+     * 勤務データ
+     */
+
+    await loadWorkShiftsFromSupabase(
+      organizationId
     );
 
 
-  date.setDate(
-    date.getDate() +
-    1
-  );
+    /*
+     * 設定
+     */
+
+    if (
+      typeof loadAppSettingsFromSupabase ===
+      "function"
+    ) {
+
+      await loadAppSettingsFromSupabase(
+        organizationId
+      );
+
+    }
 
 
-  return getDateKey(
-    date.getFullYear(),
-    date.getMonth() + 1,
-    date.getDate()
-  );
+    /*
+     * ローカルへ保存
+     */
+
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(
+        appData
+      )
+    );
+
+
+    return true;
+
+
+  } catch (error) {
+
+    console.error(
+      "★ Supabaseデータ読み込みエラー:",
+      error
+    );
+
+
+    return false;
+
+  }
 
 }
 
 
-/* ==================================================
-   他職員勤務
-================================================== */
+/* =========================================================
+   勤務データ読み込み
+   ========================================================= */
 
-function getOtherStaffDescription(
-  currentStaff,
-  dateKey
+async function loadWorkShiftsFromSupabase(
+  organizationId
 ) {
 
-  const currentName =
-    getStaffName(
-      currentStaff
+  const {
+    data,
+    error
+  } =
+    await supabaseClient
+      .from("work_shifts")
+      .select("*")
+      .eq(
+        "organization_id",
+        organizationId
+      );
+
+
+  if (error) {
+
+    console.error(
+      "★ work_shifts読み込みエラー:",
+      error
     );
 
+    throw error;
 
-  const lines =
-    [];
+  }
 
 
-  appData.staff.forEach(
-    staff => {
+  /*
+   * 勤務データをアプリ形式へ変換
+   */
 
-      const staffName =
-        getStaffName(
-          staff
-        );
+  appData.shifts =
+    {};
 
+
+  (data || []).forEach(
+    row => {
 
       if (
-        staffName ===
-        currentName
+        !row.work_date ||
+        !row.staff_name
       ) {
 
         return;
@@ -14222,220 +12249,865 @@ function getOtherStaffDescription(
       }
 
 
-      const shift =
-        getDisplayShift(
-          staffName,
-          dateKey
-        );
+      if (
+        !appData.shifts[
+          row.work_date
+        ]
+      ) {
 
-
-      if (shift) {
-
-        const leave =
-          getStoredLeave(
-            staffName,
-            dateKey
-          );
-
-
-        lines.push(
-          `${staffName}: ${shift}${leave ? ` (${leave})` : ""}`
-        );
+        appData.shifts[
+          row.work_date
+        ] =
+          {};
 
       }
+
+
+      appData.shifts[
+        row.work_date
+      ][
+        row.staff_name
+      ] =
+        {
+
+          shift_name:
+            row.shift_name || "",
+
+          excel_shift:
+            row.excel_shift || "",
+
+          leave_type:
+            row.leave_type || "",
+
+          memo:
+            row.memo || ""
+
+        };
 
     }
   );
 
 
-  return lines.join(
-    "\n"
-  );
+  return true;
 
 }
 
 
-/* ==================================================
-   ICSエスケープ
-================================================== */
+/* =========================================================
+   データ再読み込み
+   ========================================================= */
 
-function escapeICS(
-  value
-) {
+async function reloadFromSupabase() {
 
-  return String(
-    value ?? ""
-  )
-    .replace(
-      /\\/g,
-      "\\\\"
-    )
-    .replace(
-      /\r?\n/g,
-      "\\n"
-    )
-    .replace(
-      /;/g,
-      "\\;"
-    )
-    .replace(
-      /,/g,
-      "\\,"
+  if (
+    cloudOperationBusy ||
+    realtimeUpdating
+  ) {
+
+    realtimeReloadPending =
+      true;
+
+    return;
+
+  }
+
+
+  realtimeUpdating =
+    true;
+
+
+  try {
+
+    const success =
+      await loadAllFromSupabase();
+
+
+    if (success) {
+
+      renderAll();
+
+
+      if (
+        typeof updateScheduleFixedLayers ===
+        "function"
+      ) {
+
+        updateScheduleFixedLayers();
+
+      }
+
+    }
+
+
+  } catch (error) {
+
+    console.error(
+      "★ 再読み込みエラー:",
+      error
     );
+
+  } finally {
+
+    realtimeUpdating =
+      false;
+
+
+    if (
+      realtimeReloadPending
+    ) {
+
+      realtimeReloadPending =
+        false;
+
+
+      scheduleRealtimeReload();
+
+    }
+
+  }
 
 }
 
 /* =========================================================
-   ダークモード
+   第17部：勤務保存・変更
    ========================================================= */
 
-function setupDarkMode() {
 
-  const button =
-    document.getElementById("darkModeButton");
+/* =========================================================
+   勤務データ保存
+   ========================================================= */
 
-  if (!button) {
-    return;
+async function saveWorkShiftToSupabase(
+  staffName,
+  workDate,
+  shiftName,
+  excelShift = null,
+  leaveType = "",
+  memo = ""
+) {
+
+  if (
+    !supabaseClient
+  ) {
+
+    return false;
+
   }
 
-  // 保存されている設定を読み込む
-  const savedMode =
-    localStorage.getItem("darkMode");
 
-  if (savedMode === "true") {
-    document.body.classList.add(
-      "dark-mode"
+  const organizationId =
+    getCurrentOrganizationId();
+
+
+  if (
+    !organizationId
+  ) {
+
+    console.error(
+      "★ organization_id がありません"
     );
 
-    updateDarkModeButton(true);
+    return false;
 
-  } else {
-    document.body.classList.remove(
-      "dark-mode"
-    );
-
-    updateDarkModeButton(false);
   }
 
-  button.onclick = function() {
 
-    const isDark =
-      document.body.classList.toggle(
-        "dark-mode"
+  /*
+   * excel_shiftが指定されていない場合
+   * shift_nameと同じ値にはしない。
+   *
+   * 既存データを保持するためnull扱い。
+   */
+
+  const row =
+    {
+
+      organization_id:
+        organizationId,
+
+      staff_name:
+        staffName,
+
+      work_date:
+        workDate,
+
+      shift_name:
+        shiftName || "",
+
+      leave_type:
+        leaveType || "",
+
+      memo:
+        memo || ""
+
+    };
+
+
+  /*
+   * excel_shiftを明示的に渡された場合のみ更新
+   */
+
+  if (
+    excelShift !== null &&
+    excelShift !== undefined
+  ) {
+
+    row.excel_shift =
+      excelShift;
+
+  }
+
+
+  cloudOperationBusy =
+    true;
+
+
+  try {
+
+    const {
+      error
+    } =
+      await supabaseClient
+        .from("work_shifts")
+        .upsert(
+          row,
+          {
+            onConflict:
+              "organization_id,staff_name,work_date"
+          }
+        );
+
+
+    if (error) {
+
+      console.error(
+        "★ 勤務保存エラー:",
+        error
       );
 
-    localStorage.setItem(
-      "darkMode",
-      isDark ? "true" : "false"
-    );
+      return false;
 
-    updateDarkModeButton(isDark);
-  };
+    }
+
+
+    return true;
+
+
+  } finally {
+
+    cloudOperationBusy =
+      false;
+
+
+    if (
+      realtimeReloadPending
+    ) {
+
+      realtimeReloadPending =
+        false;
+
+      scheduleRealtimeReload();
+
+    }
+
+  }
+
 }
 
 
-/* ---------------------------------------------------------
-   ダークモードボタン表示
---------------------------------------------------------- */
+/* =========================================================
+   勤務削除
+   ========================================================= */
 
-function updateDarkModeButton(isDark) {
+async function deleteWorkShiftFromSupabase(
+  staffName,
+  workDate
+) {
 
-  const button =
-    document.getElementById(
-      "darkModeButton"
+  if (
+    !supabaseClient
+  ) {
+
+    return false;
+
+  }
+
+
+  const organizationId =
+    getCurrentOrganizationId();
+
+
+  if (
+    !organizationId
+  ) {
+
+    return false;
+
+  }
+
+
+  cloudOperationBusy =
+    true;
+
+
+  try {
+
+    const {
+      error
+    } =
+      await supabaseClient
+        .from("work_shifts")
+        .delete()
+        .eq(
+          "organization_id",
+          organizationId
+        )
+        .eq(
+          "staff_name",
+          staffName
+        )
+        .eq(
+          "work_date",
+          workDate
+        );
+
+
+    if (error) {
+
+      console.error(
+        "★ 勤務削除エラー:",
+        error
+      );
+
+      return false;
+
+    }
+
+
+    return true;
+
+
+  } finally {
+
+    cloudOperationBusy =
+      false;
+
+  }
+
+}
+
+
+/* =========================================================
+   勤務変更共通処理
+   ========================================================= */
+
+async function updateWorkShift(
+  staffName,
+  workDate,
+  shiftName,
+  excelShift = null,
+  leaveType = "",
+  memo = ""
+) {
+
+  const success =
+    await saveWorkShiftToSupabase(
+      staffName,
+      workDate,
+      shiftName,
+      excelShift,
+      leaveType,
+      memo
     );
 
-  if (!button) {
+
+  if (!success) {
+
+    return false;
+
+  }
+
+
+  /*
+   * ローカルデータも更新
+   */
+
+  if (
+    !appData.shifts[workDate]
+  ) {
+
+    appData.shifts[workDate] =
+      {};
+
+  }
+
+
+  appData.shifts[workDate][staffName] =
+    {
+
+      shift_name:
+        shiftName || "",
+
+      excel_shift:
+        excelShift ?? "",
+
+      leave_type:
+        leaveType || "",
+
+      memo:
+        memo || ""
+
+    };
+
+
+  localStorage.setItem(
+    STORAGE_KEY,
+    JSON.stringify(
+      appData
+    )
+  );
+
+
+  /*
+   * 表示更新
+   */
+
+  renderAll();
+
+
+  return true;
+
+}
+
+/* =========================================================
+   第18部：Realtime
+   ========================================================= */
+
+
+/* =========================================================
+   Realtime変数
+   ========================================================= */
+
+let realtimeChannel =
+  null;
+
+let realtimeReloadTimer =
+  null;
+
+
+/* =========================================================
+   Realtime再読み込み予約
+   ========================================================= */
+
+function scheduleRealtimeReload() {
+
+  if (
+    realtimeReloadTimer
+  ) {
+
+    clearTimeout(
+      realtimeReloadTimer
+    );
+
+  }
+
+
+  realtimeReloadTimer =
+    setTimeout(
+      async () => {
+
+        realtimeReloadTimer =
+          null;
+
+
+        if (
+          cloudOperationBusy ||
+          realtimeUpdating
+        ) {
+
+          realtimeReloadPending =
+            true;
+
+          return;
+
+        }
+
+
+        await reloadFromSupabase();
+
+      },
+      300
+    );
+
+}
+
+
+/* =========================================================
+   Realtime開始
+   ========================================================= */
+
+function setupRealtime() {
+
+  if (
+    !supabaseClient
+  ) {
+
     return;
+
   }
 
-  if (isDark) {
 
-    button.setAttribute(
-      "aria-label",
-      "ライトモード"
-    );
+  const organizationId =
+    getCurrentOrganizationId();
 
-    button.setAttribute(
-      "title",
-      "ライトモード"
-    );
 
-    button.innerHTML = `
-      <svg
-        class="dark-mode-icon"
-        viewBox="0 0 24 24"
-        aria-hidden="true"
-      >
-        <circle
-          cx="12"
-          cy="12"
-          r="4"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.8"
-        />
+  if (
+    !organizationId
+  ) {
 
-        <path
-          d="
-            M12 2
-            V4
-            M12 20
-            V22
-            M4.93 4.93
-            L6.34 6.34
-            M17.66 17.66
-            L19.07 19.07
-            M2 12
-            H4
-            M20 12
-            H22
-            M4.93 19.07
-            L6.34 17.66
-            M17.66 6.34
-            L19.07 4.93
-          "
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.8"
-          stroke-linecap="round"
-        />
-      </svg>
-    `;
+    return;
 
-  } else {
-
-    button.setAttribute(
-      "aria-label",
-      "ダークモード"
-    );
-
-    button.setAttribute(
-      "title",
-      "ダークモード"
-    );
-
-    button.innerHTML = `
-      <svg
-        class="dark-mode-icon"
-        viewBox="0 0 24 24"
-        aria-hidden="true"
-      >
-        <path
-          d="
-            M20.5 15.5
-            A8.5 8.5 0 0 1
-            8.5 3.5
-            A8.5 8.5 0 1 0
-            20.5 15.5Z
-          "
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.8"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        />
-      </svg>
-    `;
   }
+
+
+  /*
+   * 既存チャンネル削除
+   */
+
+  if (
+    realtimeChannel
+  ) {
+
+    try {
+
+      supabaseClient
+        .removeChannel(
+          realtimeChannel
+        );
+
+    } catch (error) {
+
+      console.warn(
+        "Realtimeチャンネル削除:",
+        error
+      );
+
+    }
+
+  }
+
+
+  /*
+   * 組織単位で監視
+   */
+
+  realtimeChannel =
+    supabaseClient
+      .channel(
+        `work-shifts-${organizationId}`
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "work_shifts",
+          filter:
+            `organization_id=eq.${organizationId}`
+        },
+        () => {
+
+          scheduleRealtimeReload();
+
+        }
+      )
+      .subscribe(
+        status => {
+
+          console.log(
+            "★ Realtime:",
+            status
+          );
+
+        }
+      );
+
 }
+
+
+/* =========================================================
+   Realtime停止
+   ========================================================= */
+
+function stopRealtime() {
+
+  if (
+    realtimeReloadTimer
+  ) {
+
+    clearTimeout(
+      realtimeReloadTimer
+    );
+
+    realtimeReloadTimer =
+      null;
+
+  }
+
+
+  if (
+    realtimeChannel &&
+    supabaseClient
+  ) {
+
+    try {
+
+      supabaseClient
+        .removeChannel(
+          realtimeChannel
+        );
+
+    } catch (error) {
+
+      console.warn(
+        "Realtime停止エラー:",
+        error
+      );
+
+    }
+
+  }
+
+
+  realtimeChannel =
+    null;
+
+}
+
+
+/* =========================================================
+   Realtime再起動
+   ========================================================= */
+
+function restartRealtime() {
+
+  stopRealtime();
+
+  setupRealtime();
+
+}
+
+
+/* =========================================================
+   タブ復帰時同期
+   ========================================================= */
+
+function setupVisibilitySync() {
+
+  if (
+    window.__shiftVisibilitySync
+  ) {
+
+    return;
+
+  }
+
+
+  window.__shiftVisibilitySync =
+    true;
+
+
+  document.addEventListener(
+    "visibilitychange",
+    () => {
+
+      if (
+        document.visibilityState ===
+        "visible"
+      ) {
+
+        scheduleRealtimeReload();
+
+      }
+
+    }
+  );
+
+}
+
+/* =========================================================
+   第19部：勤務表機能初期化
+   ========================================================= */
+
+
+/* =========================================================
+   ログイン後初期化
+   ========================================================= */
+
+async function initializeAfterLogin() {
+
+  console.log(
+    "★ ログイン後初期化"
+  );
+
+
+  /*
+   * Supabaseからデータ取得
+   */
+
+  const loaded =
+    await loadAllFromSupabase();
+
+
+  if (!loaded) {
+
+    console.warn(
+      "★ サーバーデータ読み込みに失敗"
+    );
+
+  }
+
+
+  /*
+   * 既存のイベント登録
+   */
+
+  if (
+    typeof bindEvents ===
+    "function"
+  ) {
+
+    bindEvents();
+
+  }
+
+
+  /*
+   * その他の既存セットアップ
+   */
+
+  if (
+    typeof setupNavigation ===
+    "function"
+  ) {
+
+    setupNavigation();
+
+  }
+
+
+  if (
+    typeof setupScheduleEvents ===
+    "function"
+  ) {
+
+    setupScheduleEvents();
+
+  }
+
+
+  if (
+    typeof setupStaffSettings ===
+    "function"
+  ) {
+
+    setupStaffSettings();
+
+  }
+
+
+  if (
+    typeof setupShiftTypeSettings ===
+    "function"
+  ) {
+
+    setupShiftTypeSettings();
+
+  }
+
+
+  if (
+    typeof setupLeaveSettings ===
+    "function"
+  ) {
+
+    setupLeaveSettings();
+
+  }
+
+
+  if (
+    typeof setupCompanyHolidaySettings ===
+    "function"
+  ) {
+
+    setupCompanyHolidaySettings();
+
+  }
+
+
+  /*
+   * 表示
+   */
+
+  if (
+    typeof renderAll ===
+    "function"
+  ) {
+
+    renderAll();
+
+  }
+
+
+  /*
+   * Realtime
+   */
+
+  setupRealtime();
+
+
+  setupVisibilitySync();
+
+
+  /*
+   * 自動同期
+   */
+
+  if (
+    typeof startAutoSync ===
+    "function"
+  ) {
+
+    startAutoSync();
+
+  }
+
+
+  /*
+   * 固定レイヤー
+   */
+
+  if (
+    typeof updateScheduleFixedLayers ===
+    "function"
+  ) {
+
+    setTimeout(
+      () => {
+
+        updateScheduleFixedLayers();
+
+      },
+      100
+    );
+
+  }
+
+
+  console.log(
+    "★ ログイン後初期化完了"
+  );
+
+}
+
