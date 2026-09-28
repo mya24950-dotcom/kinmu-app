@@ -260,26 +260,42 @@ function showInitialLoading(message = "データを取得しています…") {
   }
 }
 
-
 function hideInitialLoading() {
 
-const loading =
-document.getElementById(
-"loadingScreen"
-);
+  const loading =
+    document.getElementById("loadingScreen");
 
-if (loading) {
+  if (!loading) {
+    console.log("★ loadingScreen が見つかりません");
+    return;
+  }
 
-loading.style.display =
-  "none";
+  console.log("★ loadingScreen を非表示にします");
 
-loading.style.pointerEvents =
-  "none";
+  loading.style.setProperty(
+    "display",
+    "none",
+    "important"
+  );
 
+  loading.style.setProperty(
+    "visibility",
+    "hidden",
+    "important"
+  );
+
+  loading.style.setProperty(
+    "opacity",
+    "0",
+    "important"
+  );
+
+  loading.style.setProperty(
+    "pointer-events",
+    "none",
+    "important"
+  );
 }
-
-}
-
 
 /* ==================================================
    初期化
