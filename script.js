@@ -263,16 +263,23 @@ function showInitialLoading(message = "データを取得しています…") {
 
 function hideInitialLoading() {
 
-  const loading =
-    document.getElementById(
-      "initialLoadingScreen"
-    );
+const loading =
+document.getElementById(
+"loadingScreen"
+);
 
-  if (loading) {
-    loading.remove();
-  }
+if (loading) {
+
+loading.style.display =
+  "none";
+
+loading.style.pointerEvents =
+  "none";
 
 }
+
+}
+
 
 /* ==================================================
    初期化
