@@ -2770,21 +2770,36 @@ async function createNewOrganization() {
       ? staffNameInput.value.trim()
       : "";
 
+  // ==========================================
+  // 入力チェック
+  // ==========================================
+
   if (!organizationName) {
+
     alert("職場名を入力してください。");
+
     organizationNameInput?.focus();
+
     return;
   }
 
   if (!staffName) {
+
     alert("登録者名を入力してください。");
+
     staffNameInput?.focus();
+
     return;
   }
 
+
   try {
 
-    // まだGoogleログインしていない場合
+    // ==========================================
+    // 現在のログイン状態を確認
+    // Google / Apple / Azure 共通
+    // ==========================================
+
     const {
       data: {
         session
@@ -2792,8 +2807,14 @@ async function createNewOrganization() {
     } =
       await supabaseClient.auth.getSession();
 
+
+    // ==========================================
+    // まだログインしていない場合
+    // ==========================================
+
     if (!session) {
 
+      // 職場登録情報を一時保存
       sessionStorage.setItem(
         "pendingOrganizationName",
         organizationName
@@ -2803,6 +2824,7 @@ async function createNewOrganization() {
         "pendingStaffName",
         staffName
       );
+
 
       console.log(
         "★ 職場名を保存",
@@ -2814,14 +2836,101 @@ async function createNewOrganization() {
         staffName
       );
 
-      // Googleログインへ
-      await loginWithGoogle();
+
+      // ========================================
+      // ログイン方法を選択
+      // ========================================
+
+      const loginMethod =
+        prompt(
+          "職場登録に使用するログイン方法を入力してください。\n\n" +
+          "Google → 1\n" +
+          "Apple → 2\n" +
+          "Azure → 3"
+        );
+
+
+      // ----------------------------------------
+      // Google
+      // ----------------------------------------
+
+      if (loginMethod === "1") {
+
+        console.log(
+          "★ Googleログインを開始"
+        );
+
+        await loginWithGoogle();
+
+        return;
+      }
+
+
+      // ----------------------------------------
+      // Apple
+      // ----------------------------------------
+
+      if (loginMethod === "2") {
+
+        console.log(
+          "★ Appleログインを開始"
+        );
+
+        await loginWithApple();
+
+        return;
+      }
+
+
+      // ----------------------------------------
+      // Azure
+      // ----------------------------------------
+
+      if (loginMethod === "3") {
+
+        console.log(
+          "★ Azureログインを開始"
+        );
+
+        await loginWithAzure();
+
+        return;
+      }
+
+
+      // ----------------------------------------
+      // キャンセル / 不正な入力
+      // ----------------------------------------
+
+      alert(
+        "ログイン方法が選択されませんでした。"
+      );
 
       return;
     }
 
 
-    // すでにログイン済みならそのまま登録
+    // ==========================================
+    // すでにログイン済み
+    // ==========================================
+    // Google / Apple / Azure どの認証でも
+    // ここから先は共通処理
+    // ==========================================
+
+    console.log(
+      "★ すでにログイン済みです"
+    );
+
+    console.log(
+      "★ 認証ユーザーID:",
+      session.user.id
+    );
+
+
+    // ==========================================
+    // 職場 + 管理者を作成
+    // ==========================================
+
     const {
       data,
       error
@@ -2837,23 +2946,37 @@ async function createNewOrganization() {
         }
       );
 
+
     if (error) {
       throw error;
     }
+
+
+    // ==========================================
+    // 登録結果確認
+    // ==========================================
 
     if (
       !data ||
       !data.length
     ) {
+
       throw new Error(
         "職場の登録結果を取得できませんでした。"
       );
     }
 
+
     const result =
       data[0];
 
+
+    // ==========================================
+    // 現在の職場をセット
+    // ==========================================
+
     currentOrganization = {
+
       id:
         result.organization_id,
 
@@ -2862,12 +2985,23 @@ async function createNewOrganization() {
 
       role:
         "admin"
+
     };
+
+
+    // ==========================================
+    // 完了メッセージ
+    // ==========================================
 
     alert(
       `${result.organization_name}を登録しました。\n\n` +
       `${result.staff_name}さんを登録者として職員管理に登録しました。`
     );
+
+
+    // ==========================================
+    // アプリ表示
+    // ==========================================
 
     showApp();
 
@@ -2877,17 +3011,38 @@ async function createNewOrganization() {
 
     setupLogoutButton();
 
+
+    // ==========================================
+    // Supabaseからデータ読み込み
+    // ==========================================
+
     await loadAllFromSupabase();
 
     renderAll();
 
     loadPublicHolidays();
 
+
+    // ==========================================
+    // Realtime
+    // ==========================================
+
     setupRealtime();
+
+
+    // ==========================================
+    // 自動同期
+    // ==========================================
 
     startAutoSync();
 
+
+    // ==========================================
+    // タブ復帰時同期
+    // ==========================================
+
     setupVisibilitySync();
+
 
   } catch (error) {
 
@@ -2896,19 +3051,18 @@ async function createNewOrganization() {
       error
     );
 
+
     alert(
       "職場の登録に失敗しました。\n\n" +
-      (error?.message ||
-        String(error))
+      (
+        error?.message ||
+        String(error)
+      )
     );
 
   }
 
 }
-
-/* =================================================
-   新規職場登録画面
-================================================= */
 
 /* =================================================
    新規職場登録画面
