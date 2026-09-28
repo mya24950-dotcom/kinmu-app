@@ -7,19 +7,7 @@
 
   <meta
     name="viewport"
-    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover"
-  >
-
-  <title>Shift+</title>
-
-  <link
-    rel="manifest"
-    href="manifest.json"
-  >
-
-  <meta
-    name="theme-color"
-    content="#f2f2f7"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
   >
 
   <meta
@@ -37,136 +25,595 @@
     content="Shift+"
   >
 
-  <link
-    rel="stylesheet"
-    href="style.css"
+  <meta
+    name="theme-color"
+    content="#007aff"
   >
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.105.0"></script>
+  <title>Shift+</title>
+
+
+  <link
+    rel="manifest"
+    href="manifest.json"
+  >
 
 
   <!-- ==================================================
-       ログイン画面専用
+       Supabase
+  ================================================== -->
+
+  <script
+    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.105.0"
+  ></script>
+
+
+  <!-- ==================================================
+       ログイン画面CSS
   ================================================== -->
 
   <style>
 
-    html,
-    body {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      min-width: 100%;
-    }
-
-
     /* ==================================================
-       ログイン画面
+       ログイン画面全体
     ================================================== */
 
     #loginPage {
-      position: fixed !important;
 
-      top: 0 !important;
-      right: 0 !important;
-      bottom: 0 !important;
-      left: 0 !important;
+      position: fixed;
 
-      width: 100vw !important;
-      height: 100svh !important;
+      inset: 0;
 
-      min-height: 100svh !important;
-      max-height: 100svh !important;
+      z-index: 99999;
 
-      margin: 0 !important;
+      display: flex;
 
-      box-sizing: border-box !important;
+      align-items: center;
 
-      display: flex !important;
+      justify-content: center;
 
-      align-items: center !important;
-      justify-content: center !important;
+      min-height: 100vh;
 
       padding:
-        max(8px, env(safe-area-inset-top))
-        max(10px, env(safe-area-inset-right))
-        max(8px, env(safe-area-inset-bottom))
-        max(10px, env(safe-area-inset-left)) !important;
+        24px;
 
-      background: #f2f2f7 !important;
+      box-sizing: border-box;
 
-      overflow: hidden !important;
+      background:
+        linear-gradient(
+          180deg,
+          #f7f9fc 0%,
+          #eef3f8 100%
+        );
 
-      overscroll-behavior: none !important;
+      overflow-y: auto;
 
-      touch-action: none !important;
     }
 
 
     /* ==================================================
-       ログインカード
+       ログインコンテナ
     ================================================== */
 
-    #loginPage > div {
-      width: 100% !important;
+    .login-container {
 
-      max-width: 390px !important;
+      width: 100%;
 
-      max-height:
-        calc(
-          100svh
-          - env(safe-area-inset-top)
-          - env(safe-area-inset-bottom)
-          - 16px
-        ) !important;
+      max-width: 420px;
 
-      padding: 18px 18px 14px !important;
+      margin:
+        auto;
 
-      box-sizing: border-box !important;
+      padding:
+        28px 24px 32px;
 
-      background: #ffffff !important;
+      box-sizing: border-box;
 
-      border-radius: 18px !important;
+      background:
+        #ffffff;
+
+      border-radius:
+        20px;
 
       box-shadow:
-        0 2px 12px rgba(0,0,0,0.06) !important;
+        0 8px 30px
+        rgba(0, 0, 0, .10);
 
-      overflow: hidden !important;
-
-      flex-shrink: 1 !important;
-
-      touch-action: none;
-    }
-
-
-    #loginPage button,
-    #loginPage input,
-    #loginPage label {
-      touch-action: manipulation;
     }
 
 
     /* ==================================================
-       Shift+ロゴ
+       ロゴ
     ================================================== */
 
-    #loginPage #loginMainView > div:first-child {
+    .login-logo {
 
-      margin-top: 28px !important;
+      display: block;
 
-      margin-bottom: 28px !important;
+      width:
+        180px;
 
-      min-height: 130px !important;
+      max-width:
+        80%;
 
-      display: flex !important;
+      height:
+        auto;
 
-      justify-content: center !important;
+      margin:
+        0 auto 18px;
 
-      align-items: center !important;
+      object-fit:
+        contain;
 
-      box-sizing: border-box !important;
+    }
 
-      flex-shrink: 0 !important;
+
+    /* ==================================================
+       ログインタイトル
+    ================================================== */
+
+    .login-title {
+
+      margin:
+        0 0 8px;
+
+      text-align:
+        center;
+
+      font-size:
+        24px;
+
+      font-weight:
+        700;
+
+      color:
+        #1c1c1e;
+
+    }
+
+
+    .login-subtitle {
+
+      margin:
+        0 0 24px;
+
+      text-align:
+        center;
+
+      font-size:
+        14px;
+
+      line-height:
+        1.6;
+
+      color:
+        #6e6e73;
+
+    }
+
+
+    /* ==================================================
+       ログインボタン
+    ================================================== */
+
+    .login-button {
+
+      display:
+        block;
+
+      width:
+        100%;
+
+      min-height:
+        48px;
+
+      margin:
+        10px 0;
+
+      padding:
+        12px 16px;
+
+      border:
+        none;
+
+      border-radius:
+        12px;
+
+      font-size:
+        16px;
+
+      font-weight:
+        600;
+
+      cursor:
+        pointer;
+
+      box-sizing:
+        border-box;
+
+      transition:
+        opacity .15s ease,
+        transform .05s ease;
+
+    }
+
+
+    .login-button:active {
+
+      transform:
+        scale(.99);
+
+    }
+
+
+    .login-button:hover {
+
+      opacity:
+        .92;
+
+    }
+
+
+    /* Google */
+
+    #googleLoginButton {
+
+      background:
+        #ffffff;
+
+      color:
+        #1c1c1e;
+
+      border:
+        1px solid #d1d1d6;
+
+    }
+
+
+    /* Passkey */
+
+    #passkeyLoginButton {
+
+      background:
+        #007aff;
+
+      color:
+        #ffffff;
+
+    }
+
+
+    /* メールログイン */
+
+    #emailLoginButton {
+
+      background:
+        #34c759;
+
+      color:
+        #ffffff;
+
+    }
+
+
+    /* ==================================================
+       区切り
+    ================================================== */
+
+    .login-divider {
+
+      display:
+        flex;
+
+      align-items:
+        center;
+
+      gap:
+        12px;
+
+      margin:
+        20px 0;
+
+      color:
+        #8e8e93;
+
+      font-size:
+        13px;
+
+    }
+
+
+    .login-divider::before,
+    .login-divider::after {
+
+      content:
+        "";
+
+      flex:
+        1;
+
+      height:
+        1px;
+
+      background:
+        #d1d1d6;
+
+    }
+
+
+    /* ==================================================
+       メール入力
+    ================================================== */
+
+    .login-input {
+
+      display:
+        block;
+
+      width:
+        100%;
+
+      min-height:
+        48px;
+
+      margin:
+        10px 0;
+
+      padding:
+        12px 14px;
+
+      border:
+        1px solid #c7c7cc;
+
+      border-radius:
+        10px;
+
+      background:
+        #ffffff;
+
+      color:
+        #1c1c1e;
+
+      font-size:
+        16px;
+
+      box-sizing:
+        border-box;
+
+      outline:
+        none;
+
+    }
+
+
+    .login-input:focus {
+
+      border-color:
+        #007aff;
+
+      box-shadow:
+        0 0 0 3px
+        rgba(0,122,255,.12);
+
+    }
+
+
+    /* ==================================================
+       メッセージ
+    ================================================== */
+
+    #loginMessage {
+
+      min-height:
+        22px;
+
+      margin:
+        12px 0;
+
+      text-align:
+        center;
+
+      font-size:
+        14px;
+
+      line-height:
+        1.5;
+
+      color:
+        #ff3b30;
+
+    }
+
+
+    /* ==================================================
+       新規職場登録
+    ================================================== */
+
+    #newOrganizationButton {
+
+      display:
+        block;
+
+      width:
+        100%;
+
+      margin:
+        18px 0 0;
+
+      padding:
+        12px;
+
+      border:
+        none;
+
+      background:
+        transparent;
+
+      color:
+        #007aff;
+
+      font-size:
+        15px;
+
+      font-weight:
+        600;
+
+      cursor:
+        pointer;
+
+    }
+
+
+    #newOrganizationForm {
+
+      display:
+        none;
+
+      margin-top:
+        20px;
+
+      padding-top:
+        20px;
+
+      border-top:
+        1px solid #d1d1d6;
+
+    }
+
+
+    .organization-form-title {
+
+      margin:
+        0 0 14px;
+
+      font-size:
+        18px;
+
+      font-weight:
+        700;
+
+      text-align:
+        center;
+
+      color:
+        #1c1c1e;
+
+    }
+
+
+    .organization-input {
+
+      display:
+        block;
+
+      width:
+        100%;
+
+      min-height:
+        46px;
+
+      margin:
+        8px 0;
+
+      padding:
+        11px 13px;
+
+      border:
+        1px solid #c7c7cc;
+
+      border-radius:
+        10px;
+
+      font-size:
+        16px;
+
+      box-sizing:
+        border-box;
+
+    }
+
+
+    .organization-form-note {
+
+      margin:
+        10px 0;
+
+      font-size:
+        13px;
+
+      line-height:
+        1.5;
+
+      color:
+        #6e6e73;
+
+    }
+
+
+    #createOrganizationButton {
+
+      display:
+        block;
+
+      width:
+        100%;
+
+      min-height:
+        48px;
+
+      margin:
+        12px 0 8px;
+
+      border:
+        none;
+
+      border-radius:
+        12px;
+
+      background:
+        #007aff;
+
+      color:
+        #ffffff;
+
+      font-size:
+        16px;
+
+      font-weight:
+        600;
+
+      cursor:
+        pointer;
+
+    }
+
+
+    #cancelOrganizationButton {
+
+      display:
+        block;
+
+      width:
+        100%;
+
+      padding:
+        10px;
+
+      border:
+        none;
+
+      background:
+        transparent;
+
+      color:
+        #007aff;
+
+      font-size:
+        15px;
+
+      cursor:
+        pointer;
+
     }
 
 
@@ -175,514 +622,54 @@
     ================================================== */
 
     #inviteRegisterView {
-      width: 100%;
-      box-sizing: border-box;
-      text-align: left;
-    }
 
-
-    #inviteRegisterView .invite-register-title {
-      margin: 0 0 16px;
-      text-align: center;
-      font-size: 21px;
-      font-weight: 700;
-      color: #222222;
-    }
-
-
-    .invite-social-title {
-
-      display: flex;
-
-      align-items: center;
-
-      gap: 8px;
-
-      margin: 16px 0 11px;
-    }
-
-
-    .invite-social-title-line {
-
-      flex: 1;
-
-      height: 1px;
-
-      background: #e5e5ea;
-    }
-
-
-    .invite-social-title-text {
-
-      color: #888888;
-
-      font-size: 11px;
-
-      white-space: nowrap;
-    }
-
-
-    .invite-social-buttons {
-
-      display: flex;
-
-      justify-content: center;
-
-      align-items: flex-start;
-
-      gap: 26px;
-
-      margin-bottom: 5px;
-    }
-
-
-    #inviteGoogleButton svg {
-      width: 22px;
-      height: 22px;
-    }
-
-
-    #inviteAppleButton svg {
-      width: 22px;
-      height: 25px;
-    }
-
-
-    #inviteAzureButton svg {
-      width: 22px;
-      height: 22px;
-    }
-
-
-    #inviteRegisterMessage {
-
-      margin: 8px 0 0;
-
-      min-height: 16px;
-
-      text-align: center;
-
-      color: #666666;
-
-      font-size: 12px;
-
-      line-height: 1.5;
-    }
-
-
-    /* ==================================================
-       ソーシャルログイン
-    ================================================== */
-
-    .social-login-button {
-
-      width: 48px !important;
-      height: 48px !important;
-
-      min-width: 48px !important;
-      min-height: 48px !important;
-
-      border:
-        1px solid #dedee2 !important;
-
-      border-radius: 50% !important;
-
-      background: #ffffff !important;
-
-      color: #222222 !important;
-
-      box-shadow: none !important;
-
-      display: flex !important;
-
-      align-items: center !important;
-      justify-content: center !important;
-
-      padding: 0 !important;
-    }
-
-
-    .social-login-button:active {
-      background: #f5f5f7 !important;
-    }
-
-
-    /* ==================================================
-       ソーシャルログイン名
-    ================================================== */
-
-    .social-login-label {
-
-      margin-top: 5px;
-
-      font-size: 11px;
-
-      line-height: 1.2;
-
-      color: #555555;
-
-      white-space: nowrap;
-    }
-
-
-    /* ==================================================
-       ソーシャルログイン全体
-    ================================================== */
-
-    .social-login-item {
-
-      display: flex;
-
-      flex-direction: column;
-
-      align-items: center;
-
-      justify-content: center;
-    }
-
-
-    /* ==================================================
-       Google
-    ================================================== */
-
-    #googleLoginButton svg,
-    #inviteGoogleButton svg {
-      width: 22px;
-      height: 22px;
-    }
-
-
-    /* ==================================================
-       Apple
-    ================================================== */
-
-    #appleLoginButton svg,
-    #inviteAppleButton svg {
-
-      width: 22px;
-      height: 25px;
-    }
-
-
-    /* ==================================================
-       Azure
-    ================================================== */
-
-    #azureLoginButton svg,
-    #inviteAzureButton svg {
-
-      width: 22px;
-      height: 22px;
-    }
-
-
-    /* ==================================================
-       Passkey
-    ================================================== */
-
-    #passkeyLoginButton {
-
-      min-height: 44px !important;
-
-      border:
-        1px solid #b8b8bd !important;
-
-      border-radius: 9px !important;
-
-      background: #ffffff !important;
-
-      color: #444444 !important;
-
-      font-size: 14px !important;
-
-      font-weight: 600 !important;
-
-      box-shadow: none !important;
-    }
-
-
-    #passkeyLoginButton:active {
-      background: #f5f5f7 !important;
-    }
-
-
-    /* ==================================================
-       新規職場登録ボタン
-    ================================================== */
-
-    #newOrganizationButton {
-
-      min-height: 44px !important;
-
-      border:
-        1px solid #b8b8bd !important;
-
-      border-radius: 9px !important;
-
-      background: #ffffff !important;
-
-      color: #444444 !important;
-
-      font-size: 14px !important;
-
-      font-weight: 600 !important;
-
-      box-shadow: none !important;
-    }
-
-
-    #newOrganizationButton:active {
-      background: #f5f5f7 !important;
-    }
-
-
-    /* ==================================================
-       新規登録画面
-    ================================================== */
-
-    #newOrganizationForm {
-      max-height:
-        calc(100svh - 50px);
-
-      overflow: hidden !important;
-
-      touch-action: none;
-    }
-
-
-    /* ==================================================
-       アプリ画面
-       Shift+ロゴ
-    ================================================== */
-
-    .app-header-brand {
-
-      display: flex;
-
-      align-items: center;
-
-      gap: 8px;
-
-      min-width: 0;
-
-      flex-shrink: 1;
-    }
-
-
-    .app-header-logo {
-
-      display: block;
-
-      width: 72px;
-
-      max-width: 72px;
-
-      height: auto;
-
-      object-fit: contain;
-
-      flex-shrink: 0;
-    }
-
-
-    /* ==================================================
-       勤務表ページ
-    ================================================== */
-
-    .schedule-brand {
-
-      display: flex;
-
-      flex-direction: column;
-
-      align-items: flex-start;
-
-      width: calc(100% + 10px);
-
-      position: relative;
-
-      left: -10px;
-
-      padding:
-        6px
-        0
-        2px;
-
-      box-sizing: border-box;
-    }
-
-
-    .schedule-logo {
-
-      display: block;
-
-      width: auto;
-
-      height: 22px;
-
-      max-width: 100px;
-
-      object-fit: contain;
-
-      flex-shrink: 0;
-    }
-
-
-    .schedule-organization-title {
-
-      margin-top: 2px;
-
-      font-size: 18px;
-
-      font-weight: 600;
-
-      line-height: 1.3;
-
-      color: #333333;
-
-      white-space: nowrap;
-
-      overflow: hidden;
-
-      text-overflow: ellipsis;
-
-      max-width: 100%;
-
-      min-height: 23px;
-    }
-
-
-    /* ==================================================
-       月送り
-    ================================================== */
-
-    #schedulePage .month-bar {
-
-      width: 100%;
-
-      box-sizing: border-box;
-
-      display: flex;
-
-      align-items: center;
-
-      justify-content: center;
-    }
-
-
-    /* ==================================================
-       小さい画面
-    ================================================== */
-
-    @media (max-height: 700px) {
-
-      #loginPage > div {
-        padding: 12px 16px 10px !important;
-      }
-
-
-      #loginPage #loginMainView > div:first-child {
-
-        margin-top: 18px !important;
-
-        margin-bottom: 18px !important;
-
-        min-height: 100px !important;
-      }
-
-
-      #passkeyLoginButton,
-      #newOrganizationButton {
-        min-height: 40px !important;
-      }
-
-
-      .social-login-button {
-
-        width: 44px !important;
-        height: 44px !important;
-
-        min-width: 44px !important;
-        min-height: 44px !important;
-      }
+      display:
+        none;
 
     }
 
 
-    /* ==================================================
-       非常に低い画面
-    ================================================== */
+    #loginMainView {
 
-    @media (max-height: 620px) {
-
-      #loginPage > div {
-        padding: 8px 14px 6px !important;
-      }
-
-
-      #loginPage #loginMainView > div:first-child {
-
-        margin-top: 12px !important;
-
-        margin-bottom: 12px !important;
-
-        min-height: 75px !important;
-      }
-
-
-      #passkeyLoginButton,
-      #newOrganizationButton {
-        min-height: 37px !important;
-      }
-
-
-      .social-login-button {
-
-        width: 40px !important;
-        height: 40px !important;
-
-        min-width: 40px !important;
-        min-height: 40px !important;
-      }
+      display:
+        block;
 
     }
 
 
-    /* ==================================================
-       さらに低い画面
-    ================================================== */
+    .invite-title {
 
-    @media (max-height: 560px) {
+      margin:
+        0 0 12px;
 
-      #loginPage > div {
-        padding: 5px 12px 4px !important;
-      }
+      text-align:
+        center;
 
+      font-size:
+        21px;
 
-      #loginPage #loginMainView > div:first-child {
+      font-weight:
+        700;
 
-        margin-top: 8px !important;
-
-        margin-bottom: 8px !important;
-
-        min-height: 55px !important;
-      }
+    }
 
 
-      #passkeyLoginButton,
-      #newOrganizationButton {
-        min-height: 34px !important;
-      }
+    .invite-text {
 
+      margin:
+        0 0 18px;
 
-      .social-login-button {
+      text-align:
+        center;
 
-        width: 36px !important;
-        height: 36px !important;
+      font-size:
+        14px;
 
-        min-width: 36px !important;
-        min-height: 36px !important;
-      }
+      line-height:
+        1.6;
+
+      color:
+        #6e6e73;
 
     }
 
@@ -691,176 +678,49 @@
        スマートフォン
     ================================================== */
 
-    @media (max-width: 600px) {
+    @media (
+      max-width: 600px
+    ) {
 
-      .schedule-brand {
+      #loginPage {
+
+        align-items:
+          flex-start;
+
         padding:
-          5px
-          8px
-          2px;
-      }
-
-
-      .schedule-logo {
-
-        height: 20px;
-
-        max-width: 92px;
-      }
-
-
-      .schedule-organization-title {
-
-        font-size: 17px;
-
-        min-height: 22px;
-      }
-
-    }
-
-
-    /* ==================================================
-       Shift+ ローディング画面
-    ================================================== */
-
-    #loadingScreen {
-
-      position: fixed;
-
-      inset: 0;
-
-      z-index: 99999;
-
-      display: none;
-
-      align-items: center;
-
-      justify-content: center;
-
-      flex-direction: column;
-
-      background: #ffffff;
-
-      color: #333333;
-
-    }
-
-
-    .loadingLogo {
-
-      font-size: 38px;
-
-      font-weight: 700;
-
-      letter-spacing: 1px;
-
-      margin-bottom: 18px;
-
-    }
-
-
-    .loadingLogo span {
-
-      font-weight: 800;
-
-    }
-
-
-    .loadingDots {
-
-      display: flex;
-
-      align-items: center;
-
-      justify-content: center;
-
-      gap: 8px;
-
-      height: 20px;
-
-    }
-
-
-    .loadingDots span {
-
-      width: 9px;
-
-      height: 9px;
-
-      border-radius: 50%;
-
-      background: #007aff;
-
-      animation:
-        shiftLoadingDot
-        1.2s
-        infinite
-        ease-in-out;
-
-    }
-
-
-    .loadingDots span:nth-child(1) {
-      animation-delay: 0s;
-    }
-
-
-    .loadingDots span:nth-child(2) {
-      animation-delay: 0.15s;
-    }
-
-
-    .loadingDots span:nth-child(3) {
-      animation-delay: 0.30s;
-    }
-
-
-    @keyframes shiftLoadingDot {
-
-      0%,
-      60%,
-      100% {
-
-        transform: translateY(0);
-
-        opacity: 0.35;
+          16px;
 
       }
 
-      30% {
 
-        transform: translateY(-7px);
+      .login-container {
 
-        opacity: 1;
+        margin-top:
+          20px;
+
+        padding:
+          24px 18px 28px;
+
+        border-radius:
+          16px;
 
       }
 
-    }
+
+      .login-logo {
+
+        width:
+          150px;
+
+      }
 
 
-    .loadingText {
+      .login-title {
 
-      margin-top: 12px;
+        font-size:
+          22px;
 
-      font-size: 14px;
-
-      color: #777777;
-
-    }
-
-
-    body.dark-mode #loadingScreen {
-
-      background: #111111;
-
-      color: #ffffff;
-
-    }
-
-
-    body.dark-mode .loadingText {
-
-      color: #aaaaaa;
+      }
 
     }
 
@@ -872,2223 +732,916 @@
 <body>
 
 
-<!-- ==================================================
-     ログイン画面
-================================================== -->
-
-<div
-  id="loginPage"
-  style="
-    position:fixed;
-    top:0;
-    right:0;
-    bottom:0;
-    left:0;
-
-    width:100vw;
-    height:100svh;
-
-    min-height:100svh;
-    max-height:100svh;
-
-    display:flex;
-    align-items:center;
-    justify-content:center;
-
-    margin:0;
-
-    padding:
-      max(8px, env(safe-area-inset-top))
-      max(10px, env(safe-area-inset-right))
-      max(8px, env(safe-area-inset-bottom))
-      max(10px, env(safe-area-inset-left));
-
-    box-sizing:border-box;
-
-    background:#f2f2f7;
-
-    overflow:hidden;
-
-    overscroll-behavior:none;
-    touch-action:none;
-  "
->
-
-
   <!-- ==================================================
-       ログインカード
+       ログイン画面
   ================================================== -->
 
   <div
-    style="
-      width:100%;
-      max-width:390px;
-
-      max-height:
-        calc(
-          100svh
-          - env(safe-area-inset-top)
-          - env(safe-area-inset-bottom)
-          - 16px
-        );
-
-      background:#ffffff;
-
-      border-radius:18px;
-
-      padding:18px 18px 14px;
-
-      box-sizing:border-box;
-
-      box-shadow:
-        0 2px 12px rgba(0,0,0,0.06);
-
-      overflow:hidden;
-
-      flex-shrink:1;
-
-      touch-action:none;
-    "
+    id="loginPage"
+    style="display:flex;"
   >
 
-
-    <!-- ==================================================
-         通常ログイン
-    ================================================== -->
-
     <div
-      id="loginMainView"
-      style="
-        width:100%;
-        box-sizing:border-box;
-        text-align:center;
-      "
+      class="login-container"
     >
 
 
       <!-- ==================================================
-           ロゴ
+           ログイン本体
       ================================================== -->
 
       <div
-        style="
-          display:flex;
-          justify-content:center;
-          align-items:center;
-
-          margin:0 0 4px;
-
-          box-sizing:border-box;
-        "
+        id="loginMainView"
       >
+
 
         <img
+          class="login-logo"
           src="./icons/shift-plus-logo.PNG"
           alt="Shift+"
-
-          style="
-            display:block;
-
-            width:150px;
-            max-width:55vw;
-            height:auto;
-
-            object-fit:contain;
-          "
         >
 
-      </div>
+
+        <h1
+          class="login-title"
+        >
+          Shift+
+        </h1>
 
 
-      <!-- ==================================================
-           ログインタイトル
-      ================================================== -->
-
-      <div
-        style="
-          margin:2px 0 18px;
-
-          color:#222222;
-
-          font-size:26px;
-          font-weight:700;
-
-          line-height:1.3;
-        "
-      >
-        ログイン
-      </div>
+        <p
+          class="login-subtitle"
+        >
+          勤務表管理システム
+        </p>
 
 
-      <!-- ==================================================
-           ログイン方法
-      ================================================== -->
-
-      <div
-        style="
-          width:100%;
-          max-width:340px;
-
-          margin:0 auto 14px;
-
-          display:flex;
-
-          align-items:center;
-
-          gap:8px;
-
-          box-sizing:border-box;
-        "
-      >
+        <!-- ==================================================
+             メッセージ
+        ================================================== -->
 
         <div
-          style="
-            flex:1;
-            height:1px;
-            background:#e5e5ea;
-          "
+          id="loginMessage"
+          aria-live="polite"
         ></div>
 
-        <span
-          style="
-            color:#888888;
-            font-size:11px;
-            white-space:nowrap;
-          "
+
+        <!-- ==================================================
+             Google
+        ================================================== -->
+
+        <button
+          id="googleLoginButton"
+          class="login-button"
+          type="button"
         >
-          ログイン方法
-        </span>
+          Googleでログイン
+        </button>
+
+
+        <!-- ==================================================
+             Passkey
+        ================================================== -->
+
+        <button
+          id="passkeyLoginButton"
+          class="login-button"
+          type="button"
+        >
+          Face ID・指紋でログイン
+        </button>
+
+
+        <!-- ==================================================
+             メールログイン
+        ================================================== -->
 
         <div
-          style="
-            flex:1;
-            height:1px;
-            background:#e5e5ea;
-          "
-        ></div>
-
-      </div>
-
-
-      <!-- ==================================================
-           Google / Apple / Azure
-      ================================================== -->
-
-      <div
-        style="
-          width:100%;
-          max-width:340px;
-
-          margin:0 auto 18px;
-
-          display:flex;
-
-          justify-content:center;
-          align-items:flex-start;
-
-          gap:34px;
-
-          box-sizing:border-box;
-        "
-      >
-
-
-        <!-- Google -->
-
-        <div
-          style="
-            display:flex;
-            flex-direction:column;
-            align-items:center;
-
-            gap:6px;
-          "
+          class="login-divider"
         >
-
-          <button
-            type="button"
-
-            id="googleLoginButton"
-
-            class="social-login-button"
-
-            aria-label="Googleでログイン"
-            title="Googleでログイン"
-
-            style="
-              width:56px;
-              height:56px;
-
-              padding:0;
-
-              display:flex;
-              align-items:center;
-              justify-content:center;
-
-              border:1px solid #d1d1d6;
-
-              border-radius:50%;
-
-              background:#ffffff;
-
-              cursor:pointer;
-
-              box-sizing:border-box;
-
-              box-shadow:none;
-
-              appearance:none;
-              -webkit-appearance:none;
-            "
-          >
-
-            <svg
-              width="23"
-              height="23"
-              viewBox="0 0 48 48"
-              aria-hidden="true"
-            >
-
-              <path
-                fill="#4285F4"
-                d="M46.98 24.55c0-1.64-.15-3.22-.43-4.73H24v9.08h12.86c-.55 2.96-2.18 5.46-4.64 7.14l7.52 5.84C44.15 37.7 46.98 31.66 46.98 24.55z"
-              />
-
-              <path
-                fill="#34A853"
-                d="M24 48c6.48 0 11.92-2.14 15.9-5.82l-7.52-5.84c-2.08 1.4-4.73 2.23-8.38 2.23-6.28 0-11.57-3.57-13.48-8.78l-7.96 6.18C6.51 42.62 14.61 48 24 48z"
-              />
-
-              <path
-                fill="#FBBC05"
-                d="M10.52 28.4A14.47 14.47 0 0 1 9.5 24c0-1.53.26-3.02.73-4.4l-7.96-6.18A23.9 23.9 0 0 0 0 24c0 3.84.92 7.48 2.56 10.58l7.96-6.18z"
-              />
-
-              <path
-                fill="#EA4335"
-                d="M24 9.5c3.54 0 6.72 1.22 9.22 3.6l6.84-6.84C35.9 2.56 30.47 0 24 0 14.61 0 6.51 5.38 2.56 13.22l7.96 6.18C12.43 13.07 17.72 9.5 24 9.5z"
-              />
-
-            </svg>
-
-          </button>
-
-          <span
-            style="
-              color:#555555;
-              font-size:11px;
-              line-height:1;
-            "
-          >
-            Google
-          </span>
-
+          またはメールアドレスでログイン
         </div>
-
-
-        <!-- Apple -->
-
-        <div
-          style="
-            display:flex;
-            flex-direction:column;
-            align-items:center;
-
-            gap:6px;
-          "
-        >
-
-          <button
-            type="button"
-
-            id="appleLoginButton"
-
-            class="social-login-button"
-
-            aria-label="Appleでログイン"
-            title="Appleでログイン"
-
-            style="
-              width:56px;
-              height:56px;
-
-              padding:0;
-
-              display:flex;
-              align-items:center;
-              justify-content:center;
-
-              border:1px solid #d1d1d6;
-
-              border-radius:50%;
-
-              background:#ffffff;
-
-              cursor:pointer;
-
-              box-sizing:border-box;
-
-              box-shadow:none;
-
-              appearance:none;
-              -webkit-appearance:none;
-            "
-          >
-
-            <svg
-              width="23"
-              height="27"
-              viewBox="0 0 24 28"
-              aria-hidden="true"
-            >
-
-              <path
-                fill="#222222"
-                d="M19.67 14.93c-.03-3.1 2.53-4.6 2.65-4.67-1.45-2.12-3.7-2.41-4.48-2.44-1.9-.2-3.74 1.13-4.7 1.13-.98 0-2.5-1.1-4.1-1.07-2.1.03-4.04 1.22-5.13 3.08-2.2 3.8-.56 9.39 1.55 12.47 1.03 1.5 2.24 3.16 3.84 3.1 1.54-.06 2.12-1 3.98-1 1.85 0 2.37 1 3.98.96 1.65-.03 2.69-1.5 3.68-3.01 1.16-1.74 1.64-3.42 1.67-3.5-.04-.01-3.2-1.22-3.24-5.05ZM16.58 5.81c.85-1.04 1.43-2.48 1.27-3.91-1.23.05-2.72.82-3.6 1.86-.79.91-1.48 2.38-1.3 3.78 1.38.1 2.78-.7 3.63-1.73Z"
-              />
-
-            </svg>
-
-          </button>
-
-          <span
-            style="
-              color:#555555;
-              font-size:11px;
-              line-height:1;
-            "
-          >
-            Apple
-          </span>
-
-        </div>
-
-
-        <!-- Azure -->
-
-        <div
-          style="
-            display:flex;
-            flex-direction:column;
-            align-items:center;
-
-            gap:6px;
-          "
-        >
-
-          <button
-            type="button"
-
-            id="azureLoginButton"
-
-            class="social-login-button"
-
-            aria-label="Azureでログイン"
-            title="Azureでログイン"
-
-            style="
-              width:56px;
-              height:56px;
-
-              padding:0;
-
-              display:flex;
-              align-items:center;
-              justify-content:center;
-
-              border:1px solid #d1d1d6;
-
-              border-radius:50%;
-
-              background:#ffffff;
-
-              cursor:pointer;
-
-              box-sizing:border-box;
-
-              box-shadow:none;
-
-              appearance:none;
-              -webkit-appearance:none;
-            "
-          >
-
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
-
-              <path
-                d="M4 4h7l-4 16H3L4 4Z"
-                fill="#555555"
-              />
-
-              <path
-                d="M11 4h5l5 16h-6l-4-16Z"
-                fill="#888888"
-              />
-
-              <path
-                d="M8 16h8l2 4H7l1-4Z"
-                fill="#444444"
-              />
-
-            </svg>
-
-          </button>
-
-          <span
-            style="
-              color:#555555;
-              font-size:11px;
-              line-height:1;
-            "
-          >
-            Azure
-          </span>
-
-        </div>
-
-      </div>
-
-
-      <!-- ==================================================
-           メールログインエリア
-      ================================================== -->
-
-      <div
-        style="
-          width:100%;
-          max-width:340px;
-
-          margin:0 auto;
-
-          text-align:left;
-
-          box-sizing:border-box;
-        "
-      >
-
-        <!-- メールアドレス -->
-
-        <label
-          for="loginEmailInput"
-
-          style="
-            display:block;
-
-            margin:0 0 6px;
-
-            color:#333333;
-
-            font-size:13px;
-            font-weight:600;
-
-            line-height:1.4;
-          "
-        >
-          メールアドレス
-        </label>
 
 
         <input
           id="loginEmailInput"
-
+          class="login-input"
           type="email"
-
-          placeholder="メールアドレスを入力"
-
+          placeholder="メールアドレス"
           autocomplete="email"
-
-          style="
-            display:block;
-
-            width:100%;
-            height:44px;
-
-            padding:0 13px;
-
-            border:1px solid #d1d1d6;
-
-            border-radius:9px;
-
-            background:#ffffff;
-
-            color:#333333;
-
-            font-size:14px;
-
-            box-sizing:border-box;
-
-            outline:none;
-
-            appearance:none;
-            -webkit-appearance:none;
-
-            box-shadow:none;
-          "
         >
-
-
-        <!-- パスワード -->
-
-        <label
-          for="loginPasswordInput"
-
-          style="
-            display:block;
-
-            margin:13px 0 6px;
-
-            color:#333333;
-
-            font-size:13px;
-            font-weight:600;
-
-            line-height:1.4;
-          "
-        >
-          パスワード
-        </label>
 
 
         <input
           id="loginPasswordInput"
-
+          class="login-input"
           type="password"
-
-          placeholder="パスワードを入力"
-
+          placeholder="パスワード"
           autocomplete="current-password"
-
-          style="
-            display:block;
-
-            width:100%;
-            height:44px;
-
-            padding:0 13px;
-
-            border:1px solid #d1d1d6;
-
-            border-radius:9px;
-
-            background:#ffffff;
-
-            color:#333333;
-
-            font-size:14px;
-
-            box-sizing:border-box;
-
-            outline:none;
-
-            appearance:none;
-            -webkit-appearance:none;
-
-            box-shadow:none;
-          "
         >
 
 
-        <!-- メールログイン -->
-
         <button
           id="emailLoginButton"
-
+          class="login-button"
           type="button"
-
-          style="
-            display:flex;
-
-            width:100%;
-            height:44px;
-
-            margin-top:11px;
-
-            align-items:center;
-            justify-content:center;
-
-            border:1px solid #b8b8bd;
-
-            border-radius:9px;
-
-            background:#ffffff;
-
-            color:#444444;
-
-            font-size:14px;
-            font-weight:600;
-
-            cursor:pointer;
-
-            box-sizing:border-box;
-
-            box-shadow:none;
-
-            appearance:none;
-            -webkit-appearance:none;
-          "
         >
           メールアドレスでログイン
         </button>
 
 
-        <!-- Face ID / 指紋 -->
+        <!-- ==================================================
+             新規職場登録
+        ================================================== -->
 
         <button
+          id="newOrganizationButton"
           type="button"
-
-          id="passkeyLoginButton"
-
-          style="
-            display:flex;
-
-            width:100%;
-            height:44px;
-
-            margin-top:8px;
-
-            align-items:center;
-            justify-content:center;
-
-            gap:8px;
-
-            border:1px solid #b8b8bd;
-
-            border-radius:9px;
-
-            background:#ffffff;
-
-            color:#444444;
-
-            font-size:14px;
-            font-weight:600;
-
-            cursor:pointer;
-
-            box-sizing:border-box;
-
-            box-shadow:none;
-
-            appearance:none;
-            -webkit-appearance:none;
-          "
         >
-
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-          >
-
-            <path
-              d="M7 8.5A5 5 0 0 1 17 8.5"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.8"
-              stroke-linecap="round"
-            />
-
-            <path
-              d="M5 11a7 7 0 0 1 14 0"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.8"
-              stroke-linecap="round"
-            />
-
-            <path
-              d="M8 13.5c0-2.2 1.8-4 4-4s4 1.8 4 4"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.8"
-              stroke-linecap="round"
-            />
-
-            <path
-              d="M10 17c0-1.1.9-2 2-2s2 .9 2 2"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.8"
-              stroke-linecap="round"
-            />
-
-            <path
-              d="M12 19.5v-1"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.8"
-              stroke-linecap="round"
-            />
-
-          </svg>
-
-          Face ID / 指紋でログイン
-
+          新しい職場を登録
         </button>
 
-      </div>
-
-
-      <!-- ==================================================
-           Face ID説明
-      ================================================== -->
-
-      <p
-        style="
-          margin:4px auto 0;
-
-          color:#888888;
-
-          font-size:10px;
-
-          line-height:1.4;
-
-          text-align:center;
-
-          max-width:340px;
-        "
-      >
-        この端末に登録したFace ID・指紋などで<br>
-        簡単にログインできます。
-      </p>
-
-
-      <!-- ==================================================
-           ログインメッセージ
-      ================================================== -->
-
-      <p
-        id="loginMessage"
-        style="
-          min-height:16px;
-
-          margin:6px auto 0;
-
-          color:#777777;
-
-          font-size:11px;
-
-          line-height:1.4;
-
-          text-align:center;
-
-          max-width:340px;
-        "
-      ></p>
-
-
-      <!-- ==================================================
-           はじめての方
-      ================================================== -->
-
-      <div
-        style="
-          width:100%;
-          max-width:340px;
-
-          margin:8px auto 7px;
-
-          display:flex;
-
-          align-items:center;
-
-          gap:8px;
-
-          box-sizing:border-box;
-        "
-      >
-
-        <div
-          style="
-            flex:1;
-            height:1px;
-            background:#e5e5ea;
-          "
-        ></div>
-
-        <span
-          style="
-            color:#888888;
-
-            font-size:11px;
-
-            white-space:nowrap;
-          "
-        >
-          はじめての方
-        </span>
-
-        <div
-          style="
-            flex:1;
-            height:1px;
-            background:#e5e5ea;
-          "
-        ></div>
-
-      </div>
-
-
-      <!-- ==================================================
-           職場を新規登録
-      ================================================== -->
-
-      <button
-        type="button"
-
-        id="newOrganizationButton"
-
-        style="
-          display:flex;
-
-          width:100%;
-          max-width:340px;
-
-          height:44px;
-
-          margin:0 auto;
-
-          align-items:center;
-          justify-content:center;
-
-          border:1px solid #b8b8bd;
-
-          border-radius:9px;
-
-          background:#ffffff;
-
-          color:#444444;
-
-          font-size:14px;
-          font-weight:600;
-
-          cursor:pointer;
-
-          box-sizing:border-box;
-
-          box-shadow:none;
-
-          appearance:none;
-          -webkit-appearance:none;
-        "
-      >
-        職場を新規登録
-      </button>
-
-
-      <p
-        style="
-          margin:4px 0 0;
-
-          color:#888888;
-
-          font-size:10px;
-
-          line-height:1.4;
-
-          text-align:center;
-        "
-      >
-        はじめて勤務表を作成する方はこちら
-      </p>
-
-
-    </div>
-
-
-    <!-- ==================================================
-         招待リンク専用・職員登録画面
-    ================================================== -->
-
-    <div
-      id="inviteRegisterView"
-      style="
-        display:none;
-      "
-    >
-
-      <h2 class="invite-register-title">
-        職員アカウント登録
-      </h2>
-
-
-      <div class="invite-social-title">
-
-        <div class="invite-social-title-line"></div>
-
-        <span class="invite-social-title-text">
-          登録方法を選択
-        </span>
-
-        <div class="invite-social-title-line"></div>
-
-      </div>
-
-
-      <div class="invite-social-buttons">
-
-
-        <!-- Google -->
-
-        <div class="social-login-item">
-
-          <button
-            type="button"
-            id="inviteGoogleButton"
-            class="social-login-button"
-            aria-label="Googleで登録"
-            title="Googleで登録"
-          >
-
-            <svg
-              width="22"
-              height="22"
-              viewBox="0 0 48 48"
-              aria-hidden="true"
-            >
-
-              <path
-                fill="#4285F4"
-                d="M46.98 24.55c0-1.64-.15-3.22-.43-4.73H24v9.08h12.86c-.55 2.96-2.18 5.46-4.64 7.14l7.52 5.84C44.15 37.7 46.98 31.66 46.98 24.55z"
-              />
-
-              <path
-                fill="#34A853"
-                d="M24 48c6.48 0 11.92-2.14 15.9-5.82l-7.52-5.84c-2.08 1.4-4.73 2.23-8.38 2.23-6.28 0-11.57-3.57-13.48-8.78l-7.96 6.18C6.51 42.62 14.61 48 24 48z"
-              />
-
-              <path
-                fill="#FBBC05"
-                d="M10.52 28.4A14.47 14.47 0 0 1 9.5 24c0-1.53.26-3.02.73-4.4l-7.96-6.18A23.9 23.9 0 0 0 0 24c0 3.84.92 7.48 2.56 10.58l7.96-6.18z"
-              />
-
-              <path
-                fill="#EA4335"
-                d="M24 9.5c3.54 0 6.72 1.22 9.22 3.6l6.84-6.84C35.9 2.56 30.47 0 24 0 14.61 0 6.51 5.38 2.56 13.22l7.96 6.18C12.43 13.07 17.72 9.5 24 9.5z"
-              />
-
-            </svg>
-
-          </button>
-
-          <span class="social-login-label">
-            Google
-          </span>
-
-        </div>
-
-
-        <!-- Apple -->
-
-        <div class="social-login-item">
-
-          <button
-            type="button"
-            id="inviteAppleButton"
-            class="social-login-button"
-            aria-label="Appleで登録"
-            title="Appleで登録"
-          >
-
-            <svg
-              width="22"
-              height="25"
-              viewBox="0 0 24 28"
-              aria-hidden="true"
-            >
-
-              <path
-                fill="#222222"
-                d="M19.67 14.93c-.03-3.1 2.53-4.6 2.65-4.67-1.45-2.12-3.7-2.41-4.48-2.44-1.9-.2-3.74 1.13-4.7 1.13-.98 0-2.5-1.1-4.1-1.07-2.1.03-4.04 1.22-5.13 3.08-2.2 3.8-.56 9.39 1.55 12.47 1.03 1.5 2.24 3.16 3.84 3.1 1.54-.06 2.12-1 3.98-1 1.85 0 2.37 1 3.98.96 1.65-.03 2.69-1.5 3.68-3.01 1.16-1.74 1.64-3.42 1.67-3.5-.04-.01-3.2-1.22-3.24-5.05ZM16.58 5.81c.85-1.04 1.43-2.48 1.27-3.91-1.23.05-2.72.82-3.6 1.86-.79.91-1.48 2.38-1.3 3.78 1.38.1 2.78-.7 3.63-1.73Z"
-              />
-
-            </svg>
-
-          </button>
-
-          <span class="social-login-label">
-            Apple
-          </span>
-
-        </div>
-
-
-        <!-- Azure -->
-
-        <div class="social-login-item">
-
-          <button
-            type="button"
-            id="inviteAzureButton"
-            class="social-login-button"
-            aria-label="Azureで登録"
-            title="Azureで登録"
-          >
-
-            <svg
-              width="22"
-              height="22"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
-
-              <path
-                d="M4 4h7l-4 16H3L4 4Z"
-                fill="#555555"
-              />
-
-              <path
-                d="M11 4h5l5 16h-6l-4-16Z"
-                fill="#888888"
-              />
-
-              <path
-                d="M8 16h8l2 4H7l1-4Z"
-                fill="#444444"
-              />
-
-            </svg>
-
-          </button>
-
-          <span class="social-login-label">
-            Azure
-          </span>
-
-        </div>
-
-      </div>
-
-
-      <p id="inviteRegisterMessage"></p>
-
-    </div>
 
         <!-- ==================================================
-         新規職場登録画面
-    ================================================== -->
-
-    <div
-      id="newOrganizationForm"
-      style="
-        display:none;
-        width:100%;
-        box-sizing:border-box;
-      "
-    >
-
-      <div
-        style="
-          text-align:center;
-
-          margin-bottom:18px;
-        "
-      >
+             新規職場登録フォーム
+        ================================================== -->
 
         <div
-          style="
-            font-size:22px;
-            font-weight:700;
-            color:#222222;
-
-            margin-bottom:6px;
-          "
+          id="newOrganizationForm"
         >
-          職場を新規登録
+
+          <h2
+            class="organization-form-title"
+          >
+            新しい職場を登録
+          </h2>
+
+
+          <input
+            id="organizationNameInput"
+            class="organization-input"
+            type="text"
+            placeholder="職場名"
+            autocomplete="organization"
+          >
+
+
+          <input
+            id="organizationStaffNameInput"
+            class="organization-input"
+            type="text"
+            placeholder="あなたの名前"
+            autocomplete="name"
+          >
+
+
+          <p
+            class="organization-form-note"
+          >
+            Googleアカウントまたはメールアドレスで
+            職場を登録できます。
+          </p>
+
+
+          <!-- Googleで職場登録 -->
+
+          <button
+            id="createOrganizationGoogleButton"
+            class="login-button"
+            type="button"
+          >
+            Googleで職場を登録
+          </button>
+
+
+          <div
+            class="login-divider"
+          >
+            または
+          </div>
+
+
+          <!-- メールアドレス -->
+
+          <input
+            id="registerEmailInput"
+            class="organization-input"
+            type="email"
+            placeholder="メールアドレス"
+            autocomplete="email"
+          >
+
+
+          <!-- パスワード -->
+
+          <input
+            id="registerPasswordInput"
+            class="organization-input"
+            type="password"
+            placeholder="パスワード（6文字以上）"
+            autocomplete="new-password"
+          >
+
+
+          <button
+            id="emailRegisterButton"
+            class="login-button"
+            type="button"
+          >
+            メールアドレスで職場を登録
+          </button>
+
+
+          <button
+            id="cancelOrganizationButton"
+            type="button"
+          >
+            キャンセル
+          </button>
+
         </div>
+
+      </div>
+
+
+      <!-- ==================================================
+           招待登録
+      ================================================== -->
+
+      <div
+        id="inviteRegisterView"
+      >
+
+        <h2
+          class="invite-title"
+        >
+          職員招待
+        </h2>
+
+
+        <p
+          class="invite-text"
+        >
+          招待を受けています。<br>
+          ログイン方法を選択してください。
+        </p>
+
+
+        <button
+          id="inviteGoogleButton"
+          class="login-button"
+          type="button"
+        >
+          Googleで登録・ログイン
+        </button>
+
 
         <div
-          style="
-            font-size:12px;
-            color:#888888;
-            line-height:1.5;
-          "
+          class="login-divider"
         >
-          勤務表を使用する職場を登録します
+          または
         </div>
 
-      </div>
-
-
-      <!-- 職場名 -->
-
-      <label
-        for="organizationNameInput"
-
-        style="
-          display:block;
-
-          margin:0 0 6px;
-
-          color:#333333;
-
-          font-size:13px;
-          font-weight:600;
-        "
-      >
-        職場名
-      </label>
-
-
-      <input
-        id="organizationNameInput"
-
-        type="text"
-
-        placeholder="例：山梨県立盲学校"
-
-        autocomplete="organization"
-
-        style="
-          display:block;
-
-          width:100%;
-          height:44px;
-
-          padding:0 13px;
-
-          border:1px solid #d1d1d6;
-
-          border-radius:9px;
-
-          background:#ffffff;
-
-          color:#333333;
-
-          font-size:14px;
-
-          box-sizing:border-box;
-
-          outline:none;
-
-          appearance:none;
-          -webkit-appearance:none;
-        "
-      >
-
-
-      <!-- 職員名 -->
-
-      <label
-        for="organizationStaffNameInput"
-
-        style="
-          display:block;
-
-          margin:14px 0 6px;
-
-          color:#333333;
-
-          font-size:13px;
-          font-weight:600;
-        "
-      >
-        あなたの名前
-      </label>
-
-
-      <input
-        id="organizationStaffNameInput"
-
-        type="text"
-
-        placeholder="例：山田 太郎"
-
-        autocomplete="name"
-
-        style="
-          display:block;
-
-          width:100%;
-          height:44px;
-
-          padding:0 13px;
-
-          border:1px solid #d1d1d6;
-
-          border-radius:9px;
-
-          background:#ffffff;
-
-          color:#333333;
-
-          font-size:14px;
-
-          box-sizing:border-box;
-
-          outline:none;
-
-          appearance:none;
-          -webkit-appearance:none;
-        "
-      >
-
-
-      <!-- 登録ボタン -->
-
-      <button
-        id="createOrganizationButton"
-
-        type="button"
-
-        style="
-          display:flex;
-
-          width:100%;
-          height:44px;
-
-          margin-top:16px;
-
-          align-items:center;
-          justify-content:center;
-
-          border:1px solid #b8b8bd;
-
-          border-radius:9px;
-
-          background:#ffffff;
-
-          color:#444444;
-
-          font-size:14px;
-          font-weight:600;
-
-          cursor:pointer;
-
-          box-sizing:border-box;
-
-          box-shadow:none;
-
-          appearance:none;
-          -webkit-appearance:none;
-        "
-      >
-        職場を登録する
-      </button>
-
-
-      <!-- 戻る -->
-
-      <button
-        id="cancelOrganizationButton"
-
-        type="button"
-
-        style="
-          display:flex;
-
-          width:100%;
-          height:40px;
-
-          margin-top:8px;
-
-          align-items:center;
-          justify-content:center;
-
-          border:none;
-
-          background:transparent;
-
-          color:#666666;
-
-          font-size:13px;
-
-          cursor:pointer;
-
-          box-sizing:border-box;
-        "
-      >
-        ログイン画面に戻る
-      </button>
-
-
-      <p
-        style="
-          margin:8px 0 0;
-
-          color:#999999;
-
-          font-size:10px;
-
-          line-height:1.5;
-
-          text-align:center;
-        "
-      >
-        登録後、この職場の勤務表を作成・管理できます。
-      </p>
-
-    </div>
-
-
-  </div>
-
-</div>
-
-
-<!-- ==================================================
-     初期ローディング画面
-================================================== -->
-
-<div
-  id="loadingScreen"
-  style="
-    display:none;
-  "
->
-
-  <div class="loadingLogo">
-    Shift<span>+</span>
-  </div>
-
-
-  <div class="loadingDots">
-
-    <span></span>
-    <span></span>
-    <span></span>
-
-  </div>
-
-
-  <div class="loadingText">
-    読み込んでいます…
-  </div>
-
-</div>
-
-
-<!-- ==================================================
-     アプリ本体
-================================================== -->
-
-<div
-  class="app"
-  id="app"
-  style="display:none;"
->
-
-
-  <!-- ==================================================
-       ヘッダー
-  ================================================== -->
-
-  <header class="header">
-
-
-    <!-- 左側：Shift+ ＋ 職場名 -->
-
-    <div class="app-header-brand">
-
-      <img
-        src="./icons/shift-plus-logo.PNG"
-        class="app-header-logo"
-        alt="Shift+"
-      >
-
-      <div
-        class="header-title"
-        id="organizationTitle"
-      >
-        勤務表
-      </div>
-
-    </div>
-
-
-    <!-- 右側ボタン -->
-
-    <div class="header-delete-buttons">
-
-      <button
-        id="deleteMonthButton"
-        type="button"
-      >
-        消去(月)
-      </button>
-
-
-      <button
-        id="deleteFiscalYearButton"
-        type="button"
-      >
-        消去(年度)
-      </button>
-
-
-      <button
-        id="logoutButton"
-        type="button"
-      >
-        ログアウト
-      </button>
-
-
-      <button
-        id="darkModeButton"
-        type="button"
-      >
-        🌙
-      </button>
-
-    </div>
-
-  </header>
-
-
-  <!-- ==================================================
-       ナビゲーション
-  ================================================== -->
-
-  <nav class="nav">
-
-
-    <button
-      type="button"
-      class="nav-button active"
-      data-page="schedulePage"
-      onclick="showPage('schedulePage', this)"
-    >
-      📅
-      <span>勤務表</span>
-    </button>
-
-
-    <button
-      type="button"
-      class="nav-button"
-      data-page="staffPage"
-      onclick="showPage('staffPage', this)"
-    >
-      👥
-      <span>職員</span>
-    </button>
-
-
-    <button
-      type="button"
-      class="nav-button"
-      data-page="leavePage"
-      onclick="showPage('leavePage', this)"
-    >
-      🏖️
-      <span>休暇</span>
-    </button>
-
-
-    <button
-      type="button"
-      class="nav-button"
-      data-page="shiftPage"
-      onclick="showPage('shiftPage', this)"
-    >
-      🕐
-      <span>勤務形態</span>
-    </button>
-
-
-    <button
-      type="button"
-      class="nav-button"
-      data-page="holidayPage"
-      onclick="showPage('holidayPage', this)"
-    >
-      🏫
-      <span>休業日</span>
-    </button>
-
-  </nav>
-
-
-  <!-- ==================================================
-       勤務表ページ
-  ================================================== -->
-
-  <main
-    id="schedulePage"
-    class="page"
-  >
-
-
-    <!-- ==================================================
-         勤務表ロゴ・職場名
-    ================================================== -->
-
-    <div class="schedule-brand">
-
-      <img
-        src="./icons/shift-plus-logo.PNG"
-        class="schedule-logo"
-        alt="Shift+"
-      >
-
-      <div
-        class="schedule-organization-title"
-        id="scheduleOrganizationTitle"
-      >
-        勤務表
-      </div>
-
-    </div>
-
-
-    <!-- ==================================================
-         月移動
-    ================================================== -->
-
-    <div class="month-bar">
-
-
-      <button
-        id="prevMonth"
-        type="button"
-        aria-label="前の月"
-      >
-        ‹
-      </button>
-
-
-      <div
-        id="currentMonth"
-        class="current-month"
-      >
-        2026年9月
-      </div>
-
-
-      <button
-        id="nextMonth"
-        type="button"
-        aria-label="次の月"
-      >
-        ›
-      </button>
-
-    </div>
-
-
-    <!-- ==================================================
-         カレンダー操作ヒント
-    ================================================== -->
-
-    <div
-      class="calendar-hint"
-      id="calendarHint"
-    >
-      日付をタップして勤務を入力できます
-    </div>
-
-
-    <!-- ==================================================
-         勤務表
-    ================================================== -->
-
-    <div class="table-wrapper">
-
-
-      <table
-        id="scheduleTable"
-        class="schedule-table"
-      >
-
-        <thead>
-
-          <tr>
-
-            <th
-              class="staff-header"
-              rowspan="2"
-            >
-              職員
-            </th>
-
-          </tr>
-
-        </thead>
-
-
-        <tbody>
-
-        </tbody>
-
-      </table>
-
-
-    </div>
-
-  </main>
-
-
-  <!-- ==================================================
-       職員ページ
-  ================================================== -->
-
-  <section
-    id="staffPage"
-    class="page"
-    style="display:none;"
-  >
-
-
-    <div class="page-title">
-      職員設定
-    </div>
-
-
-    <!-- 職員追加 -->
-
-    <div class="setting-card">
-
-
-      <label
-        for="staffNameInput"
-      >
-        職員名
-      </label>
-
-
-      <div
-        style="
-          display:flex;
-          gap:8px;
-          align-items:center;
-        "
-      >
 
         <input
-          id="staffNameInput"
-          type="text"
-          placeholder="職員名を入力"
+          id="inviteEmailInput"
+          class="login-input"
+          type="email"
+          placeholder="メールアドレス"
+          autocomplete="email"
+        >
+
+
+        <input
+          id="invitePasswordInput"
+          class="login-input"
+          type="password"
+          placeholder="パスワード（6文字以上）"
+          autocomplete="new-password"
         >
 
 
         <button
-          id="addStaffButton"
+          id="inviteEmailButton"
+          class="login-button"
           type="button"
         >
-          追加
+          メールアドレスで登録
         </button>
 
       </div>
 
-
     </div>
 
-
-    <!-- 職員一覧 -->
-
-    <div class="setting-card">
-
-      <div class="setting-card-title">
-        職員一覧
-      </div>
-
-
-      <div
-        id="staffList"
-        class="staff-list"
-      ></div>
-
-    </div>
-
-
-    <!-- ==================================================
-         職場管理
-    ================================================== -->
-
-    <div
-      id="organizationDangerZone"
-      class="setting-card"
-    >
-
-      <div class="setting-card-title">
-        職場管理
-      </div>
-
-
-      <p
-        style="
-          margin:8px 0 12px;
-
-          color:#777;
-
-          font-size:12px;
-
-          line-height:1.5;
-        "
-      >
-        職場そのものを削除する場合はこちらを使用してください。
-      </p>
-
-
-      <button
-        id="deleteOrganizationButton"
-        type="button"
-      >
-        職場を削除
-      </button>
-
-    </div>
-
-  </section>
+  </div>
 
 
   <!-- ==================================================
-       休暇ページ
+       アプリ本体
   ================================================== -->
 
-  <section
-    id="leavePage"
-    class="page"
+  <div
+    id="app"
+    class="app"
     style="display:none;"
   >
 
+    <!-- ==================================================
+         ヘッダー
+    ================================================== -->
 
-    <div class="page-title">
-      休暇設定
-    </div>
+    <header
+      class="header"
+    >
 
-
-    <!-- 休暇追加 -->
-
-    <div class="setting-card">
-
-
-      <label
-        for="leaveNameInput"
+      <div
+        class="app-header-brand"
       >
-        休暇名
-      </label>
+
+        <img
+          src="./icons/shift-plus-logo.PNG"
+          alt="Shift+"
+          class="app-logo"
+        >
+
+        <div
+          id="organizationTitle"
+          class="organization-title"
+        ></div>
+
+      </div>
 
 
       <div
-        style="
-          display:flex;
-          gap:8px;
-          align-items:center;
-          flex-wrap:wrap;
-        "
+        class="header-actions"
       >
 
-        <input
-          id="leaveNameInput"
-          type="text"
-          placeholder="例：年休"
+        <button
+          id="deleteMonthButton"
+          type="button"
         >
+          月削除
+        </button>
 
 
-        <label
-          for="leaveColorInput"
-          style="
-            display:flex;
-            align-items:center;
-            gap:6px;
-            white-space:nowrap;
-          "
+        <button
+          id="deleteFiscalYearButton"
+          type="button"
         >
-          色
+          年度削除
+        </button>
+
+
+        <button
+          id="darkModeButton"
+          type="button"
+          aria-label="ダークモード"
+        >
+          ◐
+        </button>
+
+
+        <button
+          id="logoutButton"
+          type="button"
+        >
+          ログアウト
+        </button>
+
+      </div>
+
+    </header>
+
+
+    <!-- ==================================================
+         ナビゲーション
+    ================================================== -->
+
+    <nav
+      class="nav"
+    >
+
+      <button
+        class="nav-button"
+        data-page="schedulePage"
+        type="button"
+      >
+        勤務表
+      </button>
+
+
+      <button
+        class="nav-button"
+        data-page="staffPage"
+        type="button"
+      >
+        職員管理
+      </button>
+
+
+      <button
+        class="nav-button"
+        data-page="leavePage"
+        type="button"
+      >
+        休暇設定
+      </button>
+
+
+      <button
+        class="nav-button"
+        data-page="shiftPage"
+        type="button"
+      >
+        勤務形態
+      </button>
+
+
+      <button
+        class="nav-button"
+        data-page="holidayPage"
+        type="button"
+      >
+        休業設定
+      </button>
+
+    </nav>
+
+
+    <!-- ==================================================
+         メイン
+    ================================================== -->
+
+    <main
+      class="main"
+    >
+
+      <!-- ==================================================
+           勤務表
+      ================================================== -->
+
+      <section
+        id="schedulePage"
+        class="page"
+      >
+
+        <div
+          class="schedule-brand"
+        >
+
+          <img
+            src="./icons/shift-plus-logo.PNG"
+            alt="Shift+"
+          >
+
+          <div
+            id="scheduleOrganizationTitle"
+          ></div>
+
+        </div>
+
+
+        <div
+          class="month-bar"
+        >
+
+          <button
+            id="prevMonth"
+            type="button"
+          >
+            ‹
+          </button>
+
+
+          <div
+            id="currentMonth"
+          >
+            2026年9月
+          </div>
+
+
+          <button
+            id="nextMonth"
+            type="button"
+          >
+            ›
+          </button>
+
+        </div>
+
+
+        <div
+          class="calendar-hint"
+        >
+          職員名を押すとカレンダー登録ができます
+        </div>
+
+
+        <div
+          class="table-wrapper"
+        >
+
+          <table
+            id="scheduleTable"
+          ></table>
+
+        </div>
+
+      </section>
+
+
+      <!-- ==================================================
+           職員管理
+      ================================================== -->
+
+      <section
+        id="staffPage"
+        class="page"
+        style="display:none;"
+      >
+
+        <div
+          class="section-header"
+        >
+
+          <h2>
+            職員管理
+          </h2>
+
+        </div>
+
+
+        <div
+          class="input-row"
+        >
+
+          <input
+            id="staffNameInput"
+            type="text"
+            placeholder="職員名"
+          >
+
+
+          <button
+            id="addStaffButton"
+            type="button"
+          >
+            追加
+          </button>
+
+        </div>
+
+
+        <div
+          id="staffCount"
+        ></div>
+
+
+        <div
+          id="staffList"
+        ></div>
+
+
+        <div
+          id="organizationDangerZone"
+        >
+
+          <h3>
+            職場設定
+          </h3>
+
+
+          <button
+            id="deleteOrganizationButton"
+            type="button"
+          >
+            この職場を削除
+          </button>
+
+        </div>
+
+      </section>
+
+
+      <!-- ==================================================
+           休暇設定
+      ================================================== -->
+
+      <section
+        id="leavePage"
+        class="page"
+        style="display:none;"
+      >
+
+        <div
+          class="section-header"
+        >
+
+          <h2>
+            休暇設定
+          </h2>
+
+        </div>
+
+
+        <div
+          class="input-row"
+        >
+
+          <input
+            id="leaveNameInput"
+            type="text"
+            placeholder="休暇名"
+          >
+
 
           <input
             id="leaveColorInput"
             type="color"
-            value="#ffcccb"
+            value="#FFD54F"
           >
 
-        </label>
+
+          <button
+            id="addLeaveButton"
+            type="button"
+          >
+            追加
+          </button>
+
+        </div>
 
 
-        <button
-          id="addLeaveButton"
-          type="button"
+        <div
+          id="leaveList"
+        ></div>
+
+      </section>
+
+
+      <!-- ==================================================
+           勤務形態
+      ================================================== -->
+
+      <section
+        id="shiftPage"
+        class="page"
+        style="display:none;"
+      >
+
+        <div
+          class="section-header"
         >
-          追加
-        </button>
 
-      </div>
+          <h2>
+            勤務形態
+          </h2>
 
-    </div>
-
-
-    <!-- 休暇一覧 -->
-
-    <div class="setting-card">
-
-      <div class="setting-card-title">
-        🏖️ 休暇一覧
-      </div>
+        </div>
 
 
-      <div
-        id="leaveList"
-        class="leave-list"
-      ></div>
+        <div
+          class="input-row"
+        >
 
-    </div>
-
-  </section>
-
-
-  <!-- ==================================================
-       勤務形態ページ
-  ================================================== -->
-
-  <section
-    id="shiftPage"
-    class="page"
-    style="display:none;"
-  >
-
-
-    <div class="page-title">
-      勤務形態設定
-    </div>
-
-
-    <!-- ==================================================
-         勤務形態追加
-    ================================================== -->
-
-    <div class="setting-card">
-
-
-      <div class="setting-card-title">
-        勤務形態を追加
-      </div>
-
-
-      <label
-        for="shiftNameInput"
-      >
-        勤務形態名
-      </label>
-
-
-      <input
-        id="shiftNameInput"
-        type="text"
-        placeholder="例：早番"
-      >
-
-
-      <div
-        class="shift-time-grid"
-      >
-
-        <div>
-
-          <label
-            for="shiftStartInput"
+          <input
+            id="shiftNameInput"
+            type="text"
+            placeholder="勤務形態名"
           >
-            開始
-          </label>
+
 
           <input
             id="shiftStartInput"
             type="time"
           >
 
-        </div>
-
-
-        <div>
-
-          <label
-            for="shiftEndInput"
-          >
-            終了
-          </label>
 
           <input
             id="shiftEndInput"
             type="time"
           >
 
-        </div>
-
-
-        <div>
-
-          <label
-            for="shiftBreakInput"
-          >
-            休憩
-          </label>
 
           <input
             id="shiftBreakInput"
             type="number"
             min="0"
-            step="5"
-            placeholder="分"
+            placeholder="休憩分"
           >
+
+
+          <button
+            id="addShiftButton"
+            type="button"
+          >
+            追加
+          </button>
 
         </div>
 
-      </div>
+
+        <div
+          class="section-header"
+        >
+
+          <h3>
+            明け時間
+          </h3>
+
+        </div>
 
 
-      <button
-        id="addShiftButton"
-        type="button"
-      >
-        勤務形態を追加
-      </button>
-
-    </div>
-
-
-    <!-- ==================================================
-         明け時間
-    ================================================== -->
-
-    <div class="setting-card">
-
-
-      <div class="setting-card-title">
-        明け時間
-      </div>
-
-
-      <div class="shift-time-grid">
-
-        <div>
-
-          <label
-            for="akeStartInput"
-          >
-            開始
-          </label>
+        <div
+          class="input-row"
+        >
 
           <input
             id="akeStartInput"
             type="time"
           >
 
-        </div>
-
-
-        <div>
-
-          <label
-            for="akeEndInput"
-          >
-            終了
-          </label>
 
           <input
             id="akeEndInput"
             type="time"
           >
 
+
+          <button
+            id="saveAkeTimeButton"
+            type="button"
+          >
+            保存
+          </button>
+
         </div>
 
-      </div>
+
+        <div
+          id="shiftList"
+        ></div>
+
+      </section>
 
 
-      <button
-        id="saveAkeTimeButton"
-        type="button"
-      >
-        明け時間を保存
-      </button>
+      <!-- ==================================================
+           休業設定
+      ================================================== -->
 
-    </div>
-
-
-    <!-- ==================================================
-         勤務形態一覧
-    ================================================== -->
-
-    <div class="setting-card">
-
-      <div class="setting-card-title">
-        勤務形態一覧
-      </div>
-
-
-      <div
-        id="shiftList"
-        class="shift-list"
-      ></div>
-
-    </div>
-
-  </section>
-
-
-  <!-- ==================================================
-       休業日ページ
-  ================================================== -->
-
-  <section
-    id="holidayPage"
-    class="page"
-    style="display:none;"
-  >
-
-
-    <div class="page-title">
-      休業日設定
-    </div>
-
-
-    <!-- ==================================================
-         休業日追加
-    ================================================== -->
-
-    <div class="setting-card">
-
-
-      <div class="setting-card-title">
-        休業日を追加
-      </div>
-
-
-      <label
-        for="companyHolidayName"
-      >
-        名称
-      </label>
-
-
-      <input
-        id="companyHolidayName"
-        type="text"
-        placeholder="例：夏季休業"
+      <section
+        id="holidayPage"
+        class="page"
+        style="display:none;"
       >
 
+        <div
+          class="section-header"
+        >
 
-      <div class="shift-time-grid">
+          <h2>
+            休業設定
+          </h2>
+
+        </div>
 
 
-        <div>
+        <div
+          class="input-row"
+        >
 
-          <label
-            for="companyHolidayStart"
+          <input
+            id="companyHolidayName"
+            type="text"
+            placeholder="休業名"
           >
-            開始日
-          </label>
+
 
           <input
             id="companyHolidayStart"
             type="date"
           >
 
-        </div>
-
-
-        <div>
-
-          <label
-            for="companyHolidayEnd"
-          >
-            終了日
-          </label>
 
           <input
             id="companyHolidayEnd"
             type="date"
           >
 
+
+          <button
+            id="addCompanyHolidayButton"
+            type="button"
+          >
+            追加
+          </button>
+
         </div>
 
-      </div>
+
+        <div
+          id="companyHolidayList"
+        ></div>
+
+      </section>
+
+    </main>
 
 
-      <button
-        id="addCompanyHolidayButton"
-        type="button"
-      >
-        休業日を追加
-      </button>
+    <!-- ==================================================
+         勤務メニュー
+    ================================================== -->
+
+    <div
+      id="shiftMenu"
+      style="display:none;"
+    >
+
+      <div
+        class="shift-menu-title"
+      ></div>
+
+
+      <div
+        id="shiftMenuButtons"
+      ></div>
 
     </div>
 
 
     <!-- ==================================================
-         休業日一覧
+         カレンダー確認
     ================================================== -->
 
-    <div class="setting-card">
-
-      <div class="setting-card-title">
-        休業日一覧
-      </div>
-
+    <div
+      id="calendarConfirm"
+      style="display:none;"
+    >
 
       <div
-        id="companyHolidayList"
-        class="company-holiday-list"
-      ></div>
+        class="calendar-confirm-inner"
+      >
+
+        <h3
+          id="calendarConfirmTitle"
+        ></h3>
+
+
+        <p
+          id="calendarConfirmText"
+        ></p>
+
+
+        <div
+          class="calendar-confirm-buttons"
+        >
+
+          <button
+            id="calendarCancelButton"
+            type="button"
+          >
+            キャンセル
+          </button>
+
+
+          <button
+            id="calendarOKButton"
+            type="button"
+          >
+            登録
+          </button>
+
+        </div>
+
+      </div>
 
     </div>
 
-  </section>
 
+    <!-- ==================================================
+         初期ローディング
+    ================================================== -->
 
-  <!-- ==================================================
-       勤務入力メニュー
-  ================================================== -->
-
-  <div
-    id="shiftMenu"
-    class="shift-menu"
-    style="display:none;"
-  >
-
-    <!-- JavaScriptから内容を生成 -->
-
-  </div>
-
-
-  <!-- ==================================================
-       カレンダー確認モーダル
-  ================================================== -->
-
-  <div
-    id="calendarConfirm"
-    class="modal-overlay"
-    style="display:none;"
-  >
-
-    <div class="modal-content">
+    <div
+      id="initialLoadingScreen"
+      style="display:none;"
+    >
 
       <div
-        id="calendarConfirmTitle"
-        class="modal-title"
+        class="loading-inner"
       >
-        確認
-      </div>
 
-
-      <div
-        id="calendarConfirmMessage"
-        class="modal-message"
-      >
-      </div>
-
-
-      <div class="modal-buttons">
-
-        <button
-          id="calendarConfirmCancel"
-          type="button"
+        <img
+          src="./icons/shift-plus-logo.PNG"
+          alt="Shift+"
         >
-          キャンセル
-        </button>
 
 
-        <button
-          id="calendarConfirmOK"
-          type="button"
+        <div
+          id="initialLoadingMessage"
         >
-          OK
-        </button>
+          読み込み中…
+        </div>
 
       </div>
 
@@ -3097,322 +1650,203 @@
   </div>
 
 
-</div>
-
   <!-- ==================================================
-     script.js
-================================================== -->
+       招待処理・職場名同期
+  ================================================== -->
 
-<script
-  src="script.js?v=20260927"
-></script>
+  <script>
 
+    /* ==================================================
+       招待トークン
+    ================================================== */
 
-<!-- ==================================================
-     招待登録画面
-================================================== -->
-
-<script>
-
-  /* ==================================================
-     招待トークン取得
-  ================================================== */
-
-  function getInviteToken() {
-
-    try {
+    function getInviteToken() {
 
       const params =
         new URLSearchParams(
           window.location.search
         );
 
-      return params.get("invite");
-
-    } catch (error) {
-
-      console.error(
-        "招待トークン取得エラー",
-        error
-      );
-
-      return null;
-
-    }
-
-  }
-
-
-  /* ==================================================
-     招待登録画面の表示
-  ================================================== */
-
-  function setupInviteRegisterView() {
-
-    const inviteToken =
-      getInviteToken();
-
-    const loginMainView =
-      document.getElementById(
-        "loginMainView"
-      );
-
-    const inviteRegisterView =
-      document.getElementById(
-        "inviteRegisterView"
-      );
-
-    const newOrganizationForm =
-      document.getElementById(
-        "newOrganizationForm"
-      );
-
-
-    if (
-      !inviteToken ||
-      !loginMainView ||
-      !inviteRegisterView
-    ) {
-
-      return;
-
-    }
-
-
-    console.log(
-      "★ 招待トークンを検出しました"
-    );
-
-
-    /* ----------------------------------------------
-       通常ログインを非表示
-    ---------------------------------------------- */
-
-    loginMainView.style.display =
-      "none";
-
-
-    /* ----------------------------------------------
-       新規職場登録を非表示
-    ---------------------------------------------- */
-
-    if (newOrganizationForm) {
-
-      newOrganizationForm.style.display =
-        "none";
-
-    }
-
-
-    /* ----------------------------------------------
-       招待登録画面を表示
-    ---------------------------------------------- */
-
-    inviteRegisterView.style.display =
-      "block";
-
-
-    /* ----------------------------------------------
-       トークンを保存
-    ---------------------------------------------- */
-
-    try {
-
-      sessionStorage.setItem(
-        "shiftInviteToken",
-        inviteToken
-      );
-
-    } catch (error) {
-
-      console.error(
-        "招待トークン保存エラー",
-        error
+      return params.get(
+        "invite"
       );
 
     }
 
-  }
 
+    /* ==================================================
+       招待登録画面
+    ================================================== */
 
-  /* ==================================================
-     招待 Google 登録
-  ================================================== */
+    function setupInviteRegisterView() {
 
-  function setupInviteGoogleButton() {
+      const token =
+        getInviteToken();
 
-    const button =
-      document.getElementById(
-        "inviteGoogleButton"
-      );
+      const main =
+        document.getElementById(
+          "loginMainView"
+        );
 
+      const invite =
+        document.getElementById(
+          "inviteRegisterView"
+        );
 
-    if (!button) {
+      if (
+        token &&
+        main &&
+        invite
+      ) {
 
-      return;
+        main.style.display =
+          "none";
 
-    }
-
-
-    button.addEventListener(
-      "click",
-      function () {
-
-        if (
-          typeof loginWithGoogle ===
-          "function"
-        ) {
-
-          loginWithGoogle();
-
-        } else {
-
-          console.error(
-            "loginWithGoogle が見つかりません"
-          );
-
-        }
+        invite.style.display =
+          "block";
 
       }
-    );
-
-  }
-
-
-  /* ==================================================
-     招待 Apple 登録
-  ================================================== */
-
-  function setupInviteAppleButton() {
-
-    const button =
-      document.getElementById(
-        "inviteAppleButton"
-      );
-
-
-    if (!button) {
-
-      return;
 
     }
 
 
-    button.addEventListener(
-      "click",
-      function () {
+    /* ==================================================
+       招待 Google
+    ================================================== */
 
-        const message =
-          document.getElementById(
-            "inviteRegisterMessage"
-          );
+    function setupInviteGoogleButton() {
 
+      const button =
+        document.getElementById(
+          "inviteGoogleButton"
+        );
 
-        if (message) {
+      if (!button) {
 
-          message.textContent =
-            "Appleでの登録機能は現在準備中です。";
-
-        }
+        return;
 
       }
-    );
-
-  }
 
 
-  /* ==================================================
-     招待 Azure 登録
-  ================================================== */
+      button.onclick =
+        function () {
 
-  function setupInviteAzureButton() {
+          if (
+            typeof loginWithGoogle ===
+            "function"
+          ) {
 
-    const button =
-      document.getElementById(
-        "inviteAzureButton"
-      );
+            loginWithGoogle();
 
+          }
 
-    if (!button) {
-
-      return;
+        };
 
     }
 
 
-    button.addEventListener(
-      "click",
-      function () {
+    /* ==================================================
+       招待 メール
+    ================================================== */
 
-        const message =
-          document.getElementById(
-            "inviteRegisterMessage"
-          );
+    function setupInviteEmailButton() {
+
+      const button =
+        document.getElementById(
+          "inviteEmailButton"
+        );
 
 
-        if (message) {
+      if (!button) {
 
-          message.textContent =
-            "Azureでの登録機能は現在準備中です。";
-
-        }
+        return;
 
       }
+
+
+      button.onclick =
+        async function () {
+
+          const email =
+            document.getElementById(
+              "inviteEmailInput"
+            )?.value.trim();
+
+
+          const password =
+            document.getElementById(
+              "invitePasswordInput"
+            )?.value;
+
+
+          if (
+            typeof registerWithEmail ===
+            "function"
+          ) {
+
+            await registerWithEmail(
+              email,
+              password
+            );
+
+          }
+
+        };
+
+    }
+
+
+    /* ==================================================
+       招待ボタン
+    ================================================== */
+
+    function setupInviteButtons() {
+
+      setupInviteGoogleButton();
+
+      setupInviteEmailButton();
+
+    }
+
+
+    /* ==================================================
+       招待画面初期化
+    ================================================== */
+
+    function initInviteScreen() {
+
+      setupInviteRegisterView();
+
+      setupInviteButtons();
+
+    }
+
+
+    document.addEventListener(
+      "DOMContentLoaded",
+      initInviteScreen
     );
 
-  }
 
+    /* ==================================================
+       勤務表の職場名
+    ================================================== */
 
-  /* ==================================================
-     招待画面初期化
-  ================================================== */
+    function syncScheduleOrganizationTitle() {
 
-  function initInviteScreen() {
-
-    setupInviteRegisterView();
-
-    setupInviteGoogleButton();
-
-    setupInviteAppleButton();
-
-    setupInviteAzureButton();
-
-  }
-
-
-  document.addEventListener(
-    "DOMContentLoaded",
-    initInviteScreen
-  );
-
-</script>
-
-
-<!-- ==================================================
-     勤務表の職場名同期
-================================================== -->
-
-<script>
-
-  document.addEventListener(
-    "DOMContentLoaded",
-    function () {
-
-      const organizationTitle =
+      const headerTitle =
         document.getElementById(
           "organizationTitle"
         );
 
-
-      const scheduleOrganizationTitle =
+      const scheduleTitle =
         document.getElementById(
           "scheduleOrganizationTitle"
         );
 
 
       if (
-        !organizationTitle ||
-        !scheduleOrganizationTitle
+        !scheduleTitle
       ) {
 
         return;
@@ -3420,87 +1854,1992 @@
       }
 
 
-      /* ----------------------------------------------
-         初期値を同期
-      ---------------------------------------------- */
+      if (
+        headerTitle
+      ) {
 
-      scheduleOrganizationTitle.textContent =
-        organizationTitle.textContent;
+        scheduleTitle.textContent =
+          headerTitle.textContent || "";
+
+      }
+
+    }
 
 
-      /* ----------------------------------------------
-         ヘッダー職場名の変更を監視
-      ---------------------------------------------- */
+    function setupScheduleOrganizationTitle() {
+
+      syncScheduleOrganizationTitle();
 
       const observer =
         new MutationObserver(
           function () {
 
-            scheduleOrganizationTitle.textContent =
-              organizationTitle.textContent;
+            syncScheduleOrganizationTitle();
 
           }
         );
 
 
-      observer.observe(
-        organizationTitle,
-        {
-          childList: true,
-          characterData: true,
-          subtree: true
+      const title =
+        document.getElementById(
+          "organizationTitle"
+        );
+
+
+      if (title) {
+
+        observer.observe(
+          title,
+          {
+            childList: true,
+            characterData: true,
+            subtree: true
+          }
+        );
+
+      }
+
+    }
+
+
+    document.addEventListener(
+      "DOMContentLoaded",
+      setupScheduleOrganizationTitle
+    );
+
+
+    /* ==================================================
+       Service Worker
+    ================================================== */
+
+    if (
+      "serviceWorker" in navigator
+    ) {
+
+      window.addEventListener(
+        "load",
+        function () {
+
+          navigator.serviceWorker
+            .register("./sw.js")
+            .catch(
+              function (error) {
+
+                console.error(
+                  "Service Worker登録エラー:",
+                  error
+                );
+
+              }
+            );
+
         }
       );
 
     }
-  );
 
-</script>
+  </script>
+
+
+  <script
+    src="script.js?v=20260927"
+  ></script>
+
+</body>
+
+</html>
+
+<!-- ==================================================
+     追加CSS
+================================================== -->
+
+<style>
+
+  /* ==================================================
+     アプリ基本
+  ================================================== */
+
+  * {
+    box-sizing: border-box;
+  }
+
+
+  html,
+  body {
+
+    margin: 0;
+
+    padding: 0;
+
+    width: 100%;
+
+    min-height: 100%;
+
+  }
+
+
+  body {
+
+    font-family:
+      -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI",
+      "Hiragino Kaku Gothic ProN",
+      "Hiragino Sans",
+      Meiryo,
+      sans-serif;
+
+    color:
+      #1c1c1e;
+
+    background:
+      #f2f2f7;
+
+    overflow-y:
+      auto;
+
+    touch-action:
+      pan-y;
+
+  }
+
+
+  button,
+  input,
+  select,
+  textarea {
+
+    font-family:
+      inherit;
+
+  }
+
+
+  button {
+
+    -webkit-tap-highlight-color:
+      transparent;
+
+  }
+
+
+  /* ==================================================
+     アプリ
+  ================================================== */
+
+  .app {
+
+    width:
+      100%;
+
+    min-height:
+      100vh;
+
+  }
+
+
+  /* ==================================================
+     ヘッダー
+  ================================================== */
+
+  .header {
+
+    position:
+      sticky;
+
+    top:
+      0;
+
+    z-index:
+      900;
+
+    display:
+      flex;
+
+    align-items:
+      center;
+
+    justify-content:
+      space-between;
+
+    gap:
+      12px;
+
+    min-height:
+      58px;
+
+    padding:
+      8px 12px;
+
+    background:
+      #ffffff;
+
+    border-bottom:
+      1px solid #d1d1d6;
+
+  }
+
+
+  .app-header-brand {
+
+    display:
+      flex;
+
+    align-items:
+      center;
+
+    gap:
+      10px;
+
+    min-width:
+      0;
+
+  }
+
+
+  .app-logo {
+
+    width:
+      42px;
+
+    height:
+      42px;
+
+    object-fit:
+      contain;
+
+    flex-shrink:
+      0;
+
+  }
+
+
+  .organization-title {
+
+    min-width:
+      0;
+
+    font-size:
+      18px;
+
+    font-weight:
+      700;
+
+    white-space:
+      nowrap;
+
+    overflow:
+      hidden;
+
+    text-overflow:
+      ellipsis;
+
+  }
+
+
+  .header-actions {
+
+    display:
+      flex;
+
+    align-items:
+      center;
+
+    gap:
+      6px;
+
+    flex-shrink:
+      0;
+
+  }
+
+
+  .header-actions button {
+
+    min-height:
+      36px;
+
+    padding:
+      6px 10px;
+
+    border:
+      1px solid #d1d1d6;
+
+    border-radius:
+      9px;
+
+    background:
+      #ffffff;
+
+    color:
+      #1c1c1e;
+
+    cursor:
+      pointer;
+
+  }
+
+
+  /* ==================================================
+     ナビ
+  ================================================== */
+
+  .nav {
+
+    position:
+      sticky;
+
+    top:
+      58px;
+
+    z-index:
+      800;
+
+    display:
+      flex;
+
+    gap:
+      4px;
+
+    padding:
+      6px;
+
+    overflow-x:
+      auto;
+
+    background:
+      #ffffff;
+
+    border-bottom:
+      1px solid #d1d1d6;
+
+    -webkit-overflow-scrolling:
+      touch;
+
+  }
+
+
+  .nav-button {
+
+    flex:
+      0 0 auto;
+
+    min-height:
+      42px;
+
+    padding:
+      8px 16px;
+
+    border:
+      none;
+
+    border-radius:
+      10px;
+
+    background:
+      transparent;
+
+    color:
+      #6e6e73;
+
+    font-size:
+      14px;
+
+    font-weight:
+      600;
+
+    cursor:
+      pointer;
+
+  }
+
+
+  .nav-button.active {
+
+    background:
+      #007aff;
+
+    color:
+      #ffffff;
+
+  }
+
+
+  /* ==================================================
+     メイン
+  ================================================== */
+
+  .main {
+
+    width:
+      100%;
+
+    padding:
+      12px;
+
+  }
+
+
+  .page {
+
+    width:
+      100%;
+
+  }
+
+
+  /* ==================================================
+     セクション
+  ================================================== */
+
+  .section-header {
+
+    display:
+      flex;
+
+    align-items:
+      center;
+
+    justify-content:
+      space-between;
+
+    margin:
+      4px 0 12px;
+
+  }
+
+
+  .section-header h2,
+  .section-header h3 {
+
+    margin:
+      0;
+
+  }
+
+
+  .section-header h2 {
+
+    font-size:
+      22px;
+
+  }
+
+
+  .section-header h3 {
+
+    font-size:
+      18px;
+
+  }
+
+
+  /* ==================================================
+     入力行
+  ================================================== */
+
+  .input-row {
+
+    display:
+      flex;
+
+    flex-wrap:
+      wrap;
+
+    align-items:
+      center;
+
+    gap:
+      8px;
+
+    margin-bottom:
+      14px;
+
+  }
+
+
+  .input-row input {
+
+    min-height:
+      42px;
+
+    padding:
+      8px 10px;
+
+    border:
+      1px solid #c7c7cc;
+
+    border-radius:
+      9px;
+
+    background:
+      #ffffff;
+
+    font-size:
+      15px;
+
+  }
+
+
+  .input-row button {
+
+    min-height:
+      42px;
+
+    padding:
+      8px 16px;
+
+    border:
+      none;
+
+    border-radius:
+      9px;
+
+    background:
+      #007aff;
+
+    color:
+      #ffffff;
+
+    font-weight:
+      600;
+
+    cursor:
+      pointer;
+
+  }
+
+
+  /* ==================================================
+     勤務表ブランド
+  ================================================== */
+
+  .schedule-brand {
+
+    display:
+      flex;
+
+    align-items:
+      center;
+
+    justify-content:
+      center;
+
+    gap:
+      12px;
+
+    margin:
+      4px 0 12px;
+
+  }
+
+
+  .schedule-brand img {
+
+    width:
+      46px;
+
+    height:
+      46px;
+
+    object-fit:
+      contain;
+
+  }
+
+
+  .schedule-brand div {
+
+    font-size:
+      20px;
+
+    font-weight:
+      700;
+
+  }
+
+
+  /* ==================================================
+     月切り替え
+  ================================================== */
+
+  .month-bar {
+
+    display:
+      flex;
+
+    align-items:
+      center;
+
+    justify-content:
+      center;
+
+    gap:
+      18px;
+
+    margin:
+      8px 0;
+
+  }
+
+
+  .month-bar button {
+
+    width:
+      42px;
+
+    height:
+      42px;
+
+    border:
+      1px solid #d1d1d6;
+
+    border-radius:
+      10px;
+
+    background:
+      #ffffff;
+
+    color:
+      #1c1c1e;
+
+    font-size:
+      28px;
+
+    line-height:
+      1;
+
+    cursor:
+      pointer;
+
+  }
+
+
+  #currentMonth {
+
+    min-width:
+      150px;
+
+    text-align:
+      center;
+
+    font-size:
+      20px;
+
+    font-weight:
+      700;
+
+  }
+
+
+  .calendar-hint {
+
+    margin:
+      0 0 10px;
+
+    text-align:
+      center;
+
+    font-size:
+      12px;
+
+    color:
+      #6e6e73;
+
+  }
+
+
+  /* ==================================================
+     勤務表スクロール
+  ================================================== */
+
+  .table-wrapper {
+
+    position:
+      relative;
+
+    width:
+      100%;
+
+    overflow-x:
+      auto;
+
+    overflow-y:
+      visible;
+
+    -webkit-overflow-scrolling:
+      touch;
+
+    touch-action:
+      pan-x pan-y;
+
+  }
+
+
+  #scheduleTable {
+
+    border-collapse:
+      separate;
+
+    border-spacing:
+      0;
+
+    table-layout:
+      fixed;
+
+    background:
+      #ffffff;
+
+  }
+
+
+  #scheduleTable th,
+  #scheduleTable td {
+
+    border-right:
+      1px solid #d1d1d6;
+
+    border-bottom:
+      1px solid #d1d1d6;
+
+    text-align:
+      center;
+
+    vertical-align:
+      middle;
+
+    overflow:
+      hidden;
+
+  }
+
+
+  #scheduleTable thead th {
+
+    background:
+      #f2f2f7;
+
+    font-weight:
+      700;
+
+  }
+
+
+  #scheduleTable .staff-header {
+
+    position:
+      sticky;
+
+    left:
+      0;
+
+    z-index:
+      300;
+
+    background:
+      #f2f2f7;
+
+  }
+
+
+  #scheduleTable .staff-name-cell {
+
+    position:
+      sticky;
+
+    left:
+      0;
+
+    z-index:
+      200;
+
+    background:
+      #ffffff;
+
+    white-space:
+      nowrap;
+
+    text-overflow:
+      ellipsis;
+
+  }
+
+
+  #scheduleTable .schedule-cell {
+
+    height:
+      42px;
+
+    font-size:
+      13px;
+
+    cursor:
+      pointer;
+
+    user-select:
+      none;
+
+  }
+
+
+  #scheduleTable .current-user-staff-row
+  .staff-name-cell {
+
+    font-weight:
+      700;
+
+  }
+
+
+  #scheduleTable .date-header {
+
+    height:
+      48px;
+
+  }
+
+
+  #scheduleTable .day-number {
+
+    font-size:
+      14px;
+
+    font-weight:
+      700;
+
+  }
+
+
+  #scheduleTable .day-week {
+
+    font-size:
+      12px;
+
+  }
+
+
+  #scheduleTable .sunday {
+
+    background:
+      #fff1f1;
+
+  }
+
+
+  #scheduleTable .saturday {
+
+    background:
+      #f1f6ff;
+
+  }
+
+
+  #scheduleTable .company-holiday {
+
+    background:
+      #fff4d6;
+
+  }
+
+
+  #scheduleTable .shift-header {
+
+    min-height:
+      28px;
+
+    font-size:
+      12px;
+
+  }
+
+
+  #scheduleTable .total-header {
+
+    font-size:
+      11px;
+
+  }
+
+
+  #scheduleTable .total-cell {
+
+    height:
+      42px;
+
+    font-size:
+      13px;
+
+  }
+
+
+  /* ==================================================
+     休暇一覧
+  ================================================== */
+
+  .leave-legend {
+
+    background:
+      #ffffff;
+
+    border:
+      1px solid #d1d1d6;
+
+  }
+
+
+  .leave-legend-title {
+
+    color:
+      #1c1c1e;
+
+  }
+
+
+  .leave-legend-name {
+
+    color:
+      #1c1c1e;
+
+  }
+
+
+  /* ==================================================
+     リスト
+  ================================================== */
+
+  #staffList,
+  #leaveList,
+  #shiftList,
+  #companyHolidayList {
+
+    width:
+      100%;
+
+  }
+
+
+  .list-item {
+
+    display:
+      flex;
+
+    align-items:
+      center;
+
+    justify-content:
+      space-between;
+
+    gap:
+      10px;
+
+    min-height:
+      48px;
+
+    margin:
+      6px 0;
+
+    padding:
+      8px 10px;
+
+    border:
+      1px solid #d1d1d6;
+
+    border-radius:
+      10px;
+
+    background:
+      #ffffff;
+
+  }
+
+
+  /* ==================================================
+     職員管理
+  ================================================== */
+
+  #staffCount {
+
+    margin:
+      8px 0;
+
+    font-size:
+      14px;
+
+    color:
+      #6e6e73;
+
+  }
+
+
+  #organizationDangerZone {
+
+    margin-top:
+      32px;
+
+    padding:
+      16px;
+
+    border:
+      1px solid #ff3b30;
+
+    border-radius:
+      12px;
+
+    background:
+      #fffafa;
+
+  }
+
+
+  #organizationDangerZone h3 {
+
+    margin:
+      0 0 12px;
+
+    color:
+      #ff3b30;
+
+  }
+
+
+  #deleteOrganizationButton {
+
+    min-height:
+      42px;
+
+    padding:
+      8px 14px;
+
+    border:
+      none;
+
+    border-radius:
+      9px;
+
+    background:
+      #ff3b30;
+
+    color:
+      #ffffff;
+
+    font-weight:
+      600;
+
+    cursor:
+      pointer;
+
+  }
+
+
+  /* ==================================================
+     勤務メニュー
+  ================================================== */
+
+  #shiftMenu {
+
+    position:
+      fixed;
+
+    z-index:
+      5000;
+
+    min-width:
+      180px;
+
+    max-width:
+      260px;
+
+    padding:
+      8px;
+
+    border:
+      1px solid #d1d1d6;
+
+    border-radius:
+      12px;
+
+    background:
+      #ffffff;
+
+    box-shadow:
+      0 8px 28px
+      rgba(0,0,0,.18);
+
+  }
+
+
+  .shift-menu-title {
+
+    padding:
+      8px;
+
+    font-size:
+      13px;
+
+    font-weight:
+      700;
+
+    color:
+      #6e6e73;
+
+  }
+
+
+  #shiftMenuButtons {
+
+    display:
+      flex;
+
+    flex-direction:
+      column;
+
+    gap:
+      4px;
+
+  }
+
+
+  #shiftMenuButtons button {
+
+    width:
+      100%;
+
+    min-height:
+      40px;
+
+    padding:
+      8px 10px;
+
+    border:
+      none;
+
+    border-radius:
+      8px;
+
+    background:
+      #f2f2f7;
+
+    color:
+      #1c1c1e;
+
+    text-align:
+      left;
+
+    cursor:
+      pointer;
+
+  }
+
+
+  #shiftMenuButtons button:hover {
+
+    background:
+      #e5e5ea;
+
+  }
+
+
+  /* ==================================================
+     カレンダーモーダル
+  ================================================== */
+
+  #calendarConfirm {
+
+    position:
+      fixed;
+
+    inset:
+      0;
+
+    z-index:
+      6000;
+
+    display:
+      none;
+
+    align-items:
+      center;
+
+    justify-content:
+      center;
+
+    padding:
+      20px;
+
+    background:
+      rgba(0,0,0,.35);
+
+  }
+
+
+  .calendar-confirm-inner {
+
+    width:
+      100%;
+
+    max-width:
+      380px;
+
+    padding:
+      22px;
+
+    border-radius:
+      16px;
+
+    background:
+      #ffffff;
+
+    box-shadow:
+      0 10px 35px
+      rgba(0,0,0,.2);
+
+  }
+
+
+  #calendarConfirmTitle {
+
+    margin:
+      0 0 10px;
+
+    font-size:
+      19px;
+
+  }
+
+
+  #calendarConfirmText {
+
+    margin:
+      0;
+
+    line-height:
+      1.6;
+
+    color:
+      #6e6e73;
+
+  }
+
+
+  .calendar-confirm-buttons {
+
+    display:
+      flex;
+
+    justify-content:
+      flex-end;
+
+    gap:
+      8px;
+
+    margin-top:
+      20px;
+
+  }
+
+
+  .calendar-confirm-buttons button {
+
+    min-height:
+      42px;
+
+    padding:
+      8px 16px;
+
+    border:
+      none;
+
+    border-radius:
+      9px;
+
+    cursor:
+      pointer;
+
+  }
+
+
+  #calendarCancelButton {
+
+    background:
+      #e5e5ea;
+
+    color:
+      #1c1c1e;
+
+  }
+
+
+  #calendarOKButton {
+
+    background:
+      #007aff;
+
+    color:
+      #ffffff;
+
+  }
+
+
+  /* ==================================================
+     ローディング
+  ================================================== */
+
+  #initialLoadingScreen {
+
+    position:
+      fixed;
+
+    inset:
+      0;
+
+    z-index:
+      100000;
+
+    display:
+      flex;
+
+    align-items:
+      center;
+
+    justify-content:
+      center;
+
+    background:
+      rgba(255,255,255,.96);
+
+  }
+
+
+  .loading-inner {
+
+    display:
+      flex;
+
+    flex-direction:
+      column;
+
+    align-items:
+      center;
+
+    gap:
+      14px;
+
+    text-align:
+      center;
+
+  }
+
+
+  .loading-inner img {
+
+    width:
+      130px;
+
+    height:
+      auto;
+
+  }
+
+
+  #initialLoadingMessage {
+
+    font-size:
+      15px;
+
+    color:
+      #6e6e73;
+
+  }
+
+
+  /* ==================================================
+     固定ヘッダー
+  ================================================== */
+
+  #scheduleFixedHeader {
+
+    position:
+      fixed;
+
+    display:
+      none;
+
+    overflow:
+      hidden;
+
+    margin:
+      0;
+
+    padding:
+      0;
+
+    background:
+      #f8f8fa;
+
+    z-index:
+      999;
+
+    pointer-events:
+      none;
+
+    box-sizing:
+      border-box;
+
+  }
+
+
+  #scheduleFixedHeader table {
+
+    border-collapse:
+      separate;
+
+    border-spacing:
+      0;
+
+    table-layout:
+      fixed;
+
+    margin:
+      0;
+
+    padding:
+      0;
+
+    position:
+      relative;
+
+  }
+
+
+  #scheduleFixedStaffColumn {
+
+    position:
+      fixed;
+
+    display:
+      none;
+
+    overflow:
+      hidden;
+
+    margin:
+      0;
+
+    padding:
+      0;
+
+    background:
+      #ffffff;
+
+    z-index:
+      1000;
+
+    pointer-events:
+      none;
+
+    box-sizing:
+      border-box;
+
+  }
+
+
+  #scheduleFixedStaffColumn table {
+
+    border-collapse:
+      separate;
+
+    border-spacing:
+      0;
+
+    table-layout:
+      fixed;
+
+    margin:
+      0;
+
+    padding:
+      0;
+
+    position:
+      relative;
+
+  }
+
+
+  /* ==================================================
+     スマートフォン
+  ================================================== */
+
+  @media (
+    max-width: 600px
+  ) {
+
+    .header {
+
+      min-height:
+        54px;
+
+      padding:
+        6px 8px;
+
+    }
+
+
+    .nav {
+
+      top:
+        54px;
+
+    }
+
+
+    .organization-title {
+
+      font-size:
+        15px;
+
+    }
+
+
+    .app-logo {
+
+      width:
+        36px;
+
+      height:
+        36px;
+
+    }
+
+
+    .header-actions {
+
+      gap:
+        3px;
+
+    }
+
+
+    .header-actions button {
+
+      padding:
+        5px 7px;
+
+      font-size:
+        12px;
+
+    }
+
+
+    .main {
+
+      padding:
+        8px;
+
+    }
+
+
+    .schedule-brand {
+
+      gap:
+        8px;
+
+    }
+
+
+    .schedule-brand img {
+
+      width:
+        40px;
+
+      height:
+        40px;
+
+    }
+
+
+    .schedule-brand div {
+
+      font-size:
+        17px;
+
+    }
+
+
+    .month-bar {
+
+      gap:
+        10px;
+
+    }
+
+
+    #currentMonth {
+
+      min-width:
+        130px;
+
+      font-size:
+        18px;
+
+    }
+
+
+    .input-row {
+
+      align-items:
+        stretch;
+
+    }
+
+
+    .input-row input {
+
+      flex:
+        1 1 140px;
+
+    }
+
+  }
+
+
+  /* ==================================================
+     ダークモード
+  ================================================== */
+
+  body.dark-mode {
+
+    color:
+      #f2f2f7;
+
+    background:
+      #1c1c1e;
+
+  }
+
+
+  body.dark-mode .header,
+  body.dark-mode .nav {
+
+    background:
+      #2c2c2e;
+
+    border-color:
+      #48484a;
+
+  }
+
+
+  body.dark-mode .header-actions button,
+  body.dark-mode .month-bar button {
+
+    background:
+      #3a3a3c;
+
+    color:
+      #f2f2f7;
+
+    border-color:
+      #48484a;
+
+  }
+
+
+  body.dark-mode .nav-button {
+
+    color:
+      #aeaeb2;
+
+  }
+
+
+  body.dark-mode .nav-button.active {
+
+    background:
+      #0a84ff;
+
+    color:
+      #ffffff;
+
+  }
+
+
+  body.dark-mode .input-row input,
+  body.dark-mode .list-item {
+
+    background:
+      #2c2c2e;
+
+    color:
+      #f2f2f7;
+
+    border-color:
+      #48484a;
+
+  }
+
+
+  body.dark-mode #scheduleTable {
+
+    background:
+      #2c2c2e;
+
+  }
+
+
+  body.dark-mode #scheduleTable thead th,
+  body.dark-mode #scheduleTable .staff-header {
+
+    background:
+      #3a3a3c;
+
+    color:
+      #f2f2f7;
+
+  }
+
+
+  body.dark-mode #scheduleTable .staff-name-cell {
+
+    background:
+      #2c2c2e;
+
+    color:
+      #f2f2f7;
+
+  }
+
+
+  body.dark-mode #scheduleTable th,
+  body.dark-mode #scheduleTable td {
+
+    border-color:
+      #48484a;
+
+  }
+
+
+  body.dark-mode #scheduleTable .sunday {
+
+    background:
+      #442b2b;
+
+  }
+
+
+  body.dark-mode #scheduleTable .saturday {
+
+    background:
+      #28384c;
+
+  }
+
+
+  body.dark-mode #scheduleTable .company-holiday {
+
+    background:
+      #4a4028;
+
+  }
+
+
+  body.dark-mode .leave-legend {
+
+    background:
+      #2c2c2e;
+
+    border-color:
+      #48484a;
+
+  }
+
+
+  body.dark-mode .leave-legend-title,
+  body.dark-mode .leave-legend-name {
+
+    color:
+      #f2f2f7;
+
+  }
+
+
+  body.dark-mode #shiftMenu {
+
+    background:
+      #2c2c2e;
+
+    border-color:
+      #48484a;
+
+  }
+
+
+  body.dark-mode .shift-menu-title {
+
+    color:
+      #aeaeb2;
+
+  }
+
+
+  body.dark-mode #shiftMenuButtons button {
+
+    background:
+      #3a3a3c;
+
+    color:
+      #f2f2f7;
+
+  }
+
+
+  body.dark-mode .calendar-confirm-inner {
+
+    background:
+      #2c2c2e;
+
+    color:
+      #f2f2f7;
+
+  }
+
+
+  body.dark-mode #calendarConfirmText {
+
+    color:
+      #aeaeb2;
+
+  }
+
+
+  body.dark-mode #organizationDangerZone {
+
+    background:
+      #321f1f;
+
+  }
+
+
+  body.dark-mode #initialLoadingScreen {
+
+    background:
+      rgba(28,28,30,.96);
+
+  }
+
+
+  /* ==================================================
+     ログイン画面 ダークモード
+  ================================================== */
+
+  body.dark-mode #loginPage {
+
+    background:
+      linear-gradient(
+        180deg,
+        #1c1c1e 0%,
+        #111113 100%
+      );
+
+  }
+
+
+  body.dark-mode .login-container {
+
+    background:
+      #2c2c2e;
+
+  }
+
+
+  body.dark-mode .login-title,
+  body.dark-mode .organization-form-title {
+
+    color:
+      #f2f2f7;
+
+  }
+
+
+  body.dark-mode .login-subtitle,
+  body.dark-mode .organization-form-note {
+
+    color:
+      #aeaeb2;
+
+  }
+
+
+  body.dark-mode #googleLoginButton {
+
+    background:
+      #ffffff;
+
+    color:
+      #1c1c1e;
+
+  }
+
+
+  body.dark-mode .login-input,
+  body.dark-mode .organization-input {
+
+    background:
+      #1c1c1e;
+
+    color:
+      #f2f2f7;
+
+    border-color:
+      #636366;
+
+  }
+
+
+  body.dark-mode .login-divider {
+
+    color:
+      #aeaeb2;
+
+  }
+
+
+  body.dark-mode .login-divider::before,
+  body.dark-mode .login-divider::after {
+
+    background:
+      #48484a;
+
+  }
+
+
+</style>
 
 
 <!-- ==================================================
-     Service Worker
+     HTML終了前の初期処理
 ================================================== -->
 
 <script>
 
-  if (
-    "serviceWorker" in navigator
-  ) {
+  /*
+   * この部分では認証処理そのものは行わない。
+   * 認証処理は script.js にまとめる。
+   */
 
-    window.addEventListener(
-      "load",
-      function () {
 
-        navigator.serviceWorker
-          .register(
-            "./service-worker.js"
-          )
-          .then(
-            function (registration) {
+  document.addEventListener(
+    "DOMContentLoaded",
+    function () {
 
-              console.log(
-                "★ Service Worker 登録成功",
-                registration.scope
-              );
+      /*
+       * 招待URLの場合、
+       * 招待登録画面を表示する処理は
+       * 上の script で行う。
+       */
 
-            }
-          )
-          .catch(
-            function (error) {
-
-              console.error(
-                "★ Service Worker 登録失敗",
-                error
-              );
-
-            }
-          );
-
-      }
-    );
-
-  }
+    }
+  );
 
 </script>
 
