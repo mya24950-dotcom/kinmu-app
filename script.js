@@ -2761,6 +2761,37 @@ async function loginWithEmail() {
 
 }
 
+function setupEmailLogin() {
+
+  const button =
+    document.getElementById(
+      "emailLoginButton"
+    );
+
+
+  if (!button) {
+
+    console.log(
+      "★ emailLoginButton が見つかりません"
+    );
+
+    return;
+
+  }
+
+
+  button.addEventListener(
+    "click",
+    loginWithEmail
+  );
+
+
+  console.log(
+    "★ メールログイン設定完了"
+  );
+
+}
+
 async function registerWithEmail() {
 
   const emailInput =
