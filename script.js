@@ -1239,11 +1239,13 @@ async function loginWithPasskey() {
  * Passkeyを登録する
  */
 async function registerCurrentUserPasskey() {
-  console.log("★ Passkey登録処理開始");
+  console.log(
+    "★ Passkey登録処理開始"
+  );
   try {
-    /* ==================================================
-       ① Passkey対応確認
-    ================================================== */
+    /*
+     * Passkey対応確認
+     */
     console.log(
       "★ Passkeyチェック① PublicKeyCredential:",
       !!window.PublicKeyCredential
@@ -1256,41 +1258,39 @@ async function registerCurrentUserPasskey() {
       );
       return;
     }
-    /* ==================================================
-       ② 現在のログイン状態を確認
-    ================================================== */
+    /*
+     * 現在のログイン状態を確認
+     */
     console.log(
       "★ Passkeyチェック② セッション取得開始"
     );
     const {
       data: {
         session
-      },
-      error: sessionError
+      }
     } =
       await supabaseClient.auth.getSession();
     console.log(
       "★ Passkeyチェック② session:",
-      !!session,
-      "error:",
-      sessionError
+      session
     );
-    if (sessionError) {
-      console.error(
-        "Passkey用セッション取得エラー",
-        sessionError
-      );
-      return;
-    }
     if (!session) {
       console.log(
         "ログインしていないためPasskey登録を行いません"
       );
       return;
     }
-    /* ==================================================
-       ③ Passkey一覧取得
-    ================================================== */
+    /*
+     * 現在のユーザー確認
+     */
+    console.log(
+      "★ Passkey登録対象ユーザー:",
+      session.user?.id,
+      session.user?.email
+    );
+    /*
+     * すでにPasskeyが登録されているか確認
+     */
     console.log(
       "★ Passkeyチェック③ Passkey一覧取得開始"
     );
@@ -1302,7 +1302,6 @@ async function registerCurrentUserPasskey() {
     console.log(
       "★ Passkeyチェック③ 結果:",
       passkeys,
-      "error:",
       listError
     );
     if (listError) {
@@ -1310,15 +1309,11 @@ async function registerCurrentUserPasskey() {
         "Passkey一覧取得エラー",
         listError
       );
-      alert(
-        "Passkey情報の確認に失敗しました。\n\n" +
-        (listError?.message || String(listError))
-      );
       return;
     }
-    /* ==================================================
-       ④ すでにPasskeyが登録されているか確認
-    ================================================== */
+    /*
+     * すでに登録済みなら何もしない
+     */
     if (
       passkeys &&
       passkeys.length > 0
@@ -1331,9 +1326,9 @@ async function registerCurrentUserPasskey() {
     console.log(
       "★ Passkey未登録です"
     );
-    /* ==================================================
-       ⑤ Passkey登録確認
-    ================================================== */
+    /*
+     * Passkey登録を確認
+     */
     const register =
       confirm(
         "次回から、Face ID・指紋などで\n" +
@@ -1350,9 +1345,9 @@ async function registerCurrentUserPasskey() {
       );
       return;
     }
-    /* ==================================================
-       ⑥ Passkey登録開始
-    ================================================== */
+    /*
+     * Passkey登録開始
+     */
     console.log(
       "★ Passkey登録開始"
     );
@@ -1362,17 +1357,9 @@ async function registerCurrentUserPasskey() {
     } =
       await supabaseClient.auth
         .registerPasskey();
-    console.log(
-      "★ registerPasskey() 結果:",
-      data,
-      error
-    );
     if (error) {
       throw error;
     }
-    /* ==================================================
-       ⑦ Passkey登録完了
-    ================================================== */
     console.log(
       "★ Passkey登録完了",
       data
@@ -1393,21 +1380,19 @@ async function registerCurrentUserPasskey() {
       String(error);
     const lowerMessage =
       errorMessage.toLowerCase();
-    /* ==================================================
-       ユーザーによるキャンセル
-    ================================================== */
-    const isUserCancel =
-      error?.name === "NotAllowedError" ||
-      error?.name === "AbortError" ||
-      lowerMessage.includes("cancel") ||
-      lowerMessage.includes("abort") ||
-      lowerMessage.includes(
-        "not allowed by the user agent"
-      ) ||
-      lowerMessage.includes(
-        "the request is not allowed"
-      );
-    if (!isUserCancel) {
+    /*
+     * ユーザーがFace ID等を
+     * キャンセルした場合は
+     * エラー画面を出さない
+     */
+    if (
+      !lowerMessage.includes(
+        "cancel"
+      ) &&
+      !lowerMessage.includes(
+        "abort"
+      )
+    ) {
       alert(
         "Face ID / 指紋ログインの登録に失敗しました。\n\n" +
         errorMessage
