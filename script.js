@@ -308,801 +308,586 @@ function hideInitialLoading() {
 ================================================== */
 
 document.addEventListener(
-"DOMContentLoaded",
-init
-);
-asyncfunctioninit(){
-try{
-console.log(
-"★勤務表アプリ起動"
-);
-/*==================================================
-Supabase初期化
-※Passkeyは今回は起動処理から切り離す
-==================================================*/
-if(
-!window.supabase||
-typeofwindow.supabase.createClient!=="function"
-){
-thrownewError(
-"Supabaseライブラリが読み込まれていません"
-);
-}
-supabaseClient=
-window.supabase.createClient(
-SUPABASE_URL,
-SUPABASE_KEY
-);
-console.log(
-"★Supabase初期化完了"
-);
-/*==================================================
-現在のセッション確認
-==================================================*/
-let{
-data:{
-session
-},
-error
-}=
-awaitsupabaseClient.auth.getSession();
-if(error){
-throwerror;
-}
-console.log(
-"★初回セッション確認:",
-session
-?session.user.email
-:"なし"
-);
-/*==================================================
-ログアウト後の強制ログイン画面
-==================================================*/
-constforceLoginScreen=
-sessionStorage.getItem(
-"forceLoginScreen"
-);
-if(
-forceLoginScreen==="true"
-){
-awaitsupabaseClient.auth.signOut({
-scope:"global"
-});
-sessionStorage.removeItem(
-"forceLoginScreen"
-);
-showLoginPage();
-setupGoogleLogin();
-setupAppleLogin();
-setupEmailLogin();
-/*
-Passkeyは一旦無効化
-setupPasskeyLogin();
-*/
-setupNewOrganizationButton();
-if(
-typeofsetupAzureLogin===
-"function"
-){
-setupAzureLogin();
-}
-return;
-}
-/*==================================================
-ログインしていない場合
-OAuthの認証完了を待つ
-==================================================*/
-if(!session){
-console.log(
-"★セッションなし。ログイン画面を表示します。"
-);
-showLoginPage();
-setupGoogleLogin();
-setupAppleLogin();
-setupEmailLogin();
-/*
-Passkeyは一旦無効化
-setupPasskeyLogin();
-*/
-setupNewOrganizationButton();
-if(
-typeofsetupAzureLogin===
-"function"
-){
-setupAzureLogin();
-}
-/*------------------------------------------
-認証状態変更監視
-------------------------------------------*/
-session=
-awaitnewPromise(
-asyncfunction(resolve){
-letfinished=false;
-letauthListener=null;
-constfinish=
-function(newSession){
-if(finished){
-return;
-}
-finished=true;
-if(
-authListener&&
-authListener.subscription
-){
-authListener
-.subscription
-.unsubscribe();
-}
-resolve(
-newSession||null
-);
-};
-authListener=
-supabaseClient.auth.onAuthStateChange(
-function(
-event,
-newSession
-){
-console.log(
-"★Supabase認証イベント:",
-event
-);
-if(
-newSession
-){
-console.log(
-"★認証セッション取得:",
-newSession.user.email
-);
-finish(
-newSession
-);
-}
-}
-);
-/*------------------------------------------
-listener登録後にもう一度確認
-------------------------------------------*/
-try{
-const{
-data:{
-session:
-latestSession
-}
-}=
-awaitsupabaseClient
-.auth
-.getSession();
-if(
-latestSession&&
-!finished
-){
-console.log(
-"★認証待機中にセッションを取得:",
-latestSession.user.email
-);
-finish(
-latestSession
-);
-return;
-}
-}catch(
-sessionError
-){
-console.error(
-"認証待機中のセッション取得エラー",
-sessionError
-);
-}
-/*------------------------------------------
-最大15秒待機
-------------------------------------------*/
-setTimeout(
-function(){
-if(!finished){
-console.log(
-"★認証完了を15秒待っても取得できませんでした"
-);
-finish(
-null
-);
-}
-},
-15000
-);
-}
-);
-/*------------------------------------------
-認証できなかった場合
-------------------------------------------*/
-if(!session){
-console.log(
-"★認証セッションを取得できませんでした"
-);
-showLoginPage(
-"ログインセッションを取得できませんでした。"
-);
-setupGoogleLogin();
-setupEmailLogin();
-setupAppleLogin();
-/*
-setupPasskeyLogin();
-*/
-setupNewOrganizationButton();
-if(
-typeofsetupAzureLogin===
-"function"
-){
-setupAzureLogin();
-}
-return;
-}
-console.log(
-"★認証後のセッションを確認しました:",
-session.user.email
-);
-}
-/*==================================================
-ログイン済み
-==================================================*/
-console.log(
-"★ログイン済み:",
-session.user.email
-);
-/*==================================================
-ローディング開始
-==================================================*/
-showInitialLoading(
-"ログイン情報を確認しています…"
-);
-/*==================================================
-招待リンク確認
-※Google/Apple/Azureログイン後に実行
-==================================================*/
-constinviteToken=
-newURLSearchParams(
-window.location.search
-).get("invite");
-if(inviteToken){
-console.log(
-"★招待リンクを検出しました"
-);
-showInitialLoading(
-"招待情報を確認しています…"
-);
-constinviteAccepted=
-awaithandleInviteAfterLogin();
-if(!inviteAccepted){
-console.error(
-"★招待登録に失敗しました"
-);
-hideInitialLoading();
-showLoginPage(
-"招待リンクの登録に失敗しました。"
-);
-setupGoogleLogin();
-setupEmailLogin();
-setupAppleLogin();
-/*
-setupPasskeyLogin();
-*/
-setupNewOrganizationButton();
-if(
-typeofsetupAzureLogin===
-"function"
-){
-setupAzureLogin();
-}
-return;
-}
-console.log(
-"★招待登録が完了しました"
-);
-/*
-*handleInviteAfterLogin()内で
-*inviteパラメータは削除される。
-*
-*ここから通常の
-*「所属職場取得」
-*に進む。
-*/
-}
-/*==================================================
-新規職場登録
-==================================================*/
-constpendingOrganizationName=
-sessionStorage.getItem(
-"pendingOrganizationName"
-);
-constpendingStaffName=
-sessionStorage.getItem(
-"pendingStaffName"
-);
-if(
-pendingOrganizationName&&
-pendingStaffName
-){
-console.log(
-"★新規職場登録処理開始"
-);
-sessionStorage.removeItem(
-"pendingOrganizationName"
-);
-sessionStorage.removeItem(
-"pendingStaffName"
-);
-try{
-const{
-data,
-error
-}=
-awaitsupabaseClient.rpc(
-"create_organization_and_admin",
-{
-new_org_name:
-pendingOrganizationName,
-new_staff_name:
-pendingStaffName
-}
-);
-if(error){
-throwerror;
-}
-if(
-!data||
-!data.length
-){
-thrownewError(
-"職場の登録結果を取得できませんでした。"
-);
-}
-constresult=
-data[0];
-currentOrganization={
-id:
-result.organization_id,
-name:
-result.organization_name,
-role:
-"admin"
-};
-console.log(
-"★新規職場登録完了:",
-currentOrganization
-);
-alert(
-`${result.organization_name}を登録しました。\n\n`+
-`${result.staff_name}さんを登録者として職員管理に登録しました。`
-);
-}catch(error){
-console.error(
-"新規職場登録エラー",
-error
-);
-hideInitialLoading();
-alert(
-"職場の登録に失敗しました。\n\n"+
-(
-error?.message||
-String(error)
-)
-);
-showLoginPage(
-"職場の登録に失敗しました。"
-);
-setupGoogleLogin();
-setupEmailLogin();
-setupAppleLogin();
-/*
-setupPasskeyLogin();
-*/
-setupNewOrganizationButton();
-if(
-typeofsetupAzureLogin===
-"function"
-){
-setupAzureLogin();
-}
-return;
-}
-}
-/*==================================================
-所属職場取得
-==================================================*/
-showInitialLoading(
-"職場情報を確認しています…"
-);
-console.log(
-"★職場情報取得開始:",
-session.user.id
-);
-constorganization=
-awaitgetCurrentOrganization(
-session.user.id
-);
-console.log(
-"★職場情報取得結果:",
-organization
-);
-/*==================================================
-職場が見つからない場合
-==================================================*/
-if(!organization){
-console.error(
-"★このユーザーの所属職場が見つかりません"
-);
-hideInitialLoading();
-showLoginPage(
-"ログインしましたが、職場への所属がありません。"
-);
-setupGoogleLogin();
-setupEmailLogin();
-setupAppleLogin();
-/*
-setupPasskeyLogin();
-*/
-setupNewOrganizationButton();
-if(
-typeofsetupAzureLogin===
-"function"
-){
-setupAzureLogin();
-}
-return;
-}
-/*==================================================
-currentOrganization設定
-==================================================*/
-currentOrganization=
-organization;
-console.log(
-"★currentOrganization設定完了:",
-currentOrganization
-);
-/*==================================================
-職場名表示
-==================================================*/
-constorganizationTitle=
-document.getElementById(
-"organizationTitle"
-);
-if(organizationTitle){
-organizationTitle.textContent=
-currentOrganization.name;
-}
-/*==================================================
-Passkey登録
-★ここでは絶対に実行しない
-招待ユーザーも通常ログインユーザーも、
-まず勤務表を開く。
-==================================================*/
-/*==================================================
-職場管理者用の危険操作設定
-==================================================*/
-try{
-setupOrganizationDangerZone();
-}catch(error){
-console.error(
-"危険操作設定エラー",
-error
-);
-}
-/*==================================================
-★ここで勤務表を表示する
-==================================================*/
-console.log(
-"★勤務表表示開始"
-);
-showApp();
-/*==================================================
-ローカルデータ読み込み
-==================================================*/
-try{
-loadLocalData();
-}catch(error){
-console.error(
-"ローカルデータ読み込みエラー",
-error
-);
-}
-/*==================================================
-イベント設定
-==================================================*/
-try{
-bindEvents();
-}catch(error){
-console.error(
-"イベント設定エラー",
-error
-);
-}
-/*==================================================
-ログアウト設定
-==================================================*/
-try{
-setupLogoutButton();
-}catch(error){
-console.error(
-"ログアウト設定エラー",
-error
-);
-}
-/*==================================================
-Supabaseデータ読み込み
-★ここで失敗しても勤務表画面を消さない
-==================================================*/
-try{
-console.log(
-"★Supabase勤務表データ読み込み開始"
-);
-awaitloadAllFromSupabase();
-console.log(
-"★Supabase勤務表データ読み込み完了"
-);
-}catch(error){
-console.error(
-"Supabaseデータ読み込みエラー",
-error
-);
-}
-/*==================================================
-勤務表描画
-★最重要
-==================================================*/
-try{
-console.log(
-"★勤務表描画開始"
-);
-renderAll();
-console.log(
-"★勤務表描画完了"
-);
-}catch(error){
-console.error(
-"勤務表描画エラー",
-error
-);
-throwerror;
-}
-/*==================================================
-★ここでローディングを終了
-祝日やRealtimeでエラーが起きても、
-すでに勤務表は表示済みにする。
-==================================================*/
-hideInitialLoading();
-console.log(
-"★勤務表表示完了"
-);
-/*==================================================
-祝日読み込み
-※勤務表表示後に実行
-==================================================*/
-try{
-awaitloadPublicHolidays();
-}catch(error){
-console.error(
-"祝日読み込みエラー",
-error
-);
-}
-/*==================================================
-Realtime設定
-※勤務表表示後に実行
-==================================================*/
-try{
-setupRealtime();
-}catch(error){
-console.error(
-"Realtime設定エラー",
-error
-);
-}
-/*==================================================
-自動同期
-==================================================*/
-try{
-startAutoSync();
-}catch(error){
-console.error(
-"自動同期設定エラー",
-error
-);
-}
-/*==================================================
-ページ表示状態変更時の同期
-==================================================*/
-try{
-setupVisibilitySync();
-}catch(error){
-console.error(
-"表示状態同期設定エラー",
-error
-);
-}
-/*==================================================
-ダークモード
-==================================================*/
-try{
-setupDarkMode();
-}catch(error){
-console.error(
-"ダークモード設定エラー",
-error
-);
-}
-/*==================================================
-完了
-==================================================*/
-console.log(
-"★勤務表アプリ起動完了"
-);
-}catch(error){
-console.error(
-"★勤務表アプリ起動エラー",
-error
-);
-hideInitialLoading();
-alert(
-"勤務表アプリの起動に失敗しました。\n\n"+
-(
-error?.message||
-String(error)
-)
-);
-showLoginPage(
-"アプリの起動に失敗しました。"
-);
-setupGoogleLogin();
-setupEmailLogin();
-setupAppleLogin();
-/*
-Passkeyは一旦無効化
-setupPasskeyLogin();
-*/
-setupNewOrganizationButton();
-if(
-typeofsetupAzureLogin===
-"function"
-){
-setupAzureLogin();
-}
-}
+  "DOMContentLoaded",
+  init
+);
+async function init() {
+  try {
+    console.log(
+      "★ 勤務表アプリ起動"
+    );
+    /* ==================================================
+       Supabase初期化
+    ================================================== */
+    if (
+      !window.supabase ||
+      typeof window.supabase.createClient !== "function"
+    ) {
+      throw new Error(
+        "Supabaseライブラリが読み込まれていません"
+      );
+    }
+    supabaseClient =
+      window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+      );
+    console.log(
+      "★ Supabase初期化完了"
+    );
+    /* ==================================================
+       現在のセッション確認
+    ================================================== */
+    let {
+      data: {
+        session
+      },
+      error
+    } =
+      await supabaseClient.auth.getSession();
+    if (error) {
+      throw error;
+    }
+    console.log(
+      "★ 初回セッション確認:",
+      session
+        ? session.user.email
+        : "なし"
+    );
+    /* ==================================================
+       ログアウト後の強制ログイン画面
+    ================================================== */
+    const forceLoginScreen =
+      sessionStorage.getItem(
+        "forceLoginScreen"
+      );
+    if (
+      forceLoginScreen === "true"
+    ) {
+      console.log(
+        "★ 強制ログイン画面を表示します"
+      );
+      await supabaseClient.auth.signOut({
+        scope: "global"
+      });
+      sessionStorage.removeItem(
+        "forceLoginScreen"
+      );
+      showLoginPage();
+      setupGoogleLogin();
+      setupAppleLogin();
+      setupEmailLogin();
+      setupNewOrganizationButton();
+      /*
+       * Azureログイン機能が存在する場合
+       */
+      if (
+        typeof setupAzureLogin ===
+        "function"
+      ) {
+        setupAzureLogin();
+      }
+      /*
+       * Passkeyは一旦停止
+       *
+       * setupPasskeyLogin();
+       */
+      return;
+    }
+    /* ==================================================
+       セッションがない場合
+       
+       ★ここでは認証待機しない
+       ★ログインボタンを設定して終了する
+       
+       Google / Apple / Azure OAuthから戻ると
+       ページが再読み込みされ、このinit()が
+       もう一度実行される
+    ================================================== */
+    if (!session) {
+      console.log(
+        "★ セッションなし"
+      );
+      showLoginPage();
+      /* ------------------------------------------
+         ログインボタン設定
+      ------------------------------------------ */
+      setupGoogleLogin();
+      setupAppleLogin();
+      setupEmailLogin();
+      setupNewOrganizationButton();
+      /*
+       * Azureログイン機能が存在する場合
+       */
+      if (
+        typeof setupAzureLogin ===
+        "function"
+      ) {
+        setupAzureLogin();
+      }
+      /*
+       * Passkeyは一旦停止
+       *
+       * setupPasskeyLogin();
+       */
+      console.log(
+        "★ ログイン画面の設定完了"
+      );
+      /*
+       * 重要
+       *
+       * ここでinit()を終了する。
+       *
+       * OAuthログイン後に戻ってきたとき、
+       * ページが再読み込みされて
+       * getSession()から再開する。
+       */
+      return;
+    }
+    /* ==================================================
+       ログイン済み
+    ================================================== */
+    console.log(
+      "★ ログイン済み:",
+      session.user.email
+    );
+    /* ==================================================
+       初期ローディング表示
+    ================================================== */
+    showInitialLoading(
+      "ログイン情報を確認しています…"
+    );
+    /* ==================================================
+       招待リンク確認
+       
+       Google / Apple / Azureログイン後、
+       ?invite=xxxx が残っていればここで処理
+    ================================================== */
+    const inviteToken =
+      new URLSearchParams(
+        window.location.search
+      ).get("invite");
+    if (inviteToken) {
+      console.log(
+        "★ 招待リンクを検出しました"
+      );
+      showInitialLoading(
+        "招待情報を確認しています…"
+      );
+      const inviteAccepted =
+        await handleInviteAfterLogin();
+      if (!inviteAccepted) {
+        console.error(
+          "★ 招待登録に失敗しました"
+        );
+        hideInitialLoading();
+        showLoginPage(
+          "招待リンクの登録に失敗しました。"
+        );
+        setupGoogleLogin();
+        setupAppleLogin();
+        setupEmailLogin();
+        setupNewOrganizationButton();
+        if (
+          typeof setupAzureLogin ===
+          "function"
+        ) {
+          setupAzureLogin();
+        }
+        return;
+      }
+      console.log(
+        "★ 招待登録が完了しました"
+      );
+    }
+    /* ==================================================
+       新規職場登録確認
+    ================================================== */
+    const pendingOrganizationName =
+      sessionStorage.getItem(
+        "pendingOrganizationName"
+      );
+    const pendingStaffName =
+      sessionStorage.getItem(
+        "pendingStaffName"
+      );
+    if (
+      pendingOrganizationName &&
+      pendingStaffName
+    ) {
+      console.log(
+        "★ 新規職場登録処理開始"
+      );
+      /*
+       * 二重実行防止のため先に削除
+       */
+      sessionStorage.removeItem(
+        "pendingOrganizationName"
+      );
+      sessionStorage.removeItem(
+        "pendingStaffName"
+      );
+      try {
+        const {
+          data,
+          error
+        } =
+          await supabaseClient.rpc(
+            "create_organization_and_admin",
+            {
+              new_org_name:
+                pendingOrganizationName,
+              new_staff_name:
+                pendingStaffName
+            }
+          );
+        if (error) {
+          throw error;
+        }
+        if (
+          !data ||
+          !data.length
+        ) {
+          throw new Error(
+            "職場の登録結果を取得できませんでした。"
+          );
+        }
+        const result =
+          data[0];
+        currentOrganization = {
+          id:
+            result.organization_id,
+          name:
+            result.organization_name,
+          role:
+            "admin"
+        };
+        console.log(
+          "★ 新規職場登録完了:",
+          currentOrganization
+        );
+        alert(
+          `${result.organization_name}を登録しました。\n\n` +
+          `${result.staff_name}さんを登録者として職員管理に登録しました。`
+        );
+      } catch (error) {
+        console.error(
+          "★ 新規職場登録エラー",
+          error
+        );
+        hideInitialLoading();
+        alert(
+          "職場の登録に失敗しました。\n\n" +
+          (
+            error?.message ||
+            String(error)
+          )
+        );
+        showLoginPage(
+          "職場の登録に失敗しました。"
+        );
+        setupGoogleLogin();
+        setupAppleLogin();
+        setupEmailLogin();
+        setupNewOrganizationButton();
+        if (
+          typeof setupAzureLogin ===
+          "function"
+        ) {
+          setupAzureLogin();
+        }
+        return;
+      }
+    }
+    /* ==================================================
+       所属職場取得
+    ================================================== */
+    showInitialLoading(
+      "職場情報を確認しています…"
+    );
+    console.log(
+      "★ 職場情報取得開始:",
+      session.user.id
+    );
+    const organization =
+      await getCurrentOrganization(
+        session.user.id
+      );
+    console.log(
+      "★ 職場情報取得結果:",
+      organization
+    );
+    /* ==================================================
+       職場が見つからない場合
+    ================================================== */
+    if (!organization) {
+      console.error(
+        "★ 所属職場が見つかりません"
+      );
+      hideInitialLoading();
+      showLoginPage(
+        "ログインしましたが、職場への所属がありません。"
+      );
+      setupGoogleLogin();
+      setupAppleLogin();
+      setupEmailLogin();
+      setupNewOrganizationButton();
+      if (
+        typeof setupAzureLogin ===
+        "function"
+      ) {
+        setupAzureLogin();
+      }
+      return;
+    }
+    /* ==================================================
+       currentOrganization設定
+    ================================================== */
+    currentOrganization =
+      organization;
+    console.log(
+      "★ currentOrganization設定完了:",
+      currentOrganization
+    );
+    /* ==================================================
+       職場名表示
+    ================================================== */
+    const organizationTitle =
+      document.getElementById(
+        "organizationTitle"
+      );
+    if (organizationTitle) {
+      organizationTitle.textContent =
+        currentOrganization.name;
+    }
+    /* ==================================================
+       Passkey登録
+       
+       ★ここでは実行しない
+       
+       Google / Apple / Azureログイン後、
+       まず勤務表を開く。
+    ================================================== */
+    /* ==================================================
+       職場管理者用の危険操作設定
+    ================================================== */
+    try {
+      setupOrganizationDangerZone();
+    } catch (error) {
+      console.error(
+        "危険操作設定エラー",
+        error
+      );
+    }
+    /* ==================================================
+       アプリ表示
+    ================================================== */
+    console.log(
+      "★ 勤務表画面を表示します"
+    );
+    showApp();
+    /* ==================================================
+       ローカルデータ読み込み
+    ================================================== */
+    try {
+      loadLocalData();
+    } catch (error) {
+      console.error(
+        "ローカルデータ読み込みエラー",
+        error
+      );
+    }
+    /* ==================================================
+       イベント設定
+    ================================================== */
+    try {
+      bindEvents();
+    } catch (error) {
+      console.error(
+        "イベント設定エラー",
+        error
+      );
+    }
+    /* ==================================================
+       ログアウト設定
+    ================================================== */
+    try {
+      setupLogoutButton();
+    } catch (error) {
+      console.error(
+        "ログアウト設定エラー",
+        error
+      );
+    }
+    /* ==================================================
+       Supabaseデータ読み込み
+       
+       ※失敗してもログイン画面には戻さない
+    ================================================== */
+    try {
+      console.log(
+        "★ Supabase勤務表データ読み込み開始"
+      );
+      await loadAllFromSupabase();
+      console.log(
+        "★ Supabase勤務表データ読み込み完了"
+      );
+    } catch (error) {
+      console.error(
+        "Supabaseデータ読み込みエラー",
+        error
+      );
+    }
+    /* ==================================================
+       勤務表描画
+    ================================================== */
+    try {
+      console.log(
+        "★ 勤務表描画開始"
+      );
+      renderAll();
+      console.log(
+        "★ 勤務表描画完了"
+      );
+    } catch (error) {
+      console.error(
+        "★ 勤務表描画エラー",
+        error
+      );
+      /*
+       * renderAllだけは画面の根幹なので
+       * 起動エラーとして扱う
+       */
+      throw error;
+    }
+    /* ==================================================
+       ★勤務表を表示済みにする
+       
+       ここ以降の処理で失敗しても
+       ログイン画面へ戻さない
+    ================================================== */
+    hideInitialLoading();
+    console.log(
+      "★ 勤務表表示完了"
+    );
+    /* ==================================================
+       祝日読み込み
+    ================================================== */
+    try {
+      await loadPublicHolidays();
+    } catch (error) {
+      console.error(
+        "祝日読み込みエラー",
+        error
+      );
+    }
+    /* ==================================================
+       Realtime設定
+    ================================================== */
+    try {
+      setupRealtime();
+    } catch (error) {
+      console.error(
+        "Realtime設定エラー",
+        error
+      );
+    }
+    /* ==================================================
+       自動同期
+    ================================================== */
+    try {
+      startAutoSync();
+    } catch (error) {
+      console.error(
+        "自動同期設定エラー",
+        error
+      );
+    }
+    /* ==================================================
+       表示状態変更時の同期
+    ================================================== */
+    try {
+      setupVisibilitySync();
+    } catch (error) {
+      console.error(
+        "表示状態同期設定エラー",
+        error
+      );
+    }
+    /* ==================================================
+       ダークモード
+    ================================================== */
+    try {
+      setupDarkMode();
+    } catch (error) {
+      console.error(
+        "ダークモード設定エラー",
+        error
+      );
+    }
+    /* ==================================================
+       起動完了
+    ================================================== */
+    console.log(
+      "★ 勤務表アプリ起動完了"
+    );
+  } catch (error) {
+    console.error(
+      "★ 勤務表アプリ起動エラー",
+      error
+    );
+    hideInitialLoading();
+    alert(
+      "勤務表アプリの起動に失敗しました。\n\n" +
+      (
+        error?.message ||
+        String(error)
+      )
+    );
+    showLoginPage(
+      "アプリの起動に失敗しました。"
+    );
+    setupGoogleLogin();
+    setupAppleLogin();
+    setupEmailLogin();
+    setupNewOrganizationButton();
+    if (
+      typeof setupAzureLogin ===
+      "function"
+    ) {
+      setupAzureLogin();
+    }
+    /*
+     * Passkeyは一旦停止
+     *
+     * setupPasskeyLogin();
+     */
+  }
 }
 
-###今回の変更点はかなり重要です
+この版では、ログイン画面で init() が15秒待機する処理を完全に削除しています。
 
-特にここです。
-
-supabaseClient=
-window.supabase.createClient(
-SUPABASE_URL,
-SUPABASE_KEY
-);
-
-今までの
-
-auth:{
-experimental:{
-passkey:true
-}
-}
-
-をいったん外しました。
-
-Passkey自体は後で戻せます。SupabaseでもPasskeyは現在experimental扱いです。
-
-そして、
+また、
 
 setupPasskeyLogin();
 
-も全部止めています。
+と
 
-さらに、
+await registerCurrentUserPasskey();
 
-awaitregisterCurrentUserPasskey();
+は init() から完全に外しています。
 
-もありません。
+まずこれで、
 
-⸻
+① ログイン画面のGoogleボタンが押せる
+② Google認証へ移動できる
+③ 水下さんの招待が処理される
+④ organization_members.user_id は既にあるので山梨県立盲学校を取得
+⑤ 勤務表が表示される
 
-###そして一番大事な変更
+というところまでを確認します。
 
-今までは、
-
-勤務表読み込み
-↓
-renderAll()
-↓
-祝日
-↓
-Realtime
-↓
-自動同期
-↓
-ダークモード
-↓
-hideInitialLoading()
-
-でした。
-
-例えばloadPublicHolidays()でエラーになると、外側のcatchに入ってしまい、
-
-showLoginPage(...)
-
-が実行される可能性があります。
-
-今回からは、
-
-職場取得
-↓
-showApp()
-↓
-勤務表データ取得
-↓
-renderAll()
-↓
-hideInitialLoading()
-↓
-【ここで勤務表表示完了】
-↓
-祝日
-↓
-Realtime
-↓
-自動同期
-↓
-ダークモード
-
-に変えています。
-
-つまり、後半の処理でエラーが起きても、ログイン画面へ戻されません。
-
-⸻
-
-###水下さんの場合はこうなります
-
-今回確認できたDB状態が、
-
-水下
-山梨県立盲学校
-user_id=GoogleアカウントのUUID
-
-なので、Googleログイン後は、
-
-Googleログイン
-↓
-session取得
-↓
-inviteToken検出
-↓
-accept_staff_invite
-↓
-水下さんのuser_id設定済み
-↓
-getCurrentOrganization(user_id)
-↓
-山梨県立盲学校を取得
-↓
-currentOrganization設定
-↓
-showApp()
-↓
-loadAllFromSupabase()
-↓
-renderAll()
-↓
-勤務表表示
-
-となります。
-
-これが今回の本来のルートです。
-
-なお、SupabaseのOAuthはリダイレクト後のセッション復元をクライアント側で処理するため、今回のようにOAuth復帰後のセッションを確認してから招待処理へ進める構成は適切です。
-
-まずこのinit()に丸ごと交換してください。
-この段階ではPasskeyを戻さないでください。
-
-これで水下さんが勤務表まで入れたら、次にPasskeyだけを安全に戻すところを直します。
+Passkeyは勤務表が正常に開くことを確認してから戻します。
 
 /* ==================================================
    Passkeyログイン
