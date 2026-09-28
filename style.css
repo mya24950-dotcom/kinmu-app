@@ -2892,3 +2892,39 @@ body.loading-active #loginPage {
     width: 100%;
   }
 }
+
+/* =========================================================
+   職員管理：登録職員
+   PCでは2列、スマホでは1列
+   ========================================================= */
+
+@media screen and (min-width: 701px) {
+
+  #staffPage #staffList {
+    display: grid !important;
+
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    gap: 10px 14px;
+
+    align-items: stretch;
+  }
+
+  #staffPage #staffList > * {
+    width: 100%;
+    min-width: 0;
+  }
+
+}
+
+
+/* スマホは1列 */
+@media screen and (max-width: 700px) {
+
+  #staffPage #staffList {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+}
