@@ -366,6 +366,8 @@ async function init() {
 
       setupGoogleLogin();
 
+      setupAppleLogin();
+
       setupPasskeyLogin();
 
       setupNewOrganizationButton();
