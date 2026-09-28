@@ -395,7 +395,7 @@ async function init() {
 
       setupGoogleLogin();
 
-      setupAppleLogin();
+      setupEmailLogin();
 
       setupPasskeyLogin();
 
@@ -427,7 +427,7 @@ async function init() {
 
       setupGoogleLogin();
 
-      setupAppleLogin();
+      setupEmailLogin();
 
       setupPasskeyLogin();
 
@@ -586,7 +586,7 @@ async function init() {
 
         setupGoogleLogin();
 
-        setupAppleLogin();
+        setupEmailLogin();
 
         setupPasskeyLogin();
 
@@ -651,7 +651,7 @@ session.user.email
 
         setupGoogleLogin();
 
-        setupAppleLogin();
+        setupEmailLogin();
 
         setupPasskeyLogin();
 
@@ -787,7 +787,7 @@ session.user.email
 
         setupGoogleLogin();
 
-        setupAppleLogin();
+        setupEmailLogin();
 
         setupNewOrganizationButton();
 
@@ -825,7 +825,7 @@ session.user.email
 
       setupGoogleLogin();
 
-      setupAppleLogin();
+      setupEmailLogin();
 
       setupPasskeyLogin();
 
@@ -988,7 +988,7 @@ session.user.email
 
     setupGoogleLogin();
 
-    setupAppleLogin();
+    setupEmailLogin();
 
     setupPasskeyLogin();
 
@@ -2309,7 +2309,7 @@ async function deleteCurrentOrganization() {
 
     setupGoogleLogin();
 
-    setupAppleLogin();
+    setupEmailLogin();
 
     setupNewOrganizationButton();
 
