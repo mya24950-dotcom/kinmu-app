@@ -869,11 +869,11 @@ session.user.email
        ※招待登録から来た職員は登録しない
     ================================================== */
 
-    if (!inviteToken) {
+   
 
       await registerCurrentUserPasskey();
 
-    }
+
 
 
     setupOrganizationDangerZone();
