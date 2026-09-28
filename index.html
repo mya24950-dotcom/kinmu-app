@@ -2095,3 +2095,322 @@
     </div>
 
   </header>
+
+  <!-- ==================================================
+     招待登録画面
+================================================== -->
+
+<script>
+
+(function() {
+
+  /*
+   * 招待トークンを取得
+   */
+  function getInviteToken() {
+
+    const params =
+      new URLSearchParams(
+        window.location.search
+      );
+
+    return params.get("invite");
+
+  }
+
+
+  /*
+   * 招待登録画面を表示
+   */
+  function setupInviteRegisterView() {
+
+    const inviteToken =
+      getInviteToken();
+
+
+    const loginMainView =
+      document.getElementById(
+        "loginMainView"
+      );
+
+    const inviteRegisterView =
+      document.getElementById(
+        "inviteRegisterView"
+      );
+
+    const newOrganizationForm =
+      document.getElementById(
+        "newOrganizationForm"
+      );
+
+
+    if (
+      !inviteToken ||
+      !loginMainView ||
+      !inviteRegisterView
+    ) {
+
+      return;
+
+    }
+
+
+    loginMainView.style.display =
+      "none";
+
+
+    if (newOrganizationForm) {
+
+      newOrganizationForm.style.display =
+        "none";
+
+    }
+
+
+    inviteRegisterView.style.display =
+      "block";
+
+
+    try {
+
+      sessionStorage.setItem(
+        "shiftInviteToken",
+        inviteToken
+      );
+
+    } catch (error) {
+
+      console.warn(
+        "招待トークン保存エラー",
+        error
+      );
+
+    }
+
+  }
+
+
+  /*
+   * Googleで招待登録
+   */
+  function setupInviteGoogleButton() {
+
+    const button =
+      document.getElementById(
+        "inviteGoogleButton"
+      );
+
+
+    if (!button) {
+
+      return;
+
+    }
+
+
+    button.onclick =
+      async function() {
+
+        if (
+          typeof loginWithGoogle ===
+          "function"
+        ) {
+
+          await loginWithGoogle();
+
+          return;
+
+        }
+
+
+        const message =
+          document.getElementById(
+            "inviteRegisterMessage"
+          );
+
+
+        if (message) {
+
+          message.textContent =
+            "Googleログイン機能を読み込めませんでした。";
+
+        }
+
+      };
+
+  }
+
+
+  /*
+   * メールアドレス・パスワードで招待登録
+   */
+  function setupInviteEmailButton() {
+
+    const button =
+      document.getElementById(
+        "inviteEmailRegisterButton"
+      );
+
+
+    if (!button) {
+
+      return;
+
+    }
+
+
+    button.onclick =
+      async function() {
+
+        const emailInput =
+          document.getElementById(
+            "inviteEmailInput"
+          );
+
+        const passwordInput =
+          document.getElementById(
+            "invitePasswordInput"
+          );
+
+        const message =
+          document.getElementById(
+            "inviteRegisterMessage"
+          );
+
+
+        const email =
+          emailInput
+            ? emailInput.value.trim()
+            : "";
+
+
+        const password =
+          passwordInput
+            ? passwordInput.value
+            : "";
+
+
+        if (!email) {
+
+          if (message) {
+
+            message.textContent =
+              "メールアドレスを入力してください。";
+
+          }
+
+          return;
+
+        }
+
+
+        if (!password) {
+
+          if (message) {
+
+            message.textContent =
+              "パスワードを入力してください。";
+
+          }
+
+          return;
+
+        }
+
+
+        if (
+          typeof registerWithEmail !==
+          "function"
+        ) {
+
+          if (message) {
+
+            message.textContent =
+              "メール登録機能を読み込めませんでした。";
+
+          }
+
+          return;
+
+        }
+
+
+        button.disabled = true;
+
+
+        try {
+
+          await registerWithEmail(
+            email,
+            password
+          );
+
+        } catch (error) {
+
+          console.error(
+            "招待メール登録エラー:",
+            error
+          );
+
+          if (message) {
+
+            message.textContent =
+              error?.message ||
+              "メールアドレスでの登録に失敗しました。";
+
+          }
+
+        } finally {
+
+          button.disabled = false;
+
+        }
+
+      };
+
+  }
+
+
+  /*
+   * 各ボタンを設定
+   */
+  function setupInviteButtons() {
+
+    setupInviteGoogleButton();
+
+    setupInviteEmailButton();
+
+  }
+
+
+  /*
+   * 初期化
+   */
+  function initInviteScreen() {
+
+    setupInviteRegisterView();
+
+    setupInviteButtons();
+
+  }
+
+
+  if (
+    document.readyState ===
+    "loading"
+  ) {
+
+    document.addEventListener(
+      "DOMContentLoaded",
+      initInviteScreen
+    );
+
+  } else {
+
+    initInviteScreen();
+
+  }
+
+})();
+
+</script>
