@@ -311,6 +311,8 @@ document.addEventListener("DOMContentLoaded", init);
 
 async function init() {
 
+alert("Shift+ 新しいinitが読み込まれています");
+   
   try {
 
     console.log("★ 勤務表アプリ起動");
