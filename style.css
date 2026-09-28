@@ -1390,21 +1390,25 @@ body.dark-mode .app {
    ダークモード：危険な操作
    ========================================================= */
 
-body.dark-mode .danger-zone {
-  color: #f2f2f7 !important;
-}
-
-body.dark-mode .danger-zone h3,
-body.dark-mode .danger-zone h4,
-body.dark-mode .danger-zone p,
-body.dark-mode .danger-zone span,
-body.dark-mode .danger-zone label {
-  color: #f2f2f7 !important;
-}
-
-body.dark-mode .danger-zone .danger-description {
+/* 説明文 */
+body.dark-mode p[style*="color:#666"] {
   color: #d1d1d6 !important;
 }
+
+
+/* 「危険な操作」の見出し */
+body.dark-mode h3 {
+  color: #f2f2f7;
+}
+
+
+/* 完全削除ボタン */
+body.dark-mode #deleteOrganizationButton {
+  background: #2c2c2e !important;
+  color: #f2f2f7 !important;
+  border-color: #636366 !important;
+}
+
 /* =========================================================
    ダークモード ヘッダー
    ========================================================= */
