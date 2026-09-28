@@ -278,10 +278,6 @@ function hideInitialLoading() {
    初期化
 ================================================== */
 
-/* ==================================================
-   初期化
-================================================== */
-
 document.addEventListener("DOMContentLoaded", init);
 
 async function init() {
@@ -2445,7 +2441,121 @@ function showApp() {
    
 }
 
+async function loginWithApple() {
 
+  const button =
+    document.getElementById(
+      "appleLoginButton"
+    );
+
+  /*
+   * Appleログインを開始したので、
+   * ログアウト後の強制ログイン画面フラグを解除
+   */
+  sessionStorage.removeItem(
+    "forceLoginScreen"
+  );
+
+
+  const message =
+    document.getElementById(
+      "loginMessage"
+    );
+
+
+  if (button) {
+
+    button.disabled = true;
+    button.style.opacity = "0.6";
+
+  }
+
+
+  if (message) {
+
+    message.textContent =
+      "Appleログイン画面を開いています…";
+
+  }
+
+
+  try {
+
+    /*
+      招待リンクのトークンを取得
+    */
+    const inviteToken =
+      new URLSearchParams(
+        window.location.search
+      ).get("invite");
+
+
+    /*
+      通常ログインなら通常のURLへ戻す
+      招待ログインなら invite を付けたまま戻す
+    */
+    let redirectUrl =
+      "https://mya24950-dotcom.github.io/kinmu-app/";
+
+
+    if (inviteToken) {
+
+      redirectUrl +=
+        "?invite=" +
+        encodeURIComponent(
+          inviteToken
+        );
+
+    }
+
+
+    const { error } =
+      await supabaseClient.auth.signInWithOAuth({
+        provider: "apple",
+
+        options: {
+
+          redirectTo:
+            redirectUrl
+
+        }
+
+      });
+
+
+    if (error) {
+
+      throw error;
+
+    }
+
+
+  } catch (error) {
+
+    console.error(
+      "Appleログインエラー",
+      error
+    );
+
+
+    if (message) {
+
+      message.textContent =
+        "Appleログインに失敗しました。";
+
+    }
+
+
+    if (button) {
+
+      button.disabled = false;
+      button.style.opacity = "1";
+
+    }
+
+  }
+
+}
 
 /* ==================================================
    Googleログイン設定
@@ -2565,6 +2675,39 @@ async function loginWithGoogle() {
     }
 
   }
+
+}
+
+function setupAppleLogin() {
+
+  const button =
+    document.getElementById(
+      "appleLoginButton"
+    );
+
+  if (!button) {
+
+    console.log(
+      "Appleログインボタンが見つかりません"
+    );
+
+    return;
+
+  }
+
+  button.disabled = false;
+  button.style.opacity = "1";
+
+  button.onclick =
+    function () {
+
+      console.log(
+        "★ Appleログインボタンが押されました"
+      );
+
+      loginWithApple();
+
+    };
 
 }
 
