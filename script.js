@@ -2612,7 +2612,8 @@ async function loginWithGoogle() {
       "googleLoginButton"
     );
 
-     /*
+
+  /*
    * Googleログインを開始したので、
    * ログアウト後の強制ログイン画面フラグを解除
    */
@@ -2649,6 +2650,7 @@ async function loginWithGoogle() {
     /*
       招待リンクのトークンを取得
     */
+
     const inviteToken =
       new URLSearchParams(
         window.location.search
@@ -2659,6 +2661,7 @@ async function loginWithGoogle() {
       通常ログインなら通常のURLへ戻す
       招待ログインなら invite を付けたまま戻す
     */
+
     let redirectUrl =
       "https://mya24950-dotcom.github.io/kinmu-app/";
 
@@ -2676,12 +2679,28 @@ async function loginWithGoogle() {
 
     const { error } =
       await supabaseClient.auth.signInWithOAuth({
+
         provider: "google",
 
         options: {
 
           redirectTo:
-            redirectUrl
+            redirectUrl,
+
+          /*
+           * Googleログイン画面で
+           * アカウントを選択させる
+           *
+           * ログアウト後に前回のGoogleアカウントを
+           * そのまま自動使用しないため
+           */
+
+          queryParams: {
+
+            prompt:
+              "select_account"
+
+          }
 
         }
 
