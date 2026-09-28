@@ -2705,29 +2705,26 @@ body.loading-active #loginPage {
    Shift+ ヘッダーロゴ・職場名
    ========================================================= */
 
-/* ---------------------------------------------------------
-   PC：ロゴと職場名を横並び
-   --------------------------------------------------------- */
+/* =========================
+   PC：横並び
+   ========================= */
 
-@media (min-width: 701px) {
-
-  .header {
-    padding-left: 4px !important;
-  }
+@media screen and (min-width: 701px) {
 
   .header .app-header-brand {
-    position: relative !important;
-    left: 0 !important;
-
     display: flex !important;
     flex-direction: row !important;
     align-items: center !important;
     justify-content: flex-start !important;
 
+    position: relative !important;
+    left: 0 !important;
+
     gap: 12px !important;
 
+    width: auto !important;
     min-width: 0 !important;
-    flex: 1 !important;
+    flex: 1 1 auto !important;
 
     margin: 0 !important;
     padding: 0 !important;
@@ -2742,13 +2739,15 @@ body.loading-active #loginPage {
     max-width: 82px !important;
     height: auto !important;
 
+    flex: 0 0 auto !important;
+
     margin: 0 !important;
     padding: 0 !important;
-
-    flex-shrink: 0 !important;
   }
 
   .header .header-title {
+    display: block !important;
+
     margin: 0 !important;
     padding: 0 !important;
 
@@ -2765,29 +2764,25 @@ body.loading-active #loginPage {
 }
 
 
-/* ---------------------------------------------------------
-   スマホ：ロゴの下に職場名
-   --------------------------------------------------------- */
+/* =========================
+   スマホ：上下
+   ========================= */
 
-@media (max-width: 700px) {
-
-  .header {
-    padding-left: 4px !important;
-  }
+@media screen and (max-width: 700px) {
 
   .header .app-header-brand {
-    position: relative !important;
-    left: 0 !important;
-
     display: flex !important;
     flex-direction: column !important;
     align-items: flex-start !important;
     justify-content: center !important;
 
+    position: relative !important;
+    left: 0 !important;
+
     gap: 4px !important;
 
     min-width: 0 !important;
-    flex: 1 !important;
+    flex: 1 1 auto !important;
 
     margin: 0 !important;
     padding: 0 !important;
@@ -2804,11 +2799,11 @@ body.loading-active #loginPage {
 
     margin: 0 !important;
     padding: 0 !important;
-
-    flex-shrink: 0 !important;
   }
 
   .header .header-title {
+    display: block !important;
+
     margin: 0 !important;
     padding: 0 !important;
 
@@ -2825,11 +2820,11 @@ body.loading-active #loginPage {
 }
 
 
-/* ---------------------------------------------------------
+/* =========================
    小さいスマホ
-   --------------------------------------------------------- */
+   ========================= */
 
-@media (max-width: 390px) {
+@media screen and (max-width: 390px) {
 
   .header .app-header-logo {
     width: 70px !important;
@@ -2841,7 +2836,6 @@ body.loading-active #loginPage {
     max-width: 190px !important;
   }
 }
-
 /* =========================================================
    ヘッダー右側ボタンを少し上へ
    ========================================================= */
