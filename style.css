@@ -2848,5 +2848,5 @@ body.loading-active #loginPage {
 
 .header .header-delete-buttons {
   position: relative !important;
-  top: -4px !important;
+  top: -10px !important;
 }
