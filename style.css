@@ -2841,3 +2841,12 @@ body.loading-active #loginPage {
     max-width: 190px !important;
   }
 }
+
+/* =========================================================
+   ヘッダー右側ボタンを少し上へ
+   ========================================================= */
+
+.header .header-delete-buttons {
+  position: relative !important;
+  top: -4px !important;
+}
