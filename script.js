@@ -263,14 +263,20 @@ function showInitialLoading(message = "データを取得しています…") {
 function hideInitialLoading() {
 
   const loading =
-    document.getElementById("loadingScreen");
+    document.getElementById(
+      "initialLoadingScreen"
+    );
 
   if (!loading) {
-    console.log("★ loadingScreen が見つかりません");
+    console.log(
+      "★ initialLoadingScreen はありません"
+    );
     return;
   }
 
-  console.log("★ loadingScreen を非表示にします");
+  console.log(
+    "★ initialLoadingScreen を非表示にします"
+  );
 
   loading.style.setProperty(
     "display",
