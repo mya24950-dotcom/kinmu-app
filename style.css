@@ -2702,178 +2702,18 @@ body.loading-active #loginPage {
 }
 
 /* =========================================================
-   Shift+ ロゴ＋職場名を左端へ
-   ========================================================= */
-
-.header {
-  padding-left: 0 !important;
-}
-
-.header .app-header-brand {
-  position: relative !important;
-  left: -14px !important;
-  margin-left: 0 !important;
-  padding-left: 0 !important;
-  transform: none !important;
-}
-
-.header .app-header-logo {
-  margin-left: 0 !important;
-}
-
-
-/* スマートフォン */
-@media (max-width: 700px) {
-
-  .header {
-    padding-left: 0 !important;
-  }
-
-  .header .app-header-brand {
-    position: relative !important;
-    left: -10px !important;
-    margin-left: 0 !important;
-    padding-left: 0 !important;
-    transform: none !important;
-  }
-
-}
-
-
-/* 小さいiPhone */
-@media (max-width: 390px) {
-
-  .header .app-header-brand {
-    left: -10px !important;
-  }
-
-}
-
-/* =========================================================
    Shift+ ヘッダーロゴ・職場名
    ========================================================= */
 
-/* PC */
-.header .app-header-brand {
-  position: relative !important;
-  left: -4px !important;
+/* ---------------------------------------------------------
+   PC：ロゴと職場名を横並び
+   --------------------------------------------------------- */
 
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: center !important;
-  justify-content: flex-start !important;
-
-  gap: 12px !important;
-
-  min-width: 0 !important;
-  flex: 1 !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  transform: none !important;
-}
-
-/* PCのロゴ */
-.header .app-header-logo {
-  display: block !important;
-
-  width: 82px !important;
-  max-width: 82px !important;
-  height: auto !important;
-
-  margin: 0 !important;
-  padding: 0 !important;
-
-  flex-shrink: 0 !important;
-}
-
-/* PCの職場名 */
-.header .header-title {
-  margin: 0 !important;
-  padding: 0 !important;
-
-  font-size: 20px !important;
-  line-height: 1.2 !important;
-  font-weight: 700 !important;
-
-  max-width: 300px !important;
-
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-}
-
-
-/* =========================================================
-   スマホ
-   ========================================================= */
-
-@media (max-width: 700px) {
-
-  .header .app-header-brand {
-    position: relative !important;
-    left: -4px !important;
-
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    justify-content: center !important;
-
-    gap: 4px !important;
-
-    margin: 0 !important;
-    padding: 0 !important;
-    transform: none !important;
-  }
-
-  .header .app-header-logo {
-    width: 74px !important;
-    max-width: 74px !important;
-    height: auto !important;
-
-    margin: 0 !important;
-    padding: 0 !important;
-  }
-
-  .header .header-title {
-    margin: 0 !important;
-    padding: 0 !important;
-
-    font-size: 18px !important;
-    line-height: 1.2 !important;
-    font-weight: 700 !important;
-
-    max-width: 220px !important;
-  }
-}
-
-
-/* =========================================================
-   かなり小さいスマホ
-   ========================================================= */
-
-@media (max-width: 390px) {
-
-  .header .app-header-brand {
-    left: -4px !important;
-  }
-
-  .header .app-header-logo {
-    width: 70px !important;
-    max-width: 70px !important;
-  }
-
-  .header .header-title {
-    font-size: 17px !important;
-    max-width: 190px !important;
-  }
-}
-
-/* =========================================================
-   Shift+ ヘッダー最終調整
-   ========================================================= */
-
-/* PC：ロゴと職場名を横並び */
 @media (min-width: 701px) {
+
+  .header {
+    padding-left: 4px !important;
+  }
 
   .header .app-header-brand {
     position: relative !important;
@@ -2886,25 +2726,54 @@ body.loading-active #loginPage {
 
     gap: 12px !important;
 
+    min-width: 0 !important;
+    flex: 1 !important;
+
     margin: 0 !important;
     padding: 0 !important;
+
     transform: none !important;
   }
 
   .header .app-header-logo {
+    display: block !important;
+
     width: 82px !important;
     max-width: 82px !important;
+    height: auto !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    flex-shrink: 0 !important;
   }
 
   .header .header-title {
-    font-size: 20px !important;
     margin: 0 !important;
+    padding: 0 !important;
+
+    font-size: 20px !important;
+    line-height: 1.2 !important;
+    font-weight: 700 !important;
+
+    max-width: 300px !important;
+
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
   }
 }
 
 
-/* スマホ：上下配置 */
+/* ---------------------------------------------------------
+   スマホ：ロゴの下に職場名
+   --------------------------------------------------------- */
+
 @media (max-width: 700px) {
+
+  .header {
+    padding-left: 4px !important;
+  }
 
   .header .app-header-brand {
     position: relative !important;
@@ -2913,21 +2782,62 @@ body.loading-active #loginPage {
     display: flex !important;
     flex-direction: column !important;
     align-items: flex-start !important;
+    justify-content: center !important;
 
     gap: 4px !important;
 
+    min-width: 0 !important;
+    flex: 1 !important;
+
     margin: 0 !important;
     padding: 0 !important;
+
     transform: none !important;
   }
 
   .header .app-header-logo {
+    display: block !important;
+
     width: 74px !important;
     max-width: 74px !important;
+    height: auto !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    flex-shrink: 0 !important;
   }
 
   .header .header-title {
-    font-size: 18px !important;
     margin: 0 !important;
+    padding: 0 !important;
+
+    font-size: 18px !important;
+    line-height: 1.2 !important;
+    font-weight: 700 !important;
+
+    max-width: 220px !important;
+
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+}
+
+
+/* ---------------------------------------------------------
+   小さいスマホ
+   --------------------------------------------------------- */
+
+@media (max-width: 390px) {
+
+  .header .app-header-logo {
+    width: 70px !important;
+    max-width: 70px !important;
+  }
+
+  .header .header-title {
+    font-size: 17px !important;
+    max-width: 190px !important;
   }
 }
