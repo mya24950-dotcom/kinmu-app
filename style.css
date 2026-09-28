@@ -2735,8 +2735,8 @@ body.loading-active #loginPage {
   .header .app-header-logo {
     display: block !important;
 
-    width: 82px !important;
-    max-width: 82px !important;
+    width: 95px !important;
+    max-width: 95px !important;
     height: auto !important;
 
     flex: 0 0 auto !important;
