@@ -632,19 +632,24 @@ session.user.email
 
 
     if (inviteToken) {
-
-      showInitialLoading(
-        "招待情報を確認しています…"
-      );
-
-
-      const inviteAccepted =
-  await handleInviteAfterLogin();
-alert(
-  "招待処理結果：" +
-  (inviteAccepted ? "成功" : "失敗")
-);
-if (!inviteAccepted) {
+  alert(
+    "① inviteTokenを検出しました\n\n" +
+    "招待トークンがあります。"
+  );
+  showInitialLoading(
+    "招待情報を確認しています…"
+  );
+  alert(
+    "② handleInviteAfterLoginを開始します"
+  );
+  const inviteAccepted =
+    await handleInviteAfterLogin();
+  alert(
+    "③ 招待処理が終了しました\n\n" +
+    "結果：" +
+    (inviteAccepted ? "成功" : "失敗")
+  );
+  if (!inviteAccepted) {
 
         hideInitialLoading();
 
