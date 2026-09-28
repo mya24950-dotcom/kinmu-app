@@ -2601,6 +2601,343 @@ async function loginWithApple() {
 
 }
 
+async function loginWithEmail() {
+
+  const emailInput =
+    document.getElementById(
+      "loginEmailInput"
+    );
+
+  const passwordInput =
+    document.getElementById(
+      "loginPasswordInput"
+    );
+
+  const message =
+    document.getElementById(
+      "loginMessage"
+    );
+
+  const button =
+    document.getElementById(
+      "emailLoginButton"
+    );
+
+
+  const email =
+    emailInput?.value.trim();
+
+  const password =
+    passwordInput?.value;
+
+
+  if (!email) {
+
+    if (message) {
+      message.textContent =
+        "メールアドレスを入力してください。";
+    }
+
+    return;
+
+  }
+
+
+  if (!password) {
+
+    if (message) {
+      message.textContent =
+        "パスワードを入力してください。";
+    }
+
+    return;
+
+  }
+
+
+  if (button) {
+
+    button.disabled = true;
+    button.style.opacity = "0.6";
+
+  }
+
+
+  if (message) {
+
+    message.textContent =
+      "ログインしています…";
+
+  }
+
+
+  try {
+
+    console.log(
+      "★ メールアドレスログイン開始"
+    );
+
+
+    sessionStorage.removeItem(
+      "forceLoginScreen"
+    );
+
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient.auth.signInWithPassword({
+
+        email:
+          email,
+
+        password:
+          password
+
+      });
+
+
+    if (error) {
+
+      throw error;
+
+    }
+
+
+    if (
+      !data ||
+      !data.session
+    ) {
+
+      throw new Error(
+        "ログインセッションを取得できませんでした。"
+      );
+
+    }
+
+
+    console.log(
+      "★ メールアドレスログイン成功",
+      data.user?.email
+    );
+
+
+    window.location.reload();
+
+
+  } catch (error) {
+
+    console.error(
+      "メールアドレスログインエラー",
+      error
+    );
+
+
+    if (message) {
+
+      message.textContent =
+        "メールアドレスまたはパスワードが正しくありません。";
+
+    }
+
+
+    if (button) {
+
+      button.disabled = false;
+      button.style.opacity = "1";
+
+    }
+
+  }
+
+}
+
+async function registerWithEmail() {
+
+  const emailInput =
+    document.getElementById(
+      "registerEmailInput"
+    );
+
+  const passwordInput =
+    document.getElementById(
+      "registerPasswordInput"
+    );
+
+  const message =
+    document.getElementById(
+      "loginMessage"
+    );
+
+  const button =
+    document.getElementById(
+      "emailRegisterButton"
+    );
+
+
+  const email =
+    emailInput?.value.trim();
+
+  const password =
+    passwordInput?.value;
+
+
+  if (!email) {
+
+    if (message) {
+      message.textContent =
+        "メールアドレスを入力してください。";
+    }
+
+    return;
+
+  }
+
+
+  if (!password) {
+
+    if (message) {
+      message.textContent =
+        "パスワードを入力してください。";
+    }
+
+    return;
+
+  }
+
+
+  if (password.length < 6) {
+
+    if (message) {
+      message.textContent =
+        "パスワードは6文字以上で入力してください。";
+    }
+
+    return;
+
+  }
+
+
+  if (button) {
+
+    button.disabled = true;
+    button.style.opacity = "0.6";
+
+  }
+
+
+  if (message) {
+
+    message.textContent =
+      "アカウントを登録しています…";
+
+  }
+
+
+  try {
+
+    console.log(
+      "★ メールアドレス新規登録開始"
+    );
+
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient.auth.signUp({
+
+        email:
+          email,
+
+        password:
+          password
+
+      });
+
+
+    if (error) {
+
+      throw error;
+
+    }
+
+
+    /*
+     * メール確認が必要な場合
+     */
+
+    if (
+      data.user &&
+      !data.session
+    ) {
+
+      if (message) {
+
+        message.textContent =
+          "確認メールを送信しました。メール内のリンクを開いて登録を完了してください。";
+
+      }
+
+      return;
+
+    }
+
+
+    /*
+     * メール確認不要の場合
+     */
+
+    if (
+      data.session
+    ) {
+
+      sessionStorage.removeItem(
+        "forceLoginScreen"
+      );
+
+
+      console.log(
+        "★ メールアドレス新規登録成功"
+      );
+
+
+      window.location.reload();
+
+    }
+
+
+  } catch (error) {
+
+    console.error(
+      "メールアドレス登録エラー",
+      error
+    );
+
+
+    if (message) {
+
+      message.textContent =
+        "アカウント登録に失敗しました。\n" +
+        (error?.message || String(error));
+
+    }
+
+
+  } finally {
+
+    if (button) {
+
+      button.disabled = false;
+      button.style.opacity = "1";
+
+    }
+
+  }
+
+}
+
 /* ==================================================
    Googleログイン設定
 ================================================== */
