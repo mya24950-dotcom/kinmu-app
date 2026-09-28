@@ -2812,103 +2812,121 @@ async function createNewOrganization() {
     // まだログインしていない場合
     // ==========================================
 
-    if (!session) {
+if (!session) {
 
-      // 職場登録情報を一時保存
-      sessionStorage.setItem(
-        "pendingOrganizationName",
-        organizationName
-      );
+  // ==========================================
+  // 職場登録情報を一時保存
+  // ==========================================
 
-      sessionStorage.setItem(
-        "pendingStaffName",
-        staffName
-      );
+  sessionStorage.setItem(
+    "pendingOrganizationName",
+    organizationName
+  );
 
-
-      console.log(
-        "★ 職場名を保存",
-        organizationName
-      );
-
-      console.log(
-        "★ 登録者名を保存",
-        staffName
-      );
+  sessionStorage.setItem(
+    "pendingStaffName",
+    staffName
+  );
 
 
-      // ========================================
-      // ログイン方法を選択
-      // ========================================
+  console.log(
+    "★ 職場名を保存",
+    organizationName
+  );
 
-      const loginMethod =
-        prompt(
-          "職場登録に使用するログイン方法を入力してください。\n\n" +
-          "Google → 1\n" +
-          "Apple → 2\n" +
-          "Azure → 3"
-        );
+  console.log(
+    "★ 登録者名を保存",
+    staffName
+  );
 
 
-      // ----------------------------------------
-      // Google
-      // ----------------------------------------
+  // ==========================================
+  // ログイン画面を表示
+  // Google / Apple
+  // ==========================================
 
-      if (loginMethod === "1") {
+  const loginMainView =
+    document.getElementById(
+      "loginMainView"
+    );
 
-        console.log(
-          "★ Googleログインを開始"
-        );
+  const newOrganizationForm =
+    document.getElementById(
+      "newOrganizationForm"
+    );
 
-        await loginWithGoogle();
-
-        return;
-      }
-
-
-      // ----------------------------------------
-      // Apple
-      // ----------------------------------------
-
-      if (loginMethod === "2") {
-
-        console.log(
-          "★ Appleログインを開始"
-        );
-
-        await loginWithApple();
-
-        return;
-      }
+  const loginMessage =
+    document.getElementById(
+      "loginMessage"
+    );
 
 
-      // ----------------------------------------
-      // Azure
-      // ----------------------------------------
+  // 新規職場登録フォームを隠す
+  if (newOrganizationForm) {
 
-      if (loginMethod === "3") {
+    newOrganizationForm.style.display =
+      "none";
 
-        console.log(
-          "★ Azureログインを開始"
-        );
-
-        await loginWithAzure();
-
-        return;
-      }
+  }
 
 
-      // ----------------------------------------
-      // キャンセル / 不正な入力
-      // ----------------------------------------
+  // ログイン画面を表示
+  if (loginMainView) {
 
-      alert(
-        "ログイン方法が選択されませんでした。"
-      );
+    loginMainView.style.display =
+      "";
 
-      return;
-    }
+  }
 
+
+  // ログインメッセージ
+  if (loginMessage) {
+
+    loginMessage.textContent =
+      "職場登録を続けるため、ログインしてください。";
+
+  }
+
+
+  // ==========================================
+  // Googleログインボタン
+  // ==========================================
+
+  const googleButton =
+    document.getElementById(
+      "googleLoginButton"
+    );
+
+  if (googleButton) {
+
+    googleButton.style.display = "";
+
+  }
+
+
+  // ==========================================
+  // Appleログインボタン
+  // ==========================================
+
+  const appleButton =
+    document.getElementById(
+      "appleLoginButton"
+    );
+
+  if (appleButton) {
+
+    appleButton.style.display = "";
+
+  }
+
+
+  console.log(
+    "★ 新規職場登録用ログイン画面を表示しました"
+  );
+
+
+  return;
+}
 
     // ==========================================
     // すでにログイン済み
