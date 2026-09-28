@@ -1387,6 +1387,25 @@ body.dark-mode .app {
 }
 
 /* =========================================================
+   ダークモード：危険な操作
+   ========================================================= */
+
+body.dark-mode .danger-zone {
+  color: #f2f2f7 !important;
+}
+
+body.dark-mode .danger-zone h3,
+body.dark-mode .danger-zone h4,
+body.dark-mode .danger-zone p,
+body.dark-mode .danger-zone span,
+body.dark-mode .danger-zone label {
+  color: #f2f2f7 !important;
+}
+
+body.dark-mode .danger-zone .danger-description {
+  color: #d1d1d6 !important;
+}
+/* =========================================================
    ダークモード ヘッダー
    ========================================================= */
 
