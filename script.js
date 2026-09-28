@@ -5613,7 +5613,7 @@ function renderLeaveLegend() {
 
 
     legend.style.border =
-      "1px solid #d1d1d6";
+      "1px solid var(--leave-legend-border, #d1d1d6)";
 
 
     legend.style.borderRadius =
@@ -5621,7 +5621,11 @@ function renderLeaveLegend() {
 
 
     legend.style.background =
-      "#ffffff";
+      "var(--leave-legend-bg, #ffffff)";
+
+
+    legend.style.color =
+      "var(--leave-legend-text, #222)";
 
 
     legend.style.boxSizing =
@@ -5682,6 +5686,7 @@ function renderLeaveLegend() {
   let html =
     `
       <div
+        class="leave-legend-title"
         style="
           width:100%;
           font-weight:700;
@@ -5689,7 +5694,7 @@ function renderLeaveLegend() {
           margin-bottom:2px;
         "
       >
-        🏖️ 休暇一覧
+        休暇一覧
       </div>
     `;
 
@@ -5704,6 +5709,7 @@ function renderLeaveLegend() {
 
       html += `
         <div
+          class="leave-legend-item"
           style="
             display:flex;
             align-items:center;
@@ -5730,11 +5736,13 @@ function renderLeaveLegend() {
             "
           ></span>
 
+
           <span
+            class="leave-legend-name"
             style="
               font-size:13px;
               line-height:1.3;
-              color:#222;
+              color:var(--leave-legend-text, #222);
               white-space:nowrap;
             "
           >
@@ -5754,7 +5762,6 @@ function renderLeaveLegend() {
     html;
 
 }
-
 
 /* ==================================================
    勤務表
