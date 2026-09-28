@@ -1,4 +1,4 @@
-/* ==================================================
+１　/* ==================================================
    Supabase
 ================================================== */
 
@@ -395,7 +395,7 @@ async function init() {
 
       setupGoogleLogin();
 
-      setupEmailLogin();
+      setupAppleLogin();
 
       setupPasskeyLogin();
 
@@ -427,7 +427,7 @@ async function init() {
 
       setupGoogleLogin();
 
-      setupEmailLogin();
+      setupAppleLogin();
 
       setupPasskeyLogin();
 
@@ -586,7 +586,7 @@ async function init() {
 
         setupGoogleLogin();
 
-        setupEmailLogin();
+        setupAppleLogin();
 
         setupPasskeyLogin();
 
@@ -651,7 +651,7 @@ session.user.email
 
         setupGoogleLogin();
 
-        setupEmailLogin();
+        setupAppleLogin();
 
         setupPasskeyLogin();
 
@@ -787,7 +787,7 @@ session.user.email
 
         setupGoogleLogin();
 
-        setupEmailLogin();
+        setupAppleLogin();
 
         setupNewOrganizationButton();
 
@@ -825,7 +825,7 @@ session.user.email
 
       setupGoogleLogin();
 
-      setupEmailLogin();
+      setupAppleLogin();
 
       setupPasskeyLogin();
 
@@ -988,7 +988,7 @@ session.user.email
 
     setupGoogleLogin();
 
-    setupEmailLogin();
+    setupAppleLogin();
 
     setupPasskeyLogin();
 
@@ -2309,7 +2309,7 @@ async function deleteCurrentOrganization() {
 
     setupGoogleLogin();
 
-    setupEmailLogin();
+    setupAppleLogin();
 
     setupNewOrganizationButton();
 
@@ -2485,6 +2485,122 @@ function showApp() {
    
 }
 
+２　async function loginWithApple() {
+
+  const button =
+    document.getElementById(
+      "appleLoginButton"
+    );
+
+  /*
+   * Appleログインを開始したので、
+   * ログアウト後の強制ログイン画面フラグを解除
+   */
+  sessionStorage.removeItem(
+    "forceLoginScreen"
+  );
+
+
+  const message =
+    document.getElementById(
+      "loginMessage"
+    );
+
+
+  if (button) {
+
+    button.disabled = true;
+    button.style.opacity = "0.6";
+
+  }
+
+
+  if (message) {
+
+    message.textContent =
+      "Appleログイン画面を開いています…";
+
+  }
+
+
+  try {
+
+    /*
+      招待リンクのトークンを取得
+    */
+    const inviteToken =
+      new URLSearchParams(
+        window.location.search
+      ).get("invite");
+
+
+    /*
+      通常ログインなら通常のURLへ戻す
+      招待ログインなら invite を付けたまま戻す
+    */
+    let redirectUrl =
+      "https://mya24950-dotcom.github.io/kinmu-app/";
+
+
+    if (inviteToken) {
+
+      redirectUrl +=
+        "?invite=" +
+        encodeURIComponent(
+          inviteToken
+        );
+
+    }
+
+
+    const { error } =
+      await supabaseClient.auth.signInWithOAuth({
+        provider: "apple",
+
+        options: {
+
+          redirectTo:
+            redirectUrl
+
+        }
+
+      });
+
+
+    if (error) {
+
+      throw error;
+
+    }
+
+
+  } catch (error) {
+
+    console.error(
+      "Appleログインエラー",
+      error
+    );
+
+
+    if (message) {
+
+      message.textContent =
+        "Appleログインに失敗しました。";
+
+    }
+
+
+    if (button) {
+
+      button.disabled = false;
+      button.style.opacity = "1";
+
+    }
+
+  }
+
+}
+
 /* ==================================================
    Googleログイン設定
 ================================================== */
@@ -2606,135 +2722,36 @@ async function loginWithGoogle() {
 
 }
 
-/* ==================================================
-   メールアドレス＋パスワード ログイン
-================================================== */
-
-async function loginWithEmail() {
-
-  const emailInput =
-    document.getElementById(
-      "loginEmailInput"
-    );
-
-  const passwordInput =
-    document.getElementById(
-      "loginPasswordInput"
-    );
-
-  const email =
-    emailInput?.value.trim() || "";
-
-  const password =
-    passwordInput?.value || "";
-
-  if (!email) {
-
-    showLoginPage(
-      "メールアドレスを入力してください。"
-    );
-
-    return;
-
-  }
-
-  if (!password) {
-
-    showLoginPage(
-      "パスワードを入力してください。"
-    );
-
-    return;
-
-  }
-
-
-  if (!supabaseClient) {
-
-    showLoginPage(
-      "サーバーに接続できません。"
-    );
-
-    return;
-
-  }
-
-
-  try {
-
-    showLoginPage(
-      "ログインしています…"
-    );
-
-
-    const {
-      error
-    } =
-      await supabaseClient.auth.signInWithPassword({
-
-        email,
-
-        password
-
-      });
-
-
-    if (error) {
-
-      console.error(
-        "メールログインエラー:",
-        error
-      );
-
-      showLoginPage(
-        "メールアドレスまたはパスワードが正しくありません。"
-      );
-
-      return;
-
-    }
-
-    /*
-      onAuthStateChange と init() の
-      既存処理に続ける
-    */
-
-  } catch (error) {
-
-    console.error(
-      "メールログイン例外:",
-      error
-    );
-
-    showLoginPage(
-      "ログイン中にエラーが発生しました。"
-    );
-
-  }
-
-}
-
-
-/* ==================================================
-   メールログイン設定
-================================================== */
-
-function setupEmailLogin() {
+function setupAppleLogin() {
 
   const button =
     document.getElementById(
-      "emailLoginButton"
+      "appleLoginButton"
     );
 
   if (!button) {
 
+    console.log(
+      "Appleログインボタンが見つかりません"
+    );
+
     return;
 
   }
 
+  button.disabled = false;
+  button.style.opacity = "1";
 
   button.onclick =
-    loginWithEmail;
+    function () {
+
+      console.log(
+        "★ Appleログインボタンが押されました"
+      );
+
+      loginWithApple();
+
+    };
 
 }
 
@@ -2758,142 +2775,6 @@ function setupGoogleLogin() {
     loginWithGoogle();
 
   };
-
-}
-
-/* ==================================================
-   メールアドレス＋パスワード 新規登録
-================================================== */
-
-async function registerWithEmail(
-  email,
-  password
-) {
-
-  email =
-    String(
-      email || ""
-    ).trim();
-
-  password =
-    String(
-      password || ""
-    );
-
-
-  if (!email) {
-
-    showLoginPage(
-      "メールアドレスを入力してください。"
-    );
-
-    return false;
-
-  }
-
-
-  if (!password) {
-
-    showLoginPage(
-      "パスワードを入力してください。"
-    );
-
-    return false;
-
-  }
-
-
-  if (password.length < 6) {
-
-    showLoginPage(
-      "パスワードは6文字以上で入力してください。"
-    );
-
-    return false;
-
-  }
-
-
-  if (!supabaseClient) {
-
-    showLoginPage(
-      "サーバーに接続できません。"
-    );
-
-    return false;
-
-  }
-
-
-  try {
-
-    showLoginPage(
-      "アカウントを作成しています…"
-    );
-
-
-    const {
-      data,
-      error
-    } =
-      await supabaseClient.auth.signUp({
-
-        email,
-
-        password
-
-      });
-
-
-    if (error) {
-
-      console.error(
-        "メールアカウント登録エラー:",
-        error
-      );
-
-      showLoginPage(
-        error.message ||
-        "アカウント登録に失敗しました。"
-      );
-
-      return false;
-
-    }
-
-
-    /*
-      Supabaseでメール確認が有効な場合、
-      session がまだ存在しないことがある。
-    */
-
-    if (!data.session) {
-
-      showLoginPage(
-        "確認メールを送信しました。メールを確認して登録を完了してください。"
-      );
-
-      return true;
-
-    }
-
-
-    return true;
-
-  } catch (error) {
-
-    console.error(
-      "メールアカウント登録例外:",
-      error
-    );
-
-    showLoginPage(
-      "アカウント登録中にエラーが発生しました。"
-    );
-
-    return false;
-
-  }
 
 }
 
@@ -5294,8 +5175,7 @@ function bindEvents() {
 
 }
 
-
-/* ==================================================
+３　/* ==================================================
    ページ切り替え
 ================================================== */
 
@@ -8008,8 +7888,7 @@ function syncScheduleFixedLayers() {
 
 }
 
-
-/* =========================================================
+４　/* =========================================================
    固定レイヤー位置更新
 ========================================================= */
 
@@ -10414,8 +10293,7 @@ async function saveStaffOrder() {
 
 }
 
-
-async function moveStaff(
+５　async function moveStaff(
   index,
   direction
 ) {
@@ -13172,8 +13050,7 @@ async function deleteCurrentMonth() {
 
 }
 
-
-/* ==================================================
+６　最後です　/* ==================================================
    年度削除
 ================================================== */
 
