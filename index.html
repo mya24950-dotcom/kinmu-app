@@ -2648,12 +2648,19 @@
        休暇設定
   ================================================== -->
 
-  <section
-    id="leavePage"
-    class="page"
-    style="display:none;"
-  >
+  <!-- ==================================================
+     休暇設定
+================================================== -->
 
+<section
+  id="leavePage"
+  class="page"
+  style="display:none;"
+>
+
+  <div class="leave-layout">
+
+    <!-- 左：休暇設定 -->
     <div class="settings-card">
 
       <h2 class="section-title-icon">
@@ -2738,11 +2745,8 @@
         <div
           style="
             display:flex;
-
             align-items:center;
-
             gap:12px;
-
             margin:10px 0;
           "
         >
@@ -2758,11 +2762,8 @@
             value="#FFD54F"
             style="
               width:60px;
-
               height:40px;
-
               padding:2px;
-
               cursor:pointer;
             "
           >
@@ -2779,6 +2780,15 @@
 
       </div>
 
+    </div>
+
+
+    <!-- 右：登録済み休暇 -->
+    <div class="settings-card">
+
+      <h2 class="section-title-icon">
+        登録済み休暇
+      </h2>
 
       <div
         id="leaveList"
@@ -2787,7 +2797,9 @@
 
     </div>
 
-  </section>
+  </div>
+
+</section>
 
 
   <!-- ==================================================
@@ -3096,15 +3108,18 @@
 
 
   <!-- ==================================================
-       休業設定
-  ================================================== -->
+     休業設定
+================================================== -->
 
-  <section
-    id="holidayPage"
-    class="page"
-    style="display:none;"
-  >
+<section
+  id="holidayPage"
+  class="page"
+  style="display:none;"
+>
 
+  <div class="holiday-layout">
+
+    <!-- 左：休業設定 -->
     <div class="settings-card">
 
       <h2 class="section-title-icon">
@@ -3232,6 +3247,15 @@
 
       </div>
 
+    </div>
+
+
+    <!-- 右：登録済み休業 -->
+    <div class="settings-card">
+
+      <h2 class="section-title-icon">
+        登録済み休業
+      </h2>
 
       <div
         id="companyHolidayList"
@@ -3240,8 +3264,9 @@
 
     </div>
 
-  </section>
+  </div>
 
+</section>
 
   <!-- ==================================================
        勤務選択メニュー
