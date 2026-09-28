@@ -429,18 +429,36 @@ async function init() {
 
 
                   /*
-                     Googleログイン完了
-                  */
+認証完了
+Google / Apple / Azure / Passkey
+*/
 
-                  if (
-                    event === "SIGNED_IN" &&
-                    newSession
-                  ) {
+if (
+event === "SIGNED_IN" &&
+newSession
+) {
 
-                    console.log(
-                      "★ Google認証完了:",
-                      newSession.user.email
-                    );
+console.log(
+"★ 認証完了:",
+newSession.user.email
+);
+
+if (!finished) {
+
+finished = true;
+
+authListener
+  .subscription
+  .unsubscribe();
+
+resolve(
+  newSession
+);
+
+}
+
+}
+
 
 
                     if (!finished) {
@@ -572,9 +590,10 @@ async function init() {
 
 
       console.log(
-        "★ Google認証後のセッションを確認しました:",
-        session.user.email
-      );
+"★ 認証後のセッションを確認しました:",
+session.user.email
+);
+
 
     }
 
@@ -584,9 +603,10 @@ async function init() {
     ================================================== */
 
     console.log(
-      "Googleログイン済み",
-      session.user.email
-    );
+"ログイン済み",
+session.user.email
+);
+
 
 
     /* ==================================================
@@ -758,6 +778,8 @@ async function init() {
 
 
         setupGoogleLogin();
+
+        setupAppleLogin();
 
         setupNewOrganizationButton();
 
