@@ -5563,9 +5563,9 @@ function getTotalShiftTypes() {
 }
 
 
-/* ==================================================
-   休暇一覧表示
-================================================== */
+/* =========================================================
+   休暇一覧（勤務表の下）
+   ========================================================= */
 
 function renderLeaveLegend() {
 
@@ -5574,13 +5574,14 @@ function renderLeaveLegend() {
       "scheduleTable"
     );
 
-
   if (!table) {
-
     return;
-
   }
 
+
+  /* ---------------------------------------------------------
+     休暇一覧のコンテナを取得・作成
+     --------------------------------------------------------- */
 
   let legend =
     document.getElementById(
@@ -5595,41 +5596,49 @@ function renderLeaveLegend() {
         "div"
       );
 
-
     legend.id =
       "leaveLegend";
 
 
+    /* 基本レイアウト */
+
     legend.style.marginTop =
       "10px";
-
 
     legend.style.marginBottom =
       "10px";
 
-
     legend.style.padding =
       "10px 12px";
-
-
-    legend.style.border =
-      "1px solid var(--leave-legend-border, #d1d1d6)";
-
 
     legend.style.borderRadius =
       "10px";
 
-
-    legend.style.background =
-      "var(--leave-legend-bg, #ffffff)";
-
-
-    legend.style.color =
-      "var(--leave-legend-text, #222)";
-
-
     legend.style.boxSizing =
       "border-box";
+
+    legend.style.display =
+      "flex";
+
+    legend.style.flexWrap =
+      "wrap";
+
+    legend.style.alignItems =
+      "center";
+
+    legend.style.gap =
+      "8px 14px";
+
+
+    /*
+      色はCSS側で管理する。
+      ダークモードのCSSが適用できるように
+      インラインで白色を指定しない。
+    */
+
+    legend.classList.add(
+      "leave-legend"
+    );
 
 
     if (
@@ -5646,6 +5655,10 @@ function renderLeaveLegend() {
   }
 
 
+  /* ---------------------------------------------------------
+     休暇データがない場合
+     --------------------------------------------------------- */
+
   if (
     !Array.isArray(
       appData.leaveTypes
@@ -5657,31 +5670,35 @@ function renderLeaveLegend() {
     legend.style.display =
       "none";
 
-
     legend.innerHTML =
       "";
-
 
     return;
 
   }
 
 
+  /* ---------------------------------------------------------
+     表示
+     --------------------------------------------------------- */
+
   legend.style.display =
     "flex";
-
 
   legend.style.flexWrap =
     "wrap";
 
-
   legend.style.alignItems =
     "center";
-
 
   legend.style.gap =
     "8px 14px";
 
+
+  /* ---------------------------------------------------------
+     タイトル
+     「休暇設定」と同じカレンダー＋チェックアイコン
+     --------------------------------------------------------- */
 
   let html =
     `
@@ -5692,12 +5709,86 @@ function renderLeaveLegend() {
           font-weight:700;
           font-size:14px;
           margin-bottom:2px;
+          display:flex;
+          align-items:center;
+          gap:6px;
         "
       >
-        休暇一覧
+
+        <svg
+          class="section-icon"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+          style="
+            width:20px;
+            height:20px;
+            flex-shrink:0;
+          "
+        >
+
+          <rect
+            x="3"
+            y="4"
+            width="18"
+            height="17"
+            rx="3"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+          />
+
+          <line
+            x1="7"
+            y1="2.5"
+            x2="7"
+            y2="6"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+          />
+
+          <line
+            x1="17"
+            y1="2.5"
+            x2="17"
+            y2="6"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+          />
+
+          <line
+            x1="3"
+            y1="9"
+            x2="21"
+            y2="9"
+            stroke="currentColor"
+            stroke-width="1.8"
+          />
+
+          <path
+            d="M8 15l2.3 2.3L16.5 11"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.9"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+
+        </svg>
+
+
+        <span>
+          休暇一覧
+        </span>
+
       </div>
     `;
 
+
+  /* ---------------------------------------------------------
+     休暇一覧
+     --------------------------------------------------------- */
 
   appData.leaveTypes.forEach(
     leave => {
@@ -5707,56 +5798,65 @@ function renderLeaveLegend() {
         "#FFD54F";
 
 
-      html += `
-        <div
-          class="leave-legend-item"
-          style="
-            display:flex;
-            align-items:center;
-            gap:6px;
-            min-height:28px;
-          "
-        >
-
-          <span
+      html +=
+        `
+          <div
+            class="leave-legend-item"
             style="
-              display:inline-flex;
+              display:flex;
               align-items:center;
-              justify-content:center;
-              min-width:20px;
-              width:20px;
-              height:20px;
-              border-radius:5px;
-              background:${escapeHtml(
-                color
-              )};
-              border:1px solid rgba(0,0,0,.18);
-              box-sizing:border-box;
-              flex-shrink:0;
-            "
-          ></span>
-
-
-          <span
-            class="leave-legend-name"
-            style="
-              font-size:13px;
-              line-height:1.3;
-              color:var(--leave-legend-text, #222);
-              white-space:nowrap;
+              gap:6px;
+              min-height:28px;
             "
           >
-            ${escapeHtml(
-              leave.name
-            )}
-          </span>
 
-        </div>
-      `;
+            <!-- 休暇色 -->
+
+            <span
+              class="leave-legend-color"
+              style="
+                display:inline-flex;
+                align-items:center;
+                justify-content:center;
+                min-width:20px;
+                width:20px;
+                height:20px;
+                border-radius:5px;
+                background:${escapeHtml(
+                  color
+                )};
+                border:1px solid rgba(0,0,0,.18);
+                box-sizing:border-box;
+                flex-shrink:0;
+              "
+            ></span>
+
+
+            <!-- 休暇名 -->
+
+            <span
+              class="leave-legend-name"
+              style="
+                font-size:13px;
+                line-height:1.3;
+                white-space:nowrap;
+              "
+            >
+              ${escapeHtml(
+                leave.name
+              )}
+            </span>
+
+          </div>
+        `;
 
     }
   );
 
+
+  /* ---------------------------------------------------------
+     HTMLを反映
+     --------------------------------------------------------- */
 
   legend.innerHTML =
     html;
