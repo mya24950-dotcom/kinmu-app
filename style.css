@@ -3020,3 +3020,24 @@ body.dark-mode #leaveLegend .leave-legend-title {
 body.dark-mode #leaveLegend .leave-legend-name {
   color: #f2f2f7 !important;
 }
+
+/* =========================================================
+   ログイン画面を最前面にする
+   ========================================================= */
+
+#loginPage {
+  z-index: 1000000 !important;
+  pointer-events: auto !important;
+}
+
+#loginPage button,
+#loginPage input,
+#loginPage label {
+  pointer-events: auto !important;
+  touch-action: manipulation !important;
+}
+
+#loadingScreen {
+  z-index: 99999 !important;
+  pointer-events: none !important;
+}
