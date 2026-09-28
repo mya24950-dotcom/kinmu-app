@@ -605,6 +605,11 @@ async function init() {
 session.user.email
 );
 
+       alert(
+  "Googleログイン後の認証処理まで到達しました。\n\n" +
+  session.user.email
+);
+
 
     }
 
