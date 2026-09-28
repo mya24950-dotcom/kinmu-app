@@ -446,70 +446,49 @@ async function init() {
 
 
             const {
-              data: authListener
-            } =
-              supabaseClient.auth.onAuthStateChange(
-                (event, newSession) => {
+  data: authListener
+} =
+  supabaseClient.auth.onAuthStateChange(
+    (event, newSession) => {
 
-                  console.log(
-                    "★ Supabase認証イベント:",
-                    event
-                  );
+      console.log(
+        "★ Supabase認証イベント:",
+        event
+      );
 
+      /*
+         認証完了
+         Google / Apple / Azure / Passkey
+      */
 
-                  /*
-認証完了
-Google / Apple / Azure / Passkey
-*/
+      if (
+        event === "SIGNED_IN" &&
+        newSession
+      ) {
 
-if (
-event === "SIGNED_IN" &&
-newSession
-) {
+        console.log(
+          "★ 認証完了:",
+          newSession.user.email
+        );
 
-console.log(
-"★ 認証完了:",
-newSession.user.email
-);
+        if (!finished) {
 
-if (!finished) {
+          finished = true;
 
-finished = true;
+          authListener
+            .subscription
+            .unsubscribe();
 
-authListener
-  .subscription
-  .unsubscribe();
+          resolve(
+            newSession
+          );
 
-resolve(
-  newSession
-);
+        }
 
-}
+      }
 
-}
-
-
-
-                    if (!finished) {
-
-                      finished = true;
-
-
-                      authListener
-                        .subscription
-                        .unsubscribe();
-
-
-                      resolve(
-                        newSession
-                      );
-
-                    }
-
-                  }
-
-                }
-              );
+    }
+  );
 
 
             /* ------------------------------------------
