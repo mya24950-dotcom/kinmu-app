@@ -367,6 +367,12 @@ async function init() {
       console.log(
         "★ 強制ログイン画面を表示します"
       );
+      /*
+       * ★重要
+       * ローディング画面がログイン画面を
+       * 覆わないように先に消す
+       */
+      hideInitialLoading();
       await supabaseClient.auth.signOut({
         scope: "global"
       });
@@ -379,7 +385,7 @@ async function init() {
       setupEmailLogin();
       setupNewOrganizationButton();
       /*
-       * Azureログイン機能が存在する場合
+       * Azureログイン
        */
       if (
         typeof setupAzureLogin ===
@@ -398,26 +404,40 @@ async function init() {
        セッションがない場合
        
        ★ここでは認証待機しない
-       ★ログインボタンを設定して終了する
        
-       Google / Apple / Azure OAuthから戻ると
-       ページが再読み込みされ、このinit()が
-       もう一度実行される
+       ★ログイン画面を表示
+       ★ローディング画面を消す
+       ★ボタンを設定
+       ★init終了
+       
+       OAuthから戻ったときにページが
+       再読み込みされるので、その時に
+       getSession()から再開する
     ================================================== */
     if (!session) {
       console.log(
         "★ セッションなし"
       );
+      /*
+       * ★最重要
+       *
+       * initialLoadingScreenが残っていると
+       * ログインボタンをタップできない
+       */
+      hideInitialLoading();
+      /*
+       * ログイン画面表示
+       */
       showLoginPage();
-      /* ------------------------------------------
-         ログインボタン設定
-      ------------------------------------------ */
+      /*
+       * ログインボタン設定
+       */
       setupGoogleLogin();
       setupAppleLogin();
       setupEmailLogin();
       setupNewOrganizationButton();
       /*
-       * Azureログイン機能が存在する場合
+       * Azureログイン
        */
       if (
         typeof setupAzureLogin ===
@@ -434,13 +454,13 @@ async function init() {
         "★ ログイン画面の設定完了"
       );
       /*
-       * 重要
+       * ★ここで終了
        *
-       * ここでinit()を終了する。
+       * Google / Apple / Azureを押すと
+       * OAuth画面へ移動する。
        *
-       * OAuthログイン後に戻ってきたとき、
-       * ページが再読み込みされて
-       * getSession()から再開する。
+       * OAuthから戻るとページが再読み込みされ、
+       * このinit()が再実行される。
        */
       return;
     }
@@ -461,7 +481,7 @@ async function init() {
        招待リンク確認
        
        Google / Apple / Azureログイン後、
-       ?invite=xxxx が残っていればここで処理
+       ?invite=xxxx が残っていれば処理
     ================================================== */
     const inviteToken =
       new URLSearchParams(
@@ -494,6 +514,9 @@ async function init() {
         ) {
           setupAzureLogin();
         }
+        /*
+         * Passkeyは一旦停止
+         */
         return;
       }
       console.log(
@@ -519,7 +542,7 @@ async function init() {
         "★ 新規職場登録処理開始"
       );
       /*
-       * 二重実行防止のため先に削除
+       * 二重実行防止
        */
       sessionStorage.removeItem(
         "pendingOrganizationName"
@@ -663,10 +686,9 @@ async function init() {
     /* ==================================================
        Passkey登録
        
-       ★ここでは実行しない
+       ★現在は実行しない
        
-       Google / Apple / Azureログイン後、
-       まず勤務表を開く。
+       まず勤務表を確実に開く
     ================================================== */
     /* ==================================================
        職場管理者用の危険操作設定
@@ -722,7 +744,7 @@ async function init() {
     /* ==================================================
        Supabaseデータ読み込み
        
-       ※失敗してもログイン画面には戻さない
+       ★失敗してもログイン画面に戻さない
     ================================================== */
     try {
       console.log(
@@ -754,17 +776,15 @@ async function init() {
         "★ 勤務表描画エラー",
         error
       );
-      /*
-       * renderAllだけは画面の根幹なので
-       * 起動エラーとして扱う
-       */
       throw error;
     }
     /* ==================================================
        ★勤務表を表示済みにする
        
-       ここ以降の処理で失敗しても
-       ログイン画面へ戻さない
+       ここでローディング終了
+       
+       これ以降の処理でエラーになっても
+       ログイン画面には戻さない
     ================================================== */
     hideInitialLoading();
     console.log(
@@ -858,36 +878,22 @@ async function init() {
       setupAzureLogin();
     }
     /*
-     * Passkeyは一旦停止
+     * Passkeyは現在停止
      *
      * setupPasskeyLogin();
      */
   }
 }
 
-この版では、ログイン画面で init() が15秒待機する処理を完全に削除しています。
+今回の重要な修正は if (!session) の中のこの位置です。
 
-また、
+hideInitialLoading();
+showLoginPage();
 
-setupPasskeyLogin();
+これで初期ローディング画面がログイン画面の上に残ったままにならないようにしています。
 
-と
-
-await registerCurrentUserPasskey();
-
-は init() から完全に外しています。
-
-まずこれで、
-
-① ログイン画面のGoogleボタンが押せる
-② Google認証へ移動できる
-③ 水下さんの招待が処理される
-④ organization_members.user_id は既にあるので山梨県立盲学校を取得
-⑤ 勤務表が表示される
-
-というところまでを確認します。
-
-Passkeyは勤務表が正常に開くことを確認してから戻します。
+また、今回は init() 内では Passkeyを一切起動しません。
+したがって、まず Googleボタン → Google認証 → 水下さんの招待登録 → 山梨県立盲学校の勤務表 までを確認できます。
 
 /* ==================================================
    Passkeyログイン
