@@ -3233,26 +3233,27 @@ async function loginWithGoogle() {
       "googleLoginButton"
     );
 
+
+  if (button) {
+
+    button.disabled =
+      true;
+
+  }
+
+
   try {
 
-    if (button) {
-
-      button.disabled = true;
-
-    }
-
-    const params =
+    const urlParams =
       new URLSearchParams(
         window.location.search
       );
 
-    const inviteToken =
-      params.get("invite");
 
-    /*
-     * 招待リンクから来た場合、
-     * OAuth開始前に必ず保存する。
-     */
+    const inviteToken =
+      urlParams.get("invite");
+
+
     if (inviteToken) {
 
       sessionStorage.setItem(
@@ -3262,36 +3263,30 @@ async function loginWithGoogle() {
 
     }
 
-    /*
-     * 念のため、
-     * 既に保存されている招待トークンも確認
-     */
-    const pendingInviteToken =
+
+    const pendingInvite =
       sessionStorage.getItem(
         "pendingInviteToken"
       );
+
 
     let redirectUrl =
       window.location.origin +
       window.location.pathname;
 
-    /*
-     * OAuth後も招待URLを残す。
-     * ただし本命はsessionStorage。
-     */
-    if (pendingInviteToken) {
+
+    if (pendingInvite) {
 
       redirectUrl +=
         "?invite=" +
         encodeURIComponent(
-          pendingInviteToken
+          pendingInvite
         );
 
     }
 
-    const {
-      error
-    } =
+
+    const { error } =
       await supabaseClient.auth.signInWithOAuth({
         provider: "google",
 
@@ -3311,11 +3306,13 @@ async function loginWithGoogle() {
 
       });
 
+
     if (error) {
 
       throw error;
 
     }
+
 
   } catch (error) {
 
@@ -3325,16 +3322,14 @@ async function loginWithGoogle() {
     );
 
     alert(
-      "Googleログインに失敗しました。\n\n" +
-      (
-        error?.message ||
-        String(error)
-      )
+      "Googleログインに失敗しました。"
     );
+
 
     if (button) {
 
-      button.disabled = false;
+      button.disabled =
+        false;
 
     }
 
