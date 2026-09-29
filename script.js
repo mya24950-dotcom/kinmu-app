@@ -368,11 +368,18 @@ async function init() {
        OAuthへ移動する前に
        sessionStorageへ保存
     ------------------------------------------------ */
+sessionStorage.setItem(
+  "oauthLoginInProgress",
+  "true"
+);
 
+     
     const urlParams =
       new URLSearchParams(
         window.location.search
       );
+
+     
 
 
     const urlInviteToken =
@@ -501,19 +508,50 @@ async function init() {
 
     if (!session) {
 
-  showInitialLoading(
-    "ログイン情報を確認しています…"
-  );
+  const oauthLoginInProgress =
+    sessionStorage.getItem(
+      "oauthLoginInProgress"
+    );
 
 
-  session =
-    await waitForAuthSession();
+  if (
+    oauthLoginInProgress ===
+    "true"
+  ) {
+
+    showInitialLoading(
+      "ログイン情報を確認しています…"
+    );
 
 
-  console.log(
-    "★ Auth監視後のセッション:",
-    session
-  );
+    session =
+      await waitForAuthSession();
+
+
+    console.log(
+      "★ OAuth復帰後のセッション:",
+      session
+    );
+
+
+  } else {
+
+    showLoginPage();
+
+
+    setupGoogleLogin();
+    setupAppleLogin();
+    setupEmailLogin();
+    setupPasskeyLogin();
+    setupNewOrganizationButton();
+
+
+    hideInitialLoading();
+
+
+    return;
+
+  }
 
 }
 
@@ -552,6 +590,10 @@ async function init() {
       "★ ログイン済み:",
       session.user.email
     );
+
+     sessionStorage.removeItem(
+  "oauthLoginInProgress"
+);
 
    showInitialLoading(
   "勤務表を読み込んでいます…"
