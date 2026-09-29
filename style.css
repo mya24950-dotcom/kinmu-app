@@ -1376,6 +1376,31 @@ body.dark-mode #scheduleTable td.staff-name-cell {
 
 }
 /* =========================================================
+   勤務表 固定部分のダークモード
+   ========================================================= */
+
+/* 左上「職員」セル */
+body.dark-mode .scheduleFixedHeader .staff-header,
+body.dark-mode #scheduleFixedHeader .staff-header {
+  background: #2c2c2e !important;
+  color: #ffffff !important;
+}
+
+/* 職員名の固定列 */
+body.dark-mode .scheduleFixedStaffColumn .staff-name-cell,
+body.dark-mode #scheduleFixedStaffColumn .staff-name-cell {
+  background: #2c2c2e !important;
+  color: #ffffff !important;
+}
+
+/* 通常の職員名セル */
+body.dark-mode #scheduleTable th.staff-name-cell,
+body.dark-mode #scheduleTable td.staff-name-cell {
+  background: #2c2c2e !important;
+  color: #ffffff !important;
+}
+
+/* =========================================================
    危険操作
    ========================================================= */
 
