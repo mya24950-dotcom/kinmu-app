@@ -330,13 +330,32 @@ async function init() {
     );
 
 
-    /* ------------------------------------------------
-       初期ローディング
-    ------------------------------------------------ */
+    const oauthLoginInProgress =
+      sessionStorage.getItem(
+        "oauthLoginInProgress"
+      );
 
-    showInitialLoading(
-      "起動しています…"
-    );
+
+    /*
+     * Googleログインから戻ってきた場合
+     * 最初からローディング画面を表示
+     */
+    if (
+      oauthLoginInProgress ===
+      "true"
+    ) {
+
+      showInitialLoading(
+        "ログイン情報を確認しています…"
+      );
+
+    } else {
+
+      showInitialLoading(
+        "起動しています…"
+      );
+
+    }
 
 
     /* ------------------------------------------------
