@@ -3329,3 +3329,19 @@ textarea:focus-visible {
 #loginPage [id*="passkey"] {
   display: none !important;
 }
+
+/* =========================================================
+   Passkey関連を完全非表示
+   ========================================================= */
+
+#loginPage .login-divider {
+  display: none !important;
+}
+
+#loginPage #passkeyLoginButton {
+  display: none !important;
+}
+
+#loginPage #passkeyLoginButton + p {
+  display: none !important;
+}
