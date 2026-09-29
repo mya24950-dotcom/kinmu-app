@@ -11059,18 +11059,47 @@ async function saveStaffOrder() {
       i++
     ) {
 
+      const staff =
+        appData.staff[i];
+
+      const newOrder =
+        i;
+
+      const oldOrder =
+        Number(
+          staff.sort_order
+        );
+
+      /* -----------------------------------------
+         すでに同じ順番なら保存しない
+         ----------------------------------------- */
+
+      if (
+        oldOrder === newOrder
+      ) {
+        continue;
+      }
+
+
+      console.log(
+        "★ 職員並び順更新開始",
+        staff.id,
+        oldOrder,
+        "→",
+        newOrder
+      );
+
+
       const result =
         await supabaseClient
           .from("staff")
           .update({
-
             sort_order:
-              i
-
+              newOrder
           })
           .eq(
             "id",
-            appData.staff[i].id
+            staff.id
           );
 
 
@@ -11078,14 +11107,30 @@ async function saveStaffOrder() {
         result.error
       ) {
 
+        console.error(
+          "★ 職員並び順更新失敗",
+          staff.id,
+          result.error
+        );
+
         throw result.error;
 
       }
 
 
-      appData.staff[i]
-        .sort_order =
-        i;
+      /* -----------------------------------------
+         Supabase保存成功後にローカル値を更新
+         ----------------------------------------- */
+
+      staff.sort_order =
+        newOrder;
+
+
+      console.log(
+        "★ 職員並び順更新成功",
+        staff.id,
+        newOrder
+      );
 
     }
 
@@ -11100,14 +11145,14 @@ async function saveStaffOrder() {
       error
     );
 
-
     return false;
 
   }
 
 }
 
-　async function moveStaff(
+
+async function moveStaff(
   index,
   direction
 ) {
@@ -11137,6 +11182,10 @@ async function saveStaffOrder() {
   }
 
 
+  /* =========================================
+     並び順を入れ替える
+     ========================================= */
+
   [
     appData.staff[index],
     appData.staff[newIndex]
@@ -11147,6 +11196,10 @@ async function saveStaffOrder() {
 
   ];
 
+
+  /* =========================================
+     新しい並び順を設定
+     ========================================= */
 
   appData.staff =
     appData.staff.map(
@@ -11161,6 +11214,10 @@ async function saveStaffOrder() {
     );
 
 
+  /* =========================================
+     画面を先に更新
+     ========================================= */
+
   renderStaffList();
 
   renderSchedule();
@@ -11172,9 +11229,11 @@ async function saveStaffOrder() {
 
   try {
 
-    if (
-      !await saveStaffOrder()
-    ) {
+    const saved =
+      await saveStaffOrder();
+
+
+    if (!saved) {
 
       throw new Error(
         "並び順保存失敗"
@@ -11182,9 +11241,11 @@ async function saveStaffOrder() {
 
     }
 
+
   } catch (error) {
 
     console.error(
+      "職員並び順変更エラー",
       error
     );
 
@@ -11194,12 +11255,16 @@ async function saveStaffOrder() {
     );
 
 
-    await loadAllFromSupabase();
+    /* -----------------------------------------
+       保存失敗時はSupabaseの状態へ戻す
+       ----------------------------------------- */
 
+    await loadAllFromSupabase();
 
     renderStaffList();
 
     renderSchedule();
+
 
   } finally {
 
