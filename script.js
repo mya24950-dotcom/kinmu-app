@@ -557,6 +557,11 @@ async function init() {
       session.user.email
     );
 
+   showInitialLoading(
+  "勤務表を読み込んでいます…"
+);
+
+
 
     /* =================================================
        招待処理
