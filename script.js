@@ -317,6 +317,10 @@ document.addEventListener(
 );
 
 
+/* ==================================================
+   初期化
+================================================== */
+
 async function init() {
 
   try {
@@ -327,7 +331,7 @@ async function init() {
 
 
     /* ------------------------------------------------
-       初期ローディング表示
+       初期ローディング
     ------------------------------------------------ */
 
     showInitialLoading(
@@ -359,14 +363,17 @@ async function init() {
 
 
     /* ------------------------------------------------
-       招待URLを確認
-       OAuthへ移動する前に保存しておく
+       招待URL
+       
+       OAuthへ移動する前に
+       sessionStorageへ保存
     ------------------------------------------------ */
 
     const urlParams =
       new URLSearchParams(
         window.location.search
       );
+
 
     const urlInviteToken =
       urlParams.get(
@@ -403,11 +410,6 @@ async function init() {
       "true"
     ) {
 
-      console.log(
-        "★ 強制ログイン画面"
-      );
-
-
       sessionStorage.removeItem(
         "forceLoginScreen"
       );
@@ -425,7 +427,6 @@ async function init() {
 
       setupGoogleLogin();
       setupAppleLogin();
-      setupEmailLogin();
       setupPasskeyLogin();
       setupNewOrganizationButton();
 
@@ -438,43 +439,65 @@ async function init() {
     }
 
 
-    /* ------------------------------------------------
-       現在のセッション取得
-    ------------------------------------------------ */
+    /* =================================================
+       OAuth復帰を考慮したセッション取得
+       ================================================= */
 
-    let {
-      data: sessionData,
-      error: sessionError
-    } =
-      await supabaseClient.auth.getSession();
+    let session =
+      null;
 
 
-    if (sessionError) {
+    /*
+     * まず現在のセッションを取得
+     */
+
+    try {
+
+      const {
+        data,
+        error
+      } =
+        await supabaseClient.auth.getSession();
+
+
+      if (error) {
+
+        console.error(
+          "getSessionエラー",
+          error
+        );
+
+      }
+
+
+      session =
+        data?.session ||
+        null;
+
+    } catch (error) {
 
       console.error(
         "セッション取得エラー",
-        sessionError
+        error
       );
 
     }
 
 
-    let session =
-      sessionData?.session ||
-      null;
-
-
     console.log(
-      "★ 初期セッション:",
+      "★ 最初のセッション:",
       session
     );
 
 
-    /* ------------------------------------------------
+    /* =================================================
        セッションがない場合
-       OAuthから戻ってくる可能性があるため
-       auth state changeも監視する
-    ------------------------------------------------ */
+       
+       OAuthから戻った直後は、
+       getSession()より先にSIGNED_INが来ることがある。
+       
+       そのためAuthStateChangeを先に待つ。
+       ================================================= */
 
     if (!session) {
 
@@ -483,167 +506,30 @@ async function init() {
 
       setupGoogleLogin();
       setupAppleLogin();
-      setupEmailLogin();
       setupPasskeyLogin();
       setupNewOrganizationButton();
 
 
-      /*
-       * OAuthから戻ってきた直後など、
-       * getSession()の時点ではまだ
-       * セッションが確定していない場合がある。
-       */
-
       session =
-        await new Promise(
-          resolve => {
-
-            let finished =
-              false;
+        await waitForAuthSession();
 
 
-            const finish =
-              value => {
-
-                if (finished) {
-
-                  return;
-
-                }
-
-                finished = true;
-
-                clearTimeout(
-                  timeout
-                );
-
-                if (authSubscription) {
-
-                  authSubscription.unsubscribe();
-
-                }
-
-                resolve(
-                  value
-                );
-
-              };
-
-
-            let authSubscription =
-              null;
-
-
-            const timeout =
-              setTimeout(
-                async () => {
-
-                  console.log(
-                    "★ Auth監視タイムアウト"
-                  );
-
-
-                  /*
-                   * 最後にもう一度
-                   * セッションを確認
-                   */
-
-                  try {
-
-                    const {
-                      data
-                    } =
-                      await supabaseClient
-                        .auth
-                        .getSession();
-
-
-                    finish(
-                      data?.session ||
-                      null
-                    );
-
-                  } catch (error) {
-
-                    console.error(
-                      "再セッション取得エラー",
-                      error
-                    );
-
-                    finish(
-                      null
-                    );
-
-                  }
-
-                },
-                15000
-              );
-
-
-            authSubscription =
-              supabaseClient
-                .auth
-                .onAuthStateChange(
-                  async (
-                    event,
-                    authSession
-                  ) => {
-
-                    console.log(
-                      "★ Auth状態:",
-                      event,
-                      authSession
-                    );
-
-
-                    if (
-                      event ===
-                        "INITIAL_SESSION" &&
-                      authSession
-                    ) {
-
-                      finish(
-                        authSession
-                      );
-
-                      return;
-
-                    }
-
-
-                    if (
-                      event ===
-                        "SIGNED_IN" &&
-                      authSession
-                    ) {
-
-                      finish(
-                        authSession
-                      );
-
-                    }
-
-                  }
-                )
-                .data
-                .subscription;
-
-
-          }
-        );
+      console.log(
+        "★ Auth監視後のセッション:",
+        session
+      );
 
     }
 
 
-    /* ------------------------------------------------
+    /* =================================================
        それでもセッションがない
-    ------------------------------------------------ */
+       ================================================= */
 
     if (!session) {
 
       console.log(
-        "★ ログインセッションなし"
+        "★ ログインセッションが確認できませんでした"
       );
 
 
@@ -654,7 +540,6 @@ async function init() {
 
       setupGoogleLogin();
       setupAppleLogin();
-      setupEmailLogin();
       setupPasskeyLogin();
       setupNewOrganizationButton();
 
@@ -668,15 +553,14 @@ async function init() {
 
 
     console.log(
-      "★ ログイン確認:",
+      "★ ログイン済み:",
       session.user.email
     );
 
 
-    /* ------------------------------------------------
+    /* =================================================
        招待処理
-       URL または sessionStorage に存在する場合
-    ------------------------------------------------ */
+       ================================================= */
 
     const currentParams =
       new URLSearchParams(
@@ -697,25 +581,25 @@ async function init() {
 
 
     if (
+      currentUrlInviteToken
+    ) {
+
+      sessionStorage.setItem(
+        "pendingInviteToken",
+        currentUrlInviteToken
+      );
+
+    }
+
+
+    if (
       currentUrlInviteToken ||
       storedInviteToken
     ) {
 
-      /*
-       * URLに残っている場合は
-       * 念のためsessionStorageにも保存
-       */
-
-      if (
-        currentUrlInviteToken
-      ) {
-
-        sessionStorage.setItem(
-          "pendingInviteToken",
-          currentUrlInviteToken
-        );
-
-      }
+      console.log(
+        "★ 招待処理を開始します"
+      );
 
 
       showInitialLoading(
@@ -738,9 +622,9 @@ async function init() {
     }
 
 
-    /* ------------------------------------------------
+    /* =================================================
        新規職場登録の続き
-    ------------------------------------------------ */
+       ================================================= */
 
     const pendingOrganizationName =
       sessionStorage.getItem(
@@ -806,10 +690,10 @@ async function init() {
           "pendingOrganizationName"
         );
 
+
         sessionStorage.removeItem(
           "pendingStaffName"
         );
-
 
       } else {
 
@@ -823,14 +707,11 @@ async function init() {
           "pendingOrganizationName"
         );
 
+
         sessionStorage.removeItem(
           "pendingStaffName"
         );
 
-
-        /*
-         * 作成された職場を取得
-         */
 
         const organization =
           await getCurrentOrganization(
@@ -855,9 +736,9 @@ async function init() {
     }
 
 
-    /* ------------------------------------------------
+    /* =================================================
        現在の職場を取得
-    ------------------------------------------------ */
+       ================================================= */
 
     showInitialLoading(
       "職場情報を読み込んでいます…"
@@ -894,7 +775,6 @@ async function init() {
 
       setupGoogleLogin();
       setupAppleLogin();
-      setupEmailLogin();
       setupPasskeyLogin();
       setupNewOrganizationButton();
 
@@ -907,6 +787,10 @@ async function init() {
     }
 
 
+    /* ------------------------------------------------
+       現在の職場をセット
+    ------------------------------------------------ */
+
     currentOrganization =
       organization;
 
@@ -918,7 +802,7 @@ async function init() {
 
 
     /* ------------------------------------------------
-       職場名表示
+       職場名
     ------------------------------------------------ */
 
     const organizationTitle =
@@ -943,28 +827,28 @@ async function init() {
 
 
     /* ------------------------------------------------
-       職場削除などの管理設定
+       管理設定
     ------------------------------------------------ */
 
     setupOrganizationDangerZone();
 
 
     /* ------------------------------------------------
-       アプリ画面表示
+       アプリ表示
     ------------------------------------------------ */
 
     showApp();
 
 
     /* ------------------------------------------------
-       ローカルデータ読み込み
+       ローカルデータ
     ------------------------------------------------ */
 
     loadLocalData();
 
 
     /* ------------------------------------------------
-       各種イベント
+       イベント
     ------------------------------------------------ */
 
     bindEvents();
@@ -974,7 +858,7 @@ async function init() {
 
 
     /* ------------------------------------------------
-       Supabaseデータ読み込み
+       Supabaseデータ
     ------------------------------------------------ */
 
     showInitialLoading(
@@ -986,7 +870,7 @@ async function init() {
 
 
     /* ------------------------------------------------
-       初回描画
+       描画
     ------------------------------------------------ */
 
     await renderAll();
@@ -1063,9 +947,9 @@ async function init() {
 
       showLoginPage();
 
+
       setupGoogleLogin();
       setupAppleLogin();
-      setupEmailLogin();
       setupPasskeyLogin();
       setupNewOrganizationButton();
 
@@ -1081,6 +965,305 @@ async function init() {
     }
 
   }
+
+}
+
+
+/* ==================================================
+   OAuth復帰後のセッション待機
+================================================== */
+
+async function waitForAuthSession() {
+
+  return new Promise(
+    resolve => {
+
+      let finished =
+        false;
+
+
+      let subscription =
+        null;
+
+
+      let timeoutId =
+        null;
+
+
+      const finish =
+        session => {
+
+          if (finished) {
+
+            return;
+
+          }
+
+
+          finished = true;
+
+
+          if (timeoutId) {
+
+            clearTimeout(
+              timeoutId
+            );
+
+          }
+
+
+          if (subscription) {
+
+            subscription.unsubscribe();
+
+          }
+
+
+          resolve(
+            session ||
+            null
+          );
+
+        };
+
+
+      /* ------------------------------------------------
+         Auth状態変化を監視
+      ------------------------------------------------ */
+
+      const result =
+        supabaseClient
+          .auth
+          .onAuthStateChange(
+            (
+              event,
+              session
+            ) => {
+
+              console.log(
+                "★ Auth状態変化:",
+                event,
+                session
+              );
+
+
+              /*
+               * OAuthから戻って
+               * SIGNED_INになった場合
+               */
+
+              if (
+                event ===
+                "SIGNED_IN"
+              ) {
+
+                finish(
+                  session
+                );
+
+                return;
+
+              }
+
+
+              /*
+               * INITIAL_SESSIONで
+               * 既にログイン済みの場合
+               */
+
+              if (
+                event ===
+                  "INITIAL_SESSION" &&
+                session
+              ) {
+
+                finish(
+                  session
+                );
+
+              }
+
+            }
+          );
+
+
+      subscription =
+        result
+          ?.data
+          ?.subscription ||
+        null;
+
+
+      /* ------------------------------------------------
+         念のため定期的にセッション確認
+         
+         OAuth復帰時にAuthStateChangeを
+         取り逃した場合への対策
+      ------------------------------------------------ */
+
+      let checkCount =
+        0;
+
+
+      const maxCheckCount =
+        30;
+
+
+      const checkSession =
+        async () => {
+
+          if (finished) {
+
+            return;
+
+          }
+
+
+          checkCount++;
+
+
+          try {
+
+            const {
+              data,
+              error
+            } =
+              await supabaseClient
+                .auth
+                .getSession();
+
+
+            if (error) {
+
+              console.warn(
+                "セッション再確認エラー",
+                error
+              );
+
+            }
+
+
+            if (
+              data?.session
+            ) {
+
+              console.log(
+                "★ セッションを再確認できました"
+              );
+
+
+              finish(
+                data.session
+              );
+
+
+              return;
+
+            }
+
+          } catch (error) {
+
+            console.warn(
+              "セッション確認中エラー",
+              error
+            );
+
+          }
+
+
+          if (
+            checkCount >=
+            maxCheckCount
+          ) {
+
+            console.log(
+              "★ セッション待機タイムアウト"
+            );
+
+
+            finish(
+              null
+            );
+
+
+            return;
+
+          }
+
+
+          setTimeout(
+            checkSession,
+            500
+          );
+
+        };
+
+
+      /*
+       * 500ms後から確認開始
+       */
+      setTimeout(
+        checkSession,
+        500
+      );
+
+
+      /* ------------------------------------------------
+         最終タイムアウト
+         約15秒
+      ------------------------------------------------ */
+
+      timeoutId =
+        setTimeout(
+          async () => {
+
+            if (finished) {
+
+              return;
+
+            }
+
+
+            console.log(
+              "★ Auth監視最終確認"
+            );
+
+
+            try {
+
+              const {
+                data
+              } =
+                await supabaseClient
+                  .auth
+                  .getSession();
+
+
+              finish(
+                data?.session ||
+                null
+              );
+
+            } catch (error) {
+
+              console.error(
+                "最終セッション確認エラー",
+                error
+              );
+
+
+              finish(
+                null
+              );
+
+            }
+
+          },
+          15000
+        );
+
+    }
+  );
 
 }
 
