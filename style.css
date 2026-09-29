@@ -3313,3 +3313,19 @@ textarea:focus-visible {
     font-size: 34px;
   }
 }
+
+/* =========================================================
+   Passkey説明文を完全非表示
+   「または」
+   「この端末に登録したFace ID・指紋などで
+    簡単にログインできます。」
+   ========================================================= */
+
+#loginPage .passkey-login-description,
+#loginPage .passkey-description,
+#loginPage .passkey-area,
+#loginPage .passkey-section,
+#loginPage [class*="passkey"],
+#loginPage [id*="passkey"] {
+  display: none !important;
+}
