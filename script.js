@@ -537,7 +537,7 @@ sessionStorage.setItem(
         resolve =>
           setTimeout(
             resolve,
-            300
+            100
           )
       );
 
