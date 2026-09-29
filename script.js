@@ -506,7 +506,7 @@ sessionStorage.setItem(
        そのためAuthStateChangeを先に待つ。
        ================================================= */
 
-    if (!session) {
+   if (!session) {
 
   const oauthLoginInProgress =
     sessionStorage.getItem(
@@ -528,16 +528,9 @@ sessionStorage.setItem(
       await waitForAuthSession();
 
 
-    console.log(
-      "★ OAuth復帰後のセッション:",
-      session
-    );
-
-
   } else {
 
     showLoginPage();
-
 
     setupGoogleLogin();
     setupAppleLogin();
@@ -545,9 +538,7 @@ sessionStorage.setItem(
     setupPasskeyLogin();
     setupNewOrganizationButton();
 
-
     hideInitialLoading();
-
 
     return;
 
@@ -3280,16 +3271,25 @@ async function loginWithGoogle() {
       "googleLoginButton"
     );
 
-
   if (button) {
-
-    button.disabled =
-      true;
-
+    button.disabled = true;
   }
 
-
   try {
+
+    /* -----------------------------------------------
+       Google認証開始
+       ログイン画面をローディングに切り替える
+    ----------------------------------------------- */
+
+    sessionStorage.setItem(
+      "oauthLoginInProgress",
+      "true"
+    );
+
+    showInitialLoading(
+      "Googleでログインしています…"
+    );
 
     const urlParams =
       new URLSearchParams(
