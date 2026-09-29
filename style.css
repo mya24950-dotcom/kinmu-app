@@ -449,7 +449,7 @@ body {
 #scheduleTable th.staff-name-cell {
   min-width: 95px;
 
-  text-align: left;
+  text-align: center;
 
   font-weight: 700;
 
@@ -459,7 +459,7 @@ body {
 #scheduleTable td.staff-name-cell {
   min-width: 95px;
 
-  text-align: left;
+  text-align: center;
 }
 
 #scheduleTable th.saturday,
