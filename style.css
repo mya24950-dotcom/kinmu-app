@@ -3375,7 +3375,7 @@ body.dark-mode #leaveLegend .leave-legend-name {
    --------------------------------------------------------- */
 
 #loginPage #loginMainView::before {
-  content: "ログイン";
+  
 
   display: block !important;
 
