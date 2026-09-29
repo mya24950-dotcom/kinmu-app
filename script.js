@@ -11045,9 +11045,9 @@ async function addOrUpdateStaff() {
 
 }
 
-/* ==================================================
-   職員並び順保存
-================================================== */
+/* =========================================================
+   職員の並び順をSupabaseへ保存
+========================================================= */
 
 async function saveStaffOrder() {
 
@@ -11062,46 +11062,16 @@ async function saveStaffOrder() {
       const staff =
         appData.staff[i];
 
-      const newOrder =
-        i;
-
-      const oldOrder =
-        Number(
-          staff.sort_order
-        );
-
-      /* -----------------------------------------
-         すでに同じ順番なら保存しない
-         ----------------------------------------- */
-
-      if (
-        oldOrder === newOrder
-      ) {
-        continue;
-      }
-
-
-      console.log(
-        "★ 職員並び順更新開始",
-        staff.id,
-        oldOrder,
-        "→",
-        newOrder
-      );
-
-
       const result =
         await supabaseClient
           .from("staff")
           .update({
-            sort_order:
-              newOrder
+            sort_order: i
           })
           .eq(
             "id",
             staff.id
           );
-
 
       if (
         result.error
@@ -11114,29 +11084,21 @@ async function saveStaffOrder() {
         );
 
         throw result.error;
-
       }
 
-
-      /* -----------------------------------------
-         Supabase保存成功後にローカル値を更新
-         ----------------------------------------- */
-
-      staff.sort_order =
-        newOrder;
-
-
-      console.log(
-        "★ 職員並び順更新成功",
-        staff.id,
-        newOrder
-      );
+      /*
+       * Supabaseへの保存が成功したら
+       * アプリ内の並び順も確定
+       */
+      staff.sort_order = i;
 
     }
 
+    console.log(
+      "★ 職員並び順保存成功"
+    );
 
     return true;
-
 
   } catch (error) {
 
@@ -11151,6 +11113,116 @@ async function saveStaffOrder() {
 
 }
 
+
+/* =========================================================
+   職員を上下に移動
+========================================================= */
+
+async function moveStaff(
+  index,
+  direction
+) {
+
+  const newIndex =
+    index +
+    direction;
+
+  /*
+   * 範囲外なら何もしない
+   */
+  if (
+    newIndex < 0 ||
+    newIndex >=
+      appData.staff.length
+  ) {
+    return;
+  }
+
+  /*
+   * 他のクラウド処理中なら何もしない
+   */
+  if (
+    cloudOperationBusy
+  ) {
+    return;
+  }
+
+  /*
+   * 現在の並びを入れ替える
+   */
+  [
+    appData.staff[index],
+    appData.staff[newIndex]
+  ] = [
+    appData.staff[newIndex],
+    appData.staff[index]
+  ];
+
+  /*
+   * 画面上の並び順を更新
+   */
+  appData.staff =
+    appData.staff.map(
+      (staff, i) => ({
+        ...staff,
+        sort_order: i
+      })
+    );
+
+  /*
+   * まず画面を即時更新
+   */
+  renderStaffList();
+  renderSchedule();
+
+  cloudOperationBusy =
+    true;
+
+  try {
+
+    /*
+     * Supabaseへ保存
+     */
+    const saved =
+      await saveStaffOrder();
+
+    if (
+      !saved
+    ) {
+
+      throw new Error(
+        "並び順保存失敗"
+      );
+
+    }
+
+  } catch (error) {
+
+    console.error(
+      "職員並び順変更エラー",
+      error
+    );
+
+    alert(
+      "職員の並び順の保存に失敗しました。"
+    );
+
+    /*
+     * 保存に失敗した場合は
+     * Supabase上の状態へ戻す
+     */
+    await loadAllFromSupabase();
+
+    renderStaffList();
+    renderSchedule();
+
+  } finally {
+
+    finishCloudOperation();
+
+  }
+
+}
 
 async function moveStaff(
   index,
