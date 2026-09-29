@@ -394,11 +394,13 @@ async function init() {
       setupNewOrganizationButton();
       /* ------------------------------------------
          認証状態変更監視
+         OAuthから戻ってきた場合も確実に取得する
       ------------------------------------------ */
       session =
         await new Promise(
-          async (resolve) => {
+          async function(resolve) {
             let finished = false;
+            let authSubscription = null;
             const finish =
               function(newSession) {
                 if (finished) {
@@ -406,39 +408,78 @@ async function init() {
                 }
                 finished = true;
                 if (
-                  authListener &&
-                  authListener.subscription
+                  authSubscription
                 ) {
-                  authListener
-                    .subscription
-                    .unsubscribe();
+                  authSubscription.unsubscribe();
                 }
                 resolve(
                   newSession || null
                 );
               };
-            let authListener;
-            authListener =
+            /* ------------------------------------------
+               Supabase認証状態監視
+            ------------------------------------------ */
+            const {
+              data: authData
+            } =
               supabaseClient.auth.onAuthStateChange(
-                (event, newSession) => {
+                function(
+                  event,
+                  newSession
+                ) {
                   console.log(
                     "★ Supabase認証イベント:",
-                    event
+                    event,
+                    newSession
+                      ? newSession.user.email
+                      : "セッションなし"
                   );
+                  /* --------------------------------
+                     初期セッション
+                  -------------------------------- */
                   if (
-                    event === "SIGNED_IN" &&
+                    event ===
+                      "INITIAL_SESSION" &&
                     newSession
                   ) {
                     console.log(
-                      "★ 認証完了:",
+                      "★ INITIAL_SESSIONで認証完了:",
                       newSession.user.email
                     );
                     finish(
                       newSession
                     );
+                    return;
+                  }
+                  /* --------------------------------
+                     OAuth等によるログイン完了
+                  -------------------------------- */
+                  if (
+                    event ===
+                      "SIGNED_IN" &&
+                    newSession
+                  ) {
+                    console.log(
+                      "★ SIGNED_INで認証完了:",
+                      newSession.user.email
+                    );
+                    finish(
+                      newSession
+                    );
+                    return;
                   }
                 }
               );
+            /* ------------------------------------------
+               Subscription保存
+            ------------------------------------------ */
+            if (
+              authData &&
+              authData.subscription
+            ) {
+              authSubscription =
+                authData.subscription;
+            }
             /* ------------------------------------------
                listener登録後に現在のセッションを再確認
             ------------------------------------------ */
@@ -462,7 +503,9 @@ async function init() {
                 );
                 return;
               }
-            } catch (sessionError) {
+            } catch (
+              sessionError
+            ) {
               console.error(
                 "認証待機中のセッション取得エラー",
                 sessionError
@@ -625,7 +668,10 @@ async function init() {
         hideInitialLoading();
         alert(
           "職場の登録に失敗しました。\n\n" +
-          (error?.message || String(error))
+          (
+            error?.message ||
+            String(error)
+          )
         );
         showLoginPage(
           "職場の登録に失敗しました。"
@@ -759,7 +805,10 @@ async function init() {
     hideInitialLoading();
     alert(
       "勤務表アプリの起動に失敗しました。\n\n" +
-      (error?.message || String(error))
+      (
+        error?.message ||
+        String(error)
+      )
     );
     showLoginPage(
       "アプリの起動に失敗しました。"
