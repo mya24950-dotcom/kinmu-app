@@ -1362,7 +1362,19 @@ body.dark-mode #darkModeButton {
   color: #ffd60a;
 }
 
+/* =========================================================
+   職員名セル ダークモード強制適用
+   ========================================================= */
 
+html.dark-mode #scheduleTable th.staff-name-cell,
+html.dark-mode #scheduleTable td.staff-name-cell,
+body.dark-mode #scheduleTable th.staff-name-cell,
+body.dark-mode #scheduleTable td.staff-name-cell {
+
+  background-color: #2c2c2e !important;
+  color: #ffffff !important;
+
+}
 /* =========================================================
    危険操作
    ========================================================= */
