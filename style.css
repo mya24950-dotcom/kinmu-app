@@ -1066,7 +1066,15 @@ input[type="color"] {
     inset 0 0 0 3px #007aff !important;
 }
 
+/* =========================================================
+   ダークモード：職員名セル
+   ========================================================= */
 
+body.dark-mode #scheduleTable th.staff-name-cell,
+body.dark-mode #scheduleTable td.staff-name-cell {
+  background: #2c2c2e !important;
+  color: #ffffff !important;
+}
 /* =========================================================
    ダークモード
    ========================================================= */
