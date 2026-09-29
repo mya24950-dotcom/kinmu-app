@@ -3385,3 +3385,33 @@ textarea:focus-visible {
 #loginPage #newOrganizationButton.new-organization-link:active {
   opacity: 0.6;
 }
+
+/* 「こちら」を普通の文章内リンクとして表示 */
+#loginPage #newOrganizationButton {
+  display: inline !important;
+
+  width: auto !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  height: auto !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  border: none !important;
+  border-radius: 0 !important;
+
+  background: transparent !important;
+  box-shadow: none !important;
+
+  color: #888 !important;
+
+  font-size: inherit !important;
+  font-weight: 400 !important;
+  line-height: inherit !important;
+
+  text-decoration: underline !important;
+
+  cursor: pointer;
+  box-sizing: border-box;
+}
