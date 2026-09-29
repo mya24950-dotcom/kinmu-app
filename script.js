@@ -524,11 +524,43 @@ sessionStorage.setItem(
     );
 
 
-    session =
-      await waitForAuthSession();
+    /*
+     * OAuth復帰直後だけ短時間確認
+     */
+    for (
+      let i = 0;
+      i < 10 && !session;
+      i++
+    ) {
+
+      await new Promise(
+        resolve =>
+          setTimeout(
+            resolve,
+            300
+          )
+      );
+
+
+      const {
+        data
+      } =
+        await supabaseClient.auth.getSession();
+
+
+      session =
+        data?.session ||
+        null;
+
+    }
 
 
   } else {
+
+    /*
+     * 通常の未ログイン状態
+     * 待たずにログイン画面を表示
+     */
 
     showLoginPage();
 
@@ -545,7 +577,6 @@ sessionStorage.setItem(
   }
 
 }
-
 
     /* =================================================
        それでもセッションがない
