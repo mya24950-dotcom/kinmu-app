@@ -11049,10 +11049,15 @@ async function addOrUpdateStaff() {
    職員の並び順をSupabaseへ保存
 ========================================================= */
 
+/* =========================================================
+   職員の並び順をSupabaseへ保存
+   ※ PATCHを使わずRPCで保存
+========================================================= */
+
 async function saveStaffOrder() {
 
   console.log(
-    "★★★ saveStaffOrder 開始 ★★★"
+    "★★★ 職員並び順RPC保存開始 ★★★"
   );
 
   try {
@@ -11067,7 +11072,7 @@ async function saveStaffOrder() {
         appData.staff[i];
 
       console.log(
-        "★ 職員並び順更新開始",
+        "★ 職員並び順RPC更新開始",
         {
           index: i,
           id: staff.id,
@@ -11078,17 +11083,19 @@ async function saveStaffOrder() {
 
       const result =
         await supabaseClient
-          .from("staff")
-          .update({
-            sort_order: i
-          })
-          .eq(
-            "id",
-            staff.id
+          .rpc(
+            "update_staff_sort_order",
+            {
+              p_staff_id:
+                staff.id,
+
+              p_sort_order:
+                i
+            }
           );
 
       console.log(
-        "★ Supabase更新結果",
+        "★ 職員並び順RPC結果",
         result
       );
 
@@ -11097,18 +11104,21 @@ async function saveStaffOrder() {
       ) {
 
         console.error(
-          "★ 職員並び順更新失敗",
+          "★ 職員並び順RPC更新失敗",
           result.error
         );
 
         throw result.error;
       }
 
+      /*
+       * Supabaseへの保存成功
+       */
       staff.sort_order =
         i;
 
       console.log(
-        "★ 職員並び順更新成功",
+        "★ 職員並び順RPC更新成功",
         staff.id,
         i
       );
@@ -11116,7 +11126,7 @@ async function saveStaffOrder() {
     }
 
     console.log(
-      "★★★ 職員並び順保存成功 ★★★"
+      "★★★ 職員並び順RPC保存成功 ★★★"
     );
 
     return true;
@@ -11124,7 +11134,7 @@ async function saveStaffOrder() {
   } catch (error) {
 
     console.error(
-      "★★★ 職員並び順保存エラー ★★★",
+      "★★★ 職員並び順RPC保存エラー ★★★",
       error
     );
 
