@@ -3056,39 +3056,30 @@ async function registerWithEmail() {
 
   const message =
     document.getElementById(
-      "loginMessage"
+      "registerMessage"
     );
 
   const button =
     document.getElementById(
-      "emailRegisterButton"
+      "registerEmailButton"
     );
 
 
   const email =
     emailInput?.value.trim();
 
+
   const password =
     passwordInput?.value;
 
 
-  if (!email) {
+  if (!email || !password) {
 
     if (message) {
+
       message.textContent =
-        "メールアドレスを入力してください。";
-    }
+        "メールアドレスとパスワードを入力してください。";
 
-    return;
-
-  }
-
-
-  if (!password) {
-
-    if (message) {
-      message.textContent =
-        "パスワードを入力してください。";
     }
 
     return;
@@ -3099,8 +3090,10 @@ async function registerWithEmail() {
   if (password.length < 6) {
 
     if (message) {
+
       message.textContent =
         "パスワードは6文字以上で入力してください。";
+
     }
 
     return;
@@ -3108,10 +3101,36 @@ async function registerWithEmail() {
   }
 
 
+  /*
+   * 招待URLから登録した場合、
+   * 確認メール後のログインでも
+   * 招待トークンを利用できるように保存
+   */
+
+  const urlParams =
+    new URLSearchParams(
+      window.location.search
+    );
+
+
+  const inviteToken =
+    urlParams.get("invite");
+
+
+  if (inviteToken) {
+
+    sessionStorage.setItem(
+      "pendingInviteToken",
+      inviteToken
+    );
+
+  }
+
+
   if (button) {
 
-    button.disabled = true;
-    button.style.opacity = "0.6";
+    button.disabled =
+      true;
 
   }
 
@@ -3119,30 +3138,17 @@ async function registerWithEmail() {
   if (message) {
 
     message.textContent =
-      "アカウントを登録しています…";
+      "登録しています…";
 
   }
 
 
   try {
 
-    console.log(
-      "★ メールアドレス新規登録開始"
-    );
-
-
-    const {
-      data,
-      error
-    } =
+    const { data, error } =
       await supabaseClient.auth.signUp({
-
-        email:
-          email,
-
-        password:
-          password
-
+        email,
+        password
       });
 
 
@@ -3153,10 +3159,6 @@ async function registerWithEmail() {
     }
 
 
-    /*
-     * メール確認が必要な場合
-     */
-
     if (
       data.user &&
       !data.session
@@ -3165,7 +3167,7 @@ async function registerWithEmail() {
       if (message) {
 
         message.textContent =
-          "確認メールを送信しました。メール内のリンクを開いて登録を完了してください。";
+          "確認メールを送信しました。メールを確認してログインしてください。";
 
       }
 
@@ -3174,13 +3176,7 @@ async function registerWithEmail() {
     }
 
 
-    /*
-     * メール確認不要の場合
-     */
-
-    if (
-      data.session
-    ) {
+    if (data.session) {
 
       sessionStorage.removeItem(
         "forceLoginScreen"
@@ -3188,9 +3184,14 @@ async function registerWithEmail() {
 
 
       console.log(
-        "★ メールアドレス新規登録成功"
+        "メール登録成功"
       );
 
+
+      /*
+       * init()を再実行して、
+       * 招待処理を含む通常の初期化を行う
+       */
 
       window.location.reload();
 
@@ -3200,7 +3201,7 @@ async function registerWithEmail() {
   } catch (error) {
 
     console.error(
-      "メールアドレス登録エラー",
+      "メール登録エラー",
       error
     );
 
@@ -3208,18 +3209,17 @@ async function registerWithEmail() {
     if (message) {
 
       message.textContent =
-        "アカウント登録に失敗しました。\n" +
-        (error?.message || String(error));
+        error.message ||
+        "メール登録に失敗しました。";
 
     }
-
 
   } finally {
 
     if (button) {
 
-      button.disabled = false;
-      button.style.opacity = "1";
+      button.disabled =
+        false;
 
     }
 
