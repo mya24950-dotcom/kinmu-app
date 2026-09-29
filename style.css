@@ -3557,7 +3557,7 @@ body.dark-mode #leaveLegend .leave-legend-name {
    --------------------------------------------------------- */
 
 #loginPage #passkeyLoginButton {
-  display: block !important;
+  display: none !important;
 
   width: 100% !important;
 
