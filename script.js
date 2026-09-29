@@ -307,23 +307,40 @@ function hideInitialLoading() {
    初期化
 ================================================== */
 
-document.addEventListener("DOMContentLoaded", init);
+/* ==================================================
+   初期化
+================================================== */
+
+document.addEventListener(
+  "DOMContentLoaded",
+  init
+);
+
+
 async function init() {
+
   try {
-    console.log("★ 勤務表アプリ起動");
-    /* ==================================================
+
+    console.log(
+      "★ 勤務表アプリ起動"
+    );
+
+
+    /* ------------------------------------------------
+       初期ローディング表示
+    ------------------------------------------------ */
+
+    showInitialLoading(
+      "起動しています…"
+    );
+
+
+    /* ------------------------------------------------
        Supabase初期化
-    ================================================== */
-    if (
-      !window.supabase ||
-      typeof window.supabase.createClient !== "function"
-    ) {
-      throw new Error(
-        "Supabaseライブラリが読み込まれていません"
-      );
-    }
+    ------------------------------------------------ */
+
     supabaseClient =
-      window.supabase.createClient(
+      supabase.createClient(
         SUPABASE_URL,
         SUPABASE_KEY,
         {
@@ -334,491 +351,737 @@ async function init() {
           }
         }
       );
+
+
     console.log(
       "★ Supabase初期化完了"
     );
-    /* ==================================================
-       現在のセッション確認
-    ================================================== */
-    let {
-      data: { session },
-      error
-    } =
-      await supabaseClient.auth.getSession();
-    if (error) {
-      throw error;
+
+
+    /* ------------------------------------------------
+       招待URLを確認
+       OAuthへ移動する前に保存しておく
+    ------------------------------------------------ */
+
+    const urlParams =
+      new URLSearchParams(
+        window.location.search
+      );
+
+    const urlInviteToken =
+      urlParams.get(
+        "invite"
+      );
+
+
+    if (urlInviteToken) {
+
+      sessionStorage.setItem(
+        "pendingInviteToken",
+        urlInviteToken
+      );
+
+      console.log(
+        "★ 招待トークンを保存しました"
+      );
+
     }
-    console.log(
-      "★ 初回セッション確認:",
-      session
-        ? session.user.email
-        : "なし"
-    );
-    /* ==================================================
-       ログアウト後の強制ログイン画面
-    ================================================== */
+
+
+    /* ------------------------------------------------
+       強制ログイン画面
+    ------------------------------------------------ */
+
     const forceLoginScreen =
       sessionStorage.getItem(
         "forceLoginScreen"
       );
+
+
     if (
-      forceLoginScreen === "true"
+      forceLoginScreen ===
+      "true"
     ) {
-      await supabaseClient.auth.signOut({
-        scope: "global"
-      });
+
+      console.log(
+        "★ 強制ログイン画面"
+      );
+
+
       sessionStorage.removeItem(
         "forceLoginScreen"
       );
-      showLoginPage();
-      setupGoogleLogin();
-      setupEmailLogin();
-      setupAppleLogin();
-      setupPasskeyLogin();
-      setupNewOrganizationButton();
-      return;
-    }
-    /* ==================================================
-       ログインしていない場合
-       ※OAuth / Passkey / その他の認証完了を待つ
-    ================================================== */
-    if (!session) {
-      console.log(
-        "★ セッションなし。ログイン画面を表示します。"
+
+
+      await supabaseClient.auth.signOut({
+        scope: "global"
+      });
+
+
+      showLoginPage(
+        "ログインしてください。"
       );
-      showLoginPage();
+
+
       setupGoogleLogin();
       setupAppleLogin();
       setupEmailLogin();
       setupPasskeyLogin();
       setupNewOrganizationButton();
-      /* ------------------------------------------
-         認証状態変更監視
-         OAuthから戻ってきた場合も確実に取得する
-      ------------------------------------------ */
+
+
+      hideInitialLoading();
+
+
+      return;
+
+    }
+
+
+    /* ------------------------------------------------
+       現在のセッション取得
+    ------------------------------------------------ */
+
+    let {
+      data: sessionData,
+      error: sessionError
+    } =
+      await supabaseClient.auth.getSession();
+
+
+    if (sessionError) {
+
+      console.error(
+        "セッション取得エラー",
+        sessionError
+      );
+
+    }
+
+
+    let session =
+      sessionData?.session ||
+      null;
+
+
+    console.log(
+      "★ 初期セッション:",
+      session
+    );
+
+
+    /* ------------------------------------------------
+       セッションがない場合
+       OAuthから戻ってくる可能性があるため
+       auth state changeも監視する
+    ------------------------------------------------ */
+
+    if (!session) {
+
+      showLoginPage();
+
+
+      setupGoogleLogin();
+      setupAppleLogin();
+      setupEmailLogin();
+      setupPasskeyLogin();
+      setupNewOrganizationButton();
+
+
+      /*
+       * OAuthから戻ってきた直後など、
+       * getSession()の時点ではまだ
+       * セッションが確定していない場合がある。
+       */
+
       session =
         await new Promise(
-          async function(resolve) {
-            let finished = false;
-            let authSubscription = null;
+          resolve => {
+
+            let finished =
+              false;
+
+
             const finish =
-              function(newSession) {
+              value => {
+
                 if (finished) {
+
                   return;
+
                 }
+
                 finished = true;
-                if (
-                  authSubscription
-                ) {
+
+                clearTimeout(
+                  timeout
+                );
+
+                if (authSubscription) {
+
                   authSubscription.unsubscribe();
+
                 }
+
                 resolve(
-                  newSession || null
+                  value
                 );
+
               };
-            /* ------------------------------------------
-               Supabase認証状態監視
-            ------------------------------------------ */
-            const {
-              data: authData
-            } =
-              supabaseClient.auth.onAuthStateChange(
-                function(
-                  event,
-                  newSession
-                ) {
+
+
+            let authSubscription =
+              null;
+
+
+            const timeout =
+              setTimeout(
+                async () => {
+
                   console.log(
-                    "★ Supabase認証イベント:",
+                    "★ Auth監視タイムアウト"
+                  );
+
+
+                  /*
+                   * 最後にもう一度
+                   * セッションを確認
+                   */
+
+                  try {
+
+                    const {
+                      data
+                    } =
+                      await supabaseClient
+                        .auth
+                        .getSession();
+
+
+                    finish(
+                      data?.session ||
+                      null
+                    );
+
+                  } catch (error) {
+
+                    console.error(
+                      "再セッション取得エラー",
+                      error
+                    );
+
+                    finish(
+                      null
+                    );
+
+                  }
+
+                },
+                15000
+              );
+
+
+            authSubscription =
+              supabaseClient
+                .auth
+                .onAuthStateChange(
+                  async (
                     event,
-                    newSession
-                      ? newSession.user.email
-                      : "セッションなし"
-                  );
-                  /* --------------------------------
-                     初期セッション
-                  -------------------------------- */
-                  if (
-                    event ===
-                      "INITIAL_SESSION" &&
-                    newSession
-                  ) {
+                    authSession
+                  ) => {
+
                     console.log(
-                      "★ INITIAL_SESSIONで認証完了:",
-                      newSession.user.email
+                      "★ Auth状態:",
+                      event,
+                      authSession
                     );
-                    finish(
-                      newSession
-                    );
-                    return;
+
+
+                    if (
+                      event ===
+                        "INITIAL_SESSION" &&
+                      authSession
+                    ) {
+
+                      finish(
+                        authSession
+                      );
+
+                      return;
+
+                    }
+
+
+                    if (
+                      event ===
+                        "SIGNED_IN" &&
+                      authSession
+                    ) {
+
+                      finish(
+                        authSession
+                      );
+
+                    }
+
                   }
-                  /* --------------------------------
-                     OAuth等によるログイン完了
-                  -------------------------------- */
-                  if (
-                    event ===
-                      "SIGNED_IN" &&
-                    newSession
-                  ) {
-                    console.log(
-                      "★ SIGNED_INで認証完了:",
-                      newSession.user.email
-                    );
-                    finish(
-                      newSession
-                    );
-                    return;
-                  }
-                }
-              );
-            /* ------------------------------------------
-               Subscription保存
-            ------------------------------------------ */
-            if (
-              authData &&
-              authData.subscription
-            ) {
-              authSubscription =
-                authData.subscription;
-            }
-            /* ------------------------------------------
-               listener登録後に現在のセッションを再確認
-            ------------------------------------------ */
-            try {
-              const {
-                data: {
-                  session: latestSession
-                }
-              } =
-                await supabaseClient.auth.getSession();
-              if (
-                latestSession &&
-                !finished
-              ) {
-                console.log(
-                  "★ 認証待機中にセッションを取得:",
-                  latestSession.user.email
-                );
-                finish(
-                  latestSession
-                );
-                return;
-              }
-            } catch (
-              sessionError
-            ) {
-              console.error(
-                "認証待機中のセッション取得エラー",
-                sessionError
-              );
-            }
-            /* ------------------------------------------
-               最大15秒待機
-            ------------------------------------------ */
-            setTimeout(
-              function() {
-                if (!finished) {
-                  console.log(
-                    "★ 認証完了を15秒待っても取得できませんでした"
-                  );
-                  finish(
-                    null
-                  );
-                }
-              },
-              15000
-            );
+                )
+                .data
+                .subscription;
+
+
           }
         );
-      /* ----------------------------------------------
-         認証できなかった場合
-      ---------------------------------------------- */
-      if (!session) {
-        console.log(
-          "★ 認証セッションを取得できませんでした"
-        );
-        showLoginPage(
-          "ログインセッションを取得できませんでした。"
-        );
-        setupGoogleLogin();
-        setupEmailLogin();
-        setupAppleLogin();
-        setupPasskeyLogin();
-        setupNewOrganizationButton();
-        return;
-      }
-      console.log(
-        "★ 認証後のセッションを確認しました:",
-        session.user.email
-      );
+
     }
-    /* ==================================================
-       ログイン済み
-    ================================================== */
+
+
+    /* ------------------------------------------------
+       それでもセッションがない
+    ------------------------------------------------ */
+
+    if (!session) {
+
+      console.log(
+        "★ ログインセッションなし"
+      );
+
+
+      showLoginPage(
+        "ログインしてください。"
+      );
+
+
+      setupGoogleLogin();
+      setupAppleLogin();
+      setupEmailLogin();
+      setupPasskeyLogin();
+      setupNewOrganizationButton();
+
+
+      hideInitialLoading();
+
+
+      return;
+
+    }
+
+
     console.log(
-      "★ ログイン済み:",
+      "★ ログイン確認:",
       session.user.email
     );
-    /* ==================================================
-       招待リンク確認
-       ※認証直後に最優先で処理する
-    ================================================== */
-    const inviteToken =
+
+
+    /* ------------------------------------------------
+       招待処理
+       URL または sessionStorage に存在する場合
+    ------------------------------------------------ */
+
+    const currentParams =
       new URLSearchParams(
         window.location.search
-      ).get("invite");
-    if (inviteToken) {
-      console.log(
-        "★ 招待リンクを検出しました"
       );
+
+
+    const currentUrlInviteToken =
+      currentParams.get(
+        "invite"
+      );
+
+
+    const storedInviteToken =
+      sessionStorage.getItem(
+        "pendingInviteToken"
+      );
+
+
+    if (
+      currentUrlInviteToken ||
+      storedInviteToken
+    ) {
+
+      /*
+       * URLに残っている場合は
+       * 念のためsessionStorageにも保存
+       */
+
+      if (
+        currentUrlInviteToken
+      ) {
+
+        sessionStorage.setItem(
+          "pendingInviteToken",
+          currentUrlInviteToken
+        );
+
+      }
+
+
       showInitialLoading(
         "招待情報を確認しています…"
       );
+
+
       const inviteAccepted =
         await handleInviteAfterLogin();
-      if (!inviteAccepted) {
-        console.error(
-          "★ 招待登録に失敗しました"
+
+
+      if (inviteAccepted) {
+
+        console.log(
+          "★ 招待処理完了"
         );
-        hideInitialLoading();
-        showLoginPage(
-          "招待リンクの登録に失敗しました。"
-        );
-        setupGoogleLogin();
-        setupEmailLogin();
-        setupAppleLogin();
-        setupPasskeyLogin();
-        setupNewOrganizationButton();
-        return;
+
       }
-      console.log(
-        "★ 招待登録が完了しました"
-      );
+
     }
-    /* ==================================================
-       ローディング開始
-    ================================================== */
-    showInitialLoading(
-      "ログイン情報を確認しています…"
-    );
-    /* ==================================================
-       新規職場登録
-    ================================================== */
+
+
+    /* ------------------------------------------------
+       新規職場登録の続き
+    ------------------------------------------------ */
+
     const pendingOrganizationName =
       sessionStorage.getItem(
         "pendingOrganizationName"
       );
+
+
     const pendingStaffName =
       sessionStorage.getItem(
         "pendingStaffName"
       );
+
+
     if (
       pendingOrganizationName &&
       pendingStaffName
     ) {
-      sessionStorage.removeItem(
-        "pendingOrganizationName"
+
+      showInitialLoading(
+        "職場を登録しています…"
       );
-      sessionStorage.removeItem(
-        "pendingStaffName"
+
+
+      console.log(
+        "★ 保留中の職場登録を処理します"
       );
-      try {
-        const {
-          data,
-          error
-        } =
-          await supabaseClient.rpc(
-            "create_organization_and_admin",
-            {
-              new_org_name:
-                pendingOrganizationName,
-              new_staff_name:
-                pendingStaffName
-            }
-          );
-        if (error) {
-          throw error;
-        }
-        if (
-          !data ||
-          !data.length
-        ) {
-          throw new Error(
-            "職場の登録結果を取得できませんでした。"
-          );
-        }
-        const result =
-          data[0];
-        currentOrganization = {
-          id:
-            result.organization_id,
-          name:
-            result.organization_name,
-          role:
-            "admin"
-        };
-        alert(
-          `${result.organization_name}を登録しました。\n\n` +
-          `${result.staff_name}さんを登録者として職員管理に登録しました。`
+
+
+      const {
+        data,
+        error
+      } =
+        await supabaseClient.rpc(
+          "create_organization_and_admin",
+          {
+            new_org_name:
+              pendingOrganizationName,
+
+            new_staff_name:
+              pendingStaffName
+          }
         );
-      } catch (error) {
+
+
+      if (error) {
+
         console.error(
-          "Googleログイン後の職場登録エラー",
+          "職場登録エラー",
           error
         );
-        hideInitialLoading();
+
+
         alert(
-          "職場の登録に失敗しました。\n\n" +
+          "職場登録に失敗しました。\n\n" +
           (
-            error?.message ||
+            error.message ||
             String(error)
           )
         );
-        showLoginPage(
-          "職場の登録に失敗しました。"
+
+
+        sessionStorage.removeItem(
+          "pendingOrganizationName"
         );
-        setupGoogleLogin();
-        setupEmailLogin();
-        setupAppleLogin();
-        setupNewOrganizationButton();
-        return;
+
+        sessionStorage.removeItem(
+          "pendingStaffName"
+        );
+
+
+      } else {
+
+        console.log(
+          "★ 職場登録完了",
+          data
+        );
+
+
+        sessionStorage.removeItem(
+          "pendingOrganizationName"
+        );
+
+        sessionStorage.removeItem(
+          "pendingStaffName"
+        );
+
+
+        /*
+         * 作成された職場を取得
+         */
+
+        const organization =
+          await getCurrentOrganization(
+            session.user.id
+          );
+
+
+        if (organization) {
+
+          currentOrganization =
+            organization;
+
+        }
+
+
+        alert(
+          "職場を登録しました。"
+        );
+
       }
+
     }
-    /* ==================================================
-       所属職場取得
-    ================================================== */
+
+
+    /* ------------------------------------------------
+       現在の職場を取得
+    ------------------------------------------------ */
+
     showInitialLoading(
-      "職場情報を確認しています…"
+      "職場情報を読み込んでいます…"
     );
-    console.log(
-      "★ 職場情報取得開始:",
-      session.user.id
-    );
+
+
     const organization =
       await getCurrentOrganization(
         session.user.id
       );
-    console.log(
-      "★ 職場情報取得結果:",
-      organization
-    );
+
+
     if (!organization) {
-      hideInitialLoading();
-      showLoginPage(
-        "ログインしましたが、職場への所属がありません。"
+
+      console.error(
+        "★ 所属職場が見つかりません"
       );
+
+
+      alert(
+        "所属している職場が見つかりません。"
+      );
+
+
+      await supabaseClient.auth.signOut({
+        scope: "global"
+      });
+
+
+      showLoginPage(
+        "所属職場が見つかりません。"
+      );
+
+
       setupGoogleLogin();
-      setupEmailLogin();
       setupAppleLogin();
+      setupEmailLogin();
       setupPasskeyLogin();
       setupNewOrganizationButton();
+
+
+      hideInitialLoading();
+
+
       return;
+
     }
+
+
     currentOrganization =
       organization;
+
+
     console.log(
-      "★ currentOrganization設定完了:",
+      "★ 現在の職場:",
       currentOrganization
     );
-    /* ==================================================
+
+
+    /* ------------------------------------------------
        職場名表示
-    ================================================== */
+    ------------------------------------------------ */
+
     const organizationTitle =
       document.getElementById(
         "organizationTitle"
       );
+
+
     if (organizationTitle) {
+
       organizationTitle.textContent =
         currentOrganization.name;
+
     }
-    /* ==================================================
+
+
+    /* ------------------------------------------------
        Passkey登録
-       ※招待ユーザーも登録対象
-    ================================================== */
+    ------------------------------------------------ */
+
     await registerCurrentUserPasskey();
-    /* ==================================================
-       職場管理者用の危険操作設定
-    ================================================== */
+
+
+    /* ------------------------------------------------
+       職場削除などの管理設定
+    ------------------------------------------------ */
+
     setupOrganizationDangerZone();
-    /* ==================================================
-       アプリ表示
-    ================================================== */
+
+
+    /* ------------------------------------------------
+       アプリ画面表示
+    ------------------------------------------------ */
+
     showApp();
-    /* ==================================================
+
+
+    /* ------------------------------------------------
        ローカルデータ読み込み
-    ================================================== */
+    ------------------------------------------------ */
+
     loadLocalData();
-    /* ==================================================
-       イベント設定
-    ================================================== */
+
+
+    /* ------------------------------------------------
+       各種イベント
+    ------------------------------------------------ */
+
     bindEvents();
-    /* ==================================================
-       ログアウト設定
-    ================================================== */
+
+
     setupLogoutButton();
-    /* ==================================================
+
+
+    /* ------------------------------------------------
        Supabaseデータ読み込み
-    ================================================== */
-    try {
-      await loadAllFromSupabase();
-    } catch (error) {
-      console.error(
-        "Supabaseデータ読み込みエラー",
-        error
-      );
-    }
-    /* ==================================================
-       勤務表描画
-    ================================================== */
-    renderAll();
-    /* ==================================================
-       祝日読み込み
-    ================================================== */
+    ------------------------------------------------ */
+
+    showInitialLoading(
+      "勤務表を読み込んでいます…"
+    );
+
+
+    await loadAllFromSupabase();
+
+
+    /* ------------------------------------------------
+       初回描画
+    ------------------------------------------------ */
+
+    await renderAll();
+
+
+    /* ------------------------------------------------
+       公休日
+    ------------------------------------------------ */
+
     await loadPublicHolidays();
-    /* ==================================================
-       Realtime設定
-    ================================================== */
+
+
+    /* ------------------------------------------------
+       Realtime
+    ------------------------------------------------ */
+
     setupRealtime();
-    /* ==================================================
+
+
+    /* ------------------------------------------------
        自動同期
-    ================================================== */
+    ------------------------------------------------ */
+
     startAutoSync();
-    /* ==================================================
-       ページ表示状態変更時の同期
-    ================================================== */
+
+
+    /* ------------------------------------------------
+       アプリ復帰時同期
+    ------------------------------------------------ */
+
     setupVisibilitySync();
-    /* ==================================================
+
+
+    /* ------------------------------------------------
        ダークモード
-    ================================================== */
+    ------------------------------------------------ */
+
     setupDarkMode();
-    /* ==================================================
+
+
+    /* ------------------------------------------------
        初期ローディング終了
-    ================================================== */
+    ------------------------------------------------ */
+
     hideInitialLoading();
+
+
     console.log(
       "★ 勤務表アプリ起動完了"
     );
+
+
   } catch (error) {
+
     console.error(
-      "★ 勤務表アプリ起動エラー",
+      "★ 初期化エラー",
       error
     );
+
+
     hideInitialLoading();
+
+
     alert(
-      "勤務表アプリの起動に失敗しました。\n\n" +
+      "アプリの起動に失敗しました。\n\n" +
       (
         error?.message ||
         String(error)
       )
     );
-    showLoginPage(
-      "アプリの起動に失敗しました。"
-    );
-    setupGoogleLogin();
-    setupEmailLogin();
-    setupAppleLogin();
-    setupPasskeyLogin();
-    setupNewOrganizationButton();
+
+
+    try {
+
+      showLoginPage();
+
+      setupGoogleLogin();
+      setupAppleLogin();
+      setupEmailLogin();
+      setupPasskeyLogin();
+      setupNewOrganizationButton();
+
+    } catch (
+      loginError
+    ) {
+
+      console.error(
+        "ログイン画面表示エラー",
+        loginError
+      );
+
+    }
+
   }
+
 }
 
 
