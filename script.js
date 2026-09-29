@@ -10759,18 +10759,25 @@ async function addOrUpdateStaff() {
     return;
   }
 
+  if (!supabaseClient) {
+    alert(
+      "Supabaseに接続されていません。"
+    );
+    return;
+  }
+
   cloudOperationBusy =
     true;
 
   try {
 
+    /* =========================================
+       既存職員の編集
+       ========================================= */
+
     if (
       editingStaffIndex >= 0
     ) {
-
-      /* =========================================
-         既存職員の編集
-         ========================================= */
 
       const oldStaff =
         appData.staff[
@@ -10782,9 +10789,65 @@ async function addOrUpdateStaff() {
           oldStaff
         );
 
+      /* -----------------------------------------
+         名前が変更された場合のみ更新
+         ----------------------------------------- */
+
       if (
         oldName !== name
       ) {
+
+        /* =======================================
+           ① staff の職員名を変更
+           ======================================= */
+
+        console.log(
+          "★ 職員名変更: staff 更新開始",
+          oldStaff.id,
+          oldName,
+          "→",
+          name
+        );
+
+        const result =
+          await supabaseClient
+            .from("staff")
+            .update({
+              name:
+                name
+            })
+            .eq(
+              "id",
+              oldStaff.id
+            );
+
+        if (
+          result.error
+        ) {
+
+          console.error(
+            "★ staff 更新失敗",
+            result.error
+          );
+
+          throw result.error;
+        }
+
+        console.log(
+          "★ staff 更新成功"
+        );
+
+
+        /* =======================================
+           ② work_shifts の職員名を変更
+           ======================================= */
+
+        console.log(
+          "★ work_shifts 職員名変更開始",
+          oldName,
+          "→",
+          name
+        );
 
         const workResult =
           await supabaseClient
@@ -10801,26 +10864,19 @@ async function addOrUpdateStaff() {
         if (
           workResult.error
         ) {
+
+          console.error(
+            "★ work_shifts 更新失敗",
+            workResult.error
+          );
+
           throw workResult.error;
         }
 
-      }
+        console.log(
+          "★ work_shifts 更新成功"
+        );
 
-      const result =
-        await supabaseClient
-          .from("staff")
-          .update({
-            name
-          })
-          .eq(
-            "id",
-            oldStaff.id
-          );
-
-      if (
-        result.error
-      ) {
-        throw result.error;
       }
 
       editingStaffIndex =
@@ -10834,7 +10890,10 @@ async function addOrUpdateStaff() {
 
       const maxOrder =
         appData.staff.reduce(
-          (max, staff) => {
+          (
+            max,
+            staff
+          ) => {
 
             const value =
               Number(
@@ -10853,6 +10912,7 @@ async function addOrUpdateStaff() {
           },
           -1
         );
+
 
       /* -----------------------------------------
          ① staff に職員を追加
@@ -10874,45 +10934,62 @@ async function addOrUpdateStaff() {
       if (
         result.error
       ) {
+
+        console.error(
+          "★ 新規職員追加失敗",
+          result.error
+        );
+
         throw result.error;
       }
 
       const newStaff =
-  result.data;
+        result.data;
 
-if (
-  !newStaff ||
-  !newStaff.id
-) {
-  throw new Error(
-    "新しく追加した職員のIDを取得できませんでした。"
-  );
-}
+      if (
+        !newStaff ||
+        !newStaff.id
+      ) {
+        throw new Error(
+          "新しく追加した職員のIDを取得できませんでした。"
+        );
+      }
 
 
-/* -----------------------------------------
-   ② organization_members に所属情報を追加
-   ----------------------------------------- */
+      /* -----------------------------------------
+         ② organization_members に所属情報を追加
+         ----------------------------------------- */
 
-const memberResult =
-  await supabaseClient
-    .from("organization_members")
-    .insert({
-      organization_id:
-        currentOrganization.id,
-      staff_id:
-        newStaff.id,
-      role:
-        "staff"
-    });
+      const memberResult =
+        await supabaseClient
+          .from(
+            "organization_members"
+          )
+          .insert({
+            organization_id:
+              currentOrganization.id,
 
-if (
-  memberResult.error
-) {
-  throw memberResult.error;
-}
+            staff_id:
+              newStaff.id,
 
-   }
+            role:
+              "staff"
+          });
+
+      if (
+        memberResult.error
+      ) {
+
+        console.error(
+          "★ organization_members 登録失敗",
+          memberResult.error
+        );
+
+        throw memberResult.error;
+      }
+
+    }
+
 
     /* =========================================
        入力欄をリセット
@@ -10931,6 +11008,7 @@ if (
         "追加";
     }
 
+
     /* =========================================
        最新データを再取得
        ========================================= */
@@ -10941,7 +11019,10 @@ if (
 
     renderSchedule();
 
-  } catch (error) {
+
+  } catch (
+    error
+  ) {
 
     console.error(
       "職員保存エラー",
@@ -10963,7 +11044,6 @@ if (
   }
 
 }
-
 
 /* ==================================================
    職員並び順保存
