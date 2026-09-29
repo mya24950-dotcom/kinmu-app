@@ -2880,27 +2880,18 @@ async function loginWithEmail() {
   const email =
     emailInput?.value.trim();
 
+
   const password =
     passwordInput?.value;
 
 
-  if (!email) {
+  if (!email || !password) {
 
     if (message) {
+
       message.textContent =
-        "メールアドレスを入力してください。";
-    }
+        "メールアドレスとパスワードを入力してください。";
 
-    return;
-
-  }
-
-
-  if (!password) {
-
-    if (message) {
-      message.textContent =
-        "パスワードを入力してください。";
     }
 
     return;
@@ -2910,8 +2901,8 @@ async function loginWithEmail() {
 
   if (button) {
 
-    button.disabled = true;
-    button.style.opacity = "0.6";
+    button.disabled =
+      true;
 
   }
 
@@ -2924,30 +2915,37 @@ async function loginWithEmail() {
   }
 
 
+  /*
+   * 招待URLから直接メールログインした場合も
+   * トークンを保持する
+   */
+
+  const urlParams =
+    new URLSearchParams(
+      window.location.search
+    );
+
+
+  const inviteToken =
+    urlParams.get("invite");
+
+
+  if (inviteToken) {
+
+    sessionStorage.setItem(
+      "pendingInviteToken",
+      inviteToken
+    );
+
+  }
+
+
   try {
 
-    console.log(
-      "★ メールアドレスログイン開始"
-    );
-
-
-    sessionStorage.removeItem(
-      "forceLoginScreen"
-    );
-
-
-    const {
-      data,
-      error
-    } =
+    const { data, error } =
       await supabaseClient.auth.signInWithPassword({
-
-        email:
-          email,
-
-        password:
-          password
-
+        email,
+        password
       });
 
 
@@ -2958,10 +2956,7 @@ async function loginWithEmail() {
     }
 
 
-    if (
-      !data ||
-      !data.session
-    ) {
+    if (!data.session) {
 
       throw new Error(
         "ログインセッションを取得できませんでした。"
@@ -2970,11 +2965,21 @@ async function loginWithEmail() {
     }
 
 
-    console.log(
-      "★ メールアドレスログイン成功",
-      data.user?.email
+    sessionStorage.removeItem(
+      "forceLoginScreen"
     );
 
+
+    console.log(
+      "メールログイン成功"
+    );
+
+
+    /*
+     * init() を最初から実行して、
+     * 招待処理 → 組織取得 → 勤務表取得
+     * の順で処理する
+     */
 
     window.location.reload();
 
@@ -2982,7 +2987,7 @@ async function loginWithEmail() {
   } catch (error) {
 
     console.error(
-      "メールアドレスログインエラー",
+      "メールログインエラー",
       error
     );
 
@@ -2997,8 +3002,8 @@ async function loginWithEmail() {
 
     if (button) {
 
-      button.disabled = false;
-      button.style.opacity = "1";
+      button.disabled =
+        false;
 
     }
 
