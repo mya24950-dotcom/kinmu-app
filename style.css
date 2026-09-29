@@ -3345,3 +3345,45 @@ textarea:focus-visible {
 #loginPage #passkeyLoginButton + p {
   display: none !important;
 }
+
+```css
+/* =========================================================
+   はじめて職場登録をする方はこちら
+   ========================================================= */
+
+#loginPage #newOrganizationButton.new-organization-link {
+  display: block !important;
+  width: 100%;
+  height: auto;
+  min-height: 0;
+
+  margin: 14px 0 0;
+  padding: 4px 0;
+
+  border: none;
+  border-radius: 0;
+
+  background: transparent;
+
+  color: #007aff;
+
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.5;
+
+  text-align: center;
+
+  cursor: pointer;
+
+  box-shadow: none;
+  box-sizing: border-box;
+}
+
+#loginPage #newOrganizationButton.new-organization-link:hover {
+  background: transparent;
+}
+
+#loginPage #newOrganizationButton.new-organization-link:active {
+  opacity: 0.6;
+}
+```
