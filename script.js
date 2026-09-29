@@ -11082,17 +11082,16 @@ async function saveStaffOrder() {
       );
 
       const result =
-        await supabaseClient
-          .rpc(
-            "update_staff_sort_order",
-            {
-              p_staff_id:
-                staff.id,
+        await supabaseClient.rpc(
+          "update_staff_sort_order",
+          {
+            p_staff_id:
+              staff.id,
 
-              p_sort_order:
-                i
-            }
-          );
+            p_sort_order:
+              i
+          }
+        );
 
       console.log(
         "★ 職員並び順RPC結果",
@@ -11111,9 +11110,6 @@ async function saveStaffOrder() {
         throw result.error;
       }
 
-      /*
-       * Supabaseへの保存成功
-       */
       staff.sort_order =
         i;
 
