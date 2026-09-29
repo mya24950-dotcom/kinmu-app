@@ -198,10 +198,27 @@ if (
   document.readyState === "loading"
 ) {
 
+  /* ==================================================
+   アプリ起動
+================================================== */
+
+if (document.readyState === "loading") {
+
   document.addEventListener(
     "DOMContentLoaded",
     () => {
       init();
+    },
+    {
+      once: true
+    }
+  );
+
+} else {
+
+  init();
+
+}
     },
     {
       once: true
