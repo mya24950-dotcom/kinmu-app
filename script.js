@@ -2612,35 +2612,58 @@ function showApp() {
     );
 
 
- if (loginPage) {
+  /* =====================================================
+     ログイン画面を完全に非表示
+  ===================================================== */
 
-  loginPage.style.setProperty(
-    "display",
-    "none",
-    "important"
-  );
+  if (loginPage) {
 
-  loginPage.style.setProperty(
-    "visibility",
-    "hidden",
-    "important"
-  );
+    loginPage.style.setProperty(
+      "display",
+      "none",
+      "important"
+    );
 
-  loginPage.style.setProperty(
-    "pointer-events",
-    "none",
-    "important"
-  );
+    loginPage.style.setProperty(
+      "visibility",
+      "hidden",
+      "important"
+    );
 
-}
+    loginPage.style.setProperty(
+      "opacity",
+      "0",
+      "important"
+    );
 
+    loginPage.style.setProperty(
+      "pointer-events",
+      "none",
+      "important"
+    );
+
+  }
+
+
+  /* =====================================================
+     アプリを表示
+  ===================================================== */
 
   if (app) {
 
     app.style.display =
       "";
 
-   setupOrganizationDangerZone();
+    app.style.visibility =
+      "visible";
+
+    app.style.opacity =
+      "1";
+
+    app.style.pointerEvents =
+      "auto";
+
+    setupOrganizationDangerZone();
 
   }
 
@@ -2734,7 +2757,7 @@ function showApp() {
     );
 
   }
-   
+
 }
 
 /* =========================================================
