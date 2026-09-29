@@ -190,7 +190,34 @@ function hideInitialLoading() {
 /* ==================================================
    初期化
 ================================================== */
+/* ==================================================
+   アプリ起動
+================================================== */
 
+if (
+  document.readyState === "loading"
+) {
+
+  document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+      init();
+    },
+    {
+      once: true
+    }
+  );
+
+} else {
+
+  /*
+     DOMContentLoadedがすでに終了している場合
+     そのまま起動する
+  */
+
+  init();
+
+}
 async function init() {
 
   try {
