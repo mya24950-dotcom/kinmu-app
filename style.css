@@ -3346,7 +3346,6 @@ textarea:focus-visible {
   display: none !important;
 }
 
-```css
 /* =========================================================
    はじめて職場登録をする方はこちら
    ========================================================= */
@@ -3386,4 +3385,3 @@ textarea:focus-visible {
 #loginPage #newOrganizationButton.new-organization-link:active {
   opacity: 0.6;
 }
-```
