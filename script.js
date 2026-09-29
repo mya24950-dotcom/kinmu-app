@@ -608,7 +608,7 @@ async function init() {
 
 
       const inviteAccepted =
-        await handleInviteAfterLogin();
+        await ();
 
 
       if (inviteAccepted) {
@@ -3872,49 +3872,48 @@ function setupNewOrganizationButton() {
 
 async function handleInviteAfterLogin() {
 
-  /*
-   * まずURLから取得
-   */
-  const params =
-    new URLSearchParams(
-      window.location.search
-    );
+  try {
 
-  let inviteToken =
-    params.get("invite");
+    const urlParams =
+      new URLSearchParams(
+        window.location.search
+      );
 
-  /*
-   * URLにない場合は
-   * OAuth前に保存したsessionStorageから取得
-   */
-  if (!inviteToken) {
 
-    inviteToken =
+    const urlInvite =
+      urlParams.get("invite");
+
+
+    const storedInvite =
       sessionStorage.getItem(
         "pendingInviteToken"
       );
 
-  }
 
-  /*
-   * 招待トークンがなければ何もしない
-   */
-  if (!inviteToken) {
+    const inviteToken =
+      urlInvite ||
+      storedInvite;
 
-    return false;
 
-  }
+    if (!inviteToken) {
 
-  console.log(
-    "★ 招待トークンを確認しました"
-  );
+      return false;
 
-  try {
+    }
 
-    const {
-      data,
-      error
-    } =
+
+    /*
+     * URLから取得した場合も
+     * sessionStorageへ確実に保存
+     */
+
+    sessionStorage.setItem(
+      "pendingInviteToken",
+      inviteToken
+    );
+
+
+    const { data, error } =
       await supabaseClient.rpc(
         "accept_staff_invite",
         {
@@ -3923,67 +3922,72 @@ async function handleInviteAfterLogin() {
         }
       );
 
+
     if (error) {
 
       console.error(
-        "招待受け入れエラー",
+        "招待受諾エラー",
         error
       );
 
       alert(
-        "招待の登録に失敗しました。\n\n" +
-        (
-          error.message ||
-          String(error)
-        )
+        "招待情報の登録に失敗しました。"
       );
 
       return false;
 
     }
 
-    if (
-      !data ||
-      !data.length
-    ) {
+
+    if (!data || !data.length) {
 
       alert(
-        "招待情報を取得できませんでした。"
+        "招待情報を確認できませんでした。"
       );
 
       return false;
 
     }
+
 
     const result =
       data[0];
 
+
     console.log(
-      "★ 招待登録成功",
+      "招待受諾完了",
       result
     );
 
+
     /*
-     * 招待情報を処理できたので削除
+     * 招待処理が完全に成功してから
+     * トークンを削除
      */
+
     sessionStorage.removeItem(
       "pendingInviteToken"
     );
 
+
     /*
-     * URLからinviteを消す
+     * URLからinviteを削除
      */
-    window.history.replaceState(
+
+    history.replaceState(
       {},
       document.title,
       window.location.pathname
     );
 
+
     alert(
       `${result.staff_name}さんとして登録しました。`
     );
 
+
     return true;
+
 
   } catch (error) {
 
@@ -3993,11 +3997,7 @@ async function handleInviteAfterLogin() {
     );
 
     alert(
-      "招待処理中にエラーが発生しました。\n\n" +
-      (
-        error?.message ||
-        String(error)
-      )
+      "招待処理に失敗しました。"
     );
 
     return false;
