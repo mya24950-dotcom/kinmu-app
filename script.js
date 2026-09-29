@@ -2612,12 +2612,27 @@ function showApp() {
     );
 
 
-  if (loginPage) {
+ if (loginPage) {
 
-    loginPage.style.display =
-      "none";
+  loginPage.style.setProperty(
+    "display",
+    "none",
+    "important"
+  );
 
-  }
+  loginPage.style.setProperty(
+    "visibility",
+    "hidden",
+    "important"
+  );
+
+  loginPage.style.setProperty(
+    "pointer-events",
+    "none",
+    "important"
+  );
+
+}
 
 
   if (app) {
