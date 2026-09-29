@@ -3279,129 +3279,62 @@ body.dark-mode #leaveLegend .leave-legend-name {
 }
 
 /* =========================================================
-   Shift+ ログイン画面
-   新デザイン
-   ※ 認証機能・ID・JavaScriptは変更しない
+   Shift+ ログイン画面 最終調整
+   写真に合わせたレイアウト
    ========================================================= */
 
+
 /* ---------------------------------------------------------
-   ログイン画面全体
+   パスワードの「目」ボタンを完全に非表示
    --------------------------------------------------------- */
 
-#loginPage {
-  position: fixed !important;
-  inset: 0 !important;
-
-  width: 100vw !important;
-  height: 100dvh !important;
-  min-height: 100dvh !important;
-
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-
-  padding:
-    max(20px, env(safe-area-inset-top))
-    max(18px, env(safe-area-inset-right))
-    max(20px, env(safe-area-inset-bottom))
-    max(18px, env(safe-area-inset-left)) !important;
-
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
-
-  background: #f5f5f7 !important;
-
-  color: #1d1d1f !important;
-
-  z-index: 1000000 !important;
-
-  box-sizing: border-box !important;
+#loginPage #toggleLoginPassword,
+#loginPage #togglePasswordButton,
+#loginPage button[id*="toggle"][id*="Password"],
+#loginPage button[aria-label*="パスワードを表示"],
+#loginPage button[aria-label*="パスワード表示"] {
+  display: none !important;
 }
 
 
 /* ---------------------------------------------------------
    ログインカード
+   高さ制限で下のボタンが隠れないようにする
    --------------------------------------------------------- */
 
 #loginPage > div {
-  width: min(420px, 100%) !important;
+  width: min(410px, calc(100vw - 32px)) !important;
 
-  max-width: 420px !important;
+  max-width: 410px !important;
 
-  max-height: calc(100dvh - 40px) !important;
+  height: auto !important;
+
+  max-height: calc(100dvh - 32px) !important;
 
   overflow-y: auto !important;
 
-  margin: auto !important;
+  box-sizing: border-box !important;
 
   padding:
-    34px
+    32px
     30px
-    28px !important;
+    30px !important;
+
+  border-radius: 26px !important;
 
   background: #ffffff !important;
 
-  border: 1px solid rgba(60, 60, 67, 0.08) !important;
-
-  border-radius: 24px !important;
-
   box-shadow:
-    0 18px 50px rgba(0, 0, 0, 0.08),
-    0 3px 12px rgba(0, 0, 0, 0.04) !important;
-
-  color: #1d1d1f !important;
-
-  scrollbar-width: none;
-}
-
-#loginPage > div::-webkit-scrollbar {
-  display: none;
+    0 20px 55px rgba(0, 0, 0, 0.09),
+    0 2px 10px rgba(0, 0, 0, 0.04) !important;
 }
 
 
 /* ---------------------------------------------------------
-   メインログイン
+   Shift+ ロゴ
    --------------------------------------------------------- */
 
-#loginMainView {
-  width: 100% !important;
-}
-
-
-/* ---------------------------------------------------------
-   ロゴ
-   --------------------------------------------------------- */
-
-#loginPage .login-logo {
-  width: 100% !important;
-
-  display: flex !important;
-
-  align-items: center !important;
-  justify-content: center !important;
-
-  margin: 0 0 18px !important;
-}
-
-#loginPage .login-logo img {
-  display: block !important;
-
-  width: min(190px, 62vw) !important;
-
-  max-width: 190px !important;
-
-  height: auto !important;
-
-  object-fit: contain !important;
-}
-
-
-/* HTML側の最初のロゴにも対応 */
 #loginPage #loginMainView > div:first-child {
-  min-height: auto !important;
-
-  height: auto !important;
-
   display: flex !important;
 
   flex-direction: column !important;
@@ -3410,28 +3343,50 @@ body.dark-mode #leaveLegend .leave-legend-name {
 
   justify-content: center !important;
 
-  margin: 0 0 18px !important;
+  width: 100% !important;
+
+  min-height: 0 !important;
+
+  height: auto !important;
+
+  margin: 0 0 22px !important;
 
   padding: 0 !important;
 
   background: transparent !important;
+}
 
-  box-shadow: none !important;
+#loginPage #loginMainView > div:first-child img,
+#loginPage .login-logo img {
+  display: block !important;
+
+  width: 175px !important;
+
+  max-width: 175px !important;
+
+  height: auto !important;
+
+  margin: 0 auto !important;
 }
 
 
 /* ---------------------------------------------------------
-   ログイン見出し
+   「ログイン」
    --------------------------------------------------------- */
 
-#loginPage h1 {
-  margin: 4px 0 8px !important;
+#loginPage #loginMainView::before {
+  content: "ログイン";
+
+  display: block !important;
+
+  margin:
+    0 0 22px !important;
 
   color: #1d1d1f !important;
 
   font-size: 28px !important;
 
-  line-height: 1.25 !important;
+  line-height: 1.2 !important;
 
   font-weight: 800 !important;
 
@@ -3440,168 +3395,57 @@ body.dark-mode #leaveLegend .leave-legend-name {
   text-align: center !important;
 }
 
-#loginPage h2 {
-  color: #1d1d1f !important;
-}
-
-
-/* ---------------------------------------------------------
-   説明文
-   --------------------------------------------------------- */
-
-#loginPage p {
-  color: #6e6e73 !important;
-
-  font-size: 13px !important;
-
-  line-height: 1.6 !important;
-}
-
-
-/* ---------------------------------------------------------
-   ソーシャルログイン領域
-   --------------------------------------------------------- */
-
-#loginPage .social-login-buttons,
-#loginPage .social-buttons {
-  display: flex !important;
-
-  align-items: center !important;
-
-  justify-content: center !important;
-
-  gap: 12px !important;
-
-  width: 100% !important;
-
-  margin: 14px 0 20px !important;
-}
-
 
 /* ---------------------------------------------------------
    ソーシャルボタン
    --------------------------------------------------------- */
 
-#loginPage .social-login-button {
-  width: 52px !important;
-
-  height: 52px !important;
-
-  min-width: 52px !important;
-
-  min-height: 52px !important;
-
-  padding: 0 !important;
+#loginPage .social-login-buttons,
+#loginPage .social-buttons {
+  width: 100% !important;
 
   display: flex !important;
-
-  align-items: center !important;
 
   justify-content: center !important;
 
-  border: 1px solid #d2d2d7 !important;
+  align-items: center !important;
+
+  gap: 14px !important;
+
+  margin:
+    0 0 22px !important;
+}
+
+#loginPage .social-login-button {
+  width: 50px !important;
+
+  height: 50px !important;
+
+  min-width: 50px !important;
+
+  min-height: 50px !important;
+
+  padding: 0 !important;
 
   border-radius: 50% !important;
 
+  border: 1px solid #d8d8dd !important;
+
   background: #ffffff !important;
 
-  color: #1d1d1f !important;
-
   box-shadow:
-    0 2px 6px rgba(0, 0, 0, 0.04) !important;
+    0 2px 7px rgba(0, 0, 0, 0.05) !important;
 
-  cursor: pointer !important;
-
-  transition:
-    transform 0.15s ease,
-    box-shadow 0.15s ease,
-    background 0.15s ease !important;
-}
-
-#loginPage .social-login-button:hover {
-  background: #f8f8fa !important;
-
-  box-shadow:
-    0 4px 12px rgba(0, 0, 0, 0.08) !important;
-}
-
-#loginPage .social-login-button:active {
-  transform: scale(0.94) !important;
-}
-
-
-/* SVGサイズ */
-#loginPage .social-login-button svg {
-  width: 22px !important;
-
-  height: 22px !important;
-}
-
-
-/* ---------------------------------------------------------
-   区切り
-   --------------------------------------------------------- */
-
-#loginPage .login-divider {
   display: flex !important;
 
+  justify-content: center !important;
+
   align-items: center !important;
-
-  gap: 12px !important;
-
-  margin: 18px 0 !important;
-
-  color: #8e8e93 !important;
-
-  font-size: 12px !important;
-}
-
-#loginPage .login-divider::before,
-#loginPage .login-divider::after {
-  content: "" !important;
-
-  flex: 1 !important;
-
-  height: 1px !important;
-
-  background: #e5e5ea !important;
 }
 
 
 /* ---------------------------------------------------------
-   メールログイン領域
-   --------------------------------------------------------- */
-
-#loginPage .email-login-area {
-  width: 100% !important;
-
-  margin-top: 4px !important;
-}
-
-
-/* ---------------------------------------------------------
-   ラベル
-   --------------------------------------------------------- */
-
-#loginPage .email-login-area label {
-  display: block !important;
-
-  margin:
-    0 0 6px !important;
-
-  color: #3a3a3c !important;
-
-  font-size: 13px !important;
-
-  font-weight: 600 !important;
-
-  text-align: left !important;
-}
-
-
-/* ---------------------------------------------------------
-   メール・パスワード入力欄
-   ID違いにも対応
+   入力欄
    --------------------------------------------------------- */
 
 #loginPage #loginEmail,
@@ -3610,21 +3454,22 @@ body.dark-mode #leaveLegend .leave-legend-name {
 #loginPage #loginPasswordInput {
   width: 100% !important;
 
-  height: 50px !important;
+  height: 52px !important;
 
-  min-height: 50px !important;
+  min-height: 52px !important;
+
+  box-sizing: border-box !important;
 
   margin:
-    0 0 10px !important;
+    0 0 12px !important;
 
   padding:
     0 15px !important;
 
-  box-sizing: border-box !important;
+  border:
+    1px solid #d6d6db !important;
 
-  border: 1px solid #d2d2d7 !important;
-
-  border-radius: 12px !important;
+  border-radius: 13px !important;
 
   background: #ffffff !important;
 
@@ -3632,93 +3477,38 @@ body.dark-mode #leaveLegend .leave-legend-name {
 
   font-size: 16px !important;
 
-  font-weight: 400 !important;
-
   outline: none !important;
-
-  box-shadow: none !important;
-
-  appearance: none !important;
-
-  -webkit-appearance: none !important;
-
-  transition:
-    border-color 0.15s ease,
-    box-shadow 0.15s ease !important;
-}
-
-#loginPage #loginEmail::placeholder,
-#loginPage #loginPassword::placeholder,
-#loginPage #loginEmailInput::placeholder,
-#loginPage #loginPasswordInput::placeholder {
-  color: #a1a1a6 !important;
-
-  opacity: 1 !important;
-}
-
-#loginPage #loginEmail:focus,
-#loginPage #loginPassword:focus,
-#loginPage #loginEmailInput:focus,
-#loginPage #loginPasswordInput:focus {
-  border-color: #007aff !important;
-
-  background: #ffffff !important;
-
-  box-shadow:
-    0 0 0 3px rgba(0, 122, 255, 0.12) !important;
 }
 
 
 /* ---------------------------------------------------------
-   パスワード表示ボタン
+   パスワード欄
+   目のボタンが消えるので右側まで普通に使用
    --------------------------------------------------------- */
 
-#loginPage #toggleLoginPassword {
-  border-radius: 10px !important;
-
-  background: transparent !important;
-
-  color: #6e6e73 !important;
-
-  border: none !important;
+#loginPage #loginPassword,
+#loginPage #loginPasswordInput {
+  padding-right: 15px !important;
 }
 
 
 /* ---------------------------------------------------------
-   ログイン記憶チェック
-   --------------------------------------------------------- */
-
-#loginPage #rememberLogin {
-  width: 18px !important;
-
-  height: 18px !important;
-
-  min-height: 18px !important;
-
-  margin: 0 6px 0 0 !important;
-
-  appearance: auto !important;
-
-  -webkit-appearance: auto !important;
-}
-
-
-/* ---------------------------------------------------------
-   メールログインボタン
+   ログインボタン
    --------------------------------------------------------- */
 
 #loginPage #emailLoginButton {
   width: 100% !important;
 
-  height: 50px !important;
+  height: 52px !important;
 
-  min-height: 50px !important;
+  min-height: 52px !important;
 
-  margin-top: 8px !important;
+  margin:
+    4px 0 0 !important;
 
   border: none !important;
 
-  border-radius: 12px !important;
+  border-radius: 13px !important;
 
   background: #007aff !important;
 
@@ -3728,20 +3518,8 @@ body.dark-mode #leaveLegend .leave-legend-name {
 
   font-weight: 700 !important;
 
-  cursor: pointer !important;
-
   box-shadow:
     0 4px 12px rgba(0, 122, 255, 0.18) !important;
-
-  transition:
-    transform 0.15s ease,
-    background 0.15s ease !important;
-}
-
-#loginPage #emailLoginButton:active {
-  transform: scale(0.98) !important;
-
-  background: #006ee6 !important;
 }
 
 
@@ -3755,9 +3533,12 @@ body.dark-mode #leaveLegend .leave-legend-name {
 
   width: 100% !important;
 
-  margin: 12px 0 0 !important;
+  height: auto !important;
 
-  padding: 4px !important;
+  margin:
+    12px 0 0 !important;
+
+  padding: 4px 0 !important;
 
   border: none !important;
 
@@ -3767,9 +3548,7 @@ body.dark-mode #leaveLegend .leave-legend-name {
 
   font-size: 13px !important;
 
-  font-weight: 600 !important;
-
-  cursor: pointer !important;
+  text-align: center !important;
 }
 
 
@@ -3778,17 +3557,21 @@ body.dark-mode #leaveLegend .leave-legend-name {
    --------------------------------------------------------- */
 
 #loginPage #passkeyLoginButton {
+  display: block !important;
+
   width: 100% !important;
 
-  min-height: 48px !important;
+  height: 50px !important;
 
-  margin-top: 20px !important;
+  min-height: 50px !important;
 
-  padding: 10px 14px !important;
+  margin:
+    22px 0 0 !important;
 
-  border: 1px solid #d2d2d7 !important;
+  border:
+    1px solid #d6d6db !important;
 
-  border-radius: 12px !important;
+  border-radius: 13px !important;
 
   background: #ffffff !important;
 
@@ -3797,37 +3580,42 @@ body.dark-mode #leaveLegend .leave-legend-name {
   font-size: 14px !important;
 
   font-weight: 600 !important;
-
-  cursor: pointer !important;
-
-  box-shadow: none !important;
-}
-
-#loginPage #passkeyLoginButton:active {
-  background: #f2f2f7 !important;
-
-  transform: scale(0.98) !important;
 }
 
 
 /* ---------------------------------------------------------
    職場を新規登録
+   必ず表示する
    --------------------------------------------------------- */
 
 #loginPage #newOrganizationButton {
+  display: block !important;
+
+  visibility: visible !important;
+
+  opacity: 1 !important;
+
+  position: relative !important;
+
+  z-index: 10 !important;
+
   width: 100% !important;
 
-  min-height: 48px !important;
+  height: 50px !important;
 
-  margin-top: 10px !important;
+  min-height: 50px !important;
 
-  padding: 10px 14px !important;
+  margin:
+    10px 0 0 !important;
 
-  border: none !important;
+  padding: 0 14px !important;
 
-  border-radius: 12px !important;
+  border:
+    1px solid #d6d6db !important;
 
-  background: #f2f2f7 !important;
+  border-radius: 13px !important;
+
+  background: #ffffff !important;
 
   color: #007aff !important;
 
@@ -3835,13 +3623,22 @@ body.dark-mode #leaveLegend .leave-legend-name {
 
   font-weight: 700 !important;
 
-  cursor: pointer !important;
+  line-height: 50px !important;
+
+  text-align: center !important;
+
+  box-sizing: border-box !important;
 }
 
-#loginPage #newOrganizationButton:active {
-  background: #e5e5ea !important;
 
-  transform: scale(0.98) !important;
+/* ---------------------------------------------------------
+   「職場を新規登録」のさらに下に余白
+   --------------------------------------------------------- */
+
+#loginPage #newOrganizationButton::after {
+  content: "" !important;
+
+  display: block !important;
 }
 
 
@@ -3850,148 +3647,104 @@ body.dark-mode #leaveLegend .leave-legend-name {
    --------------------------------------------------------- */
 
 #loginPage #loginMessage {
-  margin-top: 12px !important;
-
-  color: #ff3b30 !important;
-
-  font-size: 13px !important;
-
-  line-height: 1.5 !important;
+  margin:
+    12px 0 0 !important;
 
   text-align: center !important;
 }
 
 
 /* =========================================================
-   招待登録画面
+   招待画面
    ========================================================= */
 
 #inviteRegisterView {
   width: 100% !important;
 
-  padding: 0 !important;
+  display: block !important;
 
   margin: 0 !important;
 
-  background: transparent !important;
-
-  color: #1d1d1f !important;
-}
-
-
-/* 招待ロゴ */
-#inviteRegisterView img {
-  display: block !important;
-
-  width: min(180px, 60vw) !important;
-
-  height: auto !important;
-
-  margin:
-    0 auto 22px !important;
+  padding: 0 !important;
 }
 
 
 /* 招待タイトル */
 #inviteRegisterView .invite-register-title {
-  margin: 0 0 8px !important;
+  margin:
+    0 0 8px !important;
 
-  color: #1d1d1f !important;
+  font-size: 27px !important;
 
-  font-size: 25px !important;
+  line-height: 1.25 !important;
 
   font-weight: 800 !important;
 
-  line-height: 1.3 !important;
-
   text-align: center !important;
+
+  color: #1d1d1f !important;
 }
 
 
-/* 招待説明 */
-#inviteRegisterView p {
-  color: #6e6e73 !important;
-
-  font-size: 13px !important;
-
-  line-height: 1.6 !important;
-
-  text-align: center !important;
-}
-
-
-/* 登録方法 */
+/* 「登録方法を選択」 */
 #inviteRegisterView .invite-social-title {
   margin:
-    22px 0 12px !important;
-
-  color: #3a3a3c !important;
+    20px 0 12px !important;
 
   font-size: 13px !important;
 
-  font-weight: 700 !important;
+  font-weight: 600 !important;
 
   text-align: center !important;
+
+  color: #6e6e73 !important;
 }
 
 
-/* 招待ソーシャル */
+/* 招待Google */
 #inviteRegisterView .invite-social-buttons {
   display: flex !important;
 
-  align-items: center !important;
-
   justify-content: center !important;
 
-  gap: 12px !important;
+  align-items: center !important;
 
-  margin: 0 0 16px !important;
+  margin:
+    0 0 16px !important;
 }
 
-
-/* Google等 */
-#inviteRegisterView .invite-social-buttons button,
 #inviteRegisterView #inviteGoogleButton {
-  width: 52px !important;
+  width: 50px !important;
 
-  height: 52px !important;
+  height: 50px !important;
 
-  min-width: 52px !important;
+  min-width: 50px !important;
 
-  min-height: 52px !important;
-
-  padding: 0 !important;
-
-  display: flex !important;
-
-  align-items: center !important;
-
-  justify-content: center !important;
-
-  border: 1px solid #d2d2d7 !important;
+  min-height: 50px !important;
 
   border-radius: 50% !important;
 
+  border: 1px solid #d6d6db !important;
+
   background: #ffffff !important;
-
-  box-shadow:
-    0 2px 6px rgba(0, 0, 0, 0.04) !important;
-
-  cursor: pointer !important;
 }
 
 
-/* 招待メール登録 */
+/* 招待メール */
 #inviteRegisterView #inviteEmailButton {
   width: 100% !important;
 
+  height: 50px !important;
+
   min-height: 50px !important;
 
-  margin-top: 8px !important;
+  margin:
+    8px 0 0 !important;
 
-  border: 1px solid #d2d2d7 !important;
+  border:
+    1px solid #d6d6db !important;
 
-  border-radius: 12px !important;
+  border-radius: 13px !important;
 
   background: #ffffff !important;
 
@@ -4002,343 +3755,89 @@ body.dark-mode #leaveLegend .leave-legend-name {
   font-weight: 600 !important;
 }
 
-#inviteRegisterView #inviteEmailButton:active {
-  background: #f2f2f7 !important;
-}
-
-
-/* 招待メッセージ */
-#inviteRegisterView #inviteRegisterMessage {
-  margin-top: 14px !important;
-
-  color: #ff3b30 !important;
-
-  font-size: 13px !important;
-
-  line-height: 1.5 !important;
-
-  text-align: center !important;
-}
-
 
 /* =========================================================
-   新規職場登録画面
-   ========================================================= */
-
-#newOrganizationForm {
-  width: 100% !important;
-
-  margin: 0 !important;
-
-  padding: 0 !important;
-
-  background: #ffffff !important;
-
-  color: #1d1d1f !important;
-}
-
-
-/* 新規職場ロゴ */
-#newOrganizationForm img {
-  display: block !important;
-
-  width: min(170px, 58vw) !important;
-
-  height: auto !important;
-
-  margin: 0 auto 20px !important;
-}
-
-
-/* 新規職場タイトル */
-#newOrganizationForm h1,
-#newOrganizationForm h2 {
-  color: #1d1d1f !important;
-
-  font-weight: 800 !important;
-
-  text-align: center !important;
-}
-
-
-/* 新規職場入力 */
-#newOrganizationForm input {
-  width: 100% !important;
-
-  height: 50px !important;
-
-  min-height: 50px !important;
-
-  margin-top: 8px !important;
-
-  padding: 0 14px !important;
-
-  border: 1px solid #d2d2d7 !important;
-
-  border-radius: 12px !important;
-
-  background: #ffffff !important;
-
-  color: #1d1d1f !important;
-
-  font-size: 16px !important;
-}
-
-
-/* 新規職場作成ボタン */
-#newOrganizationForm #createOrganizationButton {
-  width: 100% !important;
-
-  min-height: 50px !important;
-
-  margin-top: 16px !important;
-
-  border: none !important;
-
-  border-radius: 12px !important;
-
-  background: #007aff !important;
-
-  color: #ffffff !important;
-
-  font-size: 15px !important;
-
-  font-weight: 700 !important;
-}
-
-
-/* =========================================================
-   パスワードリセット
-   ========================================================= */
-
-#passwordResetView,
-#emailRegisterView {
-  width: 100% !important;
-
-  padding: 0 !important;
-
-  margin: 0 !important;
-
-  background: transparent !important;
-}
-
-#passwordResetView img,
-#emailRegisterView img {
-  display: block !important;
-
-  width: min(170px, 58vw) !important;
-
-  height: auto !important;
-
-  margin: 0 auto 20px !important;
-}
-
-#passwordResetView input,
-#emailRegisterView input {
-  width: 100% !important;
-
-  height: 50px !important;
-
-  min-height: 50px !important;
-
-  margin-top: 8px !important;
-
-  padding: 0 14px !important;
-
-  border: 1px solid #d2d2d7 !important;
-
-  border-radius: 12px !important;
-
-  background: #ffffff !important;
-
-  color: #1d1d1f !important;
-
-  font-size: 16px !important;
-}
-
-
-/* =========================================================
-   戻るボタン
-   ========================================================= */
-
-#passwordResetView button[id^="back"],
-#emailRegisterView button[id^="back"],
-#newOrganizationForm button[id^="cancel"] {
-  border: none !important;
-
-  background: transparent !important;
-
-  color: #007aff !important;
-
-  font-size: 14px !important;
-
-  font-weight: 600 !important;
-
-  cursor: pointer !important;
-}
-
-
-/* =========================================================
-   スマートフォン
+   スマホ
    ========================================================= */
 
 @media screen and (max-width: 700px) {
 
   #loginPage {
-    align-items: center !important;
-
     padding:
       max(16px, env(safe-area-inset-top))
       14px
       max(16px, env(safe-area-inset-bottom))
       14px !important;
+
+    align-items: center !important;
   }
 
   #loginPage > div {
-    width: 100% !important;
+    width: calc(100vw - 28px) !important;
 
     max-width: 390px !important;
 
-    max-height: calc(100dvh - 32px) !important;
+    max-height: calc(100dvh - 28px) !important;
 
     padding:
-      28px
-      22px
-      24px !important;
+      28px 22px 26px !important;
 
-    border-radius: 22px !important;
+    border-radius: 24px !important;
   }
 
+  #loginPage #loginMainView > div:first-child img,
   #loginPage .login-logo img {
-    width: min(175px, 62vw) !important;
+    width: 160px !important;
+
+    max-width: 160px !important;
   }
 
-  #loginPage h1 {
+  #loginPage #loginMainView::before {
     font-size: 26px !important;
+
+    margin-bottom: 20px !important;
   }
 
-  #loginPage .social-login-button {
-    width: 50px !important;
+  #loginPage #newOrganizationButton {
+    height: 48px !important;
 
-    height: 50px !important;
+    min-height: 48px !important;
 
-    min-width: 50px !important;
-
-    min-height: 50px !important;
-  }
-
-  #inviteRegisterView .invite-social-buttons button,
-  #inviteRegisterView #inviteGoogleButton {
-    width: 50px !important;
-
-    height: 50px !important;
-
-    min-width: 50px !important;
-
-    min-height: 50px !important;
+    line-height: 48px !important;
   }
 }
 
 
 /* =========================================================
-   小さいiPhone
+   小さい画面
    ========================================================= */
 
-@media screen and (max-width: 390px) {
+@media screen and (max-height: 700px) {
 
   #loginPage > div {
-    padding:
-      24px
-      18px
-      22px !important;
+    padding-top: 20px !important;
 
-    border-radius: 20px !important;
+    padding-bottom: 20px !important;
   }
 
-  #loginPage .login-logo {
+  #loginPage #loginMainView > div:first-child {
     margin-bottom: 12px !important;
   }
 
+  #loginPage #loginMainView > div:first-child img,
   #loginPage .login-logo img {
-    width: 155px !important;
+    width: 135px !important;
+
+    max-width: 135px !important;
   }
 
-  #loginPage h1 {
-    font-size: 24px !important;
+  #loginPage #loginMainView::before {
+    font-size: 23px !important;
+
+    margin-bottom: 14px !important;
   }
 
-  #loginPage #loginEmail,
-  #loginPage #loginPassword,
-  #loginPage #loginEmailInput,
-  #loginPage #loginPasswordInput {
-    height: 48px !important;
-
-    min-height: 48px !important;
+  #loginPage #passkeyLoginButton {
+    margin-top: 16px !important;
   }
-
-  #loginPage #emailLoginButton {
-    height: 48px !important;
-
-    min-height: 48px !important;
-  }
-}
-
-
-/* =========================================================
-   ログイン画面 ダークモード
-   ※現在は白デザインを優先
-   ========================================================= */
-
-body.dark-mode #loginPage {
-  background: #f5f5f7 !important;
-
-  color: #1d1d1f !important;
-}
-
-body.dark-mode #loginPage > div {
-  background: #ffffff !important;
-
-  color: #1d1d1f !important;
-
-  border-color: rgba(60, 60, 67, 0.08) !important;
-}
-
-body.dark-mode #loginPage h1,
-body.dark-mode #loginPage h2,
-body.dark-mode #inviteRegisterView .invite-register-title {
-  color: #1d1d1f !important;
-}
-
-body.dark-mode #loginPage p,
-body.dark-mode #inviteRegisterView p {
-  color: #6e6e73 !important;
-}
-
-body.dark-mode #loginPage
-#loginEmail,
-body.dark-mode #loginPage
-#loginPassword,
-body.dark-mode #loginPage
-#loginEmailInput,
-body.dark-mode #loginPage
-#loginPasswordInput {
-  background: #ffffff !important;
-
-  color: #1d1d1f !important;
-
-  border-color: #d2d2d7 !important;
-}
-
-body.dark-mode #loginPage #passkeyLoginButton {
-  background: #ffffff !important;
-
-  color: #1d1d1f !important;
-
-  border-color: #d2d2d7 !important;
-}
-
-body.dark-mode #loginPage #newOrganizationButton {
-  background: #f2f2f7 !important;
-
-  color: #007aff !important;
 }
