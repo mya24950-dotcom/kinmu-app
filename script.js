@@ -145,78 +145,47 @@ let scheduleFixedStaffTable =
    初期読み込み画面
 ================================================== */
 
-function showInitialLoading(
-  message = "データを取得しています…"
-) {
+/* =========================================================
+   初期ローディング画面
+========================================================= */
+
+function showInitialLoading(message = "データを取得しています…") {
 
   const loading =
-    document.getElementById(
-      "loadingScreen"
-    );
+    document.getElementById("loadingScreen");
 
-  if (!loading) {
-    return;
-  }
+  if (!loading) return;
 
   const text =
-    loading.querySelector(
-      ".loadingText"
-    );
+    loading.querySelector(".loadingText");
 
   if (text) {
-    text.textContent =
-      message;
+    text.textContent = message;
   }
 
-  loading.style.display =
-    "flex";
-
-  loading.style.visibility =
-    "visible";
-
-  loading.style.opacity =
-    "1";
-
-  loading.style.pointerEvents =
-    "auto";
-
+  loading.style.display = "flex";
+  loading.style.visibility = "visible";
+  loading.style.opacity = "1";
+  loading.style.pointerEvents = "auto";
 }
 
+
+/* ---------------------------------------------------------
+   初期ローディングを隠す
+--------------------------------------------------------- */
 
 function hideInitialLoading() {
 
   const loading =
-    document.getElementById(
-      "loadingScreen"
-    );
+    document.getElementById("loadingScreen");
 
-  if (!loading) {
-    return;
-  }
+  if (!loading) return;
 
-  loading.style.opacity =
-    "0";
-
-  loading.style.visibility =
-    "hidden";
-
-  loading.style.pointerEvents =
-    "none";
-
-  loading.style.display =
-    "none";
-
+  loading.style.opacity = "0";
+  loading.style.visibility = "hidden";
+  loading.style.pointerEvents = "none";
+  loading.style.display = "none";
 }
-
-/* ==================================================
-   初期化
-================================================== */
-
-document.addEventListener(
-  "DOMContentLoaded",
-  init
-);
-
 
 /* ==================================================
    初期化
@@ -483,15 +452,11 @@ async function init() {
 
     showLoginPage();
 
-    setupGoogleLogin();
-    setupAppleLogin();
-    setupEmailLogin();
-    setupPasskeyLogin();
-    setupNewOrganizationButton();
+setupAllLoginButtons();
 
-    hideInitialLoading();
+hideInitialLoading();
 
-    return;
+return;
 
   }
 
@@ -2720,117 +2685,94 @@ function showApp() {
    
 }
 
+/* =========================================================
+   Appleログイン
+========================================================= */
+
 async function loginWithApple() {
 
   const button =
-    document.getElementById(
-      "appleLoginButton"
-    );
-
-  /*
-   * Appleログインを開始したので、
-   * ログアウト後の強制ログイン画面フラグを解除
-   */
-  sessionStorage.removeItem(
-    "forceLoginScreen"
-  );
-
-
-  const message =
-    document.getElementById(
-      "loginMessage"
-    );
-
-
-  if (button) {
-
-    button.disabled = true;
-    button.style.opacity = "0.6";
-
-  }
-
-
-  if (message) {
-
-    message.textContent =
-      "Appleログイン画面を開いています…";
-
-  }
-
+    document.getElementById("appleLoginButton");
 
   try {
 
-    /*
-      招待リンクのトークンを取得
-    */
+    if (button) {
+      button.disabled = true;
+    }
+
+      showInitialLoading(
+      "Appleでログインしています…"
+    );
+
+    const params =
+      new URLSearchParams(window.location.search);
+
     const inviteToken =
-      new URLSearchParams(
-        window.location.search
-      ).get("invite");
-
-
-    /*
-      通常ログインなら通常のURLへ戻す
-      招待ログインなら invite を付けたまま戻す
-    */
-    let redirectUrl =
-      "https://mya24950-dotcom.github.io/kinmu-app/";
-
+      params.get("invite");
 
     if (inviteToken) {
 
-      redirectUrl +=
-        "?invite=" +
-        encodeURIComponent(
-          inviteToken
-        );
+      sessionStorage.setItem(
+        "pendingInviteToken",
+        inviteToken
+      );
 
     }
 
+    let redirectTo =
+      "https://mya24950-dotcom.github.io/kinmu-app/";
 
-    const { error } =
+    if (inviteToken) {
+
+      redirectTo +=
+        "?invite=" +
+        encodeURIComponent(inviteToken);
+
+    }
+
+    console.log(
+      "★ Apple OAuth開始",
+      redirectTo
+    );
+
+    const {
+      error
+    } =
       await supabaseClient.auth.signInWithOAuth({
+
         provider: "apple",
 
         options: {
-
-          redirectTo:
-            redirectUrl
-
+          redirectTo
         }
 
       });
 
-
     if (error) {
-
       throw error;
-
     }
-
 
   } catch (error) {
 
     console.error(
-      "Appleログインエラー",
+      "Appleログインエラー:",
       error
     );
 
+    sessionStorage.removeItem(
+      "oauthLoginInProgress"
+    );
 
-    if (message) {
-
-      message.textContent =
-        "Appleログインに失敗しました。";
-
-    }
-
+    hideInitialLoading();
 
     if (button) {
-
       button.disabled = false;
-      button.style.opacity = "1";
-
     }
+
+    alert(
+      "Appleログインに失敗しました。\n" +
+      (error.message || error)
+    );
 
   }
 
@@ -2840,12 +2782,12 @@ async function loginWithEmail() {
 
   const emailInput =
     document.getElementById(
-      "loginEmailInput"
+      "loginEmail"
     );
 
   const passwordInput =
     document.getElementById(
-      "loginPasswordInput"
+      "loginPassword"
     );
 
   const message =
@@ -3213,23 +3155,20 @@ async function registerWithEmail() {
    Googleログイン設定
 ================================================== */
 
+/* =========================================================
+   Googleログイン
+========================================================= */
+
 async function loginWithGoogle() {
 
   const button =
-    document.getElementById(
-      "googleLoginButton"
-    );
-
-  if (button) {
-    button.disabled = true;
-  }
+    document.getElementById("googleLoginButton");
 
   try {
 
-    /* -----------------------------------------------
-       Google認証開始
-       ログイン画面をローディングに切り替える
-    ----------------------------------------------- */
+    if (button) {
+      button.disabled = true;
+    }
 
     sessionStorage.setItem(
       "oauthLoginInProgress",
@@ -3240,15 +3179,15 @@ async function loginWithGoogle() {
       "Googleでログインしています…"
     );
 
-    const urlParams =
-      new URLSearchParams(
-        window.location.search
-      );
+    /* -----------------------------------------
+       招待トークン保存
+    ----------------------------------------- */
 
+    const params =
+      new URLSearchParams(window.location.search);
 
     const inviteToken =
-      urlParams.get("invite");
-
+      params.get("invite");
 
     if (inviteToken) {
 
@@ -3259,75 +3198,70 @@ async function loginWithGoogle() {
 
     }
 
+    /* -----------------------------------------
+       リダイレクト先
+    ----------------------------------------- */
 
-    const pendingInvite =
-      sessionStorage.getItem(
-        "pendingInviteToken"
-      );
+    let redirectTo =
+      "https://mya24950-dotcom.github.io/kinmu-app/";
 
+    if (inviteToken) {
 
-    let redirectUrl =
-      window.location.origin +
-      window.location.pathname;
-
-
-    if (pendingInvite) {
-
-      redirectUrl +=
+      redirectTo +=
         "?invite=" +
-        encodeURIComponent(
-          pendingInvite
-        );
+        encodeURIComponent(inviteToken);
 
     }
 
+    console.log(
+      "★ Google OAuth開始",
+      redirectTo
+    );
 
-    const { error } =
+    const {
+      error
+    } =
       await supabaseClient.auth.signInWithOAuth({
+
         provider: "google",
 
         options: {
 
-          redirectTo:
-            redirectUrl,
+          redirectTo,
 
           queryParams: {
-
-            prompt:
-              "select_account"
-
+            prompt: "select_account"
           }
 
         }
 
       });
 
-
     if (error) {
-
       throw error;
-
     }
-
 
   } catch (error) {
 
     console.error(
-      "Googleログインエラー",
+      "Googleログインエラー:",
       error
     );
 
-    alert(
-      "Googleログインに失敗しました。"
+    sessionStorage.removeItem(
+      "oauthLoginInProgress"
     );
 
+    hideInitialLoading();
 
     if (button) {
-
-      button.disabled =
-        false;
-
+      button.disabled = false;
     }
+
+    alert(
+      "Googleログインに失敗しました。\n" +
+      (error.message || error)
+    );
 
   }
 
@@ -5799,87 +5733,59 @@ function bindEvents() {
 
 }
 
-　/* ==================================================
-   ページ切り替え
-================================================== */
+/* =========================================================
+   ログイン画面のボタンをまとめて設定
+========================================================= */
 
-function showLoginPage(message = "") {
+function setupAllLoginButtons() {
 
-    console.log("ログイン画面を表示");
+  console.log("★ ログインボタン設定開始");
 
-    // ==========================================
-    // アプリ本体を非表示
-    // ==========================================
+  /* -----------------------------------------
+     Google
+  ----------------------------------------- */
 
-    const app = document.getElementById("app");
-
-    if (app) {
-        app.style.setProperty(
-            "display",
-            "none",
-            "important"
-        );
-
-        app.style.setProperty(
-            "visibility",
-            "hidden",
-            "important"
-        );
-    }
+  setupGoogleLogin();
 
 
-    // ==========================================
-    // ログイン画面を表示
-    // ==========================================
+  /* -----------------------------------------
+     Apple
+  ----------------------------------------- */
 
-    const loginPage =
-        document.getElementById("loginPage");
-
-    if (loginPage) {
-
-        loginPage.style.setProperty(
-            "display",
-            "flex",
-            "important"
-        );
-
-        loginPage.style.setProperty(
-            "visibility",
-            "visible",
-            "important"
-        );
-
-        loginPage.style.setProperty(
-            "pointer-events",
-            "auto",
-            "important"
-        );
-    }
+  setupAppleLogin();
 
 
-    // ==========================================
-    // ログインメッセージ
-    // ==========================================
+  /* -----------------------------------------
+     Azure
+  ----------------------------------------- */
 
-    const loginMessage =
-        document.getElementById("loginMessage");
-
-    if (loginMessage) {
-        loginMessage.textContent = message || "";
-    }
+  if (typeof setupAzureLogin === "function") {
+    setupAzureLogin();
+  }
 
 
-    // ==========================================
-    // ログイン画面の先頭へ
-    // ==========================================
+  /* -----------------------------------------
+     Passkey
+  ----------------------------------------- */
 
-    window.scrollTo(0, 0);
+  setupPasskeyLogin();
 
-    if (loginPage) {
-        loginPage.scrollTop = 0;
-    }
+
+  /* -----------------------------------------
+     メールログイン
+  ----------------------------------------- */
+
+  setupEmailLogin();
+
+
+  /* -----------------------------------------
+     新規職場登録
+  ----------------------------------------- */
+
+  setupNewOrganizationButton();
+
+  console.log("★ ログインボタン設定完了");
 }
-
 
 /* ==================================================
    全体描画
