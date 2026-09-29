@@ -3841,3 +3841,16 @@ body.dark-mode #leaveLegend .leave-legend-name {
     margin-top: 16px !important;
   }
 }
+
+/* Face ID / 指紋ログインを画面から非表示 */
+#loginPage #passkeyLoginButton {
+  display: none !important;
+}
+
+/* Face ID / 指紋に関する説明文を非表示 */
+#loginPage .passkey-login-description,
+#loginPage .passkey-description,
+#loginPage [class*="passkey"],
+#loginPage [id*="passkey"] {
+  display: none !important;
+}
