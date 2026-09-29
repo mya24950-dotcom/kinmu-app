@@ -310,9 +310,7 @@ function hideInitialLoading() {
 document.addEventListener("DOMContentLoaded", init);
 async function init() {
   try {
-    console.log(
-      "★ 勤務表アプリ起動"
-    );
+    console.log("★ 勤務表アプリ起動");
     /* ==================================================
        Supabase初期化
     ================================================== */
@@ -343,9 +341,7 @@ async function init() {
        現在のセッション確認
     ================================================== */
     let {
-      data: {
-        session
-      },
+      data: { session },
       error
     } =
       await supabaseClient.auth.getSession();
@@ -358,31 +354,6 @@ async function init() {
         ? session.user.email
         : "なし"
     );
-    /* ==================================================
-       ★ OAuth復帰直後の確認
-       
-       Google / Apple / Azureから
-       Shift+へ戻ってきた直後に
-       セッションが存在するか確認する
-    ================================================== */
-    console.log(
-      "★ OAuth復帰後のURL:",
-      window.location.href
-    );
-    console.log(
-      "★ OAuth復帰後のsession:",
-      session
-    );
-    if (session) {
-      console.log(
-        "★ OAuth復帰後のuser.id:",
-        session.user.id
-      );
-      console.log(
-        "★ OAuth復帰後のemail:",
-        session.user.email
-      );
-    }
     /* ==================================================
        ログアウト後の強制ログイン画面
     ================================================== */
@@ -462,10 +433,6 @@ async function init() {
                       "★ 認証完了:",
                       newSession.user.email
                     );
-                    console.log(
-                      "★ SIGNED_IN user.id:",
-                      newSession.user.id
-                    );
                     finish(
                       newSession
                     );
@@ -489,10 +456,6 @@ async function init() {
                 console.log(
                   "★ 認証待機中にセッションを取得:",
                   latestSession.user.email
-                );
-                console.log(
-                  "★ 認証待機中のuser.id:",
-                  latestSession.user.id
                 );
                 finish(
                   latestSession
@@ -544,10 +507,6 @@ async function init() {
         "★ 認証後のセッションを確認しました:",
         session.user.email
       );
-      console.log(
-        "★ 認証後のuser.id:",
-        session.user.id
-      );
     }
     /* ==================================================
        ログイン済み
@@ -555,10 +514,6 @@ async function init() {
     console.log(
       "★ ログイン済み:",
       session.user.email
-    );
-    console.log(
-      "★ ログイン済みuser.id:",
-      session.user.id
     );
     /* ==================================================
        招待リンク確認
@@ -571,10 +526,6 @@ async function init() {
     if (inviteToken) {
       console.log(
         "★ 招待リンクを検出しました"
-      );
-      console.log(
-        "★ 招待トークン:",
-        inviteToken
       );
       showInitialLoading(
         "招待情報を確認しています…"
@@ -674,10 +625,7 @@ async function init() {
         hideInitialLoading();
         alert(
           "職場の登録に失敗しました。\n\n" +
-          (
-            error?.message ||
-            String(error)
-          )
+          (error?.message || String(error))
         );
         showLoginPage(
           "職場の登録に失敗しました。"
@@ -811,10 +759,7 @@ async function init() {
     hideInitialLoading();
     alert(
       "勤務表アプリの起動に失敗しました。\n\n" +
-      (
-        error?.message ||
-        String(error)
-      )
+      (error?.message || String(error))
     );
     showLoginPage(
       "アプリの起動に失敗しました。"
@@ -827,27 +772,6 @@ async function init() {
   }
 }
 
-これで今回追加した確認は主に、
-
-★ OAuth復帰後のURL:
-★ OAuth復帰後のsession:
-★ OAuth復帰後のuser.id:
-★ OAuth復帰後のemail:
-
-と、
-
-★ Supabase認証イベント:
-★ SIGNED_IN user.id:
-
-です。
-
-水下さんで招待URL → Googleログイン → 最初のページに戻ったところまで行ったあと、ブラウザのコンソールに何が出たかを確認できます。
-
-特に、
-
-★ OAuth復帰後のsession:
-
-が null なのか、ユーザー情報が入っているのかが重要です。
 
 /* ==================================================
    Passkeyログイン
