@@ -607,8 +607,8 @@ async function init() {
       );
 
 
-      const inviteAccepted =
-        await ();
+     const inviteAccepted =
+  await handleInviteAfterLogin();
 
 
       if (inviteAccepted) {
