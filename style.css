@@ -3854,3 +3854,50 @@ body.dark-mode #leaveLegend .leave-legend-name {
 #loginPage [id*="passkey"] {
   display: none !important;
 }
+
+/* =========================================================
+   ログイン画面から職員登録・Passkey関連を非表示
+   ========================================================= */
+
+/* Face ID / 指紋ログイン */
+#loginPage #passkeyLoginButton {
+  display: none !important;
+}
+
+/* Passkeyの説明文 */
+#loginPage .passkey-login-description,
+#loginPage .passkey-description {
+  display: none !important;
+}
+
+
+/* 「または」などPasskey周辺の説明 */
+#loginPage .passkey-area,
+#loginPage .passkey-section {
+  display: none !important;
+}
+
+
+/* 職員アカウント登録ボタン */
+#loginPage #inviteEmailButton {
+  display: none !important;
+}
+
+
+/* 招待登録画面の「職員アカウント登録」というタイトル */
+#inviteRegisterView .invite-register-title {
+  display: none !important;
+}
+
+
+/* 「登録方法を選択」 */
+#inviteRegisterView .invite-social-title {
+  display: none !important;
+}
+
+
+/* 招待画面の「または」 */
+#inviteRegisterView .invite-register-divider,
+#inviteRegisterView .invite-divider {
+  display: none !important;
+}
