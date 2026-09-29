@@ -2785,88 +2785,72 @@ async function loginWithGoogle() {
       "googleLoginButton"
     );
 
-
-  /*
-   * Googleログインを開始したので、
-   * ログアウト後の強制ログイン画面フラグを解除
-   */
-
-  sessionStorage.removeItem(
-    "forceLoginScreen"
-  );
-
-
-  const message =
-    document.getElementById(
-      "loginMessage"
-    );
-
-
-  if (button) {
-
-    button.disabled = true;
-    button.style.opacity = "0.6";
-
-  }
-
-
-  if (message) {
-
-    message.textContent =
-      "Googleログイン画面を開いています…";
-
-  }
-
-
   try {
 
-    /*
-      招待リンクのトークンを取得
-    */
+    if (button) {
 
-    const inviteToken =
+      button.disabled = true;
+
+    }
+
+    const params =
       new URLSearchParams(
         window.location.search
-      ).get("invite");
+      );
 
+    const inviteToken =
+      params.get("invite");
 
     /*
-      通常ログインなら通常のURLへ戻す
-      招待ログインなら invite を付けたまま戻す
-    */
+     * 招待リンクから来た場合、
+     * OAuth開始前に必ず保存する。
+     */
+    if (inviteToken) {
+
+      sessionStorage.setItem(
+        "pendingInviteToken",
+        inviteToken
+      );
+
+    }
+
+    /*
+     * 念のため、
+     * 既に保存されている招待トークンも確認
+     */
+    const pendingInviteToken =
+      sessionStorage.getItem(
+        "pendingInviteToken"
+      );
 
     let redirectUrl =
-      "https://mya24950-dotcom.github.io/kinmu-app/";
+      window.location.origin +
+      window.location.pathname;
 
-
-    if (inviteToken) {
+    /*
+     * OAuth後も招待URLを残す。
+     * ただし本命はsessionStorage。
+     */
+    if (pendingInviteToken) {
 
       redirectUrl +=
         "?invite=" +
         encodeURIComponent(
-          inviteToken
+          pendingInviteToken
         );
 
     }
 
-
-    const { error } =
+    const {
+      error
+    } =
       await supabaseClient.auth.signInWithOAuth({
-
         provider: "google",
 
         options: {
 
           redirectTo:
             redirectUrl,
-
-          /*
-           * Googleログイン画面で
-           * アカウントを選択させる
-           *
-           * ログアウト後に前回のGoogleアカウントを
-           * そのまま自動使用しないため
-           */
 
           queryParams: {
 
@@ -2879,13 +2863,11 @@ async function loginWithGoogle() {
 
       });
 
-
     if (error) {
 
       throw error;
 
     }
-
 
   } catch (error) {
 
@@ -2894,19 +2876,17 @@ async function loginWithGoogle() {
       error
     );
 
-
-    if (message) {
-
-      message.textContent =
-        "Googleログインに失敗しました。";
-
-    }
-
+    alert(
+      "Googleログインに失敗しました。\n\n" +
+      (
+        error?.message ||
+        String(error)
+      )
+    );
 
     if (button) {
 
       button.disabled = false;
-      button.style.opacity = "1";
 
     }
 
@@ -3443,32 +3423,46 @@ function setupNewOrganizationButton() {
 }
 
 async function handleInviteAfterLogin() {
-  console.log(
-    "★ handleInviteAfterLogin 開始"
-  );
+
+  /*
+   * まずURLから取得
+   */
   const params =
     new URLSearchParams(
       window.location.search
     );
-  const inviteToken =
+
+  let inviteToken =
     params.get("invite");
-  console.log(
-    "★ 招待トークン:",
-    inviteToken
-  );
+
+  /*
+   * URLにない場合は
+   * OAuth前に保存したsessionStorageから取得
+   */
   if (!inviteToken) {
-    console.log(
-      "★ 招待トークンなし"
-    );
-    return false;
+
+    inviteToken =
+      sessionStorage.getItem(
+        "pendingInviteToken"
+      );
+
   }
+
+  /*
+   * 招待トークンがなければ何もしない
+   */
+  if (!inviteToken) {
+
+    return false;
+
+  }
+
   console.log(
-    "★ 招待リンクを検出しました"
+    "★ 招待トークンを確認しました"
   );
+
   try {
-    /*
-     * 招待を受け入れる
-     */
+
     const {
       data,
       error
@@ -3480,78 +3474,88 @@ async function handleInviteAfterLogin() {
             inviteToken
         }
       );
+
     if (error) {
+
       console.error(
-        "★ 招待受け入れエラー",
+        "招待受け入れエラー",
         error
       );
+
       alert(
-        "招待リンクの登録に失敗しました。\n\n" +
-        error.message
+        "招待の登録に失敗しました。\n\n" +
+        (
+          error.message ||
+          String(error)
+        )
       );
+
       return false;
+
     }
-    /*
-     * 結果確認
-     */
+
     if (
       !data ||
       !data.length
     ) {
-      console.error(
-        "★ 招待受け入れ結果がありません",
-        data
-      );
+
       alert(
-        "招待リンクの登録結果を取得できませんでした。"
+        "招待情報を取得できませんでした。"
       );
+
       return false;
+
     }
+
     const result =
       data[0];
+
     console.log(
-      "★ 招待受け入れ成功",
+      "★ 招待登録成功",
       result
     );
+
     /*
-     * 登録完了メッセージ
+     * 招待情報を処理できたので削除
      */
-    alert(
-      `${result.staff_name}さんとして登録しました。`
+    sessionStorage.removeItem(
+      "pendingInviteToken"
     );
+
     /*
-     * URLから招待トークンを削除
-     *
-     * 重要：
-     * ここではページをリロードしない。
-     * history.replaceStateだけでURLを書き換える。
+     * URLからinviteを消す
      */
     window.history.replaceState(
       {},
       document.title,
       window.location.pathname
     );
-    console.log(
-      "★ 招待トークンをURLから削除しました"
+
+    alert(
+      `${result.staff_name}さんとして登録しました。`
     );
-    console.log(
-      "★ handleInviteAfterLogin 完了"
-    );
+
     return true;
+
   } catch (error) {
+
     console.error(
-      "★ 招待受け入れ処理エラー",
+      "招待処理エラー",
       error
     );
-    const errorMessage =
-      error?.message ||
-      String(error);
+
     alert(
-      "招待リンクの処理に失敗しました。\n\n" +
-      errorMessage
+      "招待処理中にエラーが発生しました。\n\n" +
+      (
+        error?.message ||
+        String(error)
+      )
     );
+
     return false;
+
   }
+
 }
 
 /* ==================================================
