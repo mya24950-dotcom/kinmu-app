@@ -4819,6 +4819,17 @@ async function loadAllFromSupabase() {
    Realtime
 ================================================== */
 
+/* =========================================================
+   Supabase Realtime
+========================================================= */
+
+let realtimeReconnectTimer = null;
+
+
+/* ---------------------------------------------------------
+   Realtime接続
+--------------------------------------------------------- */
+
 function setupRealtime() {
 
   if (!supabaseClient) {
@@ -4828,14 +4839,45 @@ function setupRealtime() {
   }
 
 
+  /* -------------------------------------------------------
+     すでに再接続予約がある場合は重複させない
+  ------------------------------------------------------- */
+
+  if (realtimeReconnectTimer) {
+
+    clearTimeout(
+      realtimeReconnectTimer
+    );
+
+    realtimeReconnectTimer =
+      null;
+
+  }
+
+
+  /* -------------------------------------------------------
+     旧チャンネルを削除
+     
+     重要：
+     realtimeChannel を先に null にする。
+     removeChannel() によって CLOSED が発生しても、
+     それを新しい接続のエラーとして扱わない。
+  ------------------------------------------------------- */
+
   if (
     realtimeChannel
   ) {
 
+    const oldChannel =
+      realtimeChannel;
+
+    realtimeChannel =
+      null;
+
     try {
 
       supabaseClient.removeChannel(
-        realtimeChannel
+        oldChannel
       );
 
     } catch (error) {
@@ -4847,228 +4889,302 @@ function setupRealtime() {
 
     }
 
-
-    realtimeChannel =
-      null;
-
   }
 
 
-  realtimeChannel =
+  /* -------------------------------------------------------
+     新しいチャンネルを作成
+  ------------------------------------------------------- */
+
+  const channel =
     supabaseClient
       .channel(
         "kinmu-app-realtime"
-      )
-
-
-      /* -----------------------------------------------
-         職員
-      ------------------------------------------------ */
-
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "staff"
-        },
-        payload => {
-
-          console.log(
-            "Realtime staff:",
-            payload
-          );
-
-
-          scheduleRealtimeReload();
-
-        }
-      )
-
-
-      /* -----------------------------------------------
-         勤務
-      ------------------------------------------------ */
-
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "work_shifts"
-        },
-        payload => {
-
-          console.log(
-            "Realtime work_shifts:",
-            payload
-          );
-
-
-          scheduleRealtimeReload();
-
-        }
-      )
-
-
-      /* -----------------------------------------------
-         勤務形態
-      ------------------------------------------------ */
-
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "shift_types"
-        },
-        payload => {
-
-          console.log(
-            "Realtime shift_types:",
-            payload
-          );
-
-
-          scheduleRealtimeReload();
-
-        }
-      )
-
-
-      /* -----------------------------------------------
-         休暇
-      ------------------------------------------------ */
-
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "leave_types"
-        },
-        payload => {
-
-          console.log(
-            "Realtime leave_types:",
-            payload
-          );
-
-
-          scheduleRealtimeReload();
-
-        }
-      )
-
-
-      /* -----------------------------------------------
-         休業
-      ------------------------------------------------ */
-
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "company_holidays"
-        },
-        payload => {
-
-          console.log(
-            "Realtime company_holidays:",
-            payload
-          );
-
-
-          scheduleRealtimeReload();
-
-        }
-      )
-
-
-      /* -----------------------------------------------
-         明け時間
-      ------------------------------------------------ */
-
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "app_settings"
-        },
-        payload => {
-
-          console.log(
-            "Realtime app_settings:",
-            payload
-          );
-
-
-          scheduleRealtimeReload();
-
-        }
-      )
-
-
-      .subscribe(
-        status => {
-
-          console.log(
-            "Supabase Realtime STATUS:",
-            status
-          );
-
-
-          if (
-            status ===
-            "SUBSCRIBED"
-          ) {
-
-            console.log(
-              "★ Realtime接続成功"
-            );
-
-          }
-
-
-          if (
-            status ===
-              "CHANNEL_ERROR" ||
-            status ===
-              "TIMED_OUT" ||
-            status ===
-              "CLOSED"
-          ) {
-
-            console.warn(
-              "Realtime接続エラー。再接続します。"
-            );
-
-
-            setTimeout(
-              () => {
-
-                if (
-                  document.visibilityState ===
-                  "visible"
-                ) {
-
-                  setupRealtime();
-
-                }
-
-              },
-              3000
-            );
-
-          }
-
-        }
       );
 
-}
 
+  /* -------------------------------------------------------
+     職員
+  ------------------------------------------------------- */
+
+  channel.on(
+    "postgres_changes",
+    {
+      event: "*",
+      schema: "public",
+      table: "staff"
+    },
+    payload => {
+
+      console.log(
+        "Realtime staff:",
+        payload
+      );
+
+      scheduleRealtimeReload();
+
+    }
+  );
+
+
+  /* -------------------------------------------------------
+     勤務
+  ------------------------------------------------------- */
+
+  channel.on(
+    "postgres_changes",
+    {
+      event: "*",
+      schema: "public",
+      table: "work_shifts"
+    },
+    payload => {
+
+      console.log(
+        "Realtime work_shifts:",
+        payload
+      );
+
+      scheduleRealtimeReload();
+
+    }
+  );
+
+
+  /* -------------------------------------------------------
+     勤務形態
+  ------------------------------------------------------- */
+
+  channel.on(
+    "postgres_changes",
+    {
+      event: "*",
+      schema: "public",
+      table: "shift_types"
+    },
+    payload => {
+
+      console.log(
+        "Realtime shift_types:",
+        payload
+      );
+
+      scheduleRealtimeReload();
+
+    }
+  );
+
+
+  /* -------------------------------------------------------
+     休暇
+  ------------------------------------------------------- */
+
+  channel.on(
+    "postgres_changes",
+    {
+      event: "*",
+      schema: "public",
+      table: "leave_types"
+    },
+    payload => {
+
+      console.log(
+        "Realtime leave_types:",
+        payload
+      );
+
+      scheduleRealtimeReload();
+
+    }
+  );
+
+
+  /* -------------------------------------------------------
+     休業
+  ------------------------------------------------------- */
+
+  channel.on(
+    "postgres_changes",
+    {
+      event: "*",
+      schema: "public",
+      table: "company_holidays"
+    },
+    payload => {
+
+      console.log(
+        "Realtime company_holidays:",
+        payload
+      );
+
+      scheduleRealtimeReload();
+
+    }
+  );
+
+
+  /* -------------------------------------------------------
+     明け時間
+  ------------------------------------------------------- */
+
+  channel.on(
+    "postgres_changes",
+    {
+      event: "*",
+      schema: "public",
+      table: "app_settings"
+    },
+    payload => {
+
+      console.log(
+        "Realtime app_settings:",
+        payload
+      );
+
+      scheduleRealtimeReload();
+
+    }
+  );
+
+
+  /* -------------------------------------------------------
+     現在のチャンネルを登録
+  ------------------------------------------------------- */
+
+  realtimeChannel =
+    channel;
+
+
+  /* -------------------------------------------------------
+     Subscribe
+  ------------------------------------------------------- */
+
+  channel.subscribe(
+    status => {
+
+      console.log(
+        "Supabase Realtime STATUS:",
+        status
+      );
+
+
+      /* -----------------------------------------------
+         接続成功
+      ------------------------------------------------ */
+
+      if (
+        status ===
+        "SUBSCRIBED"
+      ) {
+
+        console.log(
+          "★ Realtime接続成功"
+        );
+
+        return;
+
+      }
+
+
+      /* -----------------------------------------------
+         接続エラー
+         
+         現在のチャンネル自身から発生した
+         エラーだけを処理する。
+         
+         旧チャンネルを削除した際の CLOSED は
+         再接続しない。
+      ------------------------------------------------ */
+
+      if (
+        status ===
+          "CHANNEL_ERROR" ||
+        status ===
+          "TIMED_OUT" ||
+        status ===
+          "CLOSED"
+      ) {
+
+        if (
+          realtimeChannel !==
+          channel
+        ) {
+
+          console.log(
+            "★ 旧Realtimeチャンネルの終了を確認"
+          );
+
+          return;
+
+        }
+
+
+        console.warn(
+          "Realtime接続エラー。再接続を予約します。"
+        );
+
+
+        /* ---------------------------------------------
+           すでに再接続予約がある場合は何もしない
+        --------------------------------------------- */
+
+        if (
+          realtimeReconnectTimer
+        ) {
+
+          return;
+
+        }
+
+
+        realtimeReconnectTimer =
+          setTimeout(
+            () => {
+
+              realtimeReconnectTimer =
+                null;
+
+
+              /* ---------------------------------------
+                 ページが表示中の場合のみ再接続
+              --------------------------------------- */
+
+              if (
+                document.visibilityState !==
+                "visible"
+              ) {
+
+                return;
+
+              }
+
+
+              /* ---------------------------------------
+                 別の接続がすでに存在する場合は不要
+              --------------------------------------- */
+
+              if (
+                realtimeChannel !==
+                channel
+              ) {
+
+                return;
+
+              }
+
+
+              setupRealtime();
+
+            },
+            3000
+          );
+
+      }
+
+    }
+  );
+
+}
 
 /* ==================================================
    Realtime更新予約
