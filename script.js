@@ -501,25 +501,21 @@ async function init() {
 
     if (!session) {
 
-      showLoginPage();
+  showInitialLoading(
+    "ログイン情報を確認しています…"
+  );
 
 
-      setupGoogleLogin();
-      setupAppleLogin();
-      setupPasskeyLogin();
-      setupNewOrganizationButton();
+  session =
+    await waitForAuthSession();
 
 
-      session =
-        await waitForAuthSession();
+  console.log(
+    "★ Auth監視後のセッション:",
+    session
+  );
 
-
-      console.log(
-        "★ Auth監視後のセッション:",
-        session
-      );
-
-    }
+}
 
 
     /* =================================================
