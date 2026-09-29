@@ -525,7 +525,7 @@ sessionStorage.setItem(
        そのためAuthStateChangeを先に待つ。
        ================================================= */
 
-   if (!session) {
+  if (!session) {
 
   const oauthLoginInProgress =
     sessionStorage.getItem(
@@ -552,15 +552,6 @@ sessionStorage.setItem(
       i++
     ) {
 
-      await new Promise(
-        resolve =>
-          setTimeout(
-            resolve,
-            100
-          )
-      );
-
-
       const {
         data
       } =
@@ -571,6 +562,20 @@ sessionStorage.setItem(
         data?.session ||
         null;
 
+
+      if (session) {
+        break;
+      }
+
+
+      await new Promise(
+        resolve =>
+          setTimeout(
+            resolve,
+            100
+          )
+      );
+
     }
 
 
@@ -578,7 +583,6 @@ sessionStorage.setItem(
 
     /*
      * 通常の未ログイン状態
-     * 待たずにログイン画面を表示
      */
 
     showLoginPage();
@@ -596,7 +600,6 @@ sessionStorage.setItem(
   }
 
 }
-
     /* =================================================
        それでもセッションがない
        ================================================= */
