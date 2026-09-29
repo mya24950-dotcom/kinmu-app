@@ -141,171 +141,72 @@ let scheduleFixedStaffTable =
   null;
 
 
-function showInitialLoading(message = "データを取得しています…") {
+/* ==================================================
+   初期読み込み画面
+================================================== */
 
-  let loading =
-    document.getElementById("initialLoadingScreen");
+function showInitialLoading(
+  message = "データを取得しています…"
+) {
+
+  const loading =
+    document.getElementById(
+      "loadingScreen"
+    );
 
   if (!loading) {
-
-    loading = document.createElement("div");
-
-    loading.id = "initialLoadingScreen";
-
-    loading.innerHTML = `
-      <div class="initial-loading-content">
-
-        <div class="initial-loading-spinner"></div>
-
-        <div class="initial-loading-title">
-          勤務表を読み込んでいます
-        </div>
-
-        <div
-          id="initialLoadingMessage"
-          class="initial-loading-message"
-        >
-          ${message}
-        </div>
-
-      </div>
-    `;
-
-    loading.style.cssText = `
-      position: fixed;
-      inset: 0;
-      z-index: 99999;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #ffffff;
-      color: #333333;
-    `;
-
-    const style =
-      document.createElement("style");
-
-    style.textContent = `
-      #initialLoadingScreen {
-        font-family:
-          -apple-system,
-          BlinkMacSystemFont,
-          "Helvetica Neue",
-          Arial,
-          sans-serif;
-      }
-
-      #initialLoadingScreen
-      .initial-loading-content {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-      }
-
-      #initialLoadingScreen
-      .initial-loading-spinner {
-        width: 42px;
-        height: 42px;
-        border: 4px solid #e5e5e5;
-        border-top-color: #007aff;
-        border-radius: 50%;
-        animation:
-          initialLoadingSpin
-          0.8s linear infinite;
-        margin-bottom: 20px;
-      }
-
-      #initialLoadingScreen
-      .initial-loading-title {
-        font-size: 20px;
-        font-weight: 700;
-        margin-bottom: 8px;
-      }
-
-      #initialLoadingScreen
-      .initial-loading-message {
-        font-size: 14px;
-        color: #666666;
-      }
-
-      @keyframes initialLoadingSpin {
-        from {
-          transform: rotate(0deg);
-        }
-
-        to {
-          transform: rotate(360deg);
-        }
-      }
-    `;
-
-    document.head.appendChild(style);
-
-    document.body.appendChild(loading);
-
-  } else {
-
-    const messageElement =
-      document.getElementById(
-        "initialLoadingMessage"
-      );
-
-    if (messageElement) {
-      messageElement.textContent = message;
-    }
-
-    loading.style.display = "flex";
+    return;
   }
+
+  const text =
+    loading.querySelector(
+      ".loadingText"
+    );
+
+  if (text) {
+    text.textContent =
+      message;
+  }
+
+  loading.style.display =
+    "flex";
+
+  loading.style.visibility =
+    "visible";
+
+  loading.style.opacity =
+    "1";
+
+  loading.style.pointerEvents =
+    "auto";
+
 }
+
 
 function hideInitialLoading() {
 
   const loading =
     document.getElementById(
-      "initialLoadingScreen"
+      "loadingScreen"
     );
 
   if (!loading) {
-    console.log(
-      "★ initialLoadingScreen はありません"
-    );
     return;
   }
 
-  console.log(
-    "★ initialLoadingScreen を非表示にします"
-  );
+  loading.style.opacity =
+    "0";
 
-  loading.style.setProperty(
-    "display",
-    "none",
-    "important"
-  );
+  loading.style.visibility =
+    "hidden";
 
-  loading.style.setProperty(
-    "visibility",
-    "hidden",
-    "important"
-  );
+  loading.style.pointerEvents =
+    "none";
 
-  loading.style.setProperty(
-    "opacity",
-    "0",
-    "important"
-  );
+  loading.style.display =
+    "none";
 
-  loading.style.setProperty(
-    "pointer-events",
-    "none",
-    "important"
-  );
 }
-
-/* ==================================================
-   初期化
-================================================== */
 
 /* ==================================================
    初期化
@@ -387,12 +288,7 @@ async function init() {
        OAuthへ移動する前に
        sessionStorageへ保存
     ------------------------------------------------ */
-sessionStorage.setItem(
-  "oauthLoginInProgress",
-  "true"
-);
-
-     
+    
     const urlParams =
       new URLSearchParams(
         window.location.search
