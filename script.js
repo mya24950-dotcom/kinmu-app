@@ -233,22 +233,31 @@ async function init() {
     ------------------------------------------------ */
 
     supabaseClient =
-      supabase.createClient(
-        SUPABASE_URL,
-        SUPABASE_KEY,
-        {
-          auth: {
-            experimental: {
-              passkey: true
-            }
-          }
+  supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY,
+    {
+      auth: {
+        experimental: {
+          passkey: true
         }
-      );
+      }
+    }
+  );
 
 
-    console.log(
-      "★ Supabase初期化完了"
-    );
+/* ------------------------------------------------
+   Supabaseクライアントをグローバルにも保持
+------------------------------------------------ */
+
+window.shiftSupabaseClient =
+  supabaseClient;
+
+
+console.log(
+  "★ Supabase初期化完了",
+  supabaseClient
+);
 
 
     /* ------------------------------------------------
@@ -2738,7 +2747,7 @@ async function loginWithApple() {
     const {
       error
     } =
-      await supabaseClient.auth.signInWithOAuth({
+      client.auth.signInWithOAuth({
 
         provider: "apple",
 
@@ -3166,6 +3175,19 @@ async function loginWithGoogle() {
 
   try {
 
+    const client =
+      window.shiftSupabaseClient ||
+      supabaseClient;
+
+
+    if (!client) {
+
+      throw new Error(
+        "Supabaseクライアントが初期化されていません。"
+      );
+
+    }
+
     if (button) {
       button.disabled = true;
     }
@@ -3219,9 +3241,9 @@ async function loginWithGoogle() {
     );
 
     const {
-      error
-    } =
-      await supabaseClient.auth.signInWithOAuth({
+  error
+} =
+  await client.auth.signInWithOAuth({
 
         provider: "google",
 
