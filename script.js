@@ -3444,24 +3444,8 @@ const inviteToken =
 );
 
 if (inviteToken) {
-
-  alert(
-    "招待トークンを保存します\n" +
-    inviteToken
-  );
-
   sessionStorage.setItem(
     "pendingInviteToken",
-    inviteToken
-  );
-
-  localStorage.setItem(
-    "pendingInviteToken",
-    inviteToken
-  );
-
-  console.log(
-    "★ 招待トークン保存完了",
     inviteToken
   );
 }
