@@ -11645,29 +11645,28 @@ async function addOrUpdateShift() {
 
 
       const result =
-        await supabaseClient
-          .from("shift_types")
-          .insert({
+  await supabaseClient
+    .from("shift_types")
+    .insert({
 
-            name,
+      name,
 
-            start:
-              start || null,
+      start_time:
+        start || null,
 
-            end:
-              end || null,
+      end_time:
+        end || null,
 
-            break:
-              breakTime || null,
+      break_time:
+        breakTime || null,
 
-            sort_order:
-              maxOrder + 1,
+      sort_order:
+        maxOrder + 1,
 
-            organization_id:
-              currentOrganization.id
+      organization_id:
+        currentOrganization.id
 
-          });
-
+    });
 
       if (result.error) {
 
