@@ -7922,7 +7922,7 @@ function createScheduleFixedLayers() {
 
 
   fixedHeader.style.background =
-    "#f8f8fa";
+  "transparent";
 
 
   fixedHeader.style.zIndex =
