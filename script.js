@@ -1,4 +1,4 @@
-alert("009");
+alert("010");
 
 /* ==================================================
    Supabase
@@ -675,6 +675,22 @@ async function init() {
       );
 
 
+    /* ------------------------------------------------
+       一時確認
+       Googleログイン後のURLに
+       inviteが残っているか確認
+    ------------------------------------------------ */
+
+    alert(
+      "Googleログイン後のURL\n\n" +
+      window.location.href +
+      "\n\ninvite=" +
+      String(
+        currentUrlInviteToken
+      )
+    );
+
+
     let storedInviteToken =
       currentUrlInviteToken ||
       sessionStorage.getItem(
@@ -706,11 +722,14 @@ async function init() {
       }
     );
 
-     alert(
-  "招待トークン確認\n" +
-  "storedInviteToken = " +
-  String(storedInviteToken)
-);
+
+    alert(
+      "招待トークン確認\n" +
+      "storedInviteToken = " +
+      String(
+        storedInviteToken
+      )
+    );
 
 
     if (storedInviteToken) {
