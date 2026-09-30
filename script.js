@@ -3438,6 +3438,11 @@ async function loginWithGoogle() {
 const inviteToken =
   params.get("invite");
 
+     alert(
+  "inviteToken取得結果\n" +
+  String(inviteToken)
+);
+
 if (inviteToken) {
 
   sessionStorage.setItem(
