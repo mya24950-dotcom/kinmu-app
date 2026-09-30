@@ -4100,49 +4100,110 @@ async function handleInviteAfterLogin() {
 
   try {
 
+    /* =================================================
+       招待トークンを取得
+
+       SafariではOAuth復帰時に
+       sessionStorageが不安定になる場合があるため、
+       localStorageも確認する
+       ================================================= */
+
     const urlParams =
       new URLSearchParams(
         window.location.search
       );
 
-    const urlInvite =
-      urlParams.get("invite");
 
-    const sessionInvite =
+    const urlInviteToken =
+      urlParams.get(
+        "invite"
+      );
+
+
+    const sessionInviteToken =
       sessionStorage.getItem(
         "pendingInviteToken"
       );
 
+
+    const localInviteToken =
+      localStorage.getItem(
+        "pendingInviteToken"
+      );
+
+
     const inviteToken =
-      urlInvite ||
-      sessionInvite;
+      urlInviteToken ||
+      sessionInviteToken ||
+      localInviteToken;
+
 
     console.log(
       "★ 招待トークン確認",
       {
-        urlInvite: !!urlInvite,
-        sessionInvite: !!sessionInvite,
-        hasInviteToken: !!inviteToken
+        url:
+          !!urlInviteToken,
+
+        sessionStorage:
+          !!sessionInviteToken,
+
+        localStorage:
+          !!localInviteToken,
+
+        hasInviteToken:
+          !!inviteToken
       }
     );
 
+
+    /* ------------------------------------------------
+       招待トークンがない
+    ------------------------------------------------ */
+
     if (!inviteToken) {
+
       console.log(
-        "★ 招待トークンがありません"
+        "★ 招待トークンが見つかりません"
       );
+
       return false;
+
     }
+
+
+    /* ------------------------------------------------
+       Safari対策
+
+       見つかったトークンを
+       sessionStorage / localStorage
+       の両方へ戻す
+    ------------------------------------------------ */
 
     sessionStorage.setItem(
       "pendingInviteToken",
       inviteToken
     );
 
+
+    localStorage.setItem(
+      "pendingInviteToken",
+      inviteToken
+    );
+
+
     console.log(
       "★ accept_staff_invite を実行します"
     );
 
-    const { data, error } =
+
+    /* =================================================
+       招待受諾
+       ================================================= */
+
+    const {
+      data,
+      error
+    } =
       await supabaseClient.rpc(
         "accept_staff_invite",
         {
@@ -4151,6 +4212,11 @@ async function handleInviteAfterLogin() {
         }
       );
 
+
+    /* ------------------------------------------------
+       エラー
+    ------------------------------------------------ */
+
     if (error) {
 
       console.error(
@@ -4158,40 +4224,79 @@ async function handleInviteAfterLogin() {
         error
       );
 
+
       alert(
         "招待情報の登録に失敗しました。\n\n" +
         "エラー内容：\n" +
-        (error.message || String(error))
+        (
+          error.message ||
+          String(error)
+        )
       );
 
+
       return false;
+
     }
+
 
     console.log(
       "★ accept_staff_invite 結果",
       data
     );
 
-    if (!data || !data.length) {
+
+    /* ------------------------------------------------
+       結果確認
+    ------------------------------------------------ */
+
+    if (
+      !data ||
+      !data.length
+    ) {
+
+      console.error(
+        "★ 招待受諾結果がありません"
+      );
+
 
       alert(
         "招待情報を確認できませんでした。"
       );
 
+
       return false;
+
     }
+
 
     const result =
       data[0];
+
 
     console.log(
       "★ 招待受諾完了",
       result
     );
 
+
+    /* ------------------------------------------------
+       使用済みになった招待トークンを削除
+    ------------------------------------------------ */
+
     sessionStorage.removeItem(
       "pendingInviteToken"
     );
+
+
+    localStorage.removeItem(
+      "pendingInviteToken"
+    );
+
+
+    /* ------------------------------------------------
+       URLからinviteを削除
+    ------------------------------------------------ */
 
     history.replaceState(
       {},
@@ -4199,11 +4304,18 @@ async function handleInviteAfterLogin() {
       window.location.pathname
     );
 
+
+    /* ------------------------------------------------
+       登録完了
+    ------------------------------------------------ */
+
     alert(
       `${result.staff_name}さんとして登録しました。`
     );
 
+
     return true;
+
 
   } catch (error) {
 
@@ -4212,13 +4324,20 @@ async function handleInviteAfterLogin() {
       error
     );
 
+
     alert(
       "招待処理に失敗しました。\n\n" +
-      (error.message || String(error))
+      (
+        error?.message ||
+        String(error)
+      )
     );
 
+
     return false;
+
   }
+
 }
 
 /* ==================================================
