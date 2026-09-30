@@ -11620,31 +11620,7 @@ async function addOrUpdateShift() {
 
     else {
 
-      const maxOrder =
-        appData.shiftTypes.reduce(
-          (max, shift) => {
-
-            const value =
-              Number(
-                shift.sort_order
-              );
-
-
-            return Number.isFinite(
-              value
-            )
-              ? Math.max(
-                  max,
-                  value
-                )
-              : max;
-
-          },
-          -1
-        );
-
-
-      const result =
+       const result =
   await supabaseClient
     .from("shift_types")
     .insert({
@@ -11659,9 +11635,6 @@ async function addOrUpdateShift() {
 
       break_time:
         breakTime || null,
-
-      sort_order:
-        maxOrder + 1,
 
       organization_id:
         currentOrganization.id
