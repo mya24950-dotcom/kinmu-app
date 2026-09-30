@@ -3372,14 +3372,13 @@ async function registerWithEmail() {
    Googleログイン設定
 ================================================== */
 
-/* =========================================================
-   Googleログイン
-========================================================= */
-
 async function loginWithGoogle() {
 
   const button =
-    document.getElementById("googleLoginButton");
+    document.getElementById(
+      "googleLoginButton"
+    );
+
 
   try {
 
@@ -3396,26 +3395,49 @@ async function loginWithGoogle() {
 
     }
 
+
     if (button) {
+
       button.disabled = true;
+
     }
+
+
+    /*
+     * OAuth復帰後のinit()で
+     * ローディングを開始するためのフラグ
+     */
 
     sessionStorage.setItem(
       "oauthLoginInProgress",
       "true"
     );
 
-   
+
+    /*
+     * ここではローディングを表示しない
+     *
+     * Googleの
+     * 「アカウントを選択してください」
+     * をそのまま表示する
+     */
+
 
     /* -----------------------------------------
        招待トークン保存
     ----------------------------------------- */
 
     const params =
-      new URLSearchParams(window.location.search);
+      new URLSearchParams(
+        window.location.search
+      );
+
 
     const inviteToken =
-      params.get("invite");
+      params.get(
+        "invite"
+      );
+
 
     if (inviteToken) {
 
@@ -3426,6 +3448,7 @@ async function loginWithGoogle() {
 
     }
 
+
     /* -----------------------------------------
        リダイレクト先
     ----------------------------------------- */
@@ -3433,23 +3456,28 @@ async function loginWithGoogle() {
     let redirectTo =
       "https://mya24950-dotcom.github.io/kinmu-app/";
 
+
     if (inviteToken) {
 
       redirectTo +=
         "?invite=" +
-        encodeURIComponent(inviteToken);
+        encodeURIComponent(
+          inviteToken
+        );
 
     }
+
 
     console.log(
       "★ Google OAuth開始",
       redirectTo
     );
 
+
     const {
-  error
-} =
-  await client.auth.signInWithOAuth({
+      error
+    } =
+      await client.auth.signInWithOAuth({
 
         provider: "google",
 
@@ -3458,16 +3486,23 @@ async function loginWithGoogle() {
           redirectTo,
 
           queryParams: {
-            prompt: "select_account"
+
+            prompt:
+              "select_account"
+
           }
 
         }
 
       });
 
+
     if (error) {
+
       throw error;
+
     }
+
 
   } catch (error) {
 
@@ -3476,19 +3511,33 @@ async function loginWithGoogle() {
       error
     );
 
+
     sessionStorage.removeItem(
       "oauthLoginInProgress"
     );
 
-    hideInitialLoading();
 
     if (button) {
+
       button.disabled = false;
+
     }
+
+
+    /*
+     * OAuth開始前にエラーになった場合だけ
+     * ローディングを終了する
+     */
+
+    hideInitialLoading();
+
 
     alert(
       "Googleログインに失敗しました。\n" +
-      (error.message || error)
+      (
+        error.message ||
+        error
+      )
     );
 
   }
