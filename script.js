@@ -4086,39 +4086,42 @@ async function handleInviteAfterLogin() {
         window.location.search
       );
 
-
     const urlInvite =
       urlParams.get("invite");
 
-
-    const storedInvite =
+    const sessionInvite =
       sessionStorage.getItem(
         "pendingInviteToken"
       );
 
-
     const inviteToken =
       urlInvite ||
-      storedInvite;
+      sessionInvite;
 
+    console.log(
+      "★ 招待トークン確認",
+      {
+        urlInvite: !!urlInvite,
+        sessionInvite: !!sessionInvite,
+        hasInviteToken: !!inviteToken
+      }
+    );
 
     if (!inviteToken) {
-
+      console.log(
+        "★ 招待トークンがありません"
+      );
       return false;
-
     }
-
-
-    /*
-     * URLから取得した場合も
-     * sessionStorageへ確実に保存
-     */
 
     sessionStorage.setItem(
       "pendingInviteToken",
       inviteToken
     );
 
+    console.log(
+      "★ accept_staff_invite を実行します"
+    );
 
     const { data, error } =
       await supabaseClient.rpc(
@@ -4129,21 +4132,26 @@ async function handleInviteAfterLogin() {
         }
       );
 
-
     if (error) {
-  console.error(
-    "招待受諾エラー",
-    error
-  );
 
-  alert(
-    "招待情報の登録に失敗しました。\n\n" +
-    "エラー内容：\n" +
-    (error.message || String(error))
-  );
+      console.error(
+        "★ 招待受諾エラー",
+        error
+      );
 
-  return false;
-}
+      alert(
+        "招待情報の登録に失敗しました。\n\n" +
+        "エラー内容：\n" +
+        (error.message || String(error))
+      );
+
+      return false;
+    }
+
+    console.log(
+      "★ accept_staff_invite 結果",
+      data
+    );
 
     if (!data || !data.length) {
 
@@ -4152,33 +4160,19 @@ async function handleInviteAfterLogin() {
       );
 
       return false;
-
     }
-
 
     const result =
       data[0];
 
-
     console.log(
-      "招待受諾完了",
+      "★ 招待受諾完了",
       result
     );
-
-
-    /*
-     * 招待処理が完全に成功してから
-     * トークンを削除
-     */
 
     sessionStorage.removeItem(
       "pendingInviteToken"
     );
-
-
-    /*
-     * URLからinviteを削除
-     */
 
     history.replaceState(
       {},
@@ -4186,30 +4180,26 @@ async function handleInviteAfterLogin() {
       window.location.pathname
     );
 
-
     alert(
       `${result.staff_name}さんとして登録しました。`
     );
 
-
     return true;
-
 
   } catch (error) {
 
     console.error(
-      "招待処理エラー",
+      "★ 招待処理エラー",
       error
     );
 
     alert(
-      "招待処理に失敗しました。"
+      "招待処理に失敗しました。\n\n" +
+      (error.message || String(error))
     );
 
     return false;
-
   }
-
 }
 
 /* ==================================================
