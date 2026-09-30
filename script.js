@@ -426,280 +426,48 @@ async function init() {
        sessionStorageへ保存
     ------------------------------------------------ */
 
-    const urlParams =
-      new URLSearchParams(
-        window.location.search
-      );
+    /* =================================================
+   招待処理
+   ================================================= */
+
+const currentParams =
+  new URLSearchParams(
+    window.location.search
+  );
 
 
-    const urlInviteToken =
-  urlParams.get("invite");
+const currentUrlInviteToken =
+  currentParams.get(
+    "invite"
+  );
 
-if (urlInviteToken) {
+
+/*
+ * URLに招待トークンがあれば
+ * まず保存する
+ */
+if (currentUrlInviteToken) {
 
   sessionStorage.setItem(
     "pendingInviteToken",
-    urlInviteToken
+    currentUrlInviteToken
   );
 
   localStorage.setItem(
     "pendingInviteToken",
-    urlInviteToken
+    currentUrlInviteToken
   );
 
   console.log(
-    "★ 招待トークンを保存しました"
+    "★ URLから招待トークンを保存しました"
   );
 }
 
 
-    /* ------------------------------------------------
-       強制ログイン画面
-    ------------------------------------------------ */
-
-    const forceLoginScreen =
-      sessionStorage.getItem(
-        "forceLoginScreen"
-      );
-
-
-    if (
-      forceLoginScreen ===
-      "true"
-    ) {
-
-      sessionStorage.removeItem(
-        "forceLoginScreen"
-      );
-
-
-      await supabaseClient.auth.signOut({
-        scope: "global"
-      });
-
-
-      showLoginPage(
-        "ログインしてください。"
-      );
-
-
-      setupGoogleLogin();
-      setupAppleLogin();
-      setupPasskeyLogin();
-      setupNewOrganizationButton();
-
-
-      hideInitialLoading();
-
-
-      return;
-
-    }
-
-
-    /* =================================================
-       OAuth復帰を考慮したセッション取得
-       ================================================= */
-
-    let session =
-      null;
-
-
-    /*
-     * まず現在のセッションを取得
-     */
-
-    try {
-
-      const {
-        data,
-        error
-      } =
-        await supabaseClient.auth.getSession();
-
-
-      if (error) {
-
-        console.error(
-          "getSessionエラー",
-          error
-        );
-
-      }
-
-
-      session =
-        data?.session ||
-        null;
-
-    } catch (error) {
-
-      console.error(
-        "セッション取得エラー",
-        error
-      );
-
-    }
-
-
-    console.log(
-      "★ 最初のセッション:",
-      session
-    );
-
-
-    /* =================================================
-       セッションがない場合
-
-       OAuthから戻った直後は、
-       getSession()より先にSIGNED_INが来ることがある。
-
-       そのためOAuth中の場合だけ
-       短時間セッション確認を行う。
-       ================================================= */
-
-    if (!session) {
-
-      const oauthLoginInProgress =
-        sessionStorage.getItem(
-          "oauthLoginInProgress"
-        );
-
-
-      if (
-        oauthLoginInProgress ===
-        "true"
-      ) {
-
-        showInitialLoading(
-          "ログイン情報を確認しています…"
-        );
-
-
-        /*
-         * OAuth復帰直後だけ短時間確認
-         */
-
-        for (
-          let i = 0;
-          i < 10 && !session;
-          i++
-        ) {
-
-          const {
-            data
-          } =
-            await supabaseClient.auth.getSession();
-
-
-          session =
-            data?.session ||
-            null;
-
-
-          if (session) {
-            break;
-          }
-
-
-          await new Promise(
-            resolve =>
-              setTimeout(
-                resolve,
-                100
-              )
-          );
-
-        }
-
-
-      } else {
-
-        /*
-         * 通常の未ログイン状態
-         *
-         * この場合だけログイン画面を表示する
-         */
-
-        showLoginPage();
-
-
-        setupAllLoginButtons();
-
-
-        hideInitialLoading();
-
-
-        return;
-
-      }
-
-    }
-
-
-    /* =================================================
-       それでもセッションがない
-       ================================================= */
-
-    if (!session) {
-
-      console.log(
-        "★ ログインセッションが確認できませんでした"
-      );
-
-
-      showLoginPage(
-        "ログインしてください。"
-      );
-
-
-      setupGoogleLogin();
-      setupAppleLogin();
-      setupPasskeyLogin();
-      setupNewOrganizationButton();
-
-
-      hideInitialLoading();
-
-
-      return;
-
-    }
-
-
-    console.log(
-      "★ ログイン済み:",
-      session.user.email
-    );
-
-
-    sessionStorage.removeItem(
-      "oauthLoginInProgress"
-    );
-
-
-    showInitialLoading(
-      "勤務表を読み込んでいます…"
-    );
-
-
-    /* =================================================
-       招待処理
-       ================================================= */
-
-    const currentParams =
-      new URLSearchParams(
-        window.location.search
-      );
-
-
-    const currentUrlInviteToken =
-      currentParams.get(
-        "invite"
-      );
-
-
-    const storedInviteToken =
+/*
+ * 保存済みの招待トークンを取得
+ */
+const storedInviteToken =
   sessionStorage.getItem(
     "pendingInviteToken"
   ) ||
@@ -708,48 +476,35 @@ if (urlInviteToken) {
   );
 
 
-    if (currentUrlInviteToken) {
+/*
+ * 招待トークンが存在する場合は
+ * 必ず招待受諾処理を実行する
+ */
+if (storedInviteToken) {
 
-  sessionStorage.setItem(
-    "pendingInviteToken",
-    currentUrlInviteToken
+  console.log(
+    "★ 招待処理を開始します"
   );
 
-  localStorage.setItem(
-    "pendingInviteToken",
-    currentUrlInviteToken
+
+  showInitialLoading(
+    "招待情報を確認しています…"
   );
+
+
+  const inviteAccepted =
+    await handleInviteAfterLogin();
+
+
+  if (inviteAccepted) {
+
+    console.log(
+      "★ 招待処理完了"
+    );
+
+  }
+
 }
-
-
-    if (
-      currentUrlInviteToken ||
-      storedInviteToken
-    ) {
-
-      console.log(
-        "★ 招待処理を開始します"
-      );
-
-
-      showInitialLoading(
-        "招待情報を確認しています…"
-      );
-
-
-      const inviteAccepted =
-        await handleInviteAfterLogin();
-
-
-      if (inviteAccepted) {
-
-        console.log(
-          "★ 招待処理完了"
-        );
-
-      }
-
-    }
 
 
     /* =================================================
