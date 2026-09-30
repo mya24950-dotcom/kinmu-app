@@ -13295,6 +13295,11 @@ async function addCompanyHoliday() {
       editingHolidayId
     ) {
 
+       console.log(
+  "★ 休業設定編集ID",
+  editingHolidayId
+);
+
       const result =
         await supabaseClient
           .from("company_holidays")
