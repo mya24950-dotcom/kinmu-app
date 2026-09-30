@@ -4126,20 +4126,19 @@ async function handleInviteAfterLogin() {
 
 
     if (error) {
+  console.error(
+    "招待受諾エラー",
+    error
+  );
 
-      console.error(
-        "招待受諾エラー",
-        error
-      );
+  alert(
+    "招待情報の登録に失敗しました。\n\n" +
+    "エラー内容：\n" +
+    (error.message || String(error))
+  );
 
-      alert(
-        "招待情報の登録に失敗しました。"
-      );
-
-      return false;
-
-    }
-
+  return false;
+}
 
     if (!data || !data.length) {
 
