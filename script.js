@@ -214,7 +214,6 @@ if (document.readyState === "loading") {
 
 }
 
-
 /* ==================================================
    初期化本体
 ================================================== */
@@ -228,32 +227,23 @@ async function init() {
     );
 
 
+    /* =================================================
+       起動直後は必ずローディング画面を表示
+
+       Google / Apple / Azure / Passkey
+       から戻った場合も、ログイン画面を一瞬表示せず
+       そのままローディング画面を表示する
+       ================================================= */
+
+    showInitialLoading(
+      "ログイン情報を確認しています…"
+    );
+
+
     const oauthLoginInProgress =
       sessionStorage.getItem(
         "oauthLoginInProgress"
       );
-
-
-    /*
-     * Googleログインから戻ってきた場合
-     * 最初からローディング画面を表示
-     */
-    if (
-      oauthLoginInProgress ===
-      "true"
-    ) {
-
-      showInitialLoading(
-        "ログイン情報を確認しています…"
-      );
-
-    } else {
-
-      showInitialLoading(
-        "起動しています…"
-      );
-
-    }
 
 
     /* ------------------------------------------------
@@ -261,46 +251,44 @@ async function init() {
     ------------------------------------------------ */
 
     supabaseClient =
-  supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_KEY,
-    {
-      auth: {
-        experimental: {
-          passkey: true
+      supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY,
+        {
+          auth: {
+            experimental: {
+              passkey: true
+            }
+          }
         }
-      }
-    }
-  );
+      );
 
 
-/* ------------------------------------------------
-   Supabaseクライアントをグローバルにも保持
------------------------------------------------- */
+    /* ------------------------------------------------
+       Supabaseクライアントをグローバルにも保持
+    ------------------------------------------------ */
 
-window.shiftSupabaseClient =
-  supabaseClient;
+    window.shiftSupabaseClient =
+      supabaseClient;
 
 
-console.log(
-  "★ Supabase初期化完了",
-  supabaseClient
-);
+    console.log(
+      "★ Supabase初期化完了",
+      supabaseClient
+    );
 
 
     /* ------------------------------------------------
        招待URL
-       
+
        OAuthへ移動する前に
        sessionStorageへ保存
     ------------------------------------------------ */
-    
+
     const urlParams =
       new URLSearchParams(
         window.location.search
       );
-
-     
 
 
     const urlInviteToken =
@@ -315,6 +303,7 @@ console.log(
         "pendingInviteToken",
         urlInviteToken
       );
+
 
       console.log(
         "★ 招待トークンを保存しました"
@@ -420,84 +409,93 @@ console.log(
 
     /* =================================================
        セッションがない場合
-       
+
        OAuthから戻った直後は、
        getSession()より先にSIGNED_INが来ることがある。
-       
-       そのためAuthStateChangeを先に待つ。
+
+       そのためOAuth中の場合だけ
+       短時間セッション確認を行う。
        ================================================= */
 
-  if (!session) {
+    if (!session) {
 
-  const oauthLoginInProgress =
-    sessionStorage.getItem(
-      "oauthLoginInProgress"
-    );
-
-
-  if (
-    oauthLoginInProgress ===
-    "true"
-  ) {
-
-    showInitialLoading(
-      "ログイン情報を確認しています…"
-    );
+      const oauthLoginInProgress =
+        sessionStorage.getItem(
+          "oauthLoginInProgress"
+        );
 
 
-    /*
-     * OAuth復帰直後だけ短時間確認
-     */
-    for (
-      let i = 0;
-      i < 10 && !session;
-      i++
-    ) {
+      if (
+        oauthLoginInProgress ===
+        "true"
+      ) {
 
-      const {
-        data
-      } =
-        await supabaseClient.auth.getSession();
+        showInitialLoading(
+          "ログイン情報を確認しています…"
+        );
 
 
-      session =
-        data?.session ||
-        null;
+        /*
+         * OAuth復帰直後だけ短時間確認
+         */
+
+        for (
+          let i = 0;
+          i < 10 && !session;
+          i++
+        ) {
+
+          const {
+            data
+          } =
+            await supabaseClient.auth.getSession();
 
 
-      if (session) {
-        break;
+          session =
+            data?.session ||
+            null;
+
+
+          if (session) {
+            break;
+          }
+
+
+          await new Promise(
+            resolve =>
+              setTimeout(
+                resolve,
+                100
+              )
+          );
+
+        }
+
+
+      } else {
+
+        /*
+         * 通常の未ログイン状態
+         *
+         * この場合だけログイン画面を表示する
+         */
+
+        showLoginPage();
+
+
+        setupAllLoginButtons();
+
+
+        hideInitialLoading();
+
+
+        return;
+
       }
-
-
-      await new Promise(
-        resolve =>
-          setTimeout(
-            resolve,
-            100
-          )
-      );
 
     }
 
 
-  } else {
-
-    /*
-     * 通常の未ログイン状態
-     */
-
-    showLoginPage();
-
-setupAllLoginButtons();
-
-hideInitialLoading();
-
-return;
-
-  }
-
-}
     /* =================================================
        それでもセッションがない
        ================================================= */
@@ -533,14 +531,15 @@ return;
       session.user.email
     );
 
-     sessionStorage.removeItem(
-  "oauthLoginInProgress"
-);
 
-   showInitialLoading(
-  "勤務表を読み込んでいます…"
-);
+    sessionStorage.removeItem(
+      "oauthLoginInProgress"
+    );
 
+
+    showInitialLoading(
+      "勤務表を読み込んでいます…"
+    );
 
 
     /* =================================================
@@ -592,8 +591,8 @@ return;
       );
 
 
-     const inviteAccepted =
-  await handleInviteAfterLogin();
+      const inviteAccepted =
+        await handleInviteAfterLogin();
 
 
       if (inviteAccepted) {
@@ -808,8 +807,6 @@ return;
        Passkey登録
     ------------------------------------------------ */
 
-   
-
 
     /* ------------------------------------------------
        管理設定
@@ -817,8 +814,6 @@ return;
 
     setupOrganizationDangerZone();
 
-
-    
 
     /* ------------------------------------------------
        ローカルデータ
@@ -836,30 +831,34 @@ return;
 
     setupLogoutButton();
 
+
     /* ------------------------------------------------
-   Supabaseデータ
------------------------------------------------- */
+       Supabaseデータ
+    ------------------------------------------------ */
 
-showInitialLoading(
-  "勤務表を読み込んでいます…"
-);
-
-
-await loadAllFromSupabase();
+    showInitialLoading(
+      "勤務表を読み込んでいます…"
+    );
 
 
-/* ------------------------------------------------
-   描画
------------------------------------------------- */
-
-await renderAll();
+    await loadAllFromSupabase();
 
 
-/* ------------------------------------------------
-   アプリ表示
------------------------------------------------- */
+    /* ------------------------------------------------
+       描画
+    ------------------------------------------------ */
 
-showApp();
+    await renderAll();
+
+
+    /* ------------------------------------------------
+       アプリ表示
+
+       データを読み込んで描画が完了してから
+       勤務表を表示する
+    ------------------------------------------------ */
+
+    showApp();
 
 
     /* ------------------------------------------------
@@ -899,6 +898,9 @@ showApp();
 
     /* ------------------------------------------------
        初期ローディング終了
+
+       ここまで全部終わってから
+       ローディング画面を消す
     ------------------------------------------------ */
 
     hideInitialLoading();
@@ -953,7 +955,6 @@ showApp();
   }
 
 }
-
 
 /* ==================================================
    OAuth復帰後のセッション待機
