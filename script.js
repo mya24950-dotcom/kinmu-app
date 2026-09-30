@@ -3405,9 +3405,7 @@ async function loginWithGoogle() {
       "true"
     );
 
-    showInitialLoading(
-      "Googleでログインしています…"
-    );
+   
 
     /* -----------------------------------------
        招待トークン保存
