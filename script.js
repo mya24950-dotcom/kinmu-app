@@ -3375,22 +3375,14 @@ async function registerWithEmail() {
 
 async function loginWithGoogle() {
 
-  alert(
-    "Googleログイン開始\n" +
-    "現在のURL:\n" +
-    window.location.href
-  );
-
   const button =
     document.getElementById("googleLoginButton");
-
 
   try {
 
     const client =
       window.shiftSupabaseClient ||
       supabaseClient;
-
 
     if (!client) {
 
@@ -3400,13 +3392,11 @@ async function loginWithGoogle() {
 
     }
 
-
     if (button) {
 
       button.disabled = true;
 
     }
-
 
     /*
      * OAuth復帰後のinit()で
@@ -3420,51 +3410,45 @@ async function loginWithGoogle() {
 
 
     /*
-     * ここではローディングを表示しない
-     *
-     * Googleの
-     * 「アカウントを選択してください」
-     * をそのまま表示する
+     * 招待トークン取得
      */
 
-
-    /* -----------------------------------------
-       招待トークン保存
-    ----------------------------------------- */
-
     const params =
-  new URLSearchParams(window.location.search);
+      new URLSearchParams(
+        window.location.search
+      );
 
-const inviteToken =
-  params.get("invite");
-
-     alert(
-  "inviteToken取得結果\n" +
-  String(inviteToken)
-);
-
-if (inviteToken) {
-  sessionStorage.setItem(
-    "pendingInviteToken",
-    inviteToken
-  );
-}
-
-  localStorage.setItem(
-    "pendingInviteToken",
-    inviteToken
-  );
-
-  console.log(
-    "★ ログイン前に招待トークンを保存",
-    inviteToken
-  );
-}
+    const inviteToken =
+      params.get("invite");
 
 
-    /* -----------------------------------------
-       リダイレクト先
-    ----------------------------------------- */
+    /*
+     * 招待トークン保存
+     */
+
+    if (inviteToken) {
+
+      sessionStorage.setItem(
+        "pendingInviteToken",
+        inviteToken
+      );
+
+      localStorage.setItem(
+        "pendingInviteToken",
+        inviteToken
+      );
+
+      console.log(
+        "★ ログイン前に招待トークンを保存",
+        inviteToken
+      );
+
+    }
+
+
+    /*
+     * リダイレクト先
+     */
 
     let redirectTo =
       "https://mya24950-dotcom.github.io/kinmu-app/";
@@ -3536,11 +3520,6 @@ if (inviteToken) {
 
     }
 
-
-    /*
-     * OAuth開始前にエラーになった場合だけ
-     * ローディングを終了する
-     */
 
     hideInitialLoading();
 
