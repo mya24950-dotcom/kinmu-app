@@ -2102,23 +2102,51 @@
   </h2>
 
 
-  <!-- 登録方法 -->
-  <div class="invite-social-title">
+  <!-- ==================================================
+       登録方法
+  ================================================== -->
 
-    <div class="invite-social-title-line"></div>
+  <div
+    style="
+      display:flex;
+      align-items:center;
+      gap:8px;
+      margin:13px 0 10px;
+    "
+  >
 
-    <span class="invite-social-title-text">
-      登録方法を選択
+    <div
+      style="
+        flex:1;
+        height:1px;
+        background:#e5e5ea;
+      "
+    ></div>
+
+    <span
+      style="
+        color:#888;
+        font-size:11px;
+        white-space:nowrap;
+      "
+    >
+      登録方法
     </span>
 
-    <div class="invite-social-title-line"></div>
+    <div
+      style="
+        flex:1;
+        height:1px;
+        background:#e5e5ea;
+      "
+    ></div>
 
   </div>
 
 
-  <!-- =====================================================
+  <!-- ==================================================
        Google / Apple / Azure
-       ===================================================== -->
+  ================================================== -->
 
   <div class="invite-social-buttons">
 
@@ -2173,9 +2201,7 @@
     </div>
 
 
-    <!-- =================================================
-         Apple
-         ================================================= -->
+    <!-- Apple -->
 
     <div class="social-login-item">
 
@@ -2223,9 +2249,7 @@
     </div>
 
 
-    <!-- =================================================
-         Azure
-         ================================================= -->
+    <!-- Azure -->
 
     <div class="social-login-item">
 
@@ -2276,166 +2300,111 @@
   </div>
 
 
-  <!-- =====================================================
-       メールアドレス登録
-       ===================================================== -->
+  <!-- ==================================================
+       メールアドレス・パスワード
+  ================================================== -->
 
-  <div
-    class="invite-email-register"
-    style="
-      margin-top:24px;
-      text-align:left;
-    "
-  >
+  <div class="email-login-area">
+
 
     <!-- メールアドレス -->
 
-    <label
-      for="inviteEmail"
-      style="
-        display:block;
-        margin-bottom:6px;
-        font-size:14px;
-        font-weight:600;
-      "
-    >
-      メールアドレス
-    </label>
+    <div class="email-input-group">
 
-    <input
-      type="email"
-      id="inviteEmail"
-      autocomplete="email"
-      placeholder="メールアドレス"
-      style="
-        width:100%;
-        box-sizing:border-box;
-        margin-bottom:14px;
-      "
-    >
+      <label for="inviteEmail">
+        メールアドレス
+      </label>
+
+      <input
+        type="email"
+        id="inviteEmail"
+        name="inviteEmail"
+        autocomplete="username"
+        inputmode="email"
+        placeholder="メールアドレスを入力"
+      >
+
+    </div>
 
 
     <!-- パスワード -->
 
-    <label
-      for="invitePassword"
-      style="
-        display:block;
-        margin-bottom:6px;
-        font-size:14px;
-        font-weight:600;
-      "
-    >
-      パスワード
-    </label>
+    <div class="email-input-group">
 
-    <div
-      style="
-        position:relative;
-        width:100%;
-      "
-    >
+      <label for="invitePassword">
+        パスワード
+      </label>
 
-      <input
-        type="password"
-        id="invitePassword"
-        autocomplete="new-password"
-        placeholder="パスワード"
-        style="
-          width:100%;
-          box-sizing:border-box;
-          padding-right:45px;
-        "
-      >
+      <div class="password-input-wrapper">
 
-      <button
-        type="button"
-        id="toggleInvitePassword"
-        aria-label="パスワードを表示"
-        style="
-          position:absolute;
-          right:10px;
-          top:50%;
-          transform:translateY(-50%);
-          border:none;
-          background:transparent;
-          padding:5px;
-          cursor:pointer;
-        "
-      >
-        👁
-      </button>
+        <input
+          type="password"
+          id="invitePassword"
+          name="invitePassword"
+          autocomplete="new-password"
+          placeholder="パスワードを入力"
+        >
+
+        <button
+          type="button"
+          id="toggleInvitePassword"
+          class="password-toggle-button"
+          aria-label="パスワードを表示"
+          title="パスワードを表示"
+        >
+        </button>
+
+      </div>
 
     </div>
 
 
-    <!-- パスワード確認 -->
+    <!-- ==================================================
+         パスワード確認
+    ================================================== -->
 
-    <label
-      for="invitePasswordConfirm"
-      style="
-        display:block;
-        margin-top:14px;
-        margin-bottom:6px;
-        font-size:14px;
-        font-weight:600;
-      "
-    >
-      パスワード（確認）
-    </label>
+    <div class="email-input-group">
 
-    <div
-      style="
-        position:relative;
-        width:100%;
-      "
-    >
+      <label for="invitePasswordConfirm">
+        パスワード（確認）
+      </label>
 
-      <input
-        type="password"
-        id="invitePasswordConfirm"
-        autocomplete="new-password"
-        placeholder="もう一度入力してください"
-        style="
-          width:100%;
-          box-sizing:border-box;
-          padding-right:45px;
-        "
-      >
+      <div class="password-input-wrapper">
 
-      <button
-        type="button"
-        id="toggleInvitePasswordConfirm"
-        aria-label="確認用パスワードを表示"
-        style="
-          position:absolute;
-          right:10px;
-          top:50%;
-          transform:translateY(-50%);
-          border:none;
-          background:transparent;
-          padding:5px;
-          cursor:pointer;
-        "
-      >
-        👁
-      </button>
+        <input
+          type="password"
+          id="invitePasswordConfirm"
+          name="invitePasswordConfirm"
+          autocomplete="new-password"
+          placeholder="もう一度パスワードを入力"
+        >
+
+        <button
+          type="button"
+          id="toggleInvitePasswordConfirm"
+          class="password-toggle-button"
+          aria-label="確認用パスワードを表示"
+          title="確認用パスワードを表示"
+        >
+        </button>
+
+      </div>
 
     </div>
 
 
-    <!-- メール登録 -->
+    <!-- ==================================================
+         登録ボタン
+    ================================================== -->
 
     <button
       type="button"
       id="inviteEmailButton"
-      class="organization-auth-button"
-      style="
-        margin-top:18px;
-      "
+      class="email-login-button"
     >
       メールアドレスで登録
     </button>
+
 
   </div>
 
