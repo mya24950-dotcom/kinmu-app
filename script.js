@@ -3429,25 +3429,28 @@ async function loginWithGoogle() {
     ----------------------------------------- */
 
     const params =
-      new URLSearchParams(
-        window.location.search
-      );
+  new URLSearchParams(window.location.search);
 
+const inviteToken =
+  params.get("invite");
 
-    const inviteToken =
-      params.get(
-        "invite"
-      );
+if (inviteToken) {
 
+  sessionStorage.setItem(
+    "pendingInviteToken",
+    inviteToken
+  );
 
-    if (inviteToken) {
+  localStorage.setItem(
+    "pendingInviteToken",
+    inviteToken
+  );
 
-      sessionStorage.setItem(
-        "pendingInviteToken",
-        inviteToken
-      );
-
-    }
+  console.log(
+    "★ ログイン前に招待トークンを保存",
+    inviteToken
+  );
+}
 
 
     /* -----------------------------------------
