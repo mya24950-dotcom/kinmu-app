@@ -2093,97 +2093,359 @@
     ================================================== -->
 
     <div
-      id="inviteRegisterView"
-      style="display:none;"
-    >
+  id="inviteRegisterView"
+  style="display:none;"
+>
 
-      <h2 class="invite-register-title">
-        職員アカウント登録
-      </h2>
-
-
-      <div class="invite-social-title">
-
-        <div class="invite-social-title-line"></div>
-
-        <span class="invite-social-title-text">
-          登録方法を選択
-        </span>
-
-        <div class="invite-social-title-line"></div>
-
-      </div>
+  <h2 class="invite-register-title">
+    職員アカウント登録
+  </h2>
 
 
-      <div class="invite-social-buttons">
+  <!-- 登録方法 -->
+  <div class="invite-social-title">
+
+    <div class="invite-social-title-line"></div>
+
+    <span class="invite-social-title-text">
+      登録方法を選択
+    </span>
+
+    <div class="invite-social-title-line"></div>
+
+  </div>
 
 
-        <!-- Google -->
+  <!-- =====================================================
+       Google / Apple / Azure
+       ===================================================== -->
 
-        <div class="social-login-item">
-
-          <button
-            type="button"
-            id="inviteGoogleButton"
-            class="social-login-button"
-            aria-label="Googleで登録"
-            title="Googleで登録"
-          >
-
-            <svg
-              width="22"
-              height="22"
-              viewBox="0 0 48 48"
-              aria-hidden="true"
-            >
-
-              <path
-                fill="#4285F4"
-                d="M46.98 24.55c0-1.64-.15-3.22-.43-4.73H24v9.08h12.86c-.55 2.96-2.18 5.46-4.64 7.14l7.52 5.84C44.15 37.7 46.98 31.66 46.98 24.55z"
-              />
-
-              <path
-                fill="#34A853"
-                d="M24 48c6.48 0 11.92-2.14 15.9-5.82l-7.52-5.84c-2.08 1.4-4.73 2.23-8.38 2.23-6.28 0-11.57-3.57-13.48-8.78l-7.96 6.18C6.51 42.62 14.61 48 24 48z"
-              />
-
-              <path
-                fill="#FBBC05"
-                d="M10.52 28.4A14.47 14.47 0 0 1 9.5 24c0-1.53.26-3.02.73-4.4l-7.96-6.18A23.9 23.9 0 0 0 0 24c0 3.84.92 7.48 2.56 10.58l7.96-6.18z"
-              />
-
-              <path
-                fill="#EA4335"
-                d="M24 9.5c3.54 0 6.72 1.22 9.22 3.6l6.84-6.84C35.9 2.56 30.47 0 24 0 14.61 0 6.51 5.38 2.56 13.22l7.96 6.18C12.43 13.07 17.72 9.5 24 9.5z"
-              />
-
-            </svg>
-
-          </button>
-
-          <span class="social-login-label">
-            Google
-          </span>
-
-        </div>
+  <div class="invite-social-buttons">
 
 
-      </div>
+    <!-- Google -->
 
+    <div class="social-login-item">
 
       <button
         type="button"
-        id="inviteEmailButton"
-        class="organization-auth-button"
-        style="margin-top:12px;"
+        id="inviteGoogleButton"
+        class="social-login-button"
+        aria-label="Googleで登録"
+        title="Googleで登録"
       >
-        メールアドレスで登録
+
+        <svg
+          width="25"
+          height="25"
+          viewBox="0 0 48 48"
+          aria-hidden="true"
+        >
+
+          <path
+            fill="#4285F4"
+            d="M46.98 24.55c0-1.64-.15-3.22-.43-4.73H24v9.08h12.86c-.55 2.96-2.18 5.46-4.64 7.14l7.52 5.84C44.15 37.7 46.98 31.66 46.98 24.55z"
+          />
+
+          <path
+            fill="#34A853"
+            d="M24 48c6.48 0 11.92-2.14 15.9-5.82l-7.52-5.84c-2.08 1.4-4.73 2.23-8.38 2.23-6.28 0-11.57-3.57-13.48-8.78l-7.96 6.18C6.51 42.62 14.61 48 24 48z"
+          />
+
+          <path
+            fill="#FBBC05"
+            d="M10.52 28.4A14.47 14.47 0 0 1 9.5 24c0-1.53.26-3.02.73-4.4l-7.96-6.18A23.9 23.9 0 0 0 0 24c0 3.84.92 7.48 2.56 10.58l7.96-6.18z"
+          />
+
+          <path
+            fill="#EA4335"
+            d="M24 9.5c3.54 0 6.72 1.22 9.22 3.6l6.84-6.84C35.9 2.56 30.47 0 24 0 14.61 0 6.51 5.38 2.56 13.22l7.96 6.18C12.43 13.07 17.72 9.5 24 9.5z"
+          />
+
+        </svg>
+
       </button>
 
-
-      <p id="inviteRegisterMessage"></p>
+      <span class="social-login-label">
+        Google
+      </span>
 
     </div>
+
+
+    <!-- =================================================
+         Apple
+         ================================================= -->
+
+    <div class="social-login-item">
+
+      <button
+        type="button"
+        id="inviteAppleButton"
+        class="social-login-button"
+        aria-label="Appleで登録"
+        title="Apple登録は準備中です"
+        disabled
+        style="
+          opacity:0.35;
+          cursor:not-allowed;
+        "
+      >
+
+        <svg
+          width="25"
+          height="25"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+
+          <path
+            fill="#000000"
+            d="M17.05 12.54c-.02-2.09 1.71-3.1 1.79-3.15-.98-1.43-2.5-1.63-3.04-1.65-1.29-.14-2.54.77-3.2.77-.67 0-1.7-.76-2.8-.74-1.44.02-2.76.84-3.5 2.12-1.5 2.6-.38 6.43 1.05 8.53.7 1.03 1.51 2.18 2.59 2.14 1.05-.04 1.45-.68 2.73-.68 1.27 0 1.64.68 2.74.66 1.14-.02 1.84-1.04 2.52-2.08.8-1.17 1.13-2.3 1.15-2.36-.03-.01-2.21-.85-2.23-3.56z"
+          />
+
+          <path
+            fill="#000000"
+            d="M14.92 6.35c.58-.7.97-1.67.86-2.65-.84.03-1.86.56-2.46 1.25-.54.62-1.01 1.61-.88 2.56.94.07 1.9-.48 2.48-1.16z"
+          />
+
+        </svg>
+
+      </button>
+
+      <span
+        class="social-login-label"
+        style="color:#aaa;"
+      >
+        Apple
+      </span>
+
+    </div>
+
+
+    <!-- =================================================
+         Azure
+         ================================================= -->
+
+    <div class="social-login-item">
+
+      <button
+        type="button"
+        id="inviteAzureButton"
+        class="social-login-button"
+        aria-label="Azureで登録"
+        title="Azure登録は準備中です"
+        disabled
+        style="
+          opacity:0.35;
+          cursor:not-allowed;
+        "
+      >
+
+        <svg
+          width="25"
+          height="25"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+
+          <path
+            fill="#0078D4"
+            d="M11.42 2H18L11.6 18.1H5L11.42 2z"
+          />
+
+          <path
+            fill="#0078D4"
+            d="M12.4 18.1H20L14.1 11.3l-1.7 4.3 0 2.5z"
+          />
+
+        </svg>
+
+      </button>
+
+      <span
+        class="social-login-label"
+        style="color:#aaa;"
+      >
+        Azure
+      </span>
+
+    </div>
+
+
+  </div>
+
+
+  <!-- =====================================================
+       メールアドレス登録
+       ===================================================== -->
+
+  <div
+    class="invite-email-register"
+    style="
+      margin-top:24px;
+      text-align:left;
+    "
+  >
+
+    <!-- メールアドレス -->
+
+    <label
+      for="inviteEmail"
+      style="
+        display:block;
+        margin-bottom:6px;
+        font-size:14px;
+        font-weight:600;
+      "
+    >
+      メールアドレス
+    </label>
+
+    <input
+      type="email"
+      id="inviteEmail"
+      autocomplete="email"
+      placeholder="メールアドレス"
+      style="
+        width:100%;
+        box-sizing:border-box;
+        margin-bottom:14px;
+      "
+    >
+
+
+    <!-- パスワード -->
+
+    <label
+      for="invitePassword"
+      style="
+        display:block;
+        margin-bottom:6px;
+        font-size:14px;
+        font-weight:600;
+      "
+    >
+      パスワード
+    </label>
+
+    <div
+      style="
+        position:relative;
+        width:100%;
+      "
+    >
+
+      <input
+        type="password"
+        id="invitePassword"
+        autocomplete="new-password"
+        placeholder="パスワード"
+        style="
+          width:100%;
+          box-sizing:border-box;
+          padding-right:45px;
+        "
+      >
+
+      <button
+        type="button"
+        id="toggleInvitePassword"
+        aria-label="パスワードを表示"
+        style="
+          position:absolute;
+          right:10px;
+          top:50%;
+          transform:translateY(-50%);
+          border:none;
+          background:transparent;
+          padding:5px;
+          cursor:pointer;
+        "
+      >
+        👁
+      </button>
+
+    </div>
+
+
+    <!-- パスワード確認 -->
+
+    <label
+      for="invitePasswordConfirm"
+      style="
+        display:block;
+        margin-top:14px;
+        margin-bottom:6px;
+        font-size:14px;
+        font-weight:600;
+      "
+    >
+      パスワード（確認）
+    </label>
+
+    <div
+      style="
+        position:relative;
+        width:100%;
+      "
+    >
+
+      <input
+        type="password"
+        id="invitePasswordConfirm"
+        autocomplete="new-password"
+        placeholder="もう一度入力してください"
+        style="
+          width:100%;
+          box-sizing:border-box;
+          padding-right:45px;
+        "
+      >
+
+      <button
+        type="button"
+        id="toggleInvitePasswordConfirm"
+        aria-label="確認用パスワードを表示"
+        style="
+          position:absolute;
+          right:10px;
+          top:50%;
+          transform:translateY(-50%);
+          border:none;
+          background:transparent;
+          padding:5px;
+          cursor:pointer;
+        "
+      >
+        👁
+      </button>
+
+    </div>
+
+
+    <!-- メール登録 -->
+
+    <button
+      type="button"
+      id="inviteEmailButton"
+      class="organization-auth-button"
+      style="
+        margin-top:18px;
+      "
+    >
+      メールアドレスで登録
+    </button>
+
+  </div>
+
+
+  <!-- メッセージ -->
+
+  <p id="inviteRegisterMessage"></p>
+
+
+</div>
 
 
     <!-- ==================================================
