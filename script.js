@@ -1,4 +1,4 @@
-alert("012");
+alert("013");
 
 /* ==================================================
    Supabase
@@ -736,13 +736,14 @@ console.log(
 
 
     let storedInviteToken =
-      currentUrlInviteToken ||
-      sessionStorage.getItem(
-        "pendingInviteToken"
-      ) ||
-      localStorage.getItem(
-        "pendingInviteToken"
-      );
+  currentUrlInviteToken ||
+  cookieInviteToken ||
+  sessionStorage.getItem(
+    "pendingInviteToken"
+  ) ||
+  localStorage.getItem(
+    "pendingInviteToken"
+  );
 
 
     console.log(
@@ -4350,6 +4351,9 @@ async function handleInviteAfterLogin(
     localStorage.removeItem(
       "pendingInviteToken"
     );
+
+     document.cookie =
+  "shiftInviteToken=; path=/; max-age=0; SameSite=Lax";
 
 
     /* ------------------------------------------------
