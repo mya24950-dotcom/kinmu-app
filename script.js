@@ -433,24 +433,24 @@ async function init() {
 
 
     const urlInviteToken =
-      urlParams.get(
-        "invite"
-      );
+  urlParams.get("invite");
 
+if (urlInviteToken) {
 
-    if (urlInviteToken) {
+  sessionStorage.setItem(
+    "pendingInviteToken",
+    urlInviteToken
+  );
 
-      sessionStorage.setItem(
-        "pendingInviteToken",
-        urlInviteToken
-      );
+  localStorage.setItem(
+    "pendingInviteToken",
+    urlInviteToken
+  );
 
-
-      console.log(
-        "★ 招待トークンを保存しました"
-      );
-
-    }
+  console.log(
+    "★ 招待トークンを保存しました"
+  );
+}
 
 
     /* ------------------------------------------------
