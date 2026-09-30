@@ -582,7 +582,7 @@ async function init() {
 
         for (
           let i = 0;
-          i < 50 && !session;
+          i < 10 && !session;
           i++
         ) {
 
@@ -671,6 +671,15 @@ async function init() {
       "★ ログイン済み:",
       session.user.email
     );
+
+     alert(
+  "ログイン確認\n\n" +
+  "メール: " +
+  session.user.email +
+  "\n\n" +
+  "User ID: " +
+  session.user.id
+);
 
 
     sessionStorage.removeItem(
