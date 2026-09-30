@@ -2131,16 +2131,20 @@ body.loading-active #loginPage {
 
 .social-login-buttons,
 .social-buttons {
-  width: 100%;
+  width: 100% !important;
 
-  display: flex;
+  display: flex !important;
 
-  align-items: flex-start;
-  justify-content: center;
+  flex-direction: row !important;
 
-  gap: 35px;
+  align-items: flex-start !important;
+  justify-content: center !important;
 
-  margin: 0 0 22px;
+  gap: 35px !important;
+
+  margin: 0 0 22px !important;
+
+  box-sizing: border-box !important;
 }
 
 
@@ -2149,16 +2153,23 @@ body.loading-active #loginPage {
    --------------------------------------------------------- */
 
 .social-login-item {
-  width: 50px;
+  width: 50px !important;
+  min-width: 50px !important;
+  max-width: 50px !important;
 
-  display: flex;
+  display: flex !important;
 
-  flex-direction: column;
+  flex-direction: column !important;
 
-  align-items: center;
-  justify-content: flex-start;
+  align-items: center !important;
+  justify-content: flex-start !important;
 
-  flex-shrink: 0;
+  flex: 0 0 50px !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  box-sizing: border-box !important;
 }
 
 
@@ -2167,33 +2178,36 @@ body.loading-active #loginPage {
    --------------------------------------------------------- */
 
 .social-login-button {
-  width: 50px;
-  min-width: 50px;
+  width: 50px !important;
+  min-width: 50px !important;
+  max-width: 50px !important;
 
-  height: 50px;
-  min-height: 50px;
+  height: 50px !important;
+  min-height: 50px !important;
+  max-height: 50px !important;
 
-  padding: 0;
+  padding: 0 !important;
+  margin: 0 !important;
 
-  display: flex;
+  display: flex !important;
 
-  align-items: center;
-  justify-content: center;
+  align-items: center !important;
+  justify-content: center !important;
 
-  border: 1px solid #d8d8dd;
+  border: 1px solid #d8d8dd !important;
 
-  border-radius: 50%;
+  border-radius: 50% !important;
 
-  background: #ffffff;
+  background: #ffffff !important;
 
   box-shadow:
-    0 2px 7px rgba(0, 0, 0, 0.08);
+    0 2px 7px rgba(0, 0, 0, 0.08) !important;
 
   cursor: pointer;
 
   -webkit-tap-highlight-color: transparent;
 
-  box-sizing: border-box;
+  box-sizing: border-box !important;
 }
 
 
@@ -2203,8 +2217,11 @@ body.loading-active #loginPage {
 
 .social-login-button img,
 .social-login-button svg {
-  width: 25px;
-  height: 25px;
+  width: 25px !important;
+  height: 25px !important;
+
+  max-width: 25px !important;
+  max-height: 25px !important;
 
   object-fit: contain;
 }
@@ -2215,17 +2232,20 @@ body.loading-active #loginPage {
    --------------------------------------------------------- */
 
 .social-login-label {
-  display: block;
+  display: block !important;
 
-  margin-top: 7px;
+  width: auto !important;
 
-  font-size: 11px;
+  margin-top: 7px !important;
+  padding: 0 !important;
 
-  line-height: 1.2;
+  font-size: 11px !important;
 
-  text-align: center;
+  line-height: 1.2 !important;
 
-  white-space: nowrap;
+  text-align: center !important;
+
+  white-space: nowrap !important;
 
   color: #555555;
 }
@@ -2263,6 +2283,79 @@ body.loading-active #loginPage {
 
 .social-login-button:disabled:active {
   transform: none;
+}
+
+
+/* =========================================================
+   スマートフォン
+   ========================================================= */
+
+@media (max-width: 480px) {
+
+  .social-login-buttons,
+  .social-buttons {
+    width: 100% !important;
+
+    display: flex !important;
+
+    flex-direction: row !important;
+
+    align-items: flex-start !important;
+    justify-content: center !important;
+
+    gap: 30px !important;
+
+    margin: 0 0 22px !important;
+  }
+
+
+  .social-login-item {
+    width: 50px !important;
+    min-width: 50px !important;
+    max-width: 50px !important;
+
+    flex: 0 0 50px !important;
+  }
+
+
+  .social-login-button {
+    width: 50px !important;
+    min-width: 50px !important;
+    max-width: 50px !important;
+
+    height: 50px !important;
+    min-height: 50px !important;
+    max-height: 50px !important;
+  }
+
+
+  .social-login-button img,
+  .social-login-button svg {
+    width: 25px !important;
+    height: 25px !important;
+  }
+
+
+  .social-login-label {
+    font-size: 11px !important;
+
+    margin-top: 7px !important;
+  }
+
+}
+
+
+/* =========================================================
+   さらに小さいスマートフォン
+   ========================================================= */
+
+@media (max-width: 380px) {
+
+  .social-login-buttons,
+  .social-buttons {
+    gap: 22px !important;
+  }
+
 }
 
 
