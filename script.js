@@ -12673,32 +12673,20 @@ function renderShiftList() {
 async function addOrUpdateLeave() {
 
   const nameInput =
-    document.getElementById(
-      "leaveNameInput"
-    );
-
+    document.getElementById("leaveNameInput");
 
   const colorInput =
-    document.getElementById(
-      "leaveColorInput"
-    );
-
+    document.getElementById("leaveColorInput");
 
   if (!nameInput) {
-
     return;
-
   }
-
 
   const name =
     nameInput.value.trim();
 
-
   const color =
-    colorInput?.value ||
-    "#FFD54F";
-
+    colorInput?.value || "#FFD54F";
 
   if (!name) {
 
@@ -12707,9 +12695,11 @@ async function addOrUpdateLeave() {
     );
 
     return;
-
   }
 
+  /* ==================================================
+     重複チェック
+  ================================================== */
 
   const duplicate =
     appData.leaveTypes.some(
@@ -12719,7 +12709,6 @@ async function addOrUpdateLeave() {
           String(editingLeaveId)
     );
 
-
   if (duplicate) {
 
     alert(
@@ -12727,9 +12716,7 @@ async function addOrUpdateLeave() {
     );
 
     return;
-
   }
-
 
   if (!supabaseClient) {
 
@@ -12738,19 +12725,17 @@ async function addOrUpdateLeave() {
     );
 
     return;
-
   }
 
-
-  cloudOperationBusy =
-    true;
-
+  cloudOperationBusy = true;
 
   try {
 
-    if (
-      editingLeaveId
-    ) {
+    /* ==================================================
+       編集
+    ================================================== */
+
+    if (editingLeaveId) {
 
       const oldLeave =
         appData.leaveTypes.find(
@@ -12759,127 +12744,128 @@ async function addOrUpdateLeave() {
             String(editingLeaveId)
         );
 
+      console.log(
+        "★ 休暇名編集開始",
+        {
+          id: editingLeaveId,
+          oldName:
+            oldLeave
+              ? oldLeave.name
+              : "",
+          newName: name,
+          color
+        }
+      );
 
       const result =
-        await supabaseClient
-          .from("leave_types")
-          .update({
+        await supabaseClient.rpc(
+          "update_leave_type",
+          {
+            p_leave_id:
+              editingLeaveId,
 
-            name,
+            p_old_name:
+              oldLeave
+                ? oldLeave.name
+                : name,
 
-            color
+            p_new_name:
+              name,
 
-          })
-          .eq(
-            "id",
-            editingLeaveId
-          );
+            p_color:
+              color
+          }
+        );
 
+      console.log(
+        "★ 休暇名編集RPC結果",
+        result
+      );
 
-      if (
-        result.error
-      ) {
-
+      if (result.error) {
         throw result.error;
-
       }
 
+      editingLeaveId = null;
 
-      if (
-        oldLeave &&
-        oldLeave.name !== name
-      ) {
+      console.log(
+        "★ 休暇名編集成功"
+      );
 
-        const workResult =
-          await supabaseClient
-            .from("work_shifts")
-            .update({
+    }
 
-              leave_type:
-                name
+    /* ==================================================
+       新規追加
+    ================================================== */
 
-            })
-            .eq(
-              "leave_type",
-              oldLeave.name
-            );
+    else {
 
-
-        if (
-          workResult.error
-        ) {
-
-          throw workResult.error;
-
+      console.log(
+        "★ 休暇新規追加開始",
+        {
+          name,
+          color
         }
-
-      }
-
-
-      editingLeaveId =
-        null;
-
-    } else {
+      );
 
       const result =
         await supabaseClient
           .from("leave_types")
           .insert({
-
             name,
-
             color,
-
-             organization_id:
-        currentOrganization.id
-
+            organization_id:
+              currentOrganization.id
           });
 
+      console.log(
+        "★ 休暇新規追加結果",
+        result
+      );
 
-      if (
-        result.error
-      ) {
-
+      if (result.error) {
         throw result.error;
-
       }
 
+      console.log(
+        "★ 休暇新規追加成功"
+      );
     }
 
+    /* ==================================================
+       入力欄をリセット
+    ================================================== */
 
-    nameInput.value =
-      "";
-
+    nameInput.value = "";
 
     if (colorInput) {
-
       colorInput.value =
         "#FFD54F";
-
     }
-
 
     const button =
       document.getElementById(
         "addLeaveButton"
       );
 
-
     if (button) {
-
       button.textContent =
         "休暇を追加";
-
     }
 
+    /* ==================================================
+       Supabaseから再読み込み
+    ================================================== */
 
     await loadAllFromSupabase();
 
+    /* ==================================================
+       画面再描画
+    ================================================== */
 
     renderLeaveList();
 
     renderSchedule();
-
 
   } catch (error) {
 
@@ -12887,7 +12873,6 @@ async function addOrUpdateLeave() {
       "休暇保存エラー",
       error
     );
-
 
     alert(
       "休暇の保存に失敗しました。"
@@ -12900,8 +12885,6 @@ async function addOrUpdateLeave() {
   }
 
 }
-
-
 /* ==================================================
    休暇一覧
 ================================================== */
