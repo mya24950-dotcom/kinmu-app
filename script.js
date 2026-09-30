@@ -13074,38 +13074,36 @@ function renderLeaveList() {
 
             try {
 
-              const workResult =
-                await supabaseClient
-                  .from("work_shifts")
-                  .update({
-
-                    leave_type:
-                      null
-
-                  })
-                  .eq(
-                    "leave_type",
-                    leave.name
-                  );
+              console.log(
+                "★ 休暇削除RPC開始",
+                {
+                  id: leave.id,
+                  name: leave.name
+                }
+              );
 
 
-              if (
-                workResult.error
-              ) {
-
-                throw workResult.error;
-
-              }
-
+              /* =================================================
+                 休暇削除RPC
+              ================================================= */
 
               const result =
-                await supabaseClient
-                  .from("leave_types")
-                  .delete()
-                  .eq(
-                    "id",
-                    leave.id
-                  );
+                await supabaseClient.rpc(
+                  "delete_leave_type",
+                  {
+                    p_leave_id:
+                      leave.id,
+
+                    p_leave_name:
+                      leave.name
+                  }
+                );
+
+
+              console.log(
+                "★ 休暇削除RPC結果",
+                result
+              );
 
 
               if (
@@ -13146,8 +13144,21 @@ function renderLeaveList() {
               }
 
 
+              console.log(
+                "★ 休暇削除成功"
+              );
+
+
+              /* =================================================
+                 Supabaseから再読み込み
+              ================================================= */
+
               await loadAllFromSupabase();
 
+
+              /* =================================================
+                 画面再描画
+              ================================================= */
 
               renderLeaveList();
 
