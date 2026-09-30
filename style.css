@@ -2138,7 +2138,7 @@ body.loading-active #loginPage {
   align-items: flex-start;
   justify-content: center;
 
-  gap: 35px;
+  gap: 100px;
 
   margin: 0 0 22px;
 }
