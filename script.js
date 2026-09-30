@@ -664,16 +664,60 @@ async function init() {
     ================================================= */
 
     const currentParams =
-      new URLSearchParams(
-        window.location.search
+  new URLSearchParams(
+    window.location.search
+  );
+
+const currentUrlInviteToken =
+  currentParams.get(
+    "invite"
+  );
+
+
+/* ------------------------------------------------
+   Cookieから招待トークンを復元
+------------------------------------------------ */
+
+let cookieInviteToken = null;
+
+const cookies =
+  document.cookie.split(";");
+
+for (const cookie of cookies) {
+
+  const trimmed =
+    cookie.trim();
+
+  if (
+    trimmed.startsWith(
+      "shiftInviteToken="
+    )
+  ) {
+
+    cookieInviteToken =
+      decodeURIComponent(
+        trimmed.substring(
+          "shiftInviteToken=".length
+        )
       );
 
+    break;
 
-    const currentUrlInviteToken =
-      currentParams.get(
-        "invite"
-      );
+  }
 
+}
+
+
+console.log(
+  "★ 招待トークン復元確認",
+  {
+    url:
+      !!currentUrlInviteToken,
+
+    cookie:
+      !!cookieInviteToken
+  }
+);
 
     /* ------------------------------------------------
        一時確認
