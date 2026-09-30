@@ -758,7 +758,7 @@ input[type="date"] {
     minmax(0, 1fr)
     minmax(0, 1fr);
 
-  gap: 20px;
+  gap: 24px;
 
   align-items: start;
 }
@@ -767,13 +767,21 @@ input[type="date"] {
   width: 100%;
 }
 
+
+/* ---------------------------------------------------------
+   勤務時間入力
+   --------------------------------------------------------- */
+
 .time-row {
   display: flex;
   align-items: center;
 
-  gap: 8px;
+  gap: 10px;
 
   width: 100%;
+
+  margin-top: 8px;
+  margin-bottom: 14px;
 }
 
 .time-row > * {
@@ -781,19 +789,32 @@ input[type="date"] {
   min-width: 0;
 }
 
+
+/* ---------------------------------------------------------
+   明け時間入力
+   --------------------------------------------------------- */
+
 .ake-time-row {
   display: flex;
   align-items: center;
 
-  gap: 8px;
+  gap: 10px;
 
   width: 100%;
+
+  margin-top: 8px;
+  margin-bottom: 14px;
 }
 
 .ake-time-row > * {
   flex: 1 1 0;
   min-width: 0;
 }
+
+
+/* ---------------------------------------------------------
+   勤務形態一覧
+   --------------------------------------------------------- */
 
 .shift-list-card {
   width: 100%;
@@ -808,9 +829,12 @@ input[type="date"] {
   display: flex;
   align-items: center;
 
-  gap: 8px;
+  gap: 10px;
 
   width: 100%;
+
+  margin-top: 8px;
+  margin-bottom: 14px;
 }
 
 .date-row > * {
@@ -827,6 +851,8 @@ input[type="date"] {
   color: #6e6e73;
 
   font-size: 18px;
+
+  margin: 0 2px;
 }
 
 
