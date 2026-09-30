@@ -381,6 +381,10 @@ async function init() {
     );
 
 
+    /* ------------------------------------------------
+       OAuthログイン中フラグ
+    ------------------------------------------------ */
+
     const oauthLoginInProgress =
       sessionStorage.getItem(
         "oauthLoginInProgress"
@@ -419,92 +423,351 @@ async function init() {
     );
 
 
-    /* ------------------------------------------------
+    /* =================================================
        招待URL
+       ================================================= */
 
-       OAuthへ移動する前に
-       sessionStorageへ保存
-    ------------------------------------------------ */
+    const urlParams =
+      new URLSearchParams(
+        window.location.search
+      );
+
+
+    const urlInviteToken =
+      urlParams.get(
+        "invite"
+      );
+
+
+    /*
+     * URLに招待トークンがあれば
+     * OAuthへ移動する前に保存
+     */
+
+    if (urlInviteToken) {
+
+      sessionStorage.setItem(
+        "pendingInviteToken",
+        urlInviteToken
+      );
+
+      localStorage.setItem(
+        "pendingInviteToken",
+        urlInviteToken
+      );
+
+      console.log(
+        "★ URLから招待トークンを保存しました"
+      );
+
+    }
+
 
     /* =================================================
-   招待処理
-   ================================================= */
+       強制ログイン画面
+       ================================================= */
 
-const currentParams =
-  new URLSearchParams(
-    window.location.search
-  );
-
-
-const currentUrlInviteToken =
-  currentParams.get(
-    "invite"
-  );
+    const forceLoginScreen =
+      sessionStorage.getItem(
+        "forceLoginScreen"
+      );
 
 
-/*
- * URLに招待トークンがあれば
- * まず保存する
- */
-if (currentUrlInviteToken) {
+    if (
+      forceLoginScreen ===
+      "true"
+    ) {
 
-  sessionStorage.setItem(
-    "pendingInviteToken",
-    currentUrlInviteToken
-  );
-
-  localStorage.setItem(
-    "pendingInviteToken",
-    currentUrlInviteToken
-  );
-
-  console.log(
-    "★ URLから招待トークンを保存しました"
-  );
-}
+      sessionStorage.removeItem(
+        "forceLoginScreen"
+      );
 
 
-/*
- * 保存済みの招待トークンを取得
- */
-const storedInviteToken =
-  sessionStorage.getItem(
-    "pendingInviteToken"
-  ) ||
-  localStorage.getItem(
-    "pendingInviteToken"
-  );
+      await supabaseClient.auth.signOut({
+        scope: "global"
+      });
 
 
-/*
- * 招待トークンが存在する場合は
- * 必ず招待受諾処理を実行する
- */
-if (storedInviteToken) {
-
-  console.log(
-    "★ 招待処理を開始します"
-  );
+      showLoginPage(
+        "ログインしてください。"
+      );
 
 
-  showInitialLoading(
-    "招待情報を確認しています…"
-  );
+      setupGoogleLogin();
+      setupAppleLogin();
+      setupPasskeyLogin();
+      setupNewOrganizationButton();
 
 
-  const inviteAccepted =
-    await handleInviteAfterLogin();
+      hideInitialLoading();
 
 
-  if (inviteAccepted) {
+      return;
+
+    }
+
+
+    /* =================================================
+       セッション取得
+       ================================================= */
+
+    let session =
+      null;
+
+
+    try {
+
+      const {
+        data,
+        error
+      } =
+        await supabaseClient.auth.getSession();
+
+
+      if (error) {
+
+        console.error(
+          "★ getSessionエラー",
+          error
+        );
+
+      }
+
+
+      session =
+        data?.session ||
+        null;
+
+    } catch (error) {
+
+      console.error(
+        "★ セッション取得エラー",
+        error
+      );
+
+    }
+
 
     console.log(
-      "★ 招待処理完了"
+      "★ 最初のセッション:",
+      session
     );
 
-  }
 
-}
+    /* =================================================
+       セッションがない場合
+
+       OAuthから戻った直後は
+       getSession()の反映に少し時間がかかる場合があるため、
+       OAuth中の場合だけ短時間確認する
+       ================================================= */
+
+    if (!session) {
+
+      const oauthLoginInProgressNow =
+        sessionStorage.getItem(
+          "oauthLoginInProgress"
+        );
+
+
+      if (
+        oauthLoginInProgressNow ===
+        "true"
+      ) {
+
+        showInitialLoading(
+          "ログイン情報を確認しています…"
+        );
+
+
+        for (
+          let i = 0;
+          i < 20 && !session;
+          i++
+        ) {
+
+          try {
+
+            const {
+              data
+            } =
+              await supabaseClient.auth.getSession();
+
+
+            session =
+              data?.session ||
+              null;
+
+
+            if (session) {
+              break;
+            }
+
+          } catch (error) {
+
+            console.error(
+              "★ OAuth復帰後のセッション取得エラー",
+              error
+            );
+
+          }
+
+
+          await new Promise(
+            resolve =>
+              setTimeout(
+                resolve,
+                150
+              )
+          );
+
+        }
+
+      }
+
+    }
+
+
+    /* =================================================
+       それでもセッションがない
+       ================================================= */
+
+    if (!session) {
+
+      console.log(
+        "★ ログインセッションが確認できませんでした"
+      );
+
+
+      showLoginPage(
+        "ログインしてください。"
+      );
+
+
+      setupGoogleLogin();
+      setupAppleLogin();
+      setupPasskeyLogin();
+      setupNewOrganizationButton();
+
+
+      hideInitialLoading();
+
+
+      return;
+
+    }
+
+
+    /* =================================================
+       ログイン済み
+       ================================================= */
+
+    console.log(
+      "★ ログイン済み:",
+      session.user.email
+    );
+
+
+    sessionStorage.removeItem(
+      "oauthLoginInProgress"
+    );
+
+
+    showInitialLoading(
+      "勤務表を読み込んでいます…"
+    );
+
+
+    /* =================================================
+       招待処理
+       ================================================= */
+
+    const currentParams =
+      new URLSearchParams(
+        window.location.search
+      );
+
+
+    const currentUrlInviteToken =
+      currentParams.get(
+        "invite"
+      );
+
+
+    /*
+     * 保存されている招待トークンを取得
+     *
+     * sessionStorageを優先し、
+     * なければlocalStorageから取得
+     */
+
+    let storedInviteToken =
+      sessionStorage.getItem(
+        "pendingInviteToken"
+      ) ||
+      localStorage.getItem(
+        "pendingInviteToken"
+      );
+
+
+    /*
+     * URLにあった場合は最新のものを使用
+     */
+
+    if (currentUrlInviteToken) {
+
+      storedInviteToken =
+        currentUrlInviteToken;
+
+    }
+
+
+    /*
+     * localStorageから取得した場合でも
+     * handleInviteAfterLogin()から確実に
+     * 読めるようsessionStorageにも保存
+     */
+
+    if (storedInviteToken) {
+
+      sessionStorage.setItem(
+        "pendingInviteToken",
+        storedInviteToken
+      );
+
+      localStorage.setItem(
+        "pendingInviteToken",
+        storedInviteToken
+      );
+
+
+      console.log(
+        "★ 招待トークンを確認しました"
+      );
+
+      console.log(
+        "★ 招待処理を開始します"
+      );
+
+
+      showInitialLoading(
+        "招待情報を確認しています…"
+      );
+
+
+      const inviteAccepted =
+        await handleInviteAfterLogin();
+
+
+      if (inviteAccepted) {
+
+        console.log(
+          "★ 招待処理完了"
+        );
+
+      }
+
+    }
 
 
     /* =================================================
@@ -841,6 +1104,7 @@ if (storedInviteToken) {
       setupAppleLogin();
       setupPasskeyLogin();
       setupNewOrganizationButton();
+
 
     } catch (
       loginError
