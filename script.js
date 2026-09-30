@@ -1,4 +1,4 @@
-alert("Shift+ JS VERSION = 005");
+alert("Shift+ JS VERSION = 006");
 
 /* ==================================================
    Supabase
@@ -3375,10 +3375,14 @@ async function registerWithEmail() {
 
 async function loginWithGoogle() {
 
+  alert(
+    "Googleログイン開始\n" +
+    "現在のURL:\n" +
+    window.location.href
+  );
+
   const button =
-    document.getElementById(
-      "googleLoginButton"
-    );
+    document.getElementById("googleLoginButton");
 
 
   try {
