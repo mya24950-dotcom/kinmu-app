@@ -1,4 +1,4 @@
-alert("014");
+alert("015");
 
 /* ==================================================
    Supabase
@@ -365,6 +365,10 @@ if (document.readyState === "loading") {
    初期化
 ================================================== */
 
+/* ==================================================
+   初期化
+================================================== */
+
 async function init() {
 
   try {
@@ -416,7 +420,7 @@ async function init() {
 
 
     /* --------------------------------------------------
-       現在のURLから招待トークン取得
+       現在のURL
     -------------------------------------------------- */
 
     const currentUrl =
@@ -424,6 +428,10 @@ async function init() {
         window.location.href
       );
 
+
+    /* --------------------------------------------------
+       URLから招待トークン取得
+    -------------------------------------------------- */
 
     const currentUrlInviteToken =
       currentUrl.searchParams.get(
@@ -439,6 +447,11 @@ async function init() {
       currentUrlInviteToken
     ) {
 
+      console.log(
+        "★ init: 招待トークンを保存"
+      );
+
+
       sessionStorage.setItem(
         "pendingInviteToken",
         currentUrlInviteToken
@@ -448,11 +461,6 @@ async function init() {
       localStorage.setItem(
         "pendingInviteToken",
         currentUrlInviteToken
-      );
-
-
-      console.log(
-        "★ init: 招待トークン保存"
       );
 
     }
@@ -486,9 +494,25 @@ async function init() {
       showLoginPage();
 
 
-      setupGoogleLogin();
+      if (
+        typeof setupGoogleLogin ===
+        "function"
+      ) {
 
-      setupAppleLogin();
+        setupGoogleLogin();
+
+      }
+
+
+      if (
+        typeof setupAppleLogin ===
+        "function"
+      ) {
+
+        setupAppleLogin();
+
+      }
+
 
       if (
         typeof setupAzureLogin ===
@@ -499,9 +523,25 @@ async function init() {
 
       }
 
-      setupPasskeyLogin();
 
-      setupNewOrganizationButton();
+      if (
+        typeof setupPasskeyLogin ===
+        "function"
+      ) {
+
+        setupPasskeyLogin();
+
+      }
+
+
+      if (
+        typeof setupNewOrganizationButton ===
+        "function"
+      ) {
+
+        setupNewOrganizationButton();
+
+      }
 
 
       hideInitialLoading();
@@ -524,9 +564,9 @@ async function init() {
       await supabaseClient.auth.getSession();
 
 
-    /* --------------------------------------------------
-       OAuthから戻った直後の待機
-    -------------------------------------------------- */
+    /* ==================================================
+       OAuthから戻った直後のセッション待機
+    ================================================== */
 
     if (
       !session &&
@@ -565,7 +605,7 @@ async function init() {
 
           console.log(
             "★ OAuthセッション取得成功",
-            i
+            i + 1
           );
 
           break;
@@ -591,9 +631,25 @@ async function init() {
       showLoginPage();
 
 
-      setupGoogleLogin();
+      if (
+        typeof setupGoogleLogin ===
+        "function"
+      ) {
 
-      setupAppleLogin();
+        setupGoogleLogin();
+
+      }
+
+
+      if (
+        typeof setupAppleLogin ===
+        "function"
+      ) {
+
+        setupAppleLogin();
+
+      }
+
 
       if (
         typeof setupAzureLogin ===
@@ -604,9 +660,25 @@ async function init() {
 
       }
 
-      setupPasskeyLogin();
 
-      setupNewOrganizationButton();
+      if (
+        typeof setupPasskeyLogin ===
+        "function"
+      ) {
+
+        setupPasskeyLogin();
+
+      }
+
+
+      if (
+        typeof setupNewOrganizationButton ===
+        "function"
+      ) {
+
+        setupNewOrganizationButton();
+
+      }
 
 
       hideInitialLoading();
@@ -618,7 +690,7 @@ async function init() {
 
 
     /* --------------------------------------------------
-       OAuthフラグ削除
+       OAuthログイン中フラグを削除
     -------------------------------------------------- */
 
     sessionStorage.removeItem(
@@ -634,11 +706,36 @@ async function init() {
 
     /* ==================================================
        招待処理
-       ★ 職場取得より先に必ず実行
+       ★ 必ず職場取得より先に実行
     ================================================== */
 
-    const inviteToken =
-      getPendingInviteToken();
+    let inviteToken = null;
+
+
+    if (
+      typeof getPendingInviteToken ===
+      "function"
+    ) {
+
+      inviteToken =
+        getPendingInviteToken();
+
+    } else {
+
+      /* ------------------------------------------------
+         念のため関数がない場合の予備処理
+      ------------------------------------------------ */
+
+      inviteToken =
+        currentUrlInviteToken ||
+        sessionStorage.getItem(
+          "pendingInviteToken"
+        ) ||
+        localStorage.getItem(
+          "pendingInviteToken"
+        );
+
+    }
 
 
     if (inviteToken) {
@@ -646,6 +743,18 @@ async function init() {
       console.log(
         "★ 招待トークンを検出"
       );
+
+
+      if (
+        typeof handleInviteAfterLogin !==
+        "function"
+      ) {
+
+        throw new Error(
+          "handleInviteAfterLogin が見つかりません"
+        );
+
+      }
 
 
       try {
@@ -670,15 +779,36 @@ async function init() {
         );
 
 
+        /*
+          招待登録に失敗した場合は、
+          所属なしの状態で先へ進ませない。
+        */
+
         await supabaseClient.auth.signOut();
 
 
         showLoginPage();
 
 
-        setupGoogleLogin();
+        if (
+          typeof setupGoogleLogin ===
+          "function"
+        ) {
 
-        setupAppleLogin();
+          setupGoogleLogin();
+
+        }
+
+
+        if (
+          typeof setupAppleLogin ===
+          "function"
+        ) {
+
+          setupAppleLogin();
+
+        }
+
 
         if (
           typeof setupAzureLogin ===
@@ -689,9 +819,25 @@ async function init() {
 
         }
 
-        setupPasskeyLogin();
 
-        setupNewOrganizationButton();
+        if (
+          typeof setupPasskeyLogin ===
+          "function"
+        ) {
+
+          setupPasskeyLogin();
+
+        }
+
+
+        if (
+          typeof setupNewOrganizationButton ===
+          "function"
+        ) {
+
+          setupNewOrganizationButton();
+
+        }
 
 
         hideInitialLoading();
@@ -798,6 +944,11 @@ async function init() {
        職場所属取得
     ================================================== */
 
+    console.log(
+      "★ 職場所属を取得します"
+    );
+
+
     currentOrganization =
       await getCurrentOrganization(
         session.user.id
@@ -817,9 +968,25 @@ async function init() {
       showLoginPage();
 
 
-      setupGoogleLogin();
+      if (
+        typeof setupGoogleLogin ===
+        "function"
+      ) {
 
-      setupAppleLogin();
+        setupGoogleLogin();
+
+      }
+
+
+      if (
+        typeof setupAppleLogin ===
+        "function"
+      ) {
+
+        setupAppleLogin();
+
+      }
+
 
       if (
         typeof setupAzureLogin ===
@@ -830,9 +997,25 @@ async function init() {
 
       }
 
-      setupPasskeyLogin();
 
-      setupNewOrganizationButton();
+      if (
+        typeof setupPasskeyLogin ===
+        "function"
+      ) {
+
+        setupPasskeyLogin();
+
+      }
+
+
+      if (
+        typeof setupNewOrganizationButton ===
+        "function"
+      ) {
+
+        setupNewOrganizationButton();
+
+      }
 
 
       hideInitialLoading();
@@ -892,6 +1075,10 @@ async function init() {
 
     bindEvents();
 
+
+    /* ==================================================
+       ログアウト
+    ================================================== */
 
     setupLogoutButton();
 
@@ -966,6 +1153,10 @@ async function init() {
 
   } catch (error) {
 
+    /* ==================================================
+       初期化エラー
+    ================================================== */
+
     console.error(
       "★ 初期化エラー",
       error
@@ -975,6 +1166,130 @@ async function init() {
     hideInitialLoading();
 
 
+    /*
+      ここでも各関数を直接呼ばず、
+      存在確認してから実行する。
+    */
+
+    try {
+
+      showLoginPage();
+
+    } catch (loginPageError) {
+
+      console.error(
+        "★ ログイン画面表示エラー",
+        loginPageError
+      );
+
+    }
+
+
+    try {
+
+      if (
+        typeof setupGoogleLogin ===
+        "function"
+      ) {
+
+        setupGoogleLogin();
+
+      }
+
+    } catch (googleError) {
+
+      console.error(
+        "★ Googleログイン設定エラー",
+        googleError
+      );
+
+    }
+
+
+    try {
+
+      if (
+        typeof setupAppleLogin ===
+        "function"
+      ) {
+
+        setupAppleLogin();
+
+      }
+
+    } catch (appleError) {
+
+      console.error(
+        "★ Appleログイン設定エラー",
+        appleError
+      );
+
+    }
+
+
+    try {
+
+      if (
+        typeof setupAzureLogin ===
+        "function"
+      ) {
+
+        setupAzureLogin();
+
+      }
+
+    } catch (azureError) {
+
+      console.error(
+        "★ Azureログイン設定エラー",
+        azureError
+      );
+
+    }
+
+
+    try {
+
+      if (
+        typeof setupPasskeyLogin ===
+        "function"
+      ) {
+
+        setupPasskeyLogin();
+
+      }
+
+    } catch (passkeyError) {
+
+      console.error(
+        "★ Passkeyログイン設定エラー",
+        passkeyError
+      );
+
+    }
+
+
+    try {
+
+      if (
+        typeof setupNewOrganizationButton ===
+        "function"
+      ) {
+
+        setupNewOrganizationButton();
+
+      }
+
+    } catch (organizationButtonError) {
+
+      console.error(
+        "★ 新規職場登録ボタン設定エラー",
+        organizationButtonError
+      );
+
+    }
+
+
     alert(
       "Shift+の起動に失敗しました。\n\n" +
       (
@@ -982,27 +1297,6 @@ async function init() {
         error
       )
     );
-
-
-    showLoginPage();
-
-
-    setupGoogleLogin();
-
-    setupAppleLogin();
-
-    if (
-      typeof setupAzureLogin ===
-      "function"
-    ) {
-
-      setupAzureLogin();
-
-    }
-
-    setupPasskeyLogin();
-
-    setupNewOrganizationButton();
 
   }
 
