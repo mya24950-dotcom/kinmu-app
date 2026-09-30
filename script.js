@@ -8132,25 +8132,50 @@ function createScheduleFixedLayers() {
       ) {
 
         const cloned =
-          staffCell.cloneNode(
-            true
-          );
+  staffCell.cloneNode(
+    true
+  );
 
 
-        cloned.style.position =
-          "static";
+cloned.style.position =
+  "static";
 
 
-        cloned.style.left =
-          "auto";
+cloned.style.left =
+  "auto";
 
 
-        cloned.style.top =
-          "auto";
+cloned.style.top =
+  "auto";
 
 
-        cloned.style.zIndex =
-          "1";
+cloned.style.zIndex =
+  "1";
+
+
+/* ==================================================
+   左上「職員」セルのダークモード対応
+================================================== */
+
+if (
+  document.body.classList.contains(
+    "dark-mode"
+  )
+) {
+
+  cloned.style.setProperty(
+    "background-color",
+    "#2c2c2e",
+    "important"
+  );
+
+  cloned.style.setProperty(
+    "color",
+    "#ffffff",
+    "important"
+  );
+
+}
 
 
         newRow.appendChild(
