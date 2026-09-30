@@ -1,4 +1,4 @@
-alert("Shift+ JS VERSION = 003");
+alert("Shift+ JS VERSION = 004");
 
 /* ==================================================
    Supabase
@@ -705,6 +705,12 @@ async function init() {
           !!storedInviteToken
       }
     );
+
+     alert(
+  "招待トークン確認\n" +
+  "storedInviteToken = " +
+  String(storedInviteToken)
+);
 
 
     if (storedInviteToken) {
