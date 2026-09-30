@@ -700,21 +700,26 @@ async function init() {
 
 
     const storedInviteToken =
-      sessionStorage.getItem(
-        "pendingInviteToken"
-      );
+  sessionStorage.getItem(
+    "pendingInviteToken"
+  ) ||
+  localStorage.getItem(
+    "pendingInviteToken"
+  );
 
 
-    if (
-      currentUrlInviteToken
-    ) {
+    if (currentUrlInviteToken) {
 
-      sessionStorage.setItem(
-        "pendingInviteToken",
-        currentUrlInviteToken
-      );
+  sessionStorage.setItem(
+    "pendingInviteToken",
+    currentUrlInviteToken
+  );
 
-    }
+  localStorage.setItem(
+    "pendingInviteToken",
+    currentUrlInviteToken
+  );
+}
 
 
     if (
