@@ -3447,22 +3447,32 @@ async function loginWithGoogle() {
 
     if (inviteToken) {
 
-      sessionStorage.setItem(
-        "pendingInviteToken",
-        inviteToken
-      );
+  sessionStorage.setItem(
+    "pendingInviteToken",
+    inviteToken
+  );
 
-      localStorage.setItem(
-        "pendingInviteToken",
-        inviteToken
-      );
+  localStorage.setItem(
+    "pendingInviteToken",
+    inviteToken
+  );
 
-      console.log(
-        "★ ログイン前に招待トークンを保存",
-        inviteToken
-      );
+  /*
+   * OAuthリダイレクト後も
+   * 招待トークンを保持するためCookieにも保存
+   */
 
-    }
+  document.cookie =
+    "shiftInviteToken=" +
+    encodeURIComponent(inviteToken) +
+    "; path=/; max-age=1800; SameSite=Lax";
+
+  console.log(
+    "★ ログイン前に招待トークンを保存",
+    inviteToken
+  );
+
+}
 
 
     /*
