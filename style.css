@@ -3551,6 +3551,19 @@ textarea:focus-visible {
 }
 
 /* =========================================================
+   ダークモード：勤務表 左上「職員」セル
+   ========================================================= */
+
+body.dark-mode #scheduleFixedHeader .staff-header,
+body.dark-mode #scheduleFixedHeaderTable .staff-header,
+body.dark-mode #scheduleFixedHeader th.staff-header,
+body.dark-mode #scheduleFixedHeaderTable th.staff-header {
+  background: #2c2c2e !important;
+  color: #ffffff !important;
+  opacity: 1 !important;
+}
+
+/* =========================================================
    ダークモード：勤務表 左上「職員」セル 完全指定
    ========================================================= */
 
