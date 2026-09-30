@@ -11546,33 +11546,41 @@ async function addOrUpdateShift() {
       ----------------------------------------------- */
 
       const result =
-        await supabaseClient
-          .from("shift_types")
-          .update({
+  await supabaseClient.rpc(
+    "update_shift_type",
+    {
+      p_shift_id:
+        oldShift.id,
 
-            name,
+      p_old_name:
+        oldName,
 
-            start:
-              start || null,
+      p_new_name:
+        name,
 
-            end:
-              end || null,
+      p_start_time:
+        start,
 
-            break:
-              breakTime || null
+      p_end_time:
+        end,
 
-          })
-          .eq(
-            "id",
-            oldShift.id
-          );
+      p_break_time:
+        breakTime
+    }
+  );
 
 
-      if (result.error) {
+console.log(
+  "★ 勤務形態編集RPC結果",
+  result
+);
 
-        throw result.error;
 
-      }
+if (result.error) {
+
+  throw result.error;
+
+}
 
 
       /* -----------------------------------------------
