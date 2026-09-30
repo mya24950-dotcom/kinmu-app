@@ -8048,7 +8048,7 @@ function createScheduleFixedLayers() {
 
 
   fixedStaff.style.background =
-    "#ffffff";
+  "transparent";
 
 
   fixedStaff.style.zIndex =
