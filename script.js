@@ -1,4 +1,4 @@
-console.log("★ Shift+ script.js VERSION = 20260930-01");
+alert("Shift+ JS VERSION = 20260930-01");
 
 /* ==================================================
    Supabase
