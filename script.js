@@ -370,20 +370,12 @@ async function init() {
 
     /* =================================================
        起動直後は必ずローディング画面を表示
-
-       Google / Apple / Azure / Passkey
-       から戻った場合も、ログイン画面を一瞬表示せず
-       そのままローディング画面を表示する
-       ================================================= */
+    ================================================= */
 
     showInitialLoading(
       "ログイン情報を確認しています…"
     );
 
-
-    /* ------------------------------------------------
-       OAuthログイン中フラグ
-    ------------------------------------------------ */
 
     const oauthLoginInProgress =
       sessionStorage.getItem(
@@ -409,10 +401,6 @@ async function init() {
       );
 
 
-    /* ------------------------------------------------
-       Supabaseクライアントをグローバルにも保持
-    ------------------------------------------------ */
-
     window.shiftSupabaseClient =
       supabaseClient;
 
@@ -425,7 +413,7 @@ async function init() {
 
     /* =================================================
        招待URL
-       ================================================= */
+    ================================================= */
 
     const urlParams =
       new URLSearchParams(
@@ -438,11 +426,6 @@ async function init() {
         "invite"
       );
 
-
-    /*
-     * URLに招待トークンがあれば
-     * OAuthへ移動する前に保存
-     */
 
     if (urlInviteToken) {
 
@@ -465,7 +448,7 @@ async function init() {
 
     /* =================================================
        強制ログイン画面
-       ================================================= */
+    ================================================= */
 
     const forceLoginScreen =
       sessionStorage.getItem(
@@ -509,7 +492,7 @@ async function init() {
 
     /* =================================================
        セッション取得
-       ================================================= */
+    ================================================= */
 
     let session =
       null;
@@ -555,12 +538,8 @@ async function init() {
 
 
     /* =================================================
-       セッションがない場合
-
-       OAuthから戻った直後は
-       getSession()の反映に少し時間がかかる場合があるため、
-       OAuth中の場合だけ短時間確認する
-       ================================================= */
+       OAuth復帰直後のセッション確認
+    ================================================= */
 
     if (!session) {
 
@@ -629,8 +608,8 @@ async function init() {
 
 
     /* =================================================
-       それでもセッションがない
-       ================================================= */
+       セッションがない
+    ================================================= */
 
     if (!session) {
 
@@ -660,7 +639,7 @@ async function init() {
 
     /* =================================================
        ログイン済み
-       ================================================= */
+    ================================================= */
 
     console.log(
       "★ ログイン済み:",
@@ -680,7 +659,7 @@ async function init() {
 
     /* =================================================
        招待処理
-       ================================================= */
+    ================================================= */
 
     const currentParams =
       new URLSearchParams(
@@ -694,14 +673,8 @@ async function init() {
       );
 
 
-    /*
-     * 保存されている招待トークンを取得
-     *
-     * sessionStorageを優先し、
-     * なければlocalStorageから取得
-     */
-
     let storedInviteToken =
+      currentUrlInviteToken ||
       sessionStorage.getItem(
         "pendingInviteToken"
       ) ||
@@ -710,40 +683,45 @@ async function init() {
       );
 
 
-    /*
-     * URLにあった場合は最新のものを使用
-     */
+    console.log(
+      "★ 招待トークン確認",
+      {
+        url:
+          !!currentUrlInviteToken,
 
-    if (currentUrlInviteToken) {
+        sessionStorage:
+          !!sessionStorage.getItem(
+            "pendingInviteToken"
+          ),
 
-      storedInviteToken =
-        currentUrlInviteToken;
+        localStorage:
+          !!localStorage.getItem(
+            "pendingInviteToken"
+          ),
 
-    }
+        final:
+          !!storedInviteToken
+      }
+    );
 
-
-    /*
-     * localStorageから取得した場合でも
-     * handleInviteAfterLogin()から確実に
-     * 読めるようsessionStorageにも保存
-     */
 
     if (storedInviteToken) {
+
+      /* ------------------------------------------------
+         Safari対策
+         ------------------------------------------------ */
 
       sessionStorage.setItem(
         "pendingInviteToken",
         storedInviteToken
       );
 
+
       localStorage.setItem(
         "pendingInviteToken",
         storedInviteToken
       );
 
-
-      console.log(
-        "★ 招待トークンを確認しました"
-      );
 
       console.log(
         "★ 招待処理を開始します"
@@ -756,7 +734,9 @@ async function init() {
 
 
       const inviteAccepted =
-        await handleInviteAfterLogin();
+        await handleInviteAfterLogin(
+          storedInviteToken
+        );
 
 
       if (inviteAccepted) {
@@ -772,7 +752,7 @@ async function init() {
 
     /* =================================================
        新規職場登録の続き
-       ================================================= */
+    ================================================= */
 
     const pendingOrganizationName =
       sessionStorage.getItem(
@@ -886,7 +866,7 @@ async function init() {
 
     /* =================================================
        現在の職場を取得
-       ================================================= */
+    ================================================= */
 
     showInitialLoading(
       "職場情報を読み込んでいます…"
@@ -968,11 +948,6 @@ async function init() {
 
 
     /* ------------------------------------------------
-       Passkey登録
-    ------------------------------------------------ */
-
-
-    /* ------------------------------------------------
        管理設定
     ------------------------------------------------ */
 
@@ -1017,9 +992,6 @@ async function init() {
 
     /* ------------------------------------------------
        アプリ表示
-
-       データを読み込んで描画が完了してから
-       勤務表を表示する
     ------------------------------------------------ */
 
     showApp();
@@ -1062,9 +1034,6 @@ async function init() {
 
     /* ------------------------------------------------
        初期ローディング終了
-
-       ここまで全部終わってから
-       ローディング画面を消す
     ------------------------------------------------ */
 
     hideInitialLoading();
@@ -4096,17 +4065,17 @@ function setupNewOrganizationButton() {
 
 }
 
-async function handleInviteAfterLogin() {
+async function handleInviteAfterLogin(
+  passedInviteToken = null
+) {
 
   try {
 
     /* =================================================
-       招待トークンを取得
+       招待トークン取得
 
-       SafariではOAuth復帰時に
-       sessionStorageが不安定になる場合があるため、
-       localStorageも確認する
-       ================================================= */
+       init()から直接渡されたトークンを最優先
+    ================================================= */
 
     const urlParams =
       new URLSearchParams(
@@ -4133,6 +4102,7 @@ async function handleInviteAfterLogin() {
 
 
     const inviteToken =
+      passedInviteToken ||
       urlInviteToken ||
       sessionInviteToken ||
       localInviteToken;
@@ -4141,6 +4111,9 @@ async function handleInviteAfterLogin() {
     console.log(
       "★ 招待トークン確認",
       {
+        passed:
+          !!passedInviteToken,
+
         url:
           !!urlInviteToken,
 
@@ -4150,7 +4123,7 @@ async function handleInviteAfterLogin() {
         localStorage:
           !!localInviteToken,
 
-        hasInviteToken:
+        final:
           !!inviteToken
       }
     );
@@ -4163,8 +4136,9 @@ async function handleInviteAfterLogin() {
     if (!inviteToken) {
 
       console.log(
-        "★ 招待トークンが見つかりません"
+        "★ 招待トークンがありません"
       );
+
 
       return false;
 
@@ -4172,11 +4146,7 @@ async function handleInviteAfterLogin() {
 
 
     /* ------------------------------------------------
-       Safari対策
-
-       見つかったトークンを
-       sessionStorage / localStorage
-       の両方へ戻す
+       トークンを両方へ保存
     ------------------------------------------------ */
 
     sessionStorage.setItem(
@@ -4191,14 +4161,14 @@ async function handleInviteAfterLogin() {
     );
 
 
+    /* =================================================
+       招待受諾
+    ================================================= */
+
     console.log(
       "★ accept_staff_invite を実行します"
     );
 
-
-    /* =================================================
-       招待受諾
-       ================================================= */
 
     const {
       data,
@@ -4281,7 +4251,7 @@ async function handleInviteAfterLogin() {
 
 
     /* ------------------------------------------------
-       使用済みになった招待トークンを削除
+       招待トークン削除
     ------------------------------------------------ */
 
     sessionStorage.removeItem(
