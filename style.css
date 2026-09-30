@@ -2138,7 +2138,7 @@ body.loading-active #loginPage {
   align-items: flex-start;
   justify-content: center;
 
-  gap: 100px;
+  gap: 35px;
 
   margin: 0 0 22px;
 }
@@ -2203,8 +2203,8 @@ body.loading-active #loginPage {
 
 .social-login-button img,
 .social-login-button svg {
-  width: 22px;
-  height: 22px;
+  width: 25px;
+  height: 25px;
 
   object-fit: contain;
 }
@@ -2292,7 +2292,7 @@ body.dark-mode .social-login-label {
 
   .social-login-buttons,
   .social-buttons {
-    gap: 32px;
+    gap: 90px;
   }
 
   .social-login-item {
