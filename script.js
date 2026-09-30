@@ -582,7 +582,7 @@ async function init() {
 
         for (
           let i = 0;
-          i < 10 && !session;
+          i < 50 && !session;
           i++
         ) {
 
