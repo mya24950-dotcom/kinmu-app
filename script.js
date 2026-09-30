@@ -13301,35 +13301,37 @@ async function addCompanyHoliday() {
 );
 
       const result =
-        await supabaseClient
-          .from("company_holidays")
-          .update({
+  await supabaseClient.rpc(
+    "update_company_holiday",
+    {
+      p_holiday_id:
+        editingHolidayId,
 
-            name,
+      p_name:
+        name,
 
-            start_date:
-              start,
+      p_start_date:
+        start,
 
-            end_date:
-              end
-
-             
-
-          })
-          .eq(
-            "id",
-            editingHolidayId
-          );
+      p_end_date:
+        end
+    }
+  );
 
 
-      if (
-        result.error
-      ) {
+console.log(
+  "★ 休業設定編集RPC結果",
+  result
+);
 
-        throw result.error;
 
-      }
+if (
+  result.error
+) {
 
+  throw result.error;
+
+}
 
       editingHolidayId =
         null;
