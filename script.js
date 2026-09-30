@@ -672,15 +672,6 @@ async function init() {
       session.user.email
     );
 
-     alert(
-  "ログイン確認\n\n" +
-  "メール: " +
-  session.user.email +
-  "\n\n" +
-  "User ID: " +
-  session.user.id
-);
-
 
     sessionStorage.removeItem(
       "oauthLoginInProgress"
