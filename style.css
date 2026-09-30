@@ -776,7 +776,7 @@ input[type="date"] {
   display: flex;
   align-items: center;
 
-  gap: 10px;
+  gap: 6px;
 
   width: 100%;
 
@@ -798,7 +798,7 @@ input[type="date"] {
   display: flex;
   align-items: center;
 
-  gap: 10px;
+  gap: 6px;
 
   width: 100%;
 
@@ -829,14 +829,13 @@ input[type="date"] {
   display: flex;
   align-items: center;
 
-  gap: 10px;
+  gap: 6px;
 
   width: 100%;
 
   margin-top: 8px;
   margin-bottom: 14px;
 }
-
 .date-row > * {
   min-width: 0;
 }
@@ -3495,4 +3494,58 @@ textarea:focus-visible {
 
   cursor: pointer;
   box-sizing: border-box;
+}
+
+/* =========================================================
+   スマートフォン用
+   ========================================================= */
+
+@media (max-width: 700px) {
+
+  .shift-layout {
+    grid-template-columns: 1fr;
+
+    gap: 20px;
+  }
+
+
+  /* 勤務時間 */
+
+  .time-row,
+  .ake-time-row {
+    gap: 5px;
+
+    margin-top: 10px;
+    margin-bottom: 16px;
+  }
+
+
+  /* 休業日 */
+
+  .date-row {
+    gap: 5px;
+
+    margin-top: 10px;
+    margin-bottom: 16px;
+  }
+
+
+  /* スマホでは入力欄を少し高くする */
+
+  .time-row input,
+  .ake-time-row input,
+  .date-row input {
+    min-height: 44px;
+    box-sizing: border-box;
+  }
+
+
+  /* 「～」の余白を詰める */
+
+  .date-arrow {
+    margin: 0;
+    padding: 0;
+    font-size: 17px;
+  }
+
 }
