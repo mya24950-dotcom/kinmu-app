@@ -1,4 +1,4 @@
-alert("Shift+ JS VERSION = 002");
+alert("Shift+ JS VERSION = 003");
 
 /* ==================================================
    Supabase
@@ -4073,6 +4073,11 @@ async function handleInviteAfterLogin(
 
   try {
 
+     console.log(
+  "★★★ INVITE FUNCTION START ★★★",
+  passedInviteToken
+);
+
     /* =================================================
        招待トークン取得
 
@@ -4170,6 +4175,17 @@ async function handleInviteAfterLogin(
     console.log(
       "★ accept_staff_invite を実行します"
     );
+
+     alert(
+  "招待処理を実行します\n" +
+  "トークンあり: " +
+  (!!inviteToken)
+);
+
+     console.log(
+  "★★★ RPC accept_staff_invite START ★★★",
+  inviteToken
+);
 
 
     const {
