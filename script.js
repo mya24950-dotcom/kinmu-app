@@ -1,4 +1,4 @@
-alert("Shift+ JS VERSION = 006");
+alert("Shift+ JS VERSION = 007");
 
 /* ==================================================
    Supabase
