@@ -149,24 +149,141 @@ let scheduleFixedStaffTable =
    初期ローディング画面
 ========================================================= */
 
-function showInitialLoading(message = "データを取得しています…") {
+function showInitialLoading(
+  message = "データを取得しています…"
+) {
+
+  /* =================================================
+     ローディング画面
+  ================================================= */
 
   const loading =
-    document.getElementById("loadingScreen");
+    document.getElementById(
+      "loadingScreen"
+    );
+
 
   if (!loading) return;
 
+
+  /* -------------------------------------------------
+     メッセージ
+  ------------------------------------------------- */
+
   const text =
-    loading.querySelector(".loadingText");
+    loading.querySelector(
+      ".loadingText"
+    );
+
 
   if (text) {
-    text.textContent = message;
+
+    text.textContent =
+      message;
+
   }
 
-  loading.style.display = "flex";
-  loading.style.visibility = "visible";
-  loading.style.opacity = "1";
-  loading.style.pointerEvents = "auto";
+
+  /* =================================================
+     ログイン画面を完全に隠す
+     
+     Google / Apple / Azureから戻った直後に
+     ログイン画面が見えないようにする
+  ================================================= */
+
+  const loginPage =
+    document.getElementById(
+      "loginPage"
+    );
+
+
+  if (loginPage) {
+
+    loginPage.style.setProperty(
+      "display",
+      "none",
+      "important"
+    );
+
+    loginPage.style.setProperty(
+      "visibility",
+      "hidden",
+      "important"
+    );
+
+    loginPage.style.setProperty(
+      "opacity",
+      "0",
+      "important"
+    );
+
+    loginPage.style.setProperty(
+      "pointer-events",
+      "none",
+      "important"
+    );
+
+  }
+
+
+  /* =================================================
+     アプリ本体もまだ表示しない
+  ================================================= */
+
+  const app =
+    document.getElementById(
+      "app"
+    );
+
+
+  if (app) {
+
+    app.style.visibility =
+      "hidden";
+
+    app.style.opacity =
+      "0";
+
+    app.style.pointerEvents =
+      "none";
+
+  }
+
+
+  /* =================================================
+     ローディングを最前面に表示
+  ================================================= */
+
+  loading.style.setProperty(
+    "display",
+    "flex",
+    "important"
+  );
+
+  loading.style.setProperty(
+    "visibility",
+    "visible",
+    "important"
+  );
+
+  loading.style.setProperty(
+    "opacity",
+    "1",
+    "important"
+  );
+
+  loading.style.setProperty(
+    "pointer-events",
+    "auto",
+    "important"
+  );
+
+  loading.style.setProperty(
+    "z-index",
+    "999999",
+    "important"
+  );
+
 }
 
 
@@ -177,16 +294,40 @@ function showInitialLoading(message = "データを取得しています…") {
 function hideInitialLoading() {
 
   const loading =
-    document.getElementById("loadingScreen");
+    document.getElementById(
+      "loadingScreen"
+    );
 
-  if (!loading) return;
 
-  loading.style.opacity = "0";
-  loading.style.visibility = "hidden";
-  loading.style.pointerEvents = "none";
-  loading.style.display = "none";
+  if (loading) {
+
+    loading.style.setProperty(
+      "display",
+      "none",
+      "important"
+    );
+
+    loading.style.setProperty(
+      "visibility",
+      "hidden",
+      "important"
+    );
+
+    loading.style.setProperty(
+      "opacity",
+      "0",
+      "important"
+    );
+
+    loading.style.setProperty(
+      "pointer-events",
+      "none",
+      "important"
+    );
+
+  }
+
 }
-
 /* ==================================================
    初期化
 ================================================== */
