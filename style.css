@@ -2125,19 +2125,46 @@ body.loading-active #loginPage {
    ソーシャルログイン
    ========================================================= */
 
+/* =========================================================
+   ソーシャルログイン
+   ========================================================= */
+
 .social-login-buttons,
 .social-buttons {
   width: 100%;
 
   display: flex;
 
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
 
-  gap: 20px;
+  gap: 35px;
 
   margin: 0 0 22px;
 }
+
+
+/* ---------------------------------------------------------
+   ソーシャルログイン各項目
+   --------------------------------------------------------- */
+
+.social-login-item {
+  width: 50px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: flex-start;
+
+  flex-shrink: 0;
+}
+
+
+/* ---------------------------------------------------------
+   ソーシャルログインボタン
+   --------------------------------------------------------- */
 
 .social-login-button {
   width: 50px;
@@ -2165,7 +2192,14 @@ body.loading-active #loginPage {
   cursor: pointer;
 
   -webkit-tap-highlight-color: transparent;
+
+  box-sizing: border-box;
 }
+
+
+/* ---------------------------------------------------------
+   Google / Apple / Azure アイコン
+   --------------------------------------------------------- */
 
 .social-login-button img,
 .social-login-button svg {
@@ -2175,8 +2209,104 @@ body.loading-active #loginPage {
   object-fit: contain;
 }
 
+
+/* ---------------------------------------------------------
+   ラベル
+   --------------------------------------------------------- */
+
+.social-login-label {
+  display: block;
+
+  margin-top: 7px;
+
+  font-size: 11px;
+
+  line-height: 1.2;
+
+  text-align: center;
+
+  white-space: nowrap;
+
+  color: #555555;
+}
+
+
+/* ---------------------------------------------------------
+   押したとき
+   --------------------------------------------------------- */
+
 .social-login-button:active {
   transform: scale(0.95);
+}
+
+
+/* ---------------------------------------------------------
+   無効化されたボタン
+   Apple / Azure
+   --------------------------------------------------------- */
+
+.social-login-button:disabled {
+  cursor: not-allowed;
+
+  opacity: 0.35;
+
+  transform: none;
+
+  box-shadow:
+    0 2px 7px rgba(0, 0, 0, 0.04);
+}
+
+
+/* ---------------------------------------------------------
+   無効化されたボタンは押しても縮まない
+   --------------------------------------------------------- */
+
+.social-login-button:disabled:active {
+  transform: none;
+}
+
+
+/* ---------------------------------------------------------
+   ダークモード
+   --------------------------------------------------------- */
+
+body.dark-mode .social-login-button {
+  border-color: #555;
+
+  background: #2c2c2e;
+
+  box-shadow:
+    0 2px 7px rgba(0, 0, 0, 0.25);
+}
+
+body.dark-mode .social-login-label {
+  color: #cccccc;
+}
+
+
+/* ---------------------------------------------------------
+   スマートフォン
+   --------------------------------------------------------- */
+
+@media (max-width: 480px) {
+
+  .social-login-buttons,
+  .social-buttons {
+    gap: 32px;
+  }
+
+  .social-login-item {
+    width: 50px;
+  }
+
+  .social-login-button {
+    width: 50px;
+    min-width: 50px;
+
+    height: 50px;
+    min-height: 50px;
+  }
+
 }
 
 
