@@ -3588,6 +3588,261 @@ async function registerWithEmail() {
 }
 
 /* ==================================================
+   招待リンクからのメール新規登録
+   ※招待リンクがない場合は絶対に登録しない
+================================================== */
+
+async function registerWithInviteEmail() {
+
+  const emailInput =
+    document.getElementById("inviteEmail");
+
+  const passwordInput =
+    document.getElementById("invitePassword");
+
+  const confirmInput =
+    document.getElementById("invitePasswordConfirm");
+
+  const message =
+    document.getElementById(
+      "inviteRegisterMessage"
+    );
+
+  const button =
+    document.getElementById(
+      "inviteEmailButton"
+    );
+
+
+  const email =
+    emailInput?.value.trim();
+
+  const password =
+    passwordInput?.value || "";
+
+  const confirmPassword =
+    confirmInput?.value || "";
+
+
+  /*
+   * URLの招待トークンを取得
+   */
+  const urlParams =
+    new URLSearchParams(
+      window.location.search
+    );
+
+  const urlInviteToken =
+    urlParams.get("invite");
+
+
+  /*
+   * URLにない場合は、
+   * セッションに保持している招待トークンを確認
+   */
+  const inviteToken =
+    urlInviteToken ||
+    sessionStorage.getItem(
+      "pendingInviteToken"
+    ) ||
+    sessionStorage.getItem(
+      "shiftInviteToken"
+    );
+
+
+  /*
+   * ==================================================
+   * 最重要
+   *
+   * 招待リンクがない場合は
+   * auth.signUp()を絶対に実行しない
+   * ==================================================
+   */
+
+  if (!inviteToken) {
+
+    if (message) {
+
+      message.textContent =
+        "新規登録は招待リンクからのみ行えます。";
+
+    }
+
+    return;
+  }
+
+
+  if (!email) {
+
+    if (message) {
+      message.textContent =
+        "メールアドレスを入力してください。";
+    }
+
+    return;
+  }
+
+
+  if (!password) {
+
+    if (message) {
+      message.textContent =
+        "パスワードを入力してください。";
+    }
+
+    return;
+  }
+
+
+  if (password.length < 6) {
+
+    if (message) {
+      message.textContent =
+        "パスワードは6文字以上で設定してください。";
+    }
+
+    return;
+  }
+
+
+  if (password !== confirmPassword) {
+
+    if (message) {
+      message.textContent =
+        "パスワードが一致しません。";
+    }
+
+    return;
+  }
+
+
+  /*
+   * 招待トークンを保存
+   */
+  sessionStorage.setItem(
+    "pendingInviteToken",
+    inviteToken
+  );
+
+
+  if (button) {
+    button.disabled = true;
+  }
+
+
+  if (message) {
+    message.textContent =
+      "登録しています…";
+  }
+
+
+  try {
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient.auth.signUp({
+
+        email,
+
+        password,
+
+        options: {
+
+          emailRedirectTo:
+            window.location.origin +
+            window.location.pathname +
+            "?invite=" +
+            encodeURIComponent(
+              inviteToken
+            )
+
+        }
+
+      });
+
+
+    if (error) {
+      throw error;
+    }
+
+
+    console.log(
+      "★ 招待メール登録成功",
+      data
+    );
+
+
+    /*
+     * メール確認が必要な場合
+     */
+    if (
+      data.user &&
+      !data.session
+    ) {
+
+      if (message) {
+
+        message.textContent =
+          "確認メールを送信しました。メールを確認してから、メール内のリンクを開いてください。";
+
+      }
+
+      return;
+    }
+
+
+    /*
+     * その場でログインできた場合
+     */
+    if (data.session) {
+
+      sessionStorage.removeItem(
+        "forceLoginScreen"
+      );
+
+
+      console.log(
+        "★ 招待メール登録後のセッション取得成功"
+      );
+
+
+      /*
+       * init()で招待処理を続行
+       */
+      window.location.reload();
+
+    }
+
+
+  } catch (error) {
+
+    console.error(
+      "招待メール登録エラー",
+      error
+    );
+
+
+    if (message) {
+
+      message.textContent =
+        error?.message ||
+        "メール登録に失敗しました。";
+
+    }
+
+  } finally {
+
+    if (button) {
+      button.disabled = false;
+    }
+
+  }
+
+}
+
+/* ==================================================
    招待トークン取得
 ================================================== */
 
