@@ -1,4 +1,4 @@
-alert("018")
+alert("019")
 
 /* ==================================================
    Supabase
@@ -535,6 +535,16 @@ async function init() {
 
 
       if (
+        typeof setupEmailLogin ===
+        "function"
+      ) {
+
+        setupEmailLogin();
+
+      }
+
+
+      if (
         typeof setupNewOrganizationButton ===
         "function"
       ) {
@@ -671,6 +681,20 @@ async function init() {
       }
 
 
+      /* --------------------------------------------------
+         メールアドレスログイン
+      -------------------------------------------------- */
+
+      if (
+        typeof setupEmailLogin ===
+        "function"
+      ) {
+
+        setupEmailLogin();
+
+      }
+
+
       if (
         typeof setupNewOrganizationButton ===
         "function"
@@ -712,28 +736,28 @@ async function init() {
     let inviteToken = null;
 
 
-/* --------------------------------------------------
-   招待URLから来た場合のみ招待処理を行う
--------------------------------------------------- */
+    /* --------------------------------------------------
+       招待URLから来た場合のみ招待処理を行う
+    -------------------------------------------------- */
 
-if (currentUrlInviteToken) {
+    if (currentUrlInviteToken) {
 
-  if (
-    typeof getPendingInviteToken ===
-    "function"
-  ) {
+      if (
+        typeof getPendingInviteToken ===
+        "function"
+      ) {
 
-    inviteToken =
-      getPendingInviteToken();
+        inviteToken =
+          getPendingInviteToken();
 
-  } else {
+      } else {
 
-    inviteToken =
-      currentUrlInviteToken;
+        inviteToken =
+          currentUrlInviteToken;
 
-  }
+      }
 
-}
+    }
 
 
     if (inviteToken) {
@@ -824,6 +848,16 @@ if (currentUrlInviteToken) {
         ) {
 
           setupPasskeyLogin();
+
+        }
+
+
+        if (
+          typeof setupEmailLogin ===
+          "function"
+        ) {
+
+          setupEmailLogin();
 
         }
 
@@ -1002,6 +1036,16 @@ if (currentUrlInviteToken) {
       ) {
 
         setupPasskeyLogin();
+
+      }
+
+
+      if (
+        typeof setupEmailLogin ===
+        "function"
+      ) {
+
+        setupEmailLogin();
 
       }
 
@@ -1262,6 +1306,31 @@ if (currentUrlInviteToken) {
       console.error(
         "★ Passkeyログイン設定エラー",
         passkeyError
+      );
+
+    }
+
+
+    /* --------------------------------------------------
+       メールアドレスログイン設定
+    -------------------------------------------------- */
+
+    try {
+
+      if (
+        typeof setupEmailLogin ===
+        "function"
+      ) {
+
+        setupEmailLogin();
+
+      }
+
+    } catch (emailError) {
+
+      console.error(
+        "★ メールログイン設定エラー",
+        emailError
       );
 
     }
