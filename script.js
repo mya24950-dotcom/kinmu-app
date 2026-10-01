@@ -1,4 +1,4 @@
-alert("012")
+alert("013")
 
 /* ==================================================
    Supabase
@@ -3713,43 +3713,42 @@ async function loginWithGoogle() {
        招待トークンを取得
     -------------------------------------------------- */
 
-    const params =
-      new URLSearchParams(
-        window.location.search
-      );
+    const urlParams =
+  new URLSearchParams(
+    window.location.search
+  );
+
+const inviteToken =
+  urlParams.get("invite");
 
 
-    const inviteToken =
-      params.get(
-        "invite"
-      );
+/*
+ * 招待URLがない場合は
+ * メールアドレスの新規登録を許可しない
+ */
+if (!inviteToken) {
+
+  if (message) {
+
+    message.textContent =
+      "新規登録は招待リンクからのみ行えます。";
+
+  }
+
+  return;
+
+}
 
 
-    /* --------------------------------------------------
-       招待URLからログインした場合
-       OAuthへ移動する前に保存
-    -------------------------------------------------- */
-
-    if (inviteToken) {
-
-      console.log(
-        "★ Googleログイン前 招待トークン保存",
-        inviteToken
-      );
-
-
-      sessionStorage.setItem(
-        "pendingInviteToken",
-        inviteToken
-      );
-
-
-      localStorage.setItem(
-        "pendingInviteToken",
-        inviteToken
-      );
-
-    }
+/*
+ * 招待URLから登録した場合、
+ * 確認メール後のログインでも
+ * 招待トークンを利用できるように保存
+ */
+sessionStorage.setItem(
+  "pendingInviteToken",
+  inviteToken
+);
 
 
     /* --------------------------------------------------
