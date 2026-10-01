@@ -2698,7 +2698,7 @@ button[id*="forgotPassword"] {
 
 #newOrganizationForm {
   width: 100%;
-  transform: translateY(-15px);
+  transform: translateY(-25px);
 }
 
 #newOrganizationForm h2,
