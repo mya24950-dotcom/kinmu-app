@@ -2097,6 +2097,43 @@
   style="display:none;"
 >
 
+
+  <!-- ==================================================
+       Shift+ ロゴ
+  ================================================== -->
+
+  <div
+    style="
+      margin-top:28px;
+      margin-bottom:28px;
+      min-height:100px;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      box-sizing:border-box;
+      flex-shrink:0;
+    "
+  >
+
+    <img
+      src="./icons/shift-plus-logo.PNG"
+      alt="Shift+"
+      style="
+        display:block;
+        width:150px;
+        max-width:60vw;
+        height:auto;
+        object-fit:contain;
+      "
+    >
+
+  </div>
+
+
+  <!-- ==================================================
+       タイトル
+  ================================================== -->
+
   <h2 class="invite-register-title">
     職員アカウント登録
   </h2>
@@ -2111,7 +2148,7 @@
       display:flex;
       align-items:center;
       gap:8px;
-      margin:13px 0 10px;
+      margin:20px 0 14px;
     "
   >
 
@@ -2301,6 +2338,48 @@
 
 
   <!-- ==================================================
+       メールアドレス新規登録
+  ================================================== -->
+
+  <div
+    style="
+      display:flex;
+      align-items:center;
+      gap:8px;
+      margin:26px 0 18px;
+    "
+  >
+
+    <div
+      style="
+        flex:1;
+        height:1px;
+        background:#e5e5ea;
+      "
+    ></div>
+
+    <span
+      style="
+        color:#888;
+        font-size:11px;
+        white-space:nowrap;
+      "
+    >
+      メールアドレス新規登録
+    </span>
+
+    <div
+      style="
+        flex:1;
+        height:1px;
+        background:#e5e5ea;
+      "
+    ></div>
+
+  </div>
+
+
+  <!-- ==================================================
        メールアドレス・パスワード
   ================================================== -->
 
@@ -2319,7 +2398,7 @@
         type="email"
         id="inviteEmail"
         name="inviteEmail"
-        autocomplete="username"
+        autocomplete="email"
         inputmode="email"
         placeholder="メールアドレスを入力"
       >
@@ -2359,9 +2438,7 @@
     </div>
 
 
-    <!-- ==================================================
-         パスワード確認
-    ================================================== -->
+    <!-- パスワード確認 -->
 
     <div class="email-input-group">
 
@@ -2394,7 +2471,7 @@
 
 
     <!-- ==================================================
-         登録ボタン
+         メールアドレス登録ボタン
     ================================================== -->
 
     <button
