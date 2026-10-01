@@ -1,4 +1,4 @@
-alert("022")
+alert("023")
 
 /* ==================================================
    Supabase
@@ -683,6 +683,114 @@ async function init() {
       currentUrl.searchParams.get(
         "password-reset"
       ) === "true";
+
+/* ==================================================
+   パスワード再設定リンクのエラー確認
+================================================== */
+
+const hashParams =
+  new URLSearchParams(
+    window.location.hash.substring(1)
+  );
+
+const passwordResetError =
+  hashParams.get("error");
+
+const passwordResetErrorCode =
+  hashParams.get("error_code");
+
+const passwordResetErrorDescription =
+  hashParams.get("error_description");
+
+
+if (
+  isPasswordReset &&
+  passwordResetError
+) {
+
+  console.error(
+    "★ パスワード再設定リンクエラー",
+    {
+      error:
+        passwordResetError,
+
+      error_code:
+        passwordResetErrorCode,
+
+      error_description:
+        passwordResetErrorDescription
+    }
+  );
+
+  showLoginPage();
+
+  const loginMainView =
+    document.getElementById(
+      "loginMainView"
+    );
+
+  const passwordResetView =
+    document.getElementById(
+      "passwordResetView"
+    );
+
+  const passwordUpdateView =
+    document.getElementById(
+      "passwordUpdateView"
+    );
+
+  if (loginMainView) {
+    loginMainView.style.display =
+      "none";
+  }
+
+  if (passwordResetView) {
+    passwordResetView.style.display =
+      "none";
+  }
+
+  if (passwordUpdateView) {
+    passwordUpdateView.style.display =
+      "block";
+  }
+
+  if (
+    typeof setupPasswordUpdate ===
+    "function"
+  ) {
+    setupPasswordUpdate();
+  }
+
+  const message =
+    document.getElementById(
+      "passwordUpdateMessage"
+    );
+
+  if (message) {
+
+    if (
+      passwordResetErrorCode ===
+      "otp_expired"
+    ) {
+
+      message.textContent =
+        "パスワード再設定リンクの有効期限が切れているか、すでに使用されています。もう一度再設定メールを送信してください。";
+
+    } else {
+
+      message.textContent =
+        passwordResetErrorDescription ||
+        "パスワード再設定リンクを確認できませんでした。";
+
+    }
+
+  }
+
+  hideInitialLoading();
+
+  return;
+
+}
 
 
     if (isPasswordReset) {
