@@ -3418,6 +3418,45 @@ async function registerWithEmail() {
     passwordInput?.value;
 
 
+  /*
+   * ==================================================
+   * 招待トークンを確認
+   *
+   * メールアドレスの新規登録は
+   * 招待リンクから来た場合のみ許可する
+   * ==================================================
+   */
+
+  const urlParams =
+    new URLSearchParams(
+      window.location.search
+    );
+
+
+  const inviteToken =
+    urlParams.get("invite");
+
+
+  if (!inviteToken) {
+
+    if (message) {
+
+      message.textContent =
+        "新規登録は招待リンクからのみ行えます。";
+
+    }
+
+    return;
+
+  }
+
+
+  /*
+   * ==================================================
+   * 入力チェック
+   * ==================================================
+   */
+
   if (!email || !password) {
 
     if (message) {
@@ -3447,29 +3486,18 @@ async function registerWithEmail() {
 
 
   /*
-   * 招待URLから登録した場合、
-   * 確認メール後のログインでも
-   * 招待トークンを利用できるように保存
+   * ==================================================
+   * 招待トークンを保存
+   *
+   * 確認メール後にログインした場合でも
+   * 招待処理を続けられるようにする
+   * ==================================================
    */
 
-  const urlParams =
-    new URLSearchParams(
-      window.location.search
-    );
-
-
-  const inviteToken =
-    urlParams.get("invite");
-
-
-  if (inviteToken) {
-
-    sessionStorage.setItem(
-      "pendingInviteToken",
-      inviteToken
-    );
-
-  }
+  sessionStorage.setItem(
+    "pendingInviteToken",
+    inviteToken
+  );
 
 
   if (button) {
@@ -3504,6 +3532,12 @@ async function registerWithEmail() {
     }
 
 
+    /*
+     * ==================================================
+     * 確認メールが必要な場合
+     * ==================================================
+     */
+
     if (
       data.user &&
       !data.session
@@ -3520,6 +3554,12 @@ async function registerWithEmail() {
 
     }
 
+
+    /*
+     * ==================================================
+     * そのままログインできた場合
+     * ==================================================
+     */
 
     if (data.session) {
 
