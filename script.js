@@ -1,4 +1,4 @@
-alert("021")
+alert("022")
 
 /* ==================================================
    Supabase
@@ -3940,31 +3940,21 @@ async function sendPasswordResetEmail() {
   if (!email) {
 
     if (message) {
-
       message.textContent =
         "メールアドレスを入力してください。";
-
     }
 
     return;
-
   }
-
 
   if (button) {
-
     button.disabled = true;
-
   }
-
 
   if (message) {
-
     message.textContent =
       "再設定メールを送信しています…";
-
   }
-
 
   try {
 
@@ -3973,22 +3963,45 @@ async function sendPasswordResetEmail() {
       window.location.pathname +
       "?password-reset=true";
 
+    console.log(
+      "★ 再設定メール送信開始"
+    );
+
+    console.log(
+      "★ メールアドレス:",
+      email
+    );
+
+    console.log(
+      "★ redirectTo:",
+      redirectTo
+    );
+
 
     const {
+      data,
       error
     } =
       await supabaseClient.auth.resetPasswordForEmail(
         email,
         {
-          redirectTo
+          redirectTo:
+            redirectTo
         }
       );
 
 
+    console.log(
+      "★ resetPasswordForEmail 結果:",
+      {
+        data,
+        error
+      }
+    );
+
+
     if (error) {
-
       throw error;
-
     }
 
 
@@ -4000,7 +4013,7 @@ async function sendPasswordResetEmail() {
     if (message) {
 
       message.textContent =
-        "パスワード再設定用のメールを送信しました。\n" +
+        "再設定用のメールを送信しました。\n" +
         "メールをご確認ください。";
 
     }
@@ -4025,14 +4038,13 @@ async function sendPasswordResetEmail() {
   } finally {
 
     if (button) {
-
       button.disabled = false;
-
     }
 
   }
 
 }
+
 
 function setupPasswordUpdate() {
 
