@@ -1,4 +1,4 @@
-alert("019")
+alert("020")
 
 /* ==================================================
    Supabase
@@ -628,58 +628,77 @@ async function init() {
 
 
     /* ==================================================
-       未ログイン
-    ================================================== */
+   未ログイン
+================================================== */
 
-    if (!session) {
+if (!session) {
 
-      console.log(
-        "★ 未ログイン"
-      );
-
-
-      showLoginPage();
+  console.log(
+    "★ 未ログイン"
+  );
 
 
-      if (
-        typeof setupGoogleLogin ===
-        "function"
-      ) {
-
-        setupGoogleLogin();
-
-      }
+  showLoginPage();
 
 
-      if (
-        typeof setupAppleLogin ===
-        "function"
-      ) {
+  if (
+    typeof setupGoogleLogin ===
+    "function"
+  ) {
 
-        setupAppleLogin();
+    setupGoogleLogin();
 
-      }
-
-
-      if (
-        typeof setupAzureLogin ===
-        "function"
-      ) {
-
-        setupAzureLogin();
-
-      }
+  }
 
 
-      if (
-        typeof setupPasskeyLogin ===
-        "function"
-      ) {
+  if (
+    typeof setupAppleLogin ===
+    "function"
+  ) {
 
-        setupPasskeyLogin();
+    setupAppleLogin();
 
-      }
+  }
 
+
+  if (
+    typeof setupAzureLogin ===
+    "function"
+  ) {
+
+    setupAzureLogin();
+
+  }
+
+
+  if (
+    typeof setupPasskeyLogin ===
+    "function"
+  ) {
+
+    setupPasskeyLogin();
+
+  }
+
+
+  if (
+    typeof setupEmailLogin ===
+    "function"
+  ) {
+
+    setupEmailLogin();
+
+  }
+
+
+  if (
+    typeof setupPasswordReset ===
+    "function"
+  ) {
+
+    setupPasswordReset();
+
+  }
 
       /* --------------------------------------------------
          メールアドレスログイン
