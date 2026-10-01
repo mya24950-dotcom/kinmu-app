@@ -901,30 +901,57 @@ input[type="date"] {
 .date-row {
   display: flex;
   align-items: center;
+  justify-content: flex-start;
 
-  gap: 6px;
+  gap: 10px;
 
   width: 100%;
 
   margin-top: 8px;
   margin-bottom: 14px;
-}
-.date-row > * {
-  min-width: 0;
+
+  box-sizing: border-box;
 }
 
+
+/* 開始日・終了日 */
+
 .date-row input {
-  flex: 1 1 0;
+  width: 120px;
+  height: 44px;
+  min-height: 44px;
+
+  min-width: 0;
+  flex: 0 0 120px;
+
+  box-sizing: border-box;
+
+  padding: 0 10px;
+
+  border: 1px solid #d6d6db;
+  border-radius: 10px;
+
+  background: #fff;
+
+  font-size: 15px;
+  color: #1d1d1f;
+
+  outline: none;
 }
+
+
+/* ～ */
 
 .date-arrow {
   flex: 0 0 auto;
 
   color: #6e6e73;
 
-  font-size: 18px;
+  font-size: 17px;
 
-  margin: 0 2px;
+  margin: 0;
+
+  white-space: nowrap;
 }
 
 
