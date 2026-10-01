@@ -4446,55 +4446,54 @@
 
 
   /*
-   * 招待メール登録
-   */
-  function setupInviteEmailButton() {
+ * 招待メール登録
+ */
+function setupInviteEmailButton() {
 
-    const button =
-      document.getElementById(
-        "inviteEmailButton"
-      );
-
-
-    if (!button) {
-
-      return;
-
-    }
+  const button =
+    document.getElementById(
+      "inviteEmailButton"
+    );
 
 
-    button.onclick =
-      function() {
+  if (!button) {
 
-        const inviteRegisterView =
-          document.getElementById(
-            "inviteRegisterView"
-          );
-
-        const emailRegisterView =
-          document.getElementById(
-            "emailRegisterView"
-          );
-
-
-        if (inviteRegisterView) {
-
-          inviteRegisterView.style.display =
-            "none";
-
-        }
-
-
-        if (emailRegisterView) {
-
-          emailRegisterView.style.display =
-            "block";
-
-        }
-
-      };
+    return;
 
   }
+
+
+  button.onclick =
+    async function() {
+
+      if (
+        typeof registerWithInviteEmail ===
+        "function"
+      ) {
+
+        await registerWithInviteEmail();
+
+        return;
+
+      }
+
+
+      const message =
+        document.getElementById(
+          "inviteRegisterMessage"
+        );
+
+
+      if (message) {
+
+        message.textContent =
+          "メール登録機能を読み込めませんでした。";
+
+      }
+
+    };
+
+}
 
 
   function setupInviteButtons() {
