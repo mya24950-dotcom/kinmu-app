@@ -1,4 +1,4 @@
-alert("023")
+alert("024")
 
 /* ==================================================
    Supabase
@@ -4153,6 +4153,272 @@ async function sendPasswordResetEmail() {
 
 }
 
+/* ==================================================
+   パスワード変更ボタン設定
+================================================== */
+
+function setupPasswordUpdate() {
+
+  const button =
+    document.getElementById(
+      "updatePasswordButton"
+    );
+
+
+  if (!button) {
+
+    console.log(
+      "★ updatePasswordButton が見つかりません"
+    );
+
+    return;
+
+  }
+
+
+  /* --------------------------------------------------
+     二重登録防止
+  -------------------------------------------------- */
+
+  button.onclick =
+    updatePassword;
+
+
+  console.log(
+    "★ パスワード変更設定完了"
+  );
+
+}
+
+/* ==================================================
+   パスワード変更
+================================================== */
+
+async function updatePassword() {
+
+  const passwordInput =
+    document.getElementById(
+      "newPassword"
+    );
+
+  const confirmInput =
+    document.getElementById(
+      "newPasswordConfirm"
+    );
+
+  const message =
+    document.getElementById(
+      "passwordUpdateMessage"
+    );
+
+  const button =
+    document.getElementById(
+      "updatePasswordButton"
+    );
+
+  const password =
+    passwordInput?.value || "";
+
+  const confirmPassword =
+    confirmInput?.value || "";
+
+
+  /* --------------------------------------------------
+     入力チェック
+  -------------------------------------------------- */
+
+  if (!password) {
+
+    if (message) {
+      message.textContent =
+        "新しいパスワードを入力してください。";
+    }
+
+    return;
+
+  }
+
+
+  if (password.length < 6) {
+
+    if (message) {
+      message.textContent =
+        "パスワードは6文字以上で設定してください。";
+    }
+
+    return;
+
+  }
+
+
+  if (
+    password !==
+    confirmPassword
+  ) {
+
+    if (message) {
+      message.textContent =
+        "パスワードが一致しません。";
+    }
+
+    return;
+
+  }
+
+
+  /* --------------------------------------------------
+     ボタン停止
+  -------------------------------------------------- */
+
+  if (button) {
+    button.disabled = true;
+  }
+
+  if (message) {
+    message.textContent =
+      "パスワードを変更しています…";
+  }
+
+
+  try {
+
+    console.log(
+      "★ パスワード変更開始"
+    );
+
+
+    /* --------------------------------------------------
+       Supabaseでパスワード変更
+    -------------------------------------------------- */
+
+    const {
+      error
+    } =
+      await supabaseClient.auth.updateUser({
+        password:
+          password
+      });
+
+
+    console.log(
+      "★ updateUser 結果:",
+      error
+    );
+
+
+    if (error) {
+      throw error;
+    }
+
+
+    console.log(
+      "★ パスワード変更成功"
+    );
+
+
+    if (message) {
+
+      message.textContent =
+        "パスワードを変更しました。";
+
+    }
+
+
+    /* --------------------------------------------------
+       少し表示してからログイン画面へ
+    -------------------------------------------------- */
+
+    await new Promise(
+      resolve =>
+        setTimeout(
+          resolve,
+          1200
+        )
+    );
+
+
+    await supabaseClient.auth.signOut();
+
+
+    /* --------------------------------------------------
+       URLからパスワード再設定情報を削除
+    -------------------------------------------------- */
+
+    window.history.replaceState(
+      {},
+      document.title,
+      window.location.pathname
+    );
+
+
+    /* --------------------------------------------------
+       パスワード変更画面を非表示
+    -------------------------------------------------- */
+
+    const passwordUpdateView =
+      document.getElementById(
+        "passwordUpdateView"
+      );
+
+    const loginMainView =
+      document.getElementById(
+        "loginMainView"
+      );
+
+
+    if (passwordUpdateView) {
+
+      passwordUpdateView.style.display =
+        "none";
+
+    }
+
+
+    if (loginMainView) {
+
+      loginMainView.style.display =
+        "block";
+
+    }
+
+
+    showLoginPage();
+
+
+    console.log(
+      "★ ログイン画面へ戻りました"
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "★ パスワード変更エラー",
+      error
+    );
+
+
+    if (message) {
+
+      message.textContent =
+        error?.message ||
+        "パスワードの変更に失敗しました。";
+
+    }
+
+
+  } finally {
+
+    if (button) {
+
+      button.disabled =
+        false;
+
+    }
+
+  }
+
+}
 
 function setupPasswordUpdate() {
 
