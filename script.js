@@ -1,4 +1,4 @@
-alert("016")
+alert("018")
 
 /* ==================================================
    Supabase
@@ -712,30 +712,28 @@ async function init() {
     let inviteToken = null;
 
 
-    if (
-      typeof getPendingInviteToken ===
-      "function"
-    ) {
+/* --------------------------------------------------
+   招待URLから来た場合のみ招待処理を行う
+-------------------------------------------------- */
 
-      inviteToken =
-        getPendingInviteToken();
+if (currentUrlInviteToken) {
 
-    } else {
+  if (
+    typeof getPendingInviteToken ===
+    "function"
+  ) {
 
-      /* ------------------------------------------------
-         念のため関数がない場合の予備処理
-      ------------------------------------------------ */
+    inviteToken =
+      getPendingInviteToken();
 
-      inviteToken =
-        currentUrlInviteToken ||
-        sessionStorage.getItem(
-          "pendingInviteToken"
-        ) ||
-        localStorage.getItem(
-          "pendingInviteToken"
-        );
+  } else {
 
-    }
+    inviteToken =
+      currentUrlInviteToken;
+
+  }
+
+}
 
 
     if (inviteToken) {
@@ -3850,6 +3848,7 @@ function getPendingInviteToken() {
 
   /* --------------------------------------------------
      ① 現在のURL
+     招待リンクから来た場合だけ取得
   -------------------------------------------------- */
 
   try {
@@ -3870,6 +3869,19 @@ function getPendingInviteToken() {
         "★ URLから招待トークン取得"
       );
 
+      /*
+       * 招待リンクから来たことを記録
+       */
+      sessionStorage.setItem(
+        "pendingInviteToken",
+        token
+      );
+
+      localStorage.setItem(
+        "pendingInviteToken",
+        token
+      );
+
       return token;
 
     }
@@ -3886,6 +3898,7 @@ function getPendingInviteToken() {
 
   /* --------------------------------------------------
      ② sessionStorage
+     招待処理の途中だけ使用
   -------------------------------------------------- */
 
   const sessionToken =
@@ -3906,23 +3919,11 @@ function getPendingInviteToken() {
 
   /* --------------------------------------------------
      ③ localStorage
+     ここでは取得しない
+     
+     普通のログイン時に古い招待トークンを
+     誤って使用するのを防ぐ。
   -------------------------------------------------- */
-
-  const localToken =
-    localStorage.getItem(
-      "pendingInviteToken"
-    );
-
-  if (localToken) {
-
-    console.log(
-      "★ localStorageから招待トークン取得"
-    );
-
-    return localToken;
-
-  }
-
 
   return null;
 
@@ -4791,13 +4792,16 @@ async function handleInviteAfterLogin(
   -------------------------------------------------- */
 
   sessionStorage.removeItem(
-    "pendingInviteToken"
-  );
+  "pendingInviteToken"
+);
 
+localStorage.removeItem(
+  "pendingInviteToken"
+);
 
-  localStorage.removeItem(
-    "pendingInviteToken"
-  );
+sessionStorage.removeItem(
+  "shiftInviteToken"
+);
 
 
   /* --------------------------------------------------
