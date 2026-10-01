@@ -3934,3 +3934,12 @@ body.dark-mode #scheduleFixedStaffTable th {
   opacity: 1 !important;
   visibility: visible !important;
 }
+
+/* =========================================================
+   勤務表「職員」セル
+   ========================================================= */
+
+body.dark-mode .staff-header {
+  background: #fff !important;
+  color: #1d1d1f !important;
+}
