@@ -800,24 +800,26 @@ input[type="date"] {
    --------------------------------------------------------- */
 
 #shiftPage .time-row {
-  display: grid;
 
-  grid-template-columns:
-    minmax(0, 1fr)
-    auto
-    minmax(0, 1fr);
+  display: flex;
 
   align-items: center;
+
+  justify-content: center;
 
   gap: 10px;
 
   width: 100%;
 
   margin-top: 0;
+
   margin-bottom: 10px;
 
   box-sizing: border-box;
+
 }
+
+/* 開
 
 
 /* 開始・終了時刻 */
