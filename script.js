@@ -1,4 +1,4 @@
-alert("020")
+alert("021")
 
 /* ==================================================
    Supabase
@@ -358,14 +358,6 @@ if (document.readyState === "loading") {
 }
 
 /* ==================================================
-   初期化本体
-================================================== */
-
-/* ==================================================
-   初期化
-================================================== */
-
-/* ==================================================
    初期化
 ================================================== */
 
@@ -417,6 +409,105 @@ async function init() {
 
     window.shiftSupabaseClient =
       supabaseClient;
+
+
+    /* ==================================================
+       パスワード再設定状態を監視
+    ================================================== */
+
+    supabaseClient.auth.onAuthStateChange(
+      async (
+        event,
+        session
+      ) => {
+
+        console.log(
+          "★ Auth状態変化:",
+          event
+        );
+
+
+        /*
+         * パスワード再設定メールから
+         * 戻ってきた場合
+         */
+
+        if (
+          event ===
+          "PASSWORD_RECOVERY"
+        ) {
+
+          console.log(
+            "★ PASSWORD_RECOVERYを検出"
+          );
+
+
+          showLoginPage();
+
+
+          const loginMainView =
+            document.getElementById(
+              "loginMainView"
+            );
+
+
+          const passwordResetView =
+            document.getElementById(
+              "passwordResetView"
+            );
+
+
+          const passwordUpdateView =
+            document.getElementById(
+              "passwordUpdateView"
+            );
+
+
+          if (loginMainView) {
+
+            loginMainView.style.display =
+              "none";
+
+          }
+
+
+          if (passwordResetView) {
+
+            passwordResetView.style.display =
+              "none";
+
+          }
+
+
+          if (passwordUpdateView) {
+
+            passwordUpdateView.style.display =
+              "block";
+
+          }
+
+
+          if (
+            typeof setupPasswordUpdate ===
+            "function"
+          ) {
+
+            setupPasswordUpdate();
+
+          }
+
+
+          hideInitialLoading();
+
+
+          console.log(
+            "★ 新しいパスワード入力画面を表示"
+          );
+
+        }
+
+      }
+    );
 
 
     /* --------------------------------------------------
@@ -545,6 +636,16 @@ async function init() {
 
 
       if (
+        typeof setupPasswordReset ===
+        "function"
+      ) {
+
+        setupPasswordReset();
+
+      }
+
+
+      if (
         typeof setupNewOrganizationButton ===
         "function"
       ) {
@@ -572,6 +673,150 @@ async function init() {
       }
     } =
       await supabaseClient.auth.getSession();
+
+
+    /* ==================================================
+       パスワード再設定URL確認
+    ================================================== */
+
+    const isPasswordReset =
+      currentUrl.searchParams.get(
+        "password-reset"
+      ) === "true";
+
+
+    if (isPasswordReset) {
+
+      console.log(
+        "★ パスワード再設定URLを検出"
+      );
+
+
+      /*
+       * Recoveryセッション取得待機
+       */
+
+      if (!session) {
+
+        console.log(
+          "★ Recoveryセッション待機"
+        );
+
+
+        for (
+          let i = 0;
+          i < 20;
+          i++
+        ) {
+
+          await new Promise(
+            resolve =>
+              setTimeout(
+                resolve,
+                150
+              )
+          );
+
+
+          const recoveryResult =
+            await supabaseClient.auth.getSession();
+
+
+          session =
+            recoveryResult?.data?.session ||
+            null;
+
+
+          if (session) {
+
+            console.log(
+              "★ Recoveryセッション取得成功",
+              i + 1
+            );
+
+            break;
+
+          }
+
+        }
+
+      }
+
+
+      /*
+       * ログイン画面を表示
+       */
+
+      showLoginPage();
+
+
+      const loginMainView =
+        document.getElementById(
+          "loginMainView"
+        );
+
+
+      const passwordResetView =
+        document.getElementById(
+          "passwordResetView"
+        );
+
+
+      const passwordUpdateView =
+        document.getElementById(
+          "passwordUpdateView"
+        );
+
+
+      if (loginMainView) {
+
+        loginMainView.style.display =
+          "none";
+
+      }
+
+
+      if (passwordResetView) {
+
+        passwordResetView.style.display =
+          "none";
+
+      }
+
+
+      if (passwordUpdateView) {
+
+        passwordUpdateView.style.display =
+          "block";
+
+      }
+
+
+      if (
+        typeof setupPasswordUpdate ===
+        "function"
+      ) {
+
+        setupPasswordUpdate();
+
+      }
+
+
+      hideInitialLoading();
+
+
+      console.log(
+        "★ パスワード再設定画面表示完了"
+      );
+
+
+      /*
+       * 通常のログイン・職場読み込み処理には進まない
+       */
+
+      return;
+
+    }
 
 
     /* ==================================================
@@ -628,81 +873,58 @@ async function init() {
 
 
     /* ==================================================
-   未ログイン
-================================================== */
+       未ログイン
+    ================================================== */
 
-if (!session) {
+    if (!session) {
 
-  console.log(
-    "★ 未ログイン"
-  );
-
-
-  showLoginPage();
+      console.log(
+        "★ 未ログイン"
+      );
 
 
-  if (
-    typeof setupGoogleLogin ===
-    "function"
-  ) {
-
-    setupGoogleLogin();
-
-  }
+      showLoginPage();
 
 
-  if (
-    typeof setupAppleLogin ===
-    "function"
-  ) {
+      if (
+        typeof setupGoogleLogin ===
+        "function"
+      ) {
 
-    setupAppleLogin();
+        setupGoogleLogin();
 
-  }
-
-
-  if (
-    typeof setupAzureLogin ===
-    "function"
-  ) {
-
-    setupAzureLogin();
-
-  }
+      }
 
 
-  if (
-    typeof setupPasskeyLogin ===
-    "function"
-  ) {
+      if (
+        typeof setupAppleLogin ===
+        "function"
+      ) {
 
-    setupPasskeyLogin();
+        setupAppleLogin();
 
-  }
-
-
-  if (
-    typeof setupEmailLogin ===
-    "function"
-  ) {
-
-    setupEmailLogin();
-
-  }
+      }
 
 
-  if (
-    typeof setupPasswordReset ===
-    "function"
-  ) {
+      if (
+        typeof setupAzureLogin ===
+        "function"
+      ) {
 
-    setupPasswordReset();
+        setupAzureLogin();
 
-  }
+      }
 
-      /* --------------------------------------------------
-         メールアドレスログイン
-      -------------------------------------------------- */
+
+      if (
+        typeof setupPasskeyLogin ===
+        "function"
+      ) {
+
+        setupPasskeyLogin();
+
+      }
+
 
       if (
         typeof setupEmailLogin ===
@@ -710,6 +932,16 @@ if (!session) {
       ) {
 
         setupEmailLogin();
+
+      }
+
+
+      if (
+        typeof setupPasswordReset ===
+        "function"
+      ) {
+
+        setupPasswordReset();
 
       }
 
@@ -759,7 +991,9 @@ if (!session) {
        招待URLから来た場合のみ招待処理を行う
     -------------------------------------------------- */
 
-    if (currentUrlInviteToken) {
+    if (
+      currentUrlInviteToken
+    ) {
 
       if (
         typeof getPendingInviteToken ===
@@ -821,9 +1055,9 @@ if (!session) {
 
 
         /*
-          招待登録に失敗した場合は、
-          所属なしの状態で先へ進ませない。
-        */
+         * 招待登録に失敗した場合は、
+         * 所属なしの状態で先へ進ませない。
+         */
 
         await supabaseClient.auth.signOut();
 
@@ -877,6 +1111,16 @@ if (!session) {
         ) {
 
           setupEmailLogin();
+
+        }
+
+
+        if (
+          typeof setupPasswordReset ===
+          "function"
+        ) {
+
+          setupPasswordReset();
 
         }
 
@@ -1065,6 +1309,16 @@ if (!session) {
       ) {
 
         setupEmailLogin();
+
+      }
+
+
+      if (
+        typeof setupPasswordReset ===
+        "function"
+      ) {
+
+        setupPasswordReset();
 
       }
 
@@ -1355,6 +1609,56 @@ if (!session) {
     }
 
 
+    /* --------------------------------------------------
+       パスワード初期化設定
+    -------------------------------------------------- */
+
+    try {
+
+      if (
+        typeof setupPasswordReset ===
+        "function"
+      ) {
+
+        setupPasswordReset();
+
+      }
+
+    } catch (passwordResetError) {
+
+      console.error(
+        "★ パスワード初期化設定エラー",
+        passwordResetError
+      );
+
+    }
+
+
+    /* --------------------------------------------------
+       新しいパスワード設定
+    -------------------------------------------------- */
+
+    try {
+
+      if (
+        typeof setupPasswordUpdate ===
+        "function"
+      ) {
+
+        setupPasswordUpdate();
+
+      }
+
+    } catch (passwordUpdateError) {
+
+      console.error(
+        "★ パスワード変更設定エラー",
+        passwordUpdateError
+      );
+
+    }
+
+
     try {
 
       if (
@@ -1387,6 +1691,7 @@ if (!session) {
   }
 
 }
+
 /* ==================================================
    OAuth復帰後のセッション待機
 ================================================== */
@@ -3285,6 +3590,203 @@ async function loginWithApple() {
 
 }
 
+async function updatePassword() {
+
+  const passwordInput =
+    document.getElementById(
+      "newPassword"
+    );
+
+  const confirmInput =
+    document.getElementById(
+      "newPasswordConfirm"
+    );
+
+  const message =
+    document.getElementById(
+      "passwordUpdateMessage"
+    );
+
+  const button =
+    document.getElementById(
+      "updatePasswordButton"
+    );
+
+
+  const password =
+    passwordInput?.value || "";
+
+  const confirmPassword =
+    confirmInput?.value || "";
+
+
+  if (!password) {
+
+    if (message) {
+
+      message.textContent =
+        "新しいパスワードを入力してください。";
+
+    }
+
+    return;
+
+  }
+
+
+  if (password.length < 6) {
+
+    if (message) {
+
+      message.textContent =
+        "パスワードは6文字以上で設定してください。";
+
+    }
+
+    return;
+
+  }
+
+
+  if (
+    password !==
+    confirmPassword
+  ) {
+
+    if (message) {
+
+      message.textContent =
+        "パスワードが一致しません。";
+
+    }
+
+    return;
+
+  }
+
+
+  if (button) {
+
+    button.disabled =
+      true;
+
+  }
+
+
+  if (message) {
+
+    message.textContent =
+      "パスワードを変更しています…";
+
+  }
+
+
+  try {
+
+    const {
+      error
+    } =
+      await supabaseClient.auth.updateUser({
+        password:
+          password
+      });
+
+
+    if (error) {
+
+      throw error;
+
+    }
+
+
+    console.log(
+      "★ パスワード変更成功"
+    );
+
+
+    if (message) {
+
+      message.textContent =
+        "パスワードを変更しました。ログイン画面に戻ります…";
+
+    }
+
+
+    await new Promise(
+      resolve =>
+        setTimeout(
+          resolve,
+          1500
+        )
+    );
+
+
+    await supabaseClient.auth.signOut();
+
+
+    const passwordUpdateView =
+      document.getElementById(
+        "passwordUpdateView"
+      );
+
+    const loginMainView =
+      document.getElementById(
+        "loginMainView"
+      );
+
+
+    if (passwordUpdateView) {
+
+      passwordUpdateView.style.display =
+        "none";
+
+    }
+
+
+    if (loginMainView) {
+
+      loginMainView.style.display =
+        "block";
+
+    }
+
+
+    window.history.replaceState(
+      {},
+      document.title,
+      window.location.pathname
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "★ パスワード変更エラー",
+      error
+    );
+
+
+    if (message) {
+
+      message.textContent =
+        error?.message ||
+        "パスワードの変更に失敗しました。";
+
+    }
+
+  } finally {
+
+    if (button) {
+
+      button.disabled =
+        false;
+
+    }
+
+  }
+
+}
+
 /* ==================================================
    メールログイン
    ※通常ログイン画面では新規登録を行わない
@@ -3529,6 +4031,36 @@ async function sendPasswordResetEmail() {
     }
 
   }
+
+}
+
+function setupPasswordUpdate() {
+
+  const button =
+    document.getElementById(
+      "updatePasswordButton"
+    );
+
+  if (!button) {
+
+    console.log(
+      "★ updatePasswordButton が見つかりません"
+    );
+
+    return;
+
+  }
+
+
+  button.addEventListener(
+    "click",
+    updatePassword
+  );
+
+
+  console.log(
+    "★ パスワード変更設定完了"
+  );
 
 }
 
