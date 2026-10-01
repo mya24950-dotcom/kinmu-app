@@ -1,4 +1,4 @@
-alert("015")
+alert("016")
 
 /* ==================================================
    Supabase
@@ -3933,10 +3933,6 @@ function getPendingInviteToken() {
    Googleログイン設定
 ================================================== */
 
-/* ==================================================
-   Googleログイン
-================================================== */
-
 async function loginWithGoogle() {
 
   const button =
@@ -3984,41 +3980,31 @@ async function loginWithGoogle() {
     -------------------------------------------------- */
 
     const urlParams =
-  new URLSearchParams(
-    window.location.search
-  );
-
-const inviteToken =
-  urlParams.get("invite");
+      new URLSearchParams(
+        window.location.search
+      );
 
 
-/*
- * 招待URLがない場合は
- * メールアドレスの新規登録を許可しない
- */
-if (!inviteToken) {
-
-  if (message) {
-
-    message.textContent =
-      "新規登録は招待リンクからのみ行えます。";
-
-  }
-
-  return;
-
-}
+    const inviteToken =
+      urlParams.get("invite");
 
 
-/*
- * 招待URLから登録した場合、
- * 確認メール後のログインでも
- * 招待トークンを利用できるように保存
- */
-sessionStorage.setItem(
-  "pendingInviteToken",
-  inviteToken
-);
+    /*
+     * 招待リンクから来た場合だけ
+     * 招待トークンを保存する。
+     *
+     * 通常のGoogleログインでは
+     * 招待トークンがなくても正常に進む。
+     */
+
+    if (inviteToken) {
+
+      sessionStorage.setItem(
+        "pendingInviteToken",
+        inviteToken
+      );
+
+    }
 
 
     /* --------------------------------------------------
