@@ -3398,6 +3398,238 @@ async function loginWithEmail() {
 
 }
 
+async function sendPasswordResetEmail() {
+
+  const emailInput =
+    document.getElementById("resetEmail");
+
+  const message =
+    document.getElementById(
+      "passwordResetMessage"
+    );
+
+  const button =
+    document.getElementById(
+      "sendPasswordResetButton"
+    );
+
+  const email =
+    emailInput?.value.trim();
+
+  if (!email) {
+
+    if (message) {
+
+      message.textContent =
+        "メールアドレスを入力してください。";
+
+    }
+
+    return;
+
+  }
+
+
+  if (button) {
+
+    button.disabled = true;
+
+  }
+
+
+  if (message) {
+
+    message.textContent =
+      "再設定メールを送信しています…";
+
+  }
+
+
+  try {
+
+    const redirectTo =
+      window.location.origin +
+      window.location.pathname +
+      "?password-reset=true";
+
+
+    const {
+      error
+    } =
+      await supabaseClient.auth.resetPasswordForEmail(
+        email,
+        {
+          redirectTo
+        }
+      );
+
+
+    if (error) {
+
+      throw error;
+
+    }
+
+
+    console.log(
+      "★ パスワード再設定メール送信成功"
+    );
+
+
+    if (message) {
+
+      message.textContent =
+        "パスワード再設定用のメールを送信しました。\n" +
+        "メールをご確認ください。";
+
+    }
+
+
+  } catch (error) {
+
+    console.error(
+      "★ パスワード再設定メール送信エラー",
+      error
+    );
+
+
+    if (message) {
+
+      message.textContent =
+        error?.message ||
+        "再設定メールの送信に失敗しました。";
+
+    }
+
+  } finally {
+
+    if (button) {
+
+      button.disabled = false;
+
+    }
+
+  }
+
+}
+
+function setupPasswordReset() {
+
+  const forgotButton =
+    document.getElementById(
+      "forgotPasswordButton"
+    );
+
+  const resetView =
+    document.getElementById(
+      "passwordResetView"
+    );
+
+  const loginMainView =
+    document.getElementById(
+      "loginMainView"
+    );
+
+  const backButton =
+    document.getElementById(
+      "backToLoginFromReset"
+    );
+
+  const sendButton =
+    document.getElementById(
+      "sendPasswordResetButton"
+    );
+
+
+  if (forgotButton) {
+
+    forgotButton.addEventListener(
+      "click",
+      function() {
+
+        if (loginMainView) {
+
+          loginMainView.style.display =
+            "none";
+
+        }
+
+        if (resetView) {
+
+          resetView.style.display =
+            "block";
+
+        }
+
+        const loginEmail =
+          document.getElementById(
+            "loginEmail"
+          );
+
+        const resetEmail =
+          document.getElementById(
+            "resetEmail"
+          );
+
+        if (
+          loginEmail &&
+          resetEmail &&
+          loginEmail.value.trim()
+        ) {
+
+          resetEmail.value =
+            loginEmail.value.trim();
+
+        }
+
+      }
+    );
+
+  }
+
+
+  if (backButton) {
+
+    backButton.addEventListener(
+      "click",
+      function() {
+
+        if (resetView) {
+
+          resetView.style.display =
+            "none";
+
+        }
+
+        if (loginMainView) {
+
+          loginMainView.style.display =
+            "block";
+
+        }
+
+      }
+    );
+
+  }
+
+
+  if (sendButton) {
+
+    sendButton.addEventListener(
+      "click",
+      sendPasswordResetEmail
+    );
+
+  }
+
+
+  console.log(
+    "★ パスワード初期化設定完了"
+  );
+
+}
+
 function setupEmailLogin() {
 
   const button =
