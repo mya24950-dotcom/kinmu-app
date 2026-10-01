@@ -3937,3 +3937,20 @@ body.dark-mode #initialLoadingScreen *,
 body.dark-mode #loadingScreen * {
   color: #f2f2f7;
 }
+
+/* =========================================================
+   勤務形態入力欄・ダークモード
+   ========================================================= */
+
+body.dark-mode #shiftPage #shiftNameInput,
+body.dark-mode #shiftPage #shiftBreakInput,
+body.dark-mode #shiftPage .time-row > input[type="time"] {
+  background: #2c2c2e !important;
+  color: #f2f2f7 !important;
+  border-color: #48484a !important;
+}
+
+body.dark-mode #shiftPage #shiftNameInput::placeholder,
+body.dark-mode #shiftPage #shiftBreakInput::placeholder {
+  color: #98989d;
+}
