@@ -2698,6 +2698,11 @@ button[id*="forgotPassword"] {
 
 #newOrganizationForm {
   width: 100%;
+  max-height: calc(100svh - 10px);
+  overflow: hidden !important;
+  box-sizing: border-box;
+  padding-top: 0 !important;
+  padding-bottom: 4px;
 }
 
 #newOrganizationForm h2,
