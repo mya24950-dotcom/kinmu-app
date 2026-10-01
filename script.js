@@ -3199,95 +3199,60 @@ async function loginWithApple() {
 
 }
 
+/* ==================================================
+   メールログイン
+   ※通常ログイン画面では新規登録を行わない
+================================================== */
+
 async function loginWithEmail() {
 
   const emailInput =
-    document.getElementById(
-      "loginEmail"
-    );
+    document.getElementById("loginEmail");
 
   const passwordInput =
-    document.getElementById(
-      "loginPassword"
-    );
+    document.getElementById("loginPassword");
 
   const message =
-    document.getElementById(
-      "loginMessage"
-    );
-
-  const button =
-    document.getElementById(
-      "emailLoginButton"
-    );
-
+    document.getElementById("loginMessage");
 
   const email =
     emailInput?.value.trim();
 
-
   const password =
-    passwordInput?.value;
-
+    passwordInput?.value || "";
 
   if (!email || !password) {
 
     if (message) {
-
       message.textContent =
         "メールアドレスとパスワードを入力してください。";
-
     }
 
     return;
-
   }
 
 
+  const button =
+    document.getElementById("emailLoginButton");
+
+
   if (button) {
-
-    button.disabled =
-      true;
-
+    button.disabled = true;
   }
 
 
   if (message) {
-
     message.textContent =
       "ログインしています…";
-
-  }
-
-
-  /*
-   * 招待URLから直接メールログインした場合も
-   * トークンを保持する
-   */
-
-  const urlParams =
-    new URLSearchParams(
-      window.location.search
-    );
-
-
-  const inviteToken =
-    urlParams.get("invite");
-
-
-  if (inviteToken) {
-
-    sessionStorage.setItem(
-      "pendingInviteToken",
-      inviteToken
-    );
-
   }
 
 
   try {
 
-    const { data, error } =
+    const {
+      data,
+      error
+    } =
       await supabaseClient.auth.signInWithPassword({
         email,
         password
@@ -3295,37 +3260,48 @@ async function loginWithEmail() {
 
 
     if (error) {
-
       throw error;
-
     }
 
 
-    if (!data.session) {
-
+    if (!data?.session) {
       throw new Error(
         "ログインセッションを取得できませんでした。"
+      );
+    }
+
+
+    console.log(
+      "★ メールログイン成功"
+    );
+
+
+    /*
+     * 招待リンクから来た場合は、
+     * ログイン後に招待処理を行う
+     */
+    const inviteToken =
+      sessionStorage.getItem(
+        "pendingInviteToken"
+      ) ||
+      new URLSearchParams(
+        window.location.search
+      ).get("invite");
+
+
+    if (inviteToken) {
+
+      sessionStorage.setItem(
+        "pendingInviteToken",
+        inviteToken
       );
 
     }
 
 
-    sessionStorage.removeItem(
-      "forceLoginScreen"
-    );
-
-
-    console.log(
-      "メールログイン成功"
-    );
-
-
     /*
-     * init() を最初から実行して、
-     * 招待処理 → 組織取得 → 勤務表取得
-     * の順で処理する
+     * ログイン成功後はinit()に処理を引き継ぐ
      */
-
     window.location.reload();
 
 
@@ -3340,16 +3316,15 @@ async function loginWithEmail() {
     if (message) {
 
       message.textContent =
-        "メールアドレスまたはパスワードが正しくありません。";
+        error?.message ||
+        "ログインに失敗しました。";
 
     }
 
+  } finally {
 
     if (button) {
-
-      button.disabled =
-        false;
-
+      button.disabled = false;
     }
 
   }
