@@ -3945,7 +3945,7 @@ body.dark-mode #loadingScreen * {
 body.dark-mode #shiftPage #shiftNameInput,
 body.dark-mode #shiftPage #shiftBreakInput,
 body.dark-mode #shiftPage .time-row > input[type="time"] {
-  background: #2c2c2e !important;
+  background: #1c1c1e !important;
   color: #f2f2f7 !important;
   border-color: #48484a !important;
 }
