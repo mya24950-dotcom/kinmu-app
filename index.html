@@ -2572,539 +2572,482 @@
     ================================================== -->
 
     <div
-      id="newOrganizationForm"
-      style="
-        display:none;
+  id="newOrganizationForm"
+  style="
+    display:none;
+    text-align:left;
+  "
+>
 
-        text-align:left;
+  <!-- 戻る -->
+
+  <button
+    type="button"
+    id="cancelOrganizationButton"
+    style="
+      border:none;
+      background:transparent;
+      color:#666;
+      font-size:14px;
+      cursor:pointer;
+      padding:0;
+      margin:0 0 8px;
+    "
+  >
+    ← 戻る
+  </button>
+
+
+  <!-- Shift+ ロゴ -->
+
+  <div
+    style="
+      text-align:center;
+      margin-bottom:14px;
+    "
+  >
+
+    <img
+      src="./icons/shift-plus-logo.PNG"
+      alt="Shift+"
+      class="login-logo"
+      style="
+        display:block;
+        margin:0 auto 8px;
       "
     >
 
-      <button
-        type="button"
-        id="cancelOrganizationButton"
-        style="
-          border:none;
+    <h2
+      style="
+        margin:0 0 5px;
+        font-size:21px;
+        color:#222;
+        text-align:center;
+      "
+    >
+      職場を新規登録
+    </h2>
 
-          background:transparent;
+    <p
+      style="
+        margin:0;
+        color:#666;
+        font-size:12px;
+        line-height:1.5;
+        text-align:center;
+      "
+    >
+      職場名と登録者名を入力してください。
+    </p>
 
-          color:#666;
+  </div>
 
-          font-size:14px;
 
-          cursor:pointer;
+  <!-- 職場名 -->
 
-          padding:0;
+  <label
+    for="organizationNameInput"
+    style="
+      display:block;
+      font-size:12px;
+      font-weight:600;
+      color:#555;
+      margin-bottom:4px;
+    "
+  >
+    職場名
+  </label>
 
-          margin:0 0 12px;
-        "
-      >
-        ← 戻る
-      </button>
+  <input
+    type="text"
+    id="organizationNameInput"
+    placeholder="例：○○学校"
+    maxlength="100"
+    style="
+      width:100%;
+      min-height:43px;
+      padding:0 12px;
+      border:1px solid #ccc;
+      border-radius:9px;
+      box-sizing:border-box;
+      font-size:15px;
+      outline:none;
+      margin-bottom:10px;
+    "
+  >
 
+
+  <!-- 登録者名 -->
+
+  <label
+    for="organizationStaffNameInput"
+    style="
+      display:block;
+      font-size:12px;
+      font-weight:600;
+      color:#555;
+      margin-bottom:4px;
+    "
+  >
+    登録者名
+  </label>
+
+  <input
+    type="text"
+    id="organizationStaffNameInput"
+    placeholder="例：山田太郎"
+    maxlength="100"
+    style="
+      width:100%;
+      min-height:43px;
+      padding:0 12px;
+      border:1px solid #ccc;
+      border-radius:9px;
+      box-sizing:border-box;
+      font-size:15px;
+      outline:none;
+      margin-bottom:12px;
+    "
+  >
+
+
+  <!-- ==================================================
+       登録方法
+  ================================================== -->
+
+  <div
+    style="
+      text-align:center;
+      margin:4px 0 12px;
+    "
+  >
+
+    <div
+      style="
+        margin-bottom:8px;
+        color:#555;
+        font-size:11px;
+        font-weight:600;
+      "
+    >
+      登録方法
+    </div>
+
+
+    <div
+      style="
+        display:flex;
+        justify-content:center;
+        align-items:flex-start;
+        gap:30px;
+      "
+    >
+
+
+      <!-- Google -->
 
       <div
         style="
-          text-align:center;
-
-          margin-bottom:15px;
+          display:flex;
+          flex-direction:column;
+          align-items:center;
+          gap:4px;
         "
       >
 
-        <div
+        <button
+          type="button"
+          id="organizationGoogleButton"
+          aria-label="Googleで登録"
+          title="Googleで登録"
           style="
-            margin-bottom:5px;
-
+            width:48px;
+            height:48px;
+            min-width:48px;
+            min-height:48px;
+            padding:0;
+            border:1px solid #d0d0d5;
+            border-radius:50%;
+            background:#fff;
             display:flex;
-
+            align-items:center;
             justify-content:center;
-
-            color:#555555;
+            cursor:pointer;
+            box-sizing:border-box;
           "
         >
 
           <svg
-            width="38"
-            height="38"
+            width="24"
+            height="24"
+            viewBox="0 0 48 48"
+            aria-hidden="true"
+          >
+
+            <path
+              fill="#4285F4"
+              d="M46.98 24.55c0-1.64-.15-3.22-.43-4.73H24v9.08h12.86c-.55 2.96-2.18 5.46-4.64 7.14l7.52 5.84C44.15 37.7 46.98 31.66 46.98 24.55z"
+            />
+
+            <path
+              fill="#34A853"
+              d="M24 48c6.48 0 11.92-2.14 15.9-5.82l-7.52-5.84c-2.08 1.4-4.73 2.23-8.38 2.23-6.28 0-11.57-3.57-13.48-8.78l-7.96 6.18C6.51 42.62 14.61 48 24 48z"
+            />
+
+            <path
+              fill="#FBBC05"
+              d="M10.52 28.4A14.47 14.47 0 0 1 9.5 24c0-1.53.26-3.02.73-4.4l-7.96-6.18A23.9 23.9 0 0 0 0 24c0 3.84.92 7.48 2.56 10.58l7.96-6.18z"
+            />
+
+            <path
+              fill="#EA4335"
+              d="M24 9.5c3.54 0 6.72 1.22 9.22 3.6l6.84-6.84C35.9 2.56 30.47 0 24 0 14.61 0 6.51 5.38 2.56 13.22l7.96 6.18C12.43 13.07 17.72 9.5 24 9.5z"
+            />
+
+          </svg>
+
+        </button>
+
+        <span
+          style="
+            font-size:11px;
+            color:#555;
+          "
+        >
+          Google
+        </span>
+
+      </div>
+
+
+      <!-- Apple -->
+
+      <div
+        style="
+          display:flex;
+          flex-direction:column;
+          align-items:center;
+          gap:4px;
+        "
+      >
+
+        <button
+          type="button"
+          id="organizationAppleButton"
+          aria-label="Appleで登録"
+          title="Appleで登録"
+          style="
+            width:48px;
+            height:48px;
+            min-width:48px;
+            min-height:48px;
+            padding:0;
+            border:1px solid #d0d0d5;
+            border-radius:50%;
+            background:#fff;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            cursor:pointer;
+            box-sizing:border-box;
+          "
+        >
+
+          <svg
+            width="25"
+            height="25"
             viewBox="0 0 24 24"
             aria-hidden="true"
           >
 
             <path
-              d="M3 21V6l9-4 9 4v15"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.8"
-              stroke-linejoin="round"
+              fill="#000000"
+              d="M17.05 12.54c-.02-2.09 1.71-3.1 1.79-3.15-.98-1.43-2.5-1.63-3.04-1.65-1.29-.14-2.54.77-3.2.77-.67 0-1.7-.76-2.8-.74-1.44.02-2.76.84-3.5 2.12-1.5 2.6-.38 6.43 1.05 8.53.7 1.03 1.51 2.18 2.59 2.14 1.05-.04 1.45-.68 2.73-.68 1.27 0 1.64.68 2.74.66 1.14-.02 1.84-1.04 2.52-2.08.8-1.17 1.13-2.3 1.15-2.36-.03-.01-2.21-.85-2.23-3.56z"
             />
 
-            <line
-              x1="3"
-              y1="21"
-              x2="21"
-              y2="21"
-              stroke="currentColor"
-              stroke-width="1.8"
-              stroke-linecap="round"
-            />
-
-            <rect
-              x="9"
-              y="13"
-              width="6"
-              height="8"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.6"
-            />
-
-            <line
-              x1="7"
-              y1="9"
-              x2="9"
-              y2="9"
-              stroke="currentColor"
-              stroke-width="1.6"
-              stroke-linecap="round"
-            />
-
-            <line
-              x1="15"
-              y1="9"
-              x2="17"
-              y2="9"
-              stroke="currentColor"
-              stroke-width="1.6"
-              stroke-linecap="round"
+            <path
+              fill="#000000"
+              d="M14.92 6.35c.58-.7.97-1.67.86-2.65-.84.03-1.86.56-2.46 1.25-.54.62-1.01 1.61-.88 2.56.94.07 1.9-.48 2.48-1.16z"
             />
 
           </svg>
 
-        </div>
+        </button>
 
-
-        <h2
+        <span
           style="
-            margin:0 0 5px;
-
-            font-size:21px;
-
-            color:#222;
+            font-size:11px;
+            color:#555;
           "
         >
-          職場を新規登録
-        </h2>
-
-
-        <p
-          style="
-            margin:0;
-
-            color:#666;
-
-            font-size:12px;
-
-            line-height:1.5;
-          "
-        >
-          はじめて勤務表を作成する方は<br>
-          職場名と登録者名を入力してください。
-        </p>
+          Apple
+        </span>
 
       </div>
 
 
-      <label
-        for="organizationNameInput"
+      <!-- Azure -->
+
+      <div
         style="
-          display:block;
-
-          font-size:12px;
-
-          font-weight:600;
-
-          color:#555;
-
-          margin-bottom:4px;
-        "
-      >
-        職場名
-      </label>
-
-
-      <input
-        type="text"
-        id="organizationNameInput"
-        placeholder="例：○○学校"
-        maxlength="100"
-        style="
-          width:100%;
-
-          min-height:43px;
-
-          padding:0 12px;
-
-          border:1px solid #ccc;
-
-          border-radius:9px;
-
-          box-sizing:border-box;
-
-          font-size:15px;
-
-          outline:none;
-
-          margin-bottom:10px;
+          display:flex;
+          flex-direction:column;
+          align-items:center;
+          gap:4px;
         "
       >
 
+        <button
+          type="button"
+          id="organizationAzureButton"
+          aria-label="Azureで登録"
+          title="Azureで登録"
+          style="
+            width:48px;
+            height:48px;
+            min-width:48px;
+            min-height:48px;
+            padding:0;
+            border:1px solid #d0d0d5;
+            border-radius:50%;
+            background:#fff;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            cursor:pointer;
+            box-sizing:border-box;
+          "
+        >
 
-      <label
-        for="organizationStaffNameInput"
-        style="
-          display:block;
+          <svg
+            width="25"
+            height="25"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
 
-          font-size:12px;
+            <path
+              fill="#0078D4"
+              d="M11.42 2H18L11.6 18.1H5L11.42 2z"
+            />
 
-          font-weight:600;
+            <path
+              fill="#0078D4"
+              d="M12.4 18.1H20L14.1 11.3l-1.7 4.3 0 2.5z"
+            />
 
-          color:#555;
+          </svg>
 
-          margin-bottom:4px;
-        "
-      >
-        登録者名
-      </label>
+        </button>
 
+        <span
+          style="
+            font-size:11px;
+            color:#555;
+          "
+        >
+          Azure
+        </span>
 
-      <input
-        type="text"
-        id="organizationStaffNameInput"
-        placeholder="例：山田太郎"
-        maxlength="100"
-        style="
-          width:100%;
+      </div>
 
-          min-height:43px;
+    </div>
 
-          padding:0 12px;
-
-          border:1px solid #ccc;
-
-          border-radius:9px;
-
-          box-sizing:border-box;
-
-          font-size:15px;
-
-          outline:none;
-
-          margin-bottom:10px;
-        "
-      >
+  </div>
 
 
-     <!-- ==================================================
-     認証方法
-================================================== -->
-
-<div
-  style="
-    margin:5px 0 10px;
-    padding:8px 10px 10px;
-    border:1px solid #e5e5ea;
-    border-radius:10px;
-    background:#fafafa;
-    text-align:center;
-  "
->
+  <!-- ==================================================
+       メールアドレス
+  ================================================== -->
 
   <div
+    class="email-input-group"
+    style="margin-bottom:10px;"
+  >
+
+    <label for="organizationEmail">
+      メールアドレス
+    </label>
+
+    <input
+      type="email"
+      id="organizationEmail"
+      name="organizationEmail"
+      autocomplete="email"
+      inputmode="email"
+      placeholder="メールアドレスを入力"
+    >
+
+  </div>
+
+
+  <!-- ==================================================
+       パスワード
+  ================================================== -->
+
+  <div
+    class="email-input-group"
+    style="margin-bottom:12px;"
+  >
+
+    <label for="organizationPassword">
+      パスワード
+    </label>
+
+    <div class="password-input-wrapper">
+
+      <input
+        type="password"
+        id="organizationPassword"
+        name="organizationPassword"
+        autocomplete="new-password"
+        placeholder="6文字以上"
+      >
+
+    </div>
+
+  </div>
+
+
+  <!-- ==================================================
+       職場を登録する
+  ================================================== -->
+
+  <button
+    type="button"
+    id="createOrganizationButton"
     style="
-      margin-bottom:8px;
-      color:#555;
+      width:100%;
+      min-height:43px;
+      border:1px solid #777;
+      border-radius:9px;
+      background:#4b4b4f;
+      color:#fff;
+      font-size:14px;
+      font-weight:700;
+      cursor:pointer;
+      box-sizing:border-box;
+    "
+  >
+    職場を登録する
+  </button>
+
+
+  <p
+    style="
+      margin:8px 0 0;
+      color:#888;
       font-size:11px;
-      font-weight:600;
+      line-height:1.5;
+      text-align:center;
     "
   >
-    登録方法
-  </div>
+    登録後、あなたが管理者として<br>
+    勤務表を作成できます。
+  </p>
 
-
-  <div
-    style="
-      display:flex;
-      justify-content:center;
-      align-items:flex-start;
-      gap:28px;
-    "
-  >
-
-
-    <!-- Google -->
-
-    <div
-      style="
-        display:flex;
-        flex-direction:column;
-        align-items:center;
-        gap:4px;
-      "
-    >
-
-      <button
-        type="button"
-        id="organizationGoogleButton"
-        aria-label="Googleで登録"
-        title="Googleで登録"
-        style="
-          width:48px;
-          height:48px;
-          min-width:48px;
-          min-height:48px;
-          padding:0;
-          border:1px solid #d0d0d5;
-          border-radius:50%;
-          background:#ffffff;
-          display:flex;
-          align-items:center;
-          justify-content:center;
-          cursor:pointer;
-          box-sizing:border-box;
-        "
-      >
-
-        <svg
-          width="24"
-          height="24"
-          viewBox="0 0 48 48"
-          aria-hidden="true"
-        >
-
-          <path
-            fill="#4285F4"
-            d="M46.98 24.55c0-1.64-.15-3.22-.43-4.73H24v9.08h12.86c-.55 2.96-2.18 5.46-4.64 7.14l7.52 5.84C44.15 37.7 46.98 31.66 46.98 24.55z"
-          />
-
-          <path
-            fill="#34A853"
-            d="M24 48c6.48 0 11.92-2.14 15.9-5.82l-7.52-5.84c-2.08 1.4-4.73 2.23-8.38 2.23-6.28 0-11.57-3.57-13.48-8.78l-7.96 6.18C6.51 42.62 14.61 48 24 48z"
-          />
-
-          <path
-            fill="#FBBC05"
-            d="M10.52 28.4A14.47 14.47 0 0 1 9.5 24c0-1.53.26-3.02.73-4.4l-7.96-6.18A23.9 23.9 0 0 0 0 24c0 3.84.92 7.48 2.56 10.58l7.96-6.18z"
-          />
-
-          <path
-            fill="#EA4335"
-            d="M24 9.5c3.54 0 6.72 1.22 9.22 3.6l6.84-6.84C35.9 2.56 30.47 0 24 0 14.61 0 6.51 5.38 2.56 13.22l7.96 6.18C12.43 13.07 17.72 9.5 24 9.5z"
-          />
-
-        </svg>
-
-      </button>
-
-      <span
-        style="
-          font-size:11px;
-          color:#555;
-          line-height:1;
-        "
-      >
-        Google
-      </span>
-
-    </div>
-
-
-    <!-- Apple -->
-
-    <div
-      style="
-        display:flex;
-        flex-direction:column;
-        align-items:center;
-        gap:4px;
-      "
-    >
-
-      <button
-        type="button"
-        id="organizationAppleButton"
-        aria-label="Appleで登録"
-        title="Appleで登録"
-        style="
-          width:48px;
-          height:48px;
-          min-width:48px;
-          min-height:48px;
-          padding:0;
-          border:1px solid #d0d0d5;
-          border-radius:50%;
-          background:#ffffff;
-          display:flex;
-          align-items:center;
-          justify-content:center;
-          cursor:pointer;
-          box-sizing:border-box;
-        "
-      >
-
-        <svg
-          width="25"
-          height="25"
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-        >
-
-          <path
-            fill="#000000"
-            d="M17.05 12.54c-.02-2.09 1.71-3.1 1.79-3.15-.98-1.43-2.5-1.63-3.04-1.65-1.29-.14-2.54.77-3.2.77-.67 0-1.7-.76-2.8-.74-1.44.02-2.76.84-3.5 2.12-1.5 2.6-.38 6.43 1.05 8.53.7 1.03 1.51 2.18 2.59 2.14 1.05-.04 1.45-.68 2.73-.68 1.27 0 1.64.68 2.74.66 1.14-.02 1.84-1.04 2.52-2.08.8-1.17 1.13-2.3 1.15-2.36-.03-.01-2.21-.85-2.23-3.56z"
-          />
-
-          <path
-            fill="#000000"
-            d="M14.92 6.35c.58-.7.97-1.67.86-2.65-.84.03-1.86.56-2.46 1.25-.54.62-1.01 1.61-.88 2.56.94.07 1.9-.48 2.48-1.16z"
-          />
-
-        </svg>
-
-      </button>
-
-      <span
-        style="
-          font-size:11px;
-          color:#555;
-          line-height:1;
-        "
-      >
-        APPLE
-      </span>
-
-    </div>
-
-
-    <!-- Azure -->
-
-    <div
-      style="
-        display:flex;
-        flex-direction:column;
-        align-items:center;
-        gap:4px;
-      "
-    >
-
-      <button
-        type="button"
-        id="organizationAzureButton"
-        aria-label="Azureで登録"
-        title="Azureで登録"
-        style="
-          width:48px;
-          height:48px;
-          min-width:48px;
-          min-height:48px;
-          padding:0;
-          border:1px solid #d0d0d5;
-          border-radius:50%;
-          background:#ffffff;
-          display:flex;
-          align-items:center;
-          justify-content:center;
-          cursor:pointer;
-          box-sizing:border-box;
-        "
-      >
-
-        <svg
-          width="25"
-          height="25"
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-        >
-
-          <path
-            fill="#0078D4"
-            d="M11.42 2H18L11.6 18.1H5L11.42 2z"
-          />
-
-          <path
-            fill="#0078D4"
-            d="M12.4 18.1H20L14.1 11.3l-1.7 4.3 0 2.5 0z"
-          />
-
-        </svg>
-
-      </button>
-
-      <span
-        style="
-          font-size:11px;
-          color:#555;
-          line-height:1;
-        "
-      >
-        AZURE
-      </span>
-
-    </div>
-
-
-  </div>
 
 </div>
-
-
-      <button
-        type="button"
-        id="createOrganizationButton"
-        style="
-          width:100%;
-
-          min-height:43px;
-
-          border:1px solid #777;
-
-          border-radius:9px;
-
-          background:#4b4b4f;
-
-          color:#ffffff;
-
-          font-size:14px;
-
-          font-weight:700;
-
-          cursor:pointer;
-
-          box-sizing:border-box;
-        "
-      >
-        職場を登録する
-      </button>
-
-
-      <p
-        style="
-          margin:8px 0 0;
-
-          color:#888;
-
-          font-size:11px;
-
-          line-height:1.5;
-
-          text-align:center;
-        "
-      >
-        登録後、あなたが管理者として<br>
-        勤務表を作成できます。
-      </p>
-
-
-    </div>
 
 
     <!-- ==================================================
