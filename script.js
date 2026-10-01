@@ -377,7 +377,12 @@ async function init() {
       "★ 勤務表アプリ起動"
     );
 
-
+document
+  .getElementById("inviteEmailButton")
+  ?.addEventListener(
+    "click",
+    registerWithInviteEmail
+  );
     /* --------------------------------------------------
        初期ローディング表示
     -------------------------------------------------- */
