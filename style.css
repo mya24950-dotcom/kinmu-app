@@ -2833,23 +2833,6 @@ body.dark-mode #newOrganizationForm h3 {
   cursor: pointer;
 }
 
-
-/* =========================================================
-   招待画面の不要要素
-   ========================================================= */
-
-#loginPage #inviteEmailButton {
-  display: none !important;
-}
-
-#inviteRegisterView .invite-register-title,
-#inviteRegisterView .invite-social-title,
-#inviteRegisterView .invite-register-divider,
-#inviteRegisterView .invite-divider {
-  display: none;
-}
-
-
 /* =========================================================
    ログイン画面 ダークモード
    ========================================================= */
