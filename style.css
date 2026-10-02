@@ -3957,6 +3957,7 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
   color: #98989d;
 }
 
+```css
 /* =========================================================
    新規職場登録画面
 ========================================================= */
@@ -3992,19 +3993,21 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
 
 .organization-register-logo {
   display: block;
-  width: 90px;
+  width: 78px;
   height: auto;
   margin: 0 auto 1px;
 }
 
 .organization-register-header h2 {
   margin: 0 0 2px;
+
   font-size: 19px;
   line-height: 1.2;
 }
 
 .organization-register-header p {
   margin: 0;
+
   font-size: 12px;
   line-height: 1.25;
 }
@@ -4020,13 +4023,16 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
 
 .organization-register-field label {
   display: block;
+
   margin: 0 0 2px;
+
   font-size: 13px;
   line-height: 1.2;
 }
 
 .organization-register-field input {
   display: block;
+
   width: 100%;
   height: 36px;
   min-height: 36px;
@@ -4035,7 +4041,34 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
 
   padding: 6px 9px;
 
-  font-size: 14px;
+  font-size: 13px;
+  line-height: 1.2;
+
+  border-radius: 7px;
+}
+
+
+/* =========================================================
+   パスワード入力欄
+========================================================= */
+
+#newOrganizationForm .password-input-wrapper {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+#newOrganizationForm .password-input-wrapper input {
+  display: block;
+
+  width: 100%;
+  height: 36px;
+  min-height: 36px;
+
+  box-sizing: border-box;
+
+  padding: 6px 9px;
+
+  font-size: 13px;
   line-height: 1.2;
 
   border-radius: 7px;
@@ -4052,6 +4085,7 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
 
 .organization-auth-method-title {
   text-align: center;
+
   margin-bottom: 4px;
 
   font-size: 13px;
@@ -4060,6 +4094,7 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
 
 .organization-auth-buttons {
   display: flex;
+
   justify-content: center;
   align-items: flex-start;
 
@@ -4068,6 +4103,7 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
 
 .organization-auth-item {
   display: flex;
+
   flex-direction: column;
 
   align-items: center;
@@ -4151,6 +4187,7 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
 
 .organization-or {
   display: flex;
+
   align-items: center;
 
   gap: 8px;
@@ -4297,7 +4334,30 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
 
     padding: 5px 9px;
 
-    font-size: 14px;
+    font-size: 13px;
+    line-height: 1.2;
+
+    border-radius: 7px;
+  }
+
+
+  /* =======================================================
+     パスワード入力欄
+  ======================================================= */
+
+  #newOrganizationForm .password-input-wrapper {
+    width: 100%;
+  }
+
+  #newOrganizationForm .password-input-wrapper input {
+    width: 100%;
+
+    height: 34px;
+    min-height: 34px;
+
+    padding: 5px 9px;
+
+    font-size: 13px;
     line-height: 1.2;
 
     border-radius: 7px;
@@ -4451,3 +4511,4 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
   }
 
 }
+```
