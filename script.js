@@ -12457,38 +12457,46 @@ async function saveWorkShift(
 
     else {
 
-      const result =
-        await supabaseClient
-          .from("work_shifts")
-          .insert({
+  const result =
+    await supabaseClient
+      .from("work_shifts")
+      .insert({
 
-            staff_name:
-              name,
+        staff_name:
+          name,
 
-            work_date:
-              dateKey,
+        work_date:
+          dateKey,
 
-            shift_name:
-              shiftName,
+        shift_name:
+          shiftName,
 
-            leave_type:
-              null,
+        leave_type:
+          null,
 
-             organization_id:
-        currentOrganization.id
+        organization_id:
+          currentOrganization.id
 
-          });
+      });
 
 
-      if (
-        result.error
-      ) {
+  if (result.error) {
 
-        throw result.error;
+    console.error(
+      "★ 新規勤務INSERTエラー",
+      result.error
+    );
 
-      }
+    alert(
+      "新規勤務の登録エラー\n\n" +
+      result.error.message
+    );
 
-    }
+    throw result.error;
+
+  }
+
+}
 
 
     setStoredShift(
