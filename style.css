@@ -3957,7 +3957,6 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
   color: #98989d;
 }
 
-```css
 /* =========================================================
    新規職場登録画面
 ========================================================= */
@@ -3965,8 +3964,11 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
 #newOrganizationForm {
   width: 100%;
   max-width: 410px;
+
   margin: 0 auto;
-  padding: 2px 16px 8px;
+
+  padding: 8px 16px 18px;
+
   box-sizing: border-box;
 }
 
@@ -3976,8 +3978,10 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
 ========================================================= */
 
 #newOrganizationForm #cancelOrganizationButton {
-  margin: 0 0 2px 0 !important;
-  padding: 2px 0 !important;
+  margin: 0 0 8px 0 !important;
+
+  padding: 3px 0 !important;
+
   line-height: 1.2;
 }
 
@@ -3988,18 +3992,21 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
 
 .organization-register-header {
   text-align: center;
-  margin-bottom: 5px;
+
+  margin-bottom: 12px;
 }
 
 .organization-register-logo {
   display: block;
+
   width: 78px;
   height: auto;
-  margin: 0 auto 1px;
+
+  margin: 0 auto 4px;
 }
 
 .organization-register-header h2 {
-  margin: 0 0 2px;
+  margin: 0 0 5px;
 
   font-size: 19px;
   line-height: 1.2;
@@ -4009,7 +4016,7 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
   margin: 0;
 
   font-size: 12px;
-  line-height: 1.25;
+  line-height: 1.3;
 }
 
 
@@ -4018,13 +4025,13 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
 ========================================================= */
 
 .organization-register-field {
-  margin-bottom: 5px;
+  margin-bottom: 9px;
 }
 
 .organization-register-field label {
   display: block;
 
-  margin: 0 0 2px;
+  margin: 0 0 3px;
 
   font-size: 13px;
   line-height: 1.2;
@@ -4034,12 +4041,13 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
   display: block;
 
   width: 100%;
-  height: 36px;
-  min-height: 36px;
+
+  height: 37px;
+  min-height: 37px;
 
   box-sizing: border-box;
 
-  padding: 6px 9px;
+  padding: 6px 10px;
 
   font-size: 13px;
   line-height: 1.2;
@@ -4054,6 +4062,7 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
 
 #newOrganizationForm .password-input-wrapper {
   width: 100%;
+
   box-sizing: border-box;
 }
 
@@ -4061,12 +4070,13 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
   display: block;
 
   width: 100%;
-  height: 36px;
-  min-height: 36px;
+
+  height: 37px;
+  min-height: 37px;
 
   box-sizing: border-box;
 
-  padding: 6px 9px;
+  padding: 6px 10px;
 
   font-size: 13px;
   line-height: 1.2;
@@ -4080,13 +4090,13 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
 ========================================================= */
 
 .organization-auth-method {
-  margin: 5px 0 3px;
+  margin: 10px 0 8px;
 }
 
 .organization-auth-method-title {
   text-align: center;
 
-  margin-bottom: 4px;
+  margin-bottom: 7px;
 
   font-size: 13px;
   line-height: 1.2;
@@ -4098,7 +4108,7 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
   justify-content: center;
   align-items: flex-start;
 
-  gap: 22px;
+  gap: 26px;
 }
 
 .organization-auth-item {
@@ -4109,7 +4119,7 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
   align-items: center;
   justify-content: center;
 
-  gap: 3px;
+  gap: 5px;
 }
 
 .organization-auth-item span {
@@ -4142,6 +4152,7 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
   margin: 0 !important;
 
   border: 1px solid #d1d1d6 !important;
+
   border-radius: 50% !important;
 
   background: #ffffff !important;
@@ -4192,7 +4203,7 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
 
   gap: 8px;
 
-  margin: 3px 0;
+  margin: 8px 0;
 
   font-size: 11px;
   line-height: 1.2;
@@ -4226,7 +4237,7 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
   height: 40px;
   min-height: 40px;
 
-  margin: 7px 0 3px;
+  margin: 10px 0 6px;
 
   padding: 5px 10px;
 
@@ -4242,12 +4253,12 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
 ========================================================= */
 
 .organization-register-note {
-  margin: 2px 0 0;
+  margin: 5px 0 0;
 
   text-align: center;
 
   font-size: 11px;
-  line-height: 1.25;
+  line-height: 1.3;
 }
 
 
@@ -4263,7 +4274,7 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
 
     margin: 0 auto;
 
-    padding: 1px 14px 5px;
+    padding: 7px 14px 16px;
 
     box-sizing: border-box;
   }
@@ -4274,8 +4285,9 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
   ======================================================= */
 
   #newOrganizationForm #cancelOrganizationButton {
-    margin: 0 0 1px 0 !important;
-    padding: 2px 0 !important;
+    margin: 0 0 7px 0 !important;
+
+    padding: 3px 0 !important;
 
     line-height: 1.2;
   }
@@ -4286,18 +4298,18 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
   ======================================================= */
 
   .organization-register-header {
-    margin-bottom: 3px;
+    margin-bottom: 10px;
   }
 
   .organization-register-logo {
     width: 68px;
     height: auto;
 
-    margin: 0 auto 1px;
+    margin: 0 auto 4px;
   }
 
   .organization-register-header h2 {
-    margin: 0 0 2px;
+    margin: 0 0 4px;
 
     font-size: 17px;
     line-height: 1.2;
@@ -4307,7 +4319,7 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
     margin: 0;
 
     font-size: 11px;
-    line-height: 1.2;
+    line-height: 1.3;
   }
 
 
@@ -4316,11 +4328,11 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
   ======================================================= */
 
   .organization-register-field {
-    margin-bottom: 4px;
+    margin-bottom: 7px;
   }
 
   .organization-register-field label {
-    margin: 0 0 1px;
+    margin: 0 0 2px;
 
     font-size: 12px;
     line-height: 1.2;
@@ -4329,8 +4341,8 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
   .organization-register-field input {
     width: 100%;
 
-    height: 34px;
-    min-height: 34px;
+    height: 35px;
+    min-height: 35px;
 
     padding: 5px 9px;
 
@@ -4352,8 +4364,8 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
   #newOrganizationForm .password-input-wrapper input {
     width: 100%;
 
-    height: 34px;
-    min-height: 34px;
+    height: 35px;
+    min-height: 35px;
 
     padding: 5px 9px;
 
@@ -4369,11 +4381,11 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
   ======================================================= */
 
   .organization-auth-method {
-    margin: 4px 0 2px;
+    margin: 8px 0 7px;
   }
 
   .organization-auth-method-title {
-    margin-bottom: 3px;
+    margin-bottom: 6px;
 
     font-size: 12px;
     line-height: 1.2;
@@ -4385,7 +4397,7 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
     justify-content: center;
     align-items: flex-start;
 
-    gap: 16px;
+    gap: 20px;
   }
 
   .organization-auth-item {
@@ -4396,7 +4408,7 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
     align-items: center;
     justify-content: center;
 
-    gap: 3px;
+    gap: 4px;
   }
 
   .organization-auth-item span {
@@ -4411,7 +4423,6 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
 
   /* =======================================================
      ソーシャルアイコン
-     スマホでも完全な円形
   ======================================================= */
 
   .organization-auth-icon {
@@ -4429,6 +4440,7 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
     margin: 0 !important;
 
     border: 1px solid #d1d1d6 !important;
+
     border-radius: 50% !important;
 
     background: #ffffff !important;
@@ -4473,7 +4485,7 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
   ======================================================= */
 
   .organization-or {
-    margin: 2px 0;
+    margin: 7px 0;
 
     font-size: 10px;
     line-height: 1.2;
@@ -4490,7 +4502,7 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
     height: 38px;
     min-height: 38px;
 
-    margin: 6px 0 3px;
+    margin: 8px 0 5px;
 
     padding: 5px 10px;
 
@@ -4504,11 +4516,10 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
   ======================================================= */
 
   .organization-register-note {
-    margin: 2px 0 0;
+    margin: 4px 0 0;
 
     font-size: 10px;
-    line-height: 1.2;
+    line-height: 1.3;
   }
 
 }
-```
