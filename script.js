@@ -1265,81 +1265,96 @@ if (
     ================================================== */
 
     const pendingOrganizationName =
-      sessionStorage.getItem(
-        "pendingOrganizationName"
-      );
+  sessionStorage.getItem(
+    "pendingOrganizationName"
+  );
+
+const pendingStaffName =
+  sessionStorage.getItem(
+    "pendingStaffName"
+  );
 
 
-    const pendingStaffName =
-      sessionStorage.getItem(
-        "pendingStaffName"
-      );
+if (
+  pendingOrganizationName &&
+  pendingStaffName
+) {
+
+  console.log(
+    "★ 保留中の新規職場登録を処理します"
+  );
 
 
-    if (
-      pendingOrganizationName &&
-      pendingStaffName
-    ) {
+  const {
+    data,
+    error
+  } = await supabaseClient.rpc(
+    "create_organization_and_admin",
+    {
+      new_org_name:
+        pendingOrganizationName,
 
-      console.log(
-        "★ 新規職場登録処理"
-      );
-
-
-      const {
-        data,
-        error
-      } =
-        await supabaseClient.rpc(
-          "create_organization_and_admin",
-          {
-            new_org_name:
-              pendingOrganizationName,
-
-            new_staff_name:
-              pendingStaffName
-          }
-        );
-
-
-      if (error) {
-
-        throw error;
-
-      }
-
-
-      sessionStorage.removeItem(
-        "pendingOrganizationName"
-      );
-
-
-      sessionStorage.removeItem(
-        "pendingStaffName"
-      );
-
-
-      currentOrganization =
-        await getCurrentOrganization(
-          session.user.id
-        );
-
-
-      if (!currentOrganization) {
-
-        throw new Error(
-          "新しい職場の登録に成功しましたが、職場情報を取得できませんでした。"
-        );
-
-      }
-
-
-      alert(
-        "職場を登録しました。"
-      );
-
+      new_staff_name:
+        pendingStaffName
     }
+  );
 
+
+  if (error) {
+
+    console.error(
+      "★ 職場作成RPCエラー:",
+      error
+    );
+
+    throw error;
+  }
+
+
+  /*
+     RPCが成功した時点で
+     保留情報を削除する。
+
+     これにより、組織情報取得時に
+     一時的なエラーが発生しても、
+     同じ職場を二重作成しにくくする。
+  */
+
+  sessionStorage.removeItem(
+    "pendingOrganizationName"
+  );
+
+  sessionStorage.removeItem(
+    "pendingStaffName"
+  );
+
+
+  currentOrganization =
+    await getCurrentOrganization(
+      session.user.id
+    );
+
+
+  if (!currentOrganization) {
+
+    throw new Error(
+      "職場登録後の組織情報を取得できませんでした。"
+    );
+
+  }
+
+
+  console.log(
+    "★ 新規職場登録完了:",
+    currentOrganization
+  );
+
+
+  alert(
+    "職場を登録しました。"
+  );
+
+}
 
     /* ==================================================
        職場所属取得
