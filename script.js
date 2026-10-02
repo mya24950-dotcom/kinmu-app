@@ -3460,7 +3460,7 @@ async function deleteCurrentOrganization() {
 
     setupEmailLogin();
 
-    
+    setupAppleLogin();
 
     setupNewOrganizationButton();
 
@@ -12283,17 +12283,27 @@ async function saveWorkShift(
 
   try {
 
-    const existing = await supabaseClient
-  .from("work_shifts")
-  .select("id,leave_type,organization_id")
-  .eq("staff_name", name)
-  .eq("work_date", dateKey)
-  .eq(
-    "organization_id",
-    currentOrganization.id
-  )
-  .order("id", { ascending: true })
-  .limit(1);
+    const existing =
+      await supabaseClient
+        .from("work_shifts")
+        .select(
+          "id,leave_type"
+        )
+        .eq(
+          "staff_name",
+          name
+        )
+        .eq(
+          "work_date",
+          dateKey
+        )
+        .order(
+          "id",
+          {
+            ascending: true
+          }
+        )
+        .limit(1);
 
 
     if (
@@ -12331,25 +12341,21 @@ async function saveWorkShift(
         ) {
 
           const result =
-  await supabaseClient
-    .from("work_shifts")
-    .update({
+            await supabaseClient
+              .from("work_shifts")
+              .update({
 
-      shift_name:
-        "",
+                shift_name:
+                  "",
 
-      leave_type:
-        existingRow.leave_type
+                leave_type:
+                  existingRow.leave_type
 
-    })
-    .eq(
-      "id",
-      existingRow.id
-    )
-    .eq(
-      "organization_id",
-      currentOrganization.id
-    );
+              })
+              .eq(
+                "id",
+                existingRow.id
+              );
 
 
           if (
@@ -12457,46 +12463,38 @@ async function saveWorkShift(
 
     else {
 
-  const result =
-    await supabaseClient
-      .from("work_shifts")
-      .insert({
+      const result =
+        await supabaseClient
+          .from("work_shifts")
+          .insert({
 
-        staff_name:
-          name,
+            staff_name:
+              name,
 
-        work_date:
-          dateKey,
+            work_date:
+              dateKey,
 
-        shift_name:
-          shiftName,
+            shift_name:
+              shiftName,
 
-        leave_type:
-          null,
+            leave_type:
+              null,
 
-        organization_id:
-          currentOrganization.id
+             organization_id:
+        currentOrganization.id
 
-      });
+          });
 
 
-  if (result.error) {
+      if (
+        result.error
+      ) {
 
-    console.error(
-      "★ 新規勤務INSERTエラー",
-      result.error
-    );
+        throw result.error;
 
-    alert(
-      "新規勤務の登録エラー\n\n" +
-      result.error.message
-    );
+      }
 
-    throw result.error;
-
-  }
-
-}
+    }
 
 
     setStoredShift(
@@ -12648,30 +12646,26 @@ async function saveLeave(
     ================================================== */
 
     const existing =
-  await supabaseClient
-    .from("work_shifts")
-    .select(
-      "id,leave_type,organization_id"
-    )
-    .eq(
-      "staff_name",
-      name
-    )
-    .eq(
-      "work_date",
-      dateKey
-    )
-    .eq(
-      "organization_id",
-      currentOrganization.id
-    )
-    .order(
-      "id",
-      {
-        ascending: true
-      }
-    )
-    .limit(1);
+      await supabaseClient
+        .from("work_shifts")
+        .select(
+          "id,shift_name,leave_type"
+        )
+        .eq(
+          "staff_name",
+          name
+        )
+        .eq(
+          "work_date",
+          dateKey
+        )
+        .order(
+          "id",
+          {
+            ascending: true
+          }
+        )
+        .limit(1);
 
 
     if (
@@ -13877,161 +13871,154 @@ if (result.error) {
 
 
       /* -----------------------------------------------
-   勤務表で使用されている勤務形態名も変更
------------------------------------------------ */
+         勤務表で使用されている勤務形態名も変更
+      ----------------------------------------------- */
 
-if (
-  oldName !== name
-) {
+      if (
+        oldName !== name
+      ) {
 
-  const workResult =
-    await supabaseClient
-      .from("work_shifts")
-      .update({
+        const workResult =
+          await supabaseClient
+            .from("work_shifts")
+            .update({
 
-        shift_name:
-          name
+              shift_name:
+                name
 
-      })
-      .eq(
-        "shift_name",
-        oldName
-      )
-      .eq(
-        "organization_id",
+            })
+            .eq(
+              "shift_name",
+              oldName
+            );
+
+
+        if (
+          workResult.error
+        ) {
+
+          throw workResult.error;
+
+        }
+
+      }
+
+
+      editingShiftIndex =
+        -1;
+
+    }
+
+    /* =================================================
+       新規追加
+    ================================================= */
+
+    else {
+
+       const result =
+  await supabaseClient
+    .from("shift_types")
+    .insert({
+
+      name,
+
+      start_time:
+        start || null,
+
+      end_time:
+        end || null,
+
+      break_time:
+        breakTime || null,
+
+      organization_id:
         currentOrganization.id
+
+    });
+
+      if (result.error) {
+
+        throw result.error;
+
+      }
+
+    }
+
+
+    /* =================================================
+       入力欄をリセット
+    ================================================= */
+
+    nameInput.value =
+      "";
+
+    if (startInput) {
+
+      startInput.value =
+        "";
+
+    }
+
+    if (endInput) {
+
+      endInput.value =
+        "";
+
+    }
+
+    if (breakInput) {
+
+      breakInput.value =
+        "";
+
+    }
+
+
+    const button =
+      document.getElementById(
+        "addShiftButton"
       );
 
 
-  if (
-    workResult.error
-  ) {
+    if (button) {
 
-    throw workResult.error;
+      button.textContent =
+        "勤務形態を追加";
 
-  }
-
-}
+    }
 
 
-editingShiftIndex =
-  -1;
+    /* =================================================
+       最新データを再取得
+    ================================================= */
 
-}
-
-/* =================================================
-   新規追加
-================================================= */
-
-else {
-
-  const result =
-    await supabaseClient
-      .from("shift_types")
-      .insert({
-
-        name,
-
-        start_time:
-          start || null,
-
-        end_time:
-          end || null,
-
-        break_time:
-          breakTime || null,
-
-        organization_id:
-          currentOrganization.id
-
-      });
+    await loadAllFromSupabase();
 
 
-  if (
-    result.error
-  ) {
+    renderShiftList();
 
-    throw result.error;
+    renderSchedule();
+
+
+  } catch (error) {
+
+    console.error(
+      "勤務形態保存エラー",
+      error
+    );
+
+
+    alert(
+      "勤務形態の保存に失敗しました。\n\n" +
+      (error?.message || String(error))
+    );
+
+
+  } finally {
+
+    finishCloudOperation();
 
   }
-
-}
-
-
-/* =================================================
-   入力欄をリセット
-================================================= */
-
-nameInput.value =
-  "";
-
-if (startInput) {
-
-  startInput.value =
-    "";
-
-}
-
-if (endInput) {
-
-  endInput.value =
-    "";
-
-}
-
-if (breakInput) {
-
-  breakInput.value =
-    "";
-
-}
-
-
-const button =
-  document.getElementById(
-    "addShiftButton"
-  );
-
-
-if (button) {
-
-  button.textContent =
-    "勤務形態を追加";
-
-}
-
-
-/* =================================================
-   最新データを再取得
-================================================= */
-
-await loadAllFromSupabase();
-
-
-renderShiftList();
-
-renderSchedule();
-
-
-} catch (error) {
-
-  console.error(
-    "勤務形態保存エラー",
-    error
-  );
-
-
-  alert(
-    "勤務形態の保存に失敗しました。\n\n" +
-    (error?.message || String(error))
-  );
-
-
-} finally {
-
-  finishCloudOperation();
-
-}
 
 }
 
@@ -14862,59 +14849,56 @@ function renderShiftList() {
               true;
 
 
-    try {
+            try {
 
-  const workResult =
-    await supabaseClient
-      .from("work_shifts")
-      .delete()
-      .eq(
-        "shift_name",
-        shift.name
-      )
-      .eq(
-        "organization_id",
-        currentOrganization.id
-      );
+              const workResult =
+                await supabaseClient
+                  .from("work_shifts")
+                  .delete()
+                  .eq(
+                    "shift_name",
+                    shift.name
+                  );
 
 
               if (
-  workResult.error
-) {
+                workResult.error
+              ) {
 
-  throw workResult.error;
+                throw workResult.error;
 
-}
-
-
-const result =
-  await supabaseClient
-    .from("shift_types")
-    .delete()
-    .eq(
-      "id",
-      shift.id
-    );
+              }
 
 
-if (
-  result.error
-) {
-
-  throw result.error;
-
-}
-
-
-editingShiftIndex =
-  -1;
+              const result =
+                await supabaseClient
+                  .from("shift_types")
+                  .delete()
+                  .eq(
+                    "id",
+                    shift.id
+                  );
 
 
-await loadAllFromSupabase();
+              if (
+                result.error
+              ) {
 
-renderShiftList();
+                throw result.error;
 
-renderSchedule();
+              }
+
+
+              editingShiftIndex =
+                -1;
+
+
+              await loadAllFromSupabase();
+
+
+              renderShiftList();
+
+              renderSchedule();
 
 
             } catch (error) {
