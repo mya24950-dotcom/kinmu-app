@@ -3992,7 +3992,7 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
 
 .organization-register-logo {
   display: block;
-  width: 68px;
+  width: 78px;
   height: auto;
   margin: 0 auto 1px;
 }
@@ -4030,6 +4030,7 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
   width: 100%;
   height: 36px;
   min-height: 36px;
+
   box-sizing: border-box;
 
   padding: 6px 9px;
@@ -4051,7 +4052,8 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
 
 .organization-auth-method-title {
   text-align: center;
-  margin-bottom: 3px;
+  margin-bottom: 4px;
+
   font-size: 13px;
   line-height: 1.2;
 }
@@ -4059,19 +4061,28 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
 .organization-auth-buttons {
   display: flex;
   justify-content: center;
-  align-items: center;
-  gap: 18px;
+  align-items: flex-start;
+
+  gap: 22px;
 }
 
 .organization-auth-item {
   display: flex;
+  flex-direction: column;
+
   align-items: center;
-  gap: 4px;
+  justify-content: center;
+
+  gap: 3px;
 }
 
 .organization-auth-item span {
+  display: block;
+
   font-size: 12px;
   line-height: 1.2;
+
+  text-align: center;
 }
 
 
@@ -4100,6 +4111,7 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
   background: #ffffff !important;
 
   display: flex !important;
+
   align-items: center !important;
   justify-content: center !important;
 
@@ -4140,6 +4152,7 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
 .organization-or {
   display: flex;
   align-items: center;
+
   gap: 8px;
 
   margin: 3px 0;
@@ -4219,26 +4232,28 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
   }
 
 
-  /* -----------------------------------------
+  /* =======================================================
      戻る
-  ----------------------------------------- */
+  ======================================================= */
 
   #newOrganizationForm #cancelOrganizationButton {
     margin: 0 0 1px 0 !important;
     padding: 2px 0 !important;
+
+    line-height: 1.2;
   }
 
 
-  /* -----------------------------------------
-     タイトル
-  ----------------------------------------- */
+  /* =======================================================
+     タイトル・Shift+ロゴ
+  ======================================================= */
 
   .organization-register-header {
     margin-bottom: 3px;
   }
 
   .organization-register-logo {
-    width: 54px;
+    width: 68px;
     height: auto;
 
     margin: 0 auto 1px;
@@ -4259,16 +4274,16 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
   }
 
 
-  /* -----------------------------------------
+  /* =======================================================
      入力項目
-  ----------------------------------------- */
+  ======================================================= */
 
   .organization-register-field {
     margin-bottom: 4px;
   }
 
   .organization-register-field label {
-    margin-bottom: 1px;
+    margin: 0 0 1px;
 
     font-size: 12px;
     line-height: 1.2;
@@ -4289,39 +4304,55 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
   }
 
 
-  /* -----------------------------------------
+  /* =======================================================
      Google / Apple / Azure
-  ----------------------------------------- */
+  ======================================================= */
 
   .organization-auth-method {
     margin: 4px 0 2px;
   }
 
   .organization-auth-method-title {
-    margin-bottom: 2px;
+    margin-bottom: 3px;
 
     font-size: 12px;
     line-height: 1.2;
   }
 
   .organization-auth-buttons {
-    gap: 12px;
+    display: flex;
+
+    justify-content: center;
+    align-items: flex-start;
+
+    gap: 16px;
   }
 
   .organization-auth-item {
-    gap: 4px;
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 3px;
   }
 
   .organization-auth-item span {
+    display: block;
+
     font-size: 11px;
     line-height: 1.2;
+
+    text-align: center;
   }
 
 
-  /* -----------------------------------------
+  /* =======================================================
      ソーシャルアイコン
      スマホでも完全な円形
-  ----------------------------------------- */
+  ======================================================= */
 
   .organization-auth-icon {
     width: 42px !important;
@@ -4337,7 +4368,15 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
 
     margin: 0 !important;
 
+    border: 1px solid #d1d1d6 !important;
     border-radius: 50% !important;
+
+    background: #ffffff !important;
+
+    display: flex !important;
+
+    align-items: center !important;
+    justify-content: center !important;
 
     box-sizing: border-box !important;
 
@@ -4346,6 +4385,8 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
     overflow: hidden !important;
 
     flex: 0 0 42px !important;
+
+    cursor: pointer;
 
     appearance: none !important;
     -webkit-appearance: none !important;
@@ -4361,24 +4402,27 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
     max-width: 23px !important;
     max-height: 23px !important;
 
+    display: block !important;
+
     flex: 0 0 23px !important;
   }
 
 
-  /* -----------------------------------------
+  /* =======================================================
      or
-  ----------------------------------------- */
+  ======================================================= */
 
   .organization-or {
     margin: 2px 0;
 
     font-size: 10px;
+    line-height: 1.2;
   }
 
 
-  /* -----------------------------------------
+  /* =======================================================
      登録ボタン
-  ----------------------------------------- */
+  ======================================================= */
 
   #newOrganizationForm #createOrganizationButton {
     width: 100%;
@@ -4395,9 +4439,9 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
   }
 
 
-  /* -----------------------------------------
+  /* =======================================================
      下部説明
-  ----------------------------------------- */
+  ======================================================= */
 
   .organization-register-note {
     margin: 2px 0 0;
