@@ -13869,10 +13869,10 @@ if (result.error) {
 
 
       /* -----------------------------------------------
-         勤務表で使用されている勤務形態名も変更
-      ----------------------------------------------- */
+   勤務表で使用されている勤務形態名も変更
+----------------------------------------------- */
 
-      if (
+if (
   oldName !== name
 ) {
 
@@ -13894,6 +13894,7 @@ if (result.error) {
         currentOrganization.id
       );
 
+
   if (
     workResult.error
   ) {
@@ -13904,132 +13905,125 @@ if (result.error) {
 
 }
 
-        if (
-          workResult.error
-        ) {
 
-          throw workResult.error;
+editingShiftIndex =
+  -1;
 
-        }
+}
 
-      }
+/* =================================================
+   新規追加
+================================================= */
 
+else {
 
-      editingShiftIndex =
-        -1;
+  const result =
+    await supabaseClient
+      .from("shift_types")
+      .insert({
 
-    }
+        name,
 
-    /* =================================================
-       新規追加
-    ================================================= */
+        start_time:
+          start || null,
 
-    else {
+        end_time:
+          end || null,
 
-       const result =
-  await supabaseClient
-    .from("shift_types")
-    .insert({
+        break_time:
+          breakTime || null,
 
-      name,
+        organization_id:
+          currentOrganization.id
 
-      start_time:
-        start || null,
-
-      end_time:
-        end || null,
-
-      break_time:
-        breakTime || null,
-
-      organization_id:
-        currentOrganization.id
-
-    });
-
-      if (result.error) {
-
-        throw result.error;
-
-      }
-
-    }
+      });
 
 
-    /* =================================================
-       入力欄をリセット
-    ================================================= */
+  if (
+    result.error
+  ) {
 
-    nameInput.value =
-      "";
-
-    if (startInput) {
-
-      startInput.value =
-        "";
-
-    }
-
-    if (endInput) {
-
-      endInput.value =
-        "";
-
-    }
-
-    if (breakInput) {
-
-      breakInput.value =
-        "";
-
-    }
-
-
-    const button =
-      document.getElementById(
-        "addShiftButton"
-      );
-
-
-    if (button) {
-
-      button.textContent =
-        "勤務形態を追加";
-
-    }
-
-
-    /* =================================================
-       最新データを再取得
-    ================================================= */
-
-    await loadAllFromSupabase();
-
-
-    renderShiftList();
-
-    renderSchedule();
-
-
-  } catch (error) {
-
-    console.error(
-      "勤務形態保存エラー",
-      error
-    );
-
-
-    alert(
-      "勤務形態の保存に失敗しました。\n\n" +
-      (error?.message || String(error))
-    );
-
-
-  } finally {
-
-    finishCloudOperation();
+    throw result.error;
 
   }
+
+}
+
+
+/* =================================================
+   入力欄をリセット
+================================================= */
+
+nameInput.value =
+  "";
+
+if (startInput) {
+
+  startInput.value =
+    "";
+
+}
+
+if (endInput) {
+
+  endInput.value =
+    "";
+
+}
+
+if (breakInput) {
+
+  breakInput.value =
+    "";
+
+}
+
+
+const button =
+  document.getElementById(
+    "addShiftButton"
+  );
+
+
+if (button) {
+
+  button.textContent =
+    "勤務形態を追加";
+
+}
+
+
+/* =================================================
+   最新データを再取得
+================================================= */
+
+await loadAllFromSupabase();
+
+
+renderShiftList();
+
+renderSchedule();
+
+
+} catch (error) {
+
+  console.error(
+    "勤務形態保存エラー",
+    error
+  );
+
+
+  alert(
+    "勤務形態の保存に失敗しました。\n\n" +
+    (error?.message || String(error))
+  );
+
+
+} finally {
+
+  finishCloudOperation();
+
+}
 
 }
 
