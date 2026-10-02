@@ -5380,73 +5380,103 @@ function setupGoogleLogin() {
 
 async function createNewOrganization() {
 
-  const organizationNameInput =
-    document.getElementById(
-      "organizationNameInput"
-    );
+  const orgInput =
+    document.getElementById("organizationNameInput");
 
-  const staffNameInput =
-    document.getElementById(
-      "organizationStaffNameInput"
-    );
+  const staffInput =
+    document.getElementById("organizationStaffNameInput");
+
+  const emailInput =
+    document.getElementById("organizationEmail");
+
+  const passwordInput =
+    document.getElementById("organizationPassword");
+
+  const passwordConfirmInput =
+    document.getElementById("organizationPasswordConfirm");
 
   const organizationName =
-    organizationNameInput
-      ? organizationNameInput.value.trim()
-      : "";
+    orgInput?.value.trim() || "";
 
   const staffName =
-    staffNameInput
-      ? staffNameInput.value.trim()
-      : "";
+    staffInput?.value.trim() || "";
 
-  // ==========================================
-  // 入力チェック
-  // ==========================================
+  const email =
+    emailInput?.value.trim() || "";
+
+  const password =
+    passwordInput?.value || "";
+
+  const passwordConfirm =
+    passwordConfirmInput?.value || "";
+
+
+  /* --------------------------------
+     入力チェック
+  -------------------------------- */
 
   if (!organizationName) {
-
     alert("職場名を入力してください。");
-
-    organizationNameInput?.focus();
-
+    orgInput?.focus();
     return;
   }
 
   if (!staffName) {
-
     alert("登録者名を入力してください。");
+    staffInput?.focus();
+    return;
+  }
 
-    staffNameInput?.focus();
+  if (!email) {
+    alert("メールアドレスを入力してください。");
+    emailInput?.focus();
+    return;
+  }
 
+  if (!password) {
+    alert("パスワードを入力してください。");
+    passwordInput?.focus();
+    return;
+  }
+
+  if (password.length < 6) {
+    alert("パスワードは6文字以上で入力してください。");
+    passwordInput?.focus();
+    return;
+  }
+
+  if (!passwordConfirm) {
+    alert("確認用パスワードを入力してください。");
+    passwordConfirmInput?.focus();
+    return;
+  }
+
+  if (password !== passwordConfirm) {
+    alert("パスワードと確認用パスワードが一致していません。");
+    passwordConfirmInput?.focus();
     return;
   }
 
 
-  try {
+  /* --------------------------------
+     Supabaseクライアント
+  -------------------------------- */
 
-    // ==========================================
-    // 現在のログイン状態を確認
-    // Google / Apple / Azure 共通
-    // ==========================================
+  const client =
+    window.shiftSupabaseClient || supabaseClient;
 
-    const {
-      data: {
-        session
-      }
-    } =
-      await supabaseClient.auth.getSession();
+  if (!client) {
+    alert("認証システムの準備ができていません。");
+    return;
+  }
 
 
-    // ==========================================
-    // まだログインしていない場合
-    // ==========================================
-
-if (!session) {
-
-  // ==========================================
-  // 職場登録情報を一時保存
-  // ==========================================
+  /* --------------------------------
+     職場登録情報を一時保存
+     
+     メール確認後にこの情報を使って
+     職場を作成する
+  -------------------------------- */
 
   sessionStorage.setItem(
     "pendingOrganizationName",
@@ -5459,140 +5489,42 @@ if (!session) {
   );
 
 
-  console.log(
-    "★ 職場名を保存",
-    organizationName
-  );
+  /* --------------------------------
+     ボタンを一時無効化
+  -------------------------------- */
 
-  console.log(
-    "★ 登録者名を保存",
-    staffName
-  );
+  const createButton =
+    document.getElementById("createOrganizationButton");
 
-
-  // ==========================================
-  // ログイン画面を表示
-  // Google / Apple
-  // ==========================================
-
-  const loginMainView =
-    document.getElementById(
-      "loginMainView"
-    );
-
-  const newOrganizationForm =
-    document.getElementById(
-      "newOrganizationForm"
-    );
-
-  const loginMessage =
-    document.getElementById(
-      "loginMessage"
-    );
-
-
-  // 新規職場登録フォームを隠す
-  if (newOrganizationForm) {
-
-    newOrganizationForm.style.display =
-      "none";
-
+  if (createButton) {
+    createButton.disabled = true;
+    createButton.textContent = "登録しています…";
   }
 
 
-  // ログイン画面を表示
-  if (loginMainView) {
+  try {
 
-    loginMainView.style.display =
-      "";
+    /* --------------------------------
+       メールアドレスでSupabase新規登録
+    -------------------------------- */
 
-  }
-
-
-  // ログインメッセージ
-  if (loginMessage) {
-
-    loginMessage.textContent =
-      "職場登録を続けるため、ログインしてください。";
-
-  }
-
-
-  // ==========================================
-  // Googleログインボタン
-  // ==========================================
-
-  const googleButton =
-    document.getElementById(
-      "googleLoginButton"
-    );
-
-  if (googleButton) {
-
-    googleButton.style.display = "";
-
-  }
-
-
-  // ==========================================
-  // Appleログインボタン
-  // ==========================================
-
-  const appleButton =
-    document.getElementById(
-      "appleLoginButton"
-    );
-
-  if (appleButton) {
-
-    appleButton.style.display = "";
-
-  }
-
-
-  console.log(
-    "★ 新規職場登録用ログイン画面を表示しました"
-  );
-
-
-  return;
-}
-
-    // ==========================================
-    // すでにログイン済み
-    // ==========================================
-    // Google / Apple / Azure どの認証でも
-    // ここから先は共通処理
-    // ==========================================
-
-    console.log(
-      "★ すでにログイン済みです"
-    );
-
-    console.log(
-      "★ 認証ユーザーID:",
-      session.user.id
-    );
-
-
-    // ==========================================
-    // 職場 + 管理者を作成
-    // ==========================================
+    const redirectTo =
+      `${window.location.origin}${window.location.pathname}`;
 
     const {
       data,
       error
-    } =
-      await supabaseClient.rpc(
-        "create_organization_and_admin",
-        {
-          new_org_name:
-            organizationName,
+    } = await client.auth.signUp({
 
-          new_staff_name:
-            staffName
-        }
-      );
+      email: email,
+
+      password: password,
+
+      options: {
+        emailRedirectTo: redirectTo
+      }
+
+    });
 
 
     if (error) {
@@ -5600,113 +5532,95 @@ if (!session) {
     }
 
 
-    // ==========================================
-    // 登録結果確認
-    // ==========================================
+    /* --------------------------------
+       すぐにログイン状態になった場合
+       
+       Supabaseでメール確認を不要に
+       している場合はこちら
+    -------------------------------- */
 
-    if (
-      !data ||
-      !data.length
-    ) {
+    if (data?.session) {
 
-      throw new Error(
-        "職場の登録結果を取得できませんでした。"
-      );
+      window.location.reload();
+
+      return;
     }
 
 
-    const result =
-      data[0];
+    /* --------------------------------
+       メール確認が必要な場合
+    -------------------------------- */
+
+    if (data?.user) {
+
+      const newOrgForm =
+        document.getElementById(
+          "newOrganizationForm"
+        );
+
+      const loginMainView =
+        document.getElementById(
+          "loginMainView"
+        );
+
+      const loginMessage =
+        document.getElementById(
+          "loginMessage"
+        );
 
 
-    // ==========================================
-    // 現在の職場をセット
-    // ==========================================
+      if (newOrgForm) {
+        newOrgForm.style.display = "none";
+      }
 
-    currentOrganization = {
+      if (loginMainView) {
+        loginMainView.style.display = "block";
+      }
 
-      id:
-        result.organization_id,
+      if (loginMessage) {
 
-      name:
-        result.organization_name,
+        loginMessage.textContent =
+          "確認メールを送信しました。メール内のリンクを開いて登録を完了してください。";
 
-      role:
-        "admin"
-
-    };
+        loginMessage.style.display = "block";
+      }
 
 
-    // ==========================================
-    // 完了メッセージ
-    // ==========================================
+      alert(
+        "確認メールを送信しました。\n\nメール内のリンクを開くと、職場の登録が完了します。"
+      );
 
-    alert(
-      `${result.organization_name}を登録しました。\n\n` +
-      `${result.staff_name}さんを登録者として職員管理に登録しました。`
+      return;
+    }
+
+
+    throw new Error(
+      "アカウント登録を確認できませんでした。"
     );
-
-
-    // ==========================================
-    // アプリ表示
-    // ==========================================
-
-    showApp();
-
-    loadLocalData();
-
-    bindEvents();
-
-    setupLogoutButton();
-
-
-    // ==========================================
-    // Supabaseからデータ読み込み
-    // ==========================================
-
-    await loadAllFromSupabase();
-
-    renderAll();
-
-    loadPublicHolidays();
-
-
-    // ==========================================
-    // Realtime
-    // ==========================================
-
-    setupRealtime();
-
-
-    // ==========================================
-    // 自動同期
-    // ==========================================
-
-    startAutoSync();
-
-
-    // ==========================================
-    // タブ復帰時同期
-    // ==========================================
-
-    setupVisibilitySync();
 
 
   } catch (error) {
 
     console.error(
-      "職場新規登録エラー",
+      "★ 新規職場登録エラー:",
       error
     );
 
-
     alert(
-      "職場の登録に失敗しました。\n\n" +
-      (
-        error?.message ||
-        String(error)
-      )
+      "新規登録に失敗しました。\n\n" +
+      (error?.message || "不明なエラー")
     );
+
+  } finally {
+
+    if (createButton) {
+
+      createButton.disabled = false;
+
+      createButton.textContent =
+        "職場を登録する";
+
+    }
 
   }
 
