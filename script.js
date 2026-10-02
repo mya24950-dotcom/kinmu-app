@@ -5771,99 +5771,130 @@ function setupNewOrganizationButton() {
       "newOrganizationForm"
     );
 
-  const cancelOrganizationButton =
+  const cancelButton =
     document.getElementById(
       "cancelOrganizationButton"
     );
 
-  const organizationNameInput =
-    document.getElementById(
-      "organizationNameInput"
-    );
-
-  const organizationStaffNameInput =
-    document.getElementById(
-      "organizationStaffNameInput"
-    );
-
-  const createOrganizationButton =
+  const createButton =
     document.getElementById(
       "createOrganizationButton"
     );
 
+  const googleButton =
+    document.getElementById(
+      "organizationGoogleButton"
+    );
 
-  if (
-    !newOrganizationButton ||
-    !loginMainView ||
-    !newOrganizationForm
-  ) {
-    return;
+  const orgInput =
+    document.getElementById(
+      "organizationNameInput"
+    );
+
+  const staffInput =
+    document.getElementById(
+      "organizationStaffNameInput"
+    );
+
+  const emailInput =
+    document.getElementById(
+      "organizationEmail"
+    );
+
+  const passwordInput =
+    document.getElementById(
+      "organizationPassword"
+    );
+
+  const passwordConfirmInput =
+    document.getElementById(
+      "organizationPasswordConfirm"
+    );
+
+
+  /* --------------------------------
+     新規職場登録画面を開く
+  -------------------------------- */
+
+  if (newOrganizationButton) {
+
+    newOrganizationButton.onclick =
+      function(event) {
+
+        event.preventDefault();
+
+        if (loginMainView) {
+          loginMainView.style.display =
+            "none";
+        }
+
+        if (newOrganizationForm) {
+          newOrganizationForm.style.display =
+            "block";
+        }
+
+        if (orgInput) {
+          orgInput.value = "";
+        }
+
+        if (staffInput) {
+          staffInput.value = "";
+        }
+
+        if (emailInput) {
+          emailInput.value = "";
+        }
+
+        if (passwordInput) {
+          passwordInput.value = "";
+        }
+
+        if (passwordConfirmInput) {
+          passwordConfirmInput.value = "";
+        }
+
+      };
+
   }
 
 
-  /* -----------------------------------------
-     新規登録画面を開く
-  ----------------------------------------- */
-
-  newOrganizationButton.onclick =
-    function() {
-
-      loginMainView.style.display =
-        "none";
-
-      newOrganizationForm.style.display =
-        "";
-
-      if (organizationNameInput) {
-
-        organizationNameInput.value =
-          "";
-
-      }
-
-      if (organizationStaffNameInput) {
-
-        organizationStaffNameInput.value =
-          "";
-
-      }
-
-      if (organizationNameInput) {
-
-        organizationNameInput.focus();
-
-      }
-
-    };
-
-
-  /* -----------------------------------------
+  /* --------------------------------
      戻る
-  ----------------------------------------- */
+  -------------------------------- */
 
-  if (cancelOrganizationButton) {
+  if (cancelButton) {
 
-    cancelOrganizationButton.onclick =
+    cancelButton.onclick =
       function() {
 
-        newOrganizationForm.style.display =
-          "none";
-
-        loginMainView.style.display =
-          "";
-
-        if (organizationNameInput) {
-
-          organizationNameInput.value =
-            "";
-
+        if (newOrganizationForm) {
+          newOrganizationForm.style.display =
+            "none";
         }
 
-        if (organizationStaffNameInput) {
+        if (loginMainView) {
+          loginMainView.style.display =
+            "block";
+        }
 
-          organizationStaffNameInput.value =
-            "";
+        if (orgInput) {
+          orgInput.value = "";
+        }
 
+        if (staffInput) {
+          staffInput.value = "";
+        }
+
+        if (emailInput) {
+          emailInput.value = "";
+        }
+
+        if (passwordInput) {
+          passwordInput.value = "";
+        }
+
+        if (passwordConfirmInput) {
+          passwordConfirmInput.value = "";
         }
 
       };
@@ -5871,20 +5902,43 @@ function setupNewOrganizationButton() {
   }
 
 
-  /* -----------------------------------------
-     職場を登録する
-  ----------------------------------------- */
+  /* --------------------------------
+     メールアドレスで職場を登録
+  -------------------------------- */
 
-  if (createOrganizationButton) {
+  if (createButton) {
 
-    createOrganizationButton.onclick =
-      function() {
+    createButton.onclick =
+      async function() {
 
-        createNewOrganization();
+        await createNewOrganization();
 
       };
 
   }
+
+
+  /* --------------------------------
+     Googleで職場を登録
+  -------------------------------- */
+
+  if (googleButton) {
+
+    googleButton.onclick =
+      async function() {
+
+        await startOrganizationGoogleRegistration();
+
+      };
+
+  }
+
+
+  /*
+     Apple / Azure は今回は処理を変更しない
+     
+     今後ここに追加する
+  */
 
 }
 
