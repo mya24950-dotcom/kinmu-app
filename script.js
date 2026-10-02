@@ -3460,7 +3460,7 @@ async function deleteCurrentOrganization() {
 
     setupEmailLogin();
 
-    setupAppleLogin();
+    
 
     setupNewOrganizationButton();
 
