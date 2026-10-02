@@ -2567,80 +2567,37 @@
 </div>
 
 
-    <!-- ==================================================
-         新規職場登録
-    ================================================== -->
+    <!-- =====================================================
+     新規職場登録
+===================================================== -->
 
-    <div
+<div
   id="newOrganizationForm"
-  style="
-    display:none;
-    text-align:left;
-  "
+  style="display:none;text-align:left;"
 >
 
   <!-- 戻る -->
-
   <button
     type="button"
     id="cancelOrganizationButton"
-    style="
-  display:block;
-  width:auto;
-  border:none;
-  background:transparent;
-  color:#666;
-  font-size:14px;
-  cursor:pointer;
-  padding:0;
-  margin:30 0 4px;
-  text-align:left;
-"
+    class="back-button"
   >
     ← 戻る
   </button>
 
 
-  <!-- Shift+ ロゴ -->
-
-  <div
-    style="
-      text-align:center;
-      margin-bottom:14px;
-    "
-  >
+  <!-- タイトル -->
+  <div class="organization-register-header">
 
     <img
-  src="./icons/shift-plus-logo.PNG"
-  alt="Shift+"
-  style="
-    display:block;
-    width:110px;
-    height:auto;
-    margin:0 auto 8px;
-  "
->
-
-    <h2
-      style="
-        margin:0 0 5px;
-        font-size:21px;
-        color:#222;
-        text-align:center;
-      "
+      src="./icons/shift-plus-logo.PNG"
+      alt="Shift+"
+      class="organization-register-logo"
     >
-      職場を新規登録
-    </h2>
 
-    <p
-      style="
-        margin:0;
-        color:#666;
-        font-size:12px;
-        line-height:1.5;
-        text-align:center;
-      "
-    >
+    <h2>職場を新規登録</h2>
+
+    <p>
       職場名と登録者名を入力してください。
     </p>
 
@@ -2648,310 +2605,153 @@
 
 
   <!-- 職場名 -->
+  <div class="organization-register-field">
 
-  <label
-    for="organizationNameInput"
-    style="
-      display:block;
-      font-size:12px;
-      font-weight:600;
-      color:#555;
-      margin-bottom:4px;
-    "
-  >
-    職場名
-  </label>
+    <label for="organizationNameInput">
+      職場名
+    </label>
 
-  <input
-    type="text"
-    id="organizationNameInput"
-    placeholder="例：○○学校"
-    maxlength="100"
-    style="
-      width:100%;
-      min-height:43px;
-      padding:0 12px;
-      border:1px solid #ccc;
-      border-radius:9px;
-      box-sizing:border-box;
-      font-size:15px;
-      outline:none;
-      margin-bottom:10px;
-    "
-  >
+    <input
+      type="text"
+      id="organizationNameInput"
+      placeholder="例：○○学校"
+      maxlength="100"
+      autocomplete="organization"
+    >
+
+  </div>
 
 
   <!-- 登録者名 -->
+  <div class="organization-register-field">
 
-  <label
-    for="organizationStaffNameInput"
-    style="
-      display:block;
-      font-size:12px;
-      font-weight:600;
-      color:#555;
-      margin-bottom:4px;
-    "
-  >
-    登録者名
-  </label>
+    <label for="organizationStaffNameInput">
+      登録者名
+    </label>
 
-  <input
-    type="text"
-    id="organizationStaffNameInput"
-    placeholder="例：山田太郎"
-    maxlength="100"
-    style="
-      width:100%;
-      min-height:43px;
-      padding:0 12px;
-      border:1px solid #ccc;
-      border-radius:9px;
-      box-sizing:border-box;
-      font-size:15px;
-      outline:none;
-      margin-bottom:12px;
-    "
-  >
-
-
-  <!-- ==================================================
-       登録方法
-  ================================================== -->
-
-  <div
-    style="
-      text-align:center;
-      margin:4px 0 12px;
-    "
-  >
-
-    <div
-      style="
-        margin-bottom:8px;
-        color:#555;
-        font-size:11px;
-        font-weight:600;
-      "
+    <input
+      type="text"
+      id="organizationStaffNameInput"
+      placeholder="例：山田太郎"
+      maxlength="100"
+      autocomplete="name"
     >
+
+  </div>
+
+
+  <!-- 登録方法 -->
+  <div class="organization-auth-method">
+
+    <div class="organization-auth-method-title">
       登録方法
     </div>
 
 
-    <div
-      style="
-        display:flex;
-        justify-content:center;
-        align-items:flex-start;
-        gap:30px;
-      "
-    >
-
+    <div class="organization-auth-buttons">
 
       <!-- Google -->
-
-      <div
-        style="
-          display:flex;
-          flex-direction:column;
-          align-items:center;
-          gap:4px;
-        "
-      >
+      <div class="organization-auth-item">
 
         <button
           type="button"
           id="organizationGoogleButton"
+          class="organization-auth-icon"
           aria-label="Googleで登録"
           title="Googleで登録"
-          style="
-            width:48px;
-            height:48px;
-            min-width:48px;
-            min-height:48px;
-            padding:0;
-            border:1px solid #d0d0d5;
-            border-radius:50%;
-            background:#fff;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            cursor:pointer;
-            box-sizing:border-box;
-          "
         >
 
           <svg
-            width="24"
-            height="24"
-            viewBox="0 0 48 48"
+            viewBox="0 0 24 24"
             aria-hidden="true"
           >
-
             <path
               fill="#4285F4"
-              d="M46.98 24.55c0-1.64-.15-3.22-.43-4.73H24v9.08h12.86c-.55 2.96-2.18 5.46-4.64 7.14l7.52 5.84C44.15 37.7 46.98 31.66 46.98 24.55z"
+              d="M21.35 12.27c0-.79-.07-1.55-.22-2.27H12v4.3h5.24a4.48 4.48 0 0 1-1.94 2.94v2.45h3.14c1.84-1.69 2.91-4.18 2.91-7.42z"
             />
-
             <path
               fill="#34A853"
-              d="M24 48c6.48 0 11.92-2.14 15.9-5.82l-7.52-5.84c-2.08 1.4-4.73 2.23-8.38 2.23-6.28 0-11.57-3.57-13.48-8.78l-7.96 6.18C6.51 42.62 14.61 48 24 48z"
+              d="M12 21.5c2.63 0 4.84-.87 6.45-2.35l-3.14-2.45c-.87.58-1.98.93-3.31.93-2.54 0-4.69-1.72-5.46-4.03H3.29v2.52A9.74 9.74 0 0 0 12 21.5z"
             />
-
             <path
               fill="#FBBC05"
-              d="M10.52 28.4A14.47 14.47 0 0 1 9.5 24c0-1.53.26-3.02.73-4.4l-7.96-6.18A23.9 23.9 0 0 0 0 24c0 3.84.92 7.48 2.56 10.58l7.96-6.18z"
+              d="M6.54 13.6A5.85 5.85 0 0 1 6.23 12c0-.56.1-1.1.31-1.6V7.88H3.29A9.74 9.74 0 0 0 2.25 12c0 1.57.38 3.05 1.04 4.12l3.25-2.52z"
             />
-
             <path
               fill="#EA4335"
-              d="M24 9.5c3.54 0 6.72 1.22 9.22 3.6l6.84-6.84C35.9 2.56 30.47 0 24 0 14.61 0 6.51 5.38 2.56 13.22l7.96 6.18C12.43 13.07 17.72 9.5 24 9.5z"
+              d="M12 6.38c1.43 0 2.71.49 3.72 1.45l2.79-2.79C16.84 3.39 14.63 2.5 12 2.5a9.74 9.74 0 0 0-8.71 5.38l3.25 2.52C7.31 8.1 9.46 6.38 12 6.38z"
             />
-
           </svg>
 
         </button>
 
-        <span
-          style="
-            font-size:11px;
-            color:#555;
-          "
-        >
-          Google
-        </span>
+        <span>Google</span>
 
       </div>
 
 
       <!-- Apple -->
-
-      <div
-        style="
-          display:flex;
-          flex-direction:column;
-          align-items:center;
-          gap:4px;
-        "
-      >
+      <div class="organization-auth-item">
 
         <button
           type="button"
           id="organizationAppleButton"
+          class="organization-auth-icon"
           aria-label="Appleで登録"
           title="Appleで登録"
-          style="
-            width:48px;
-            height:48px;
-            min-width:48px;
-            min-height:48px;
-            padding:0;
-            border:1px solid #d0d0d5;
-            border-radius:50%;
-            background:#fff;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            cursor:pointer;
-            box-sizing:border-box;
-          "
         >
 
           <svg
-            width="25"
-            height="25"
             viewBox="0 0 24 24"
             aria-hidden="true"
           >
-
             <path
-              fill="#000000"
-              d="M17.05 12.54c-.02-2.09 1.71-3.1 1.79-3.15-.98-1.43-2.5-1.63-3.04-1.65-1.29-.14-2.54.77-3.2.77-.67 0-1.7-.76-2.8-.74-1.44.02-2.76.84-3.5 2.12-1.5 2.6-.38 6.43 1.05 8.53.7 1.03 1.51 2.18 2.59 2.14 1.05-.04 1.45-.68 2.73-.68 1.27 0 1.64.68 2.74.66 1.14-.02 1.84-1.04 2.52-2.08.8-1.17 1.13-2.3 1.15-2.36-.03-.01-2.21-.85-2.23-3.56z"
+              fill="currentColor"
+              d="M17.05 12.54c-.02-2.04 1.67-3.02 1.75-3.07-.95-1.39-2.42-1.58-2.94-1.6-1.24-.13-2.44.74-3.07.74-.64 0-1.62-.72-2.66-.7-1.37.02-2.63.8-3.34 2.03-1.44 2.5-.37 6.19 1.03 8.22.69.99 1.5 2.1 2.57 2.06 1.03-.04 1.42-.66 2.66-.66 1.24 0 1.59.66 2.68.64 1.11-.02 1.81-1 2.48-2 .79-1.15 1.12-2.26 1.14-2.32-.02-.01-2.28-.88-2.3-3.34z"
             />
-
             <path
-              fill="#000000"
-              d="M14.92 6.35c.58-.7.97-1.67.86-2.65-.84.03-1.86.56-2.46 1.25-.54.62-1.01 1.61-.88 2.56.94.07 1.9-.48 2.48-1.16z"
+              fill="currentColor"
+              d="M15.02 6.54c.56-.68.94-1.62.83-2.54-.81.03-1.78.54-2.35 1.21-.51.59-.96 1.55-.84 2.47.9.07 1.8-.46 2.36-1.14z"
             />
 
           </svg>
 
         </button>
 
-        <span
-          style="
-            font-size:11px;
-            color:#555;
-          "
-        >
-          Apple
-        </span>
+        <span>Apple</span>
 
       </div>
 
 
       <!-- Azure -->
-
-      <div
-        style="
-          display:flex;
-          flex-direction:column;
-          align-items:center;
-          gap:4px;
-        "
-      >
+      <div class="organization-auth-item">
 
         <button
           type="button"
           id="organizationAzureButton"
+          class="organization-auth-icon"
           aria-label="Azureで登録"
           title="Azureで登録"
-          style="
-            width:48px;
-            height:48px;
-            min-width:48px;
-            min-height:48px;
-            padding:0;
-            border:1px solid #d0d0d5;
-            border-radius:50%;
-            background:#fff;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            cursor:pointer;
-            box-sizing:border-box;
-          "
         >
 
           <svg
-            width="25"
-            height="25"
             viewBox="0 0 24 24"
             aria-hidden="true"
           >
-
             <path
-              fill="#0078D4"
-              d="M11.42 2H18L11.6 18.1H5L11.42 2z"
+              fill="currentColor"
+              d="M11.5 2h5.2l-5.7 17H6.2L11.5 2z"
             />
-
             <path
-              fill="#0078D4"
-              d="M12.4 18.1H20L14.1 11.3l-1.7 4.3 0 2.5z"
+              fill="currentColor"
+              d="M14.3 13.8h4.4L21.8 22h-7.1l-2.1-4.5 1.7-3.7z"
             />
 
           </svg>
 
         </button>
 
-        <span
-          style="
-            font-size:11px;
-            color:#555;
-          "
-        >
-          Azure
-        </span>
+        <span>Azure</span>
 
       </div>
 
@@ -2959,42 +2759,15 @@
 
   </div>
 
-<div
-  style="
-    display:flex;
-    align-items:center;
-    gap:10px;
-    margin:6px 0 10px;
-    color:#888;
-    font-size:13px;
-  "
->
-  <span
-    style="
-      flex:1;
-      height:1px;
-      background:#cfcfd4;
-    "
-  ></span>
 
-  <span>or</span>
+  <!-- 区切り -->
+  <div class="organization-or">
+    <span>or</span>
+  </div>
 
-  <span
-    style="
-      flex:1;
-      height:1px;
-      background:#cfcfd4;
-    "
-  ></span>
-</div>
-  <!-- ==================================================
-       メールアドレス
-  ================================================== -->
 
-  <div
-    class="email-input-group"
-    style="margin-bottom:10px;"
-  >
+  <!-- メールアドレス -->
+  <div class="organization-register-field">
 
     <label for="organizationEmail">
       メールアドレス
@@ -3012,79 +2785,67 @@
   </div>
 
 
-  <!-- ==================================================
-       パスワード
-  ================================================== -->
+  <!-- パスワード -->
+  <div class="organization-register-field">
 
-  <div class="email-input-group">
-  <label for="organizationPassword">パスワード</label>
+    <label for="organizationPassword">
+      パスワード
+    </label>
 
-  <div class="password-input-wrapper">
-    <input
-      type="password"
-      id="organizationPassword"
-      name="organizationPassword"
-      autocomplete="new-password"
-      placeholder="6文字以上"
-    >
+    <div class="password-input-wrapper">
+
+      <input
+        type="password"
+        id="organizationPassword"
+        name="organizationPassword"
+        autocomplete="new-password"
+        placeholder="6文字以上"
+      >
+
+    </div>
+
   </div>
-</div>
 
-<div class="email-input-group">
-  <label for="organizationPasswordConfirm">パスワード（確認）</label>
 
-  <div class="password-input-wrapper">
-    <input
-      type="password"
-      id="organizationPasswordConfirm"
-      name="organizationPasswordConfirm"
-      autocomplete="new-password"
-      placeholder="もう一度入力してください"
-    >
+  <!-- パスワード確認 -->
+  <div class="organization-register-field">
+
+    <label for="organizationPasswordConfirm">
+      パスワード（確認）
+    </label>
+
+    <div class="password-input-wrapper">
+
+      <input
+        type="password"
+        id="organizationPasswordConfirm"
+        name="organizationPasswordConfirm"
+        autocomplete="new-password"
+        placeholder="もう一度入力してください"
+      >
+
+    </div>
+
   </div>
-</div>
 
 
-  <!-- ==================================================
-       職場を登録する
-  ================================================== -->
-
+  <!-- 登録ボタン -->
   <button
     type="button"
     id="createOrganizationButton"
-    style="
-      width:100%;
-      min-height:43px;
-      border:1px solid #777;
-      border-radius:9px;
-      background:#4b4b4f;
-      color:#fff;
-      font-size:14px;
-      font-weight:700;
-      cursor:pointer;
-      box-sizing:border-box;
-    "
+    class="email-login-button"
   >
     職場を登録する
   </button>
 
 
-  <p
-    style="
-      margin:8px 0 0;
-      color:#888;
-      font-size:11px;
-      line-height:1.5;
-      text-align:center;
-    "
-  >
+  <!-- 説明 -->
+  <p class="organization-register-note">
     登録後、あなたが管理者として<br>
     勤務表を作成できます。
   </p>
 
-
 </div>
-
 
     <!-- ==================================================
          ログインメッセージ
