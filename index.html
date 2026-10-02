@@ -3016,28 +3016,33 @@
        パスワード
   ================================================== -->
 
-  <div
-    class="email-input-group"
-    style="margin-bottom:12px;"
-  >
+  <div class="email-input-group">
+  <label for="organizationPassword">パスワード</label>
 
-    <label for="organizationPassword">
-      パスワード
-    </label>
-
-    <div class="password-input-wrapper">
-
-      <input
-        type="password"
-        id="organizationPassword"
-        name="organizationPassword"
-        autocomplete="new-password"
-        placeholder="6文字以上"
-      >
-
-    </div>
-
+  <div class="password-input-wrapper">
+    <input
+      type="password"
+      id="organizationPassword"
+      name="organizationPassword"
+      autocomplete="new-password"
+      placeholder="6文字以上"
+    >
   </div>
+</div>
+
+<div class="email-input-group">
+  <label for="organizationPasswordConfirm">パスワード（確認）</label>
+
+  <div class="password-input-wrapper">
+    <input
+      type="password"
+      id="organizationPasswordConfirm"
+      name="organizationPasswordConfirm"
+      autocomplete="new-password"
+      placeholder="もう一度入力してください"
+    >
+  </div>
+</div>
 
 
   <!-- ==================================================
