@@ -12283,27 +12283,17 @@ async function saveWorkShift(
 
   try {
 
-    const existing =
-      await supabaseClient
-        .from("work_shifts")
-        .select(
-          "id,leave_type"
-        )
-        .eq(
-          "staff_name",
-          name
-        )
-        .eq(
-          "work_date",
-          dateKey
-        )
-        .order(
-          "id",
-          {
-            ascending: true
-          }
-        )
-        .limit(1);
+    const existing = await supabaseClient
+  .from("work_shifts")
+  .select("id,leave_type,organization_id")
+  .eq("staff_name", name)
+  .eq("work_date", dateKey)
+  .eq(
+    "organization_id",
+    currentOrganization.id
+  )
+  .order("id", { ascending: true })
+  .limit(1);
 
 
     if (
@@ -12355,6 +12345,10 @@ async function saveWorkShift(
               .eq(
                 "id",
                 existingRow.id
+                 .eq(
+  "organization_id",
+  currentOrganization.id
+)
               );
 
 
@@ -13879,23 +13873,36 @@ if (result.error) {
       ----------------------------------------------- */
 
       if (
-        oldName !== name
-      ) {
+  oldName !== name
+) {
 
-        const workResult =
-          await supabaseClient
-            .from("work_shifts")
-            .update({
+  const workResult =
+    await supabaseClient
+      .from("work_shifts")
+      .update({
 
-              shift_name:
-                name
+        shift_name:
+          name
 
-            })
-            .eq(
-              "shift_name",
-              oldName
-            );
+      })
+      .eq(
+        "shift_name",
+        oldName
+      )
+      .eq(
+        "organization_id",
+        currentOrganization.id
+      );
 
+  if (
+    workResult.error
+  ) {
+
+    throw workResult.error;
+
+  }
+
+}
 
         if (
           workResult.error
@@ -14853,16 +14860,20 @@ function renderShiftList() {
               true;
 
 
-            try {
+    try {
 
-              const workResult =
-                await supabaseClient
-                  .from("work_shifts")
-                  .delete()
-                  .eq(
-                    "shift_name",
-                    shift.name
-                  );
+  const workResult =
+    await supabaseClient
+      .from("work_shifts")
+      .delete()
+      .eq(
+        "shift_name",
+        shift.name
+      )
+      .eq(
+        "organization_id",
+        currentOrganization.id
+      );
 
 
               if (
