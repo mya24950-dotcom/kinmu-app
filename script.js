@@ -9313,9 +9313,7 @@ async function renderSchedule() {
 
         z-index:300;
 
-        background:#f2f2f7;
-
-        box-sizing:border-box;
+                box-sizing:border-box;
 
         border-right:1px solid #d1d1d6;
       "
