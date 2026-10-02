@@ -12646,26 +12646,30 @@ async function saveLeave(
     ================================================== */
 
     const existing =
-      await supabaseClient
-        .from("work_shifts")
-        .select(
-          "id,shift_name,leave_type"
-        )
-        .eq(
-          "staff_name",
-          name
-        )
-        .eq(
-          "work_date",
-          dateKey
-        )
-        .order(
-          "id",
-          {
-            ascending: true
-          }
-        )
-        .limit(1);
+  await supabaseClient
+    .from("work_shifts")
+    .select(
+      "id,leave_type,organization_id"
+    )
+    .eq(
+      "staff_name",
+      name
+    )
+    .eq(
+      "work_date",
+      dateKey
+    )
+    .eq(
+      "organization_id",
+      currentOrganization.id
+    )
+    .order(
+      "id",
+      {
+        ascending: true
+      }
+    )
+    .limit(1);
 
 
     if (
