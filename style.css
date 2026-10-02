@@ -3956,3 +3956,144 @@ body.dark-mode #shiftPage #shiftNameInput::placeholder,
 body.dark-mode #shiftPage #shiftBreakInput::placeholder {
   color: #98989d;
 }
+
+/* =========================================================
+   新規職場登録画面
+   1画面に収める
+========================================================= */
+
+#newOrganizationForm {
+  width: 100%;
+  max-width: 410px;
+  margin: 0 auto;
+  box-sizing: border-box;
+  padding: 8px 18px 14px;
+}
+
+/* 戻るボタン */
+#cancelOrganizationButton {
+  margin-bottom: 4px !important;
+}
+
+/* ロゴ・タイトル部分 */
+#newOrganizationForm > div:first-of-type {
+  margin-bottom: 8px !important;
+}
+
+#newOrganizationForm > div:first-of-type img {
+  width: 80px !important;
+  height: auto;
+  margin-bottom: 2px !important;
+}
+
+#newOrganizationForm h2 {
+  margin: 2px 0 3px !important;
+  font-size: 20px !important;
+}
+
+#newOrganizationForm p {
+  margin: 3px 0 !important;
+  line-height: 1.35;
+}
+
+/* ラベル */
+#newOrganizationForm label {
+  display: block;
+  margin: 5px 0 2px !important;
+  font-size: 14px;
+}
+
+/* 職場名・登録者名・メール・パスワード */
+#newOrganizationForm input {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 38px;
+  height: 38px;
+  padding: 7px 10px;
+  font-size: 15px;
+}
+
+/* パスワード入力 */
+#newOrganizationForm .password-input-wrapper {
+  width: 100%;
+}
+
+/* 登録方法 */
+#newOrganizationForm > div {
+  margin-bottom: 6px;
+}
+
+/* Google / Apple / Azure */
+#newOrganizationForm button[aria-label*="で登録"] {
+  width: 42px;
+  height: 42px;
+}
+
+/* 「or」 */
+#newOrganizationForm .organization-or,
+#newOrganizationForm > div[style*="text-align:center"] {
+  margin: 5px 0 !important;
+}
+
+/* 登録ボタン */
+#createOrganizationButton {
+  width: 100%;
+  min-height: 42px;
+  height: 42px;
+  margin-top: 9px !important;
+  font-size: 15px;
+}
+
+/* 下の説明 */
+#newOrganizationForm > p:last-child {
+  margin-top: 6px !important;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+
+/* =========================================================
+   スマートフォン
+========================================================= */
+
+@media (max-width: 600px) {
+
+  #newOrganizationForm {
+    max-width: 100%;
+    padding: 4px 16px 10px;
+  }
+
+  #newOrganizationForm > div:first-of-type img {
+    width: 68px !important;
+  }
+
+  #newOrganizationForm h2 {
+    font-size: 18px !important;
+  }
+
+  #newOrganizationForm label {
+    font-size: 13px;
+    margin-top: 4px !important;
+  }
+
+  #newOrganizationForm input {
+    height: 36px;
+    min-height: 36px;
+    font-size: 14px;
+  }
+
+  #newOrganizationForm button[aria-label*="で登録"] {
+    width: 38px;
+    height: 38px;
+  }
+
+  #createOrganizationButton {
+    height: 40px;
+    min-height: 40px;
+    margin-top: 7px !important;
+  }
+
+  #newOrganizationForm > p:last-child {
+    font-size: 11px;
+  }
+}
