@@ -3095,7 +3095,6 @@ function setupOrganizationDangerZone() {
 /* ---------------------------------------------------------
    職場完全削除
    --------------------------------------------------------- */
-
 async function deleteCurrentOrganization() {
 
   if (!currentOrganization) {
@@ -3245,126 +3244,81 @@ async function deleteCurrentOrganization() {
 
   try {
 
-  /*
-   * 現在のSupabaseクライアント
-   *
-   * Googleログインなどと同じクライアントを使用する
-   */
+    /*
+     * 現在のSupabaseクライアント
+     *
+     * Googleログインなどと同じクライアントを使用する
+     */
 
-  const client =
-    window.shiftSupabaseClient ||
-    supabaseClient;
-
-
-  if (!client) {
-
-    throw new Error(
-      "Supabaseが初期化されていません。"
-    );
-
-  }
+    const client =
+      window.shiftSupabaseClient ||
+      supabaseClient;
 
 
-  /*
-   * 現在のログインセッション確認
-   */
+    if (!client) {
 
-  console.log(
-    "★ 職場削除前：ログインセッション確認"
-  );
+      throw new Error(
+        "Supabaseが初期化されていません。"
+      );
 
-
-  const {
-  data: {
-    session
-  }
-} =
-  await supabaseClient.auth.getSession();
-
-
-if (!session) {
-
-  throw new Error(
-    "ログイン情報を取得できませんでした。"
-  );
-
-}
-
-
-  if (sessionError) {
-
-    console.error(
-      "★ セッション取得エラー",
-      sessionError
-    );
-
-    throw sessionError;
-
-  }
-
-
-  if (!session) {
-
-    console.error(
-      "★ 職場削除時にログインセッションがありません"
-    );
-
-    throw new Error(
-      "ログイン情報を取得できませんでした。"
-    );
-
-  }
-
-
-  console.log(
-    "★ 職場削除：ログインセッション取得成功",
-    {
-      userId:
-        session.user?.id,
-      email:
-        session.user?.email
     }
-  );
 
 
-  /*
-   * Edge Functionを呼び出す
-   */
+    /*
+     * 現在のログインセッション確認
+     */
 
-  
-      {
-        method: "POST",
-
-        headers: {
-          "Content-Type":
-            "application/json",
-
-          "Authorization":
-            "Bearer " +
-            session.access_token
-        },
-
-        body: JSON.stringify({
-
-          organization_id:
-            currentOrganization.id,
-
-          confirmation_name:
-            confirmationName.trim()
-
-        })
-
-      }
+    console.log(
+      "★ 職場削除前：ログインセッション確認"
     );
+
+
+    const {
+      data: sessionData,
+      error: sessionError
+    } =
+      await client.auth.getSession();
+
+
+    if (sessionError) {
+
+      console.error(
+        "★ セッション取得エラー",
+        sessionError
+      );
+
+      throw sessionError;
+
+    }
+
+
+    const session =
+      sessionData?.session;
 
 
     if (!session) {
+
+      console.error(
+        "★ 職場削除時にログインセッションがありません"
+      );
 
       throw new Error(
         "ログイン情報を取得できませんでした。"
       );
 
     }
+
+
+    console.log(
+      "★ 職場削除：ログインセッション取得成功",
+      {
+        userId:
+          session.user?.id,
+
+        email:
+          session.user?.email
+      }
+    );
 
 
     /*
@@ -3465,16 +3419,16 @@ if (!session) {
 
     try {
 
-  await supabaseClient.auth.signOut();
+      await client.auth.signOut();
 
-} catch (signOutError) {
+    } catch (signOutError) {
 
-  console.warn(
-    "ログアウト処理",
-    signOutError
-  );
+      console.warn(
+        "ログアウト処理",
+        signOutError
+      );
 
-}
+    }
 
 
     /*
@@ -3499,11 +3453,12 @@ if (!session) {
 
 
     /*
-     * Googleログイン・新規登録ボタンを再設定
+     * ログイン・新規登録ボタンを再設定
      */
 
     setupGoogleLogin();
-     setupEmailLogin();
+
+    setupEmailLogin();
 
     setupAppleLogin();
 
