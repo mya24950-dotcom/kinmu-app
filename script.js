@@ -5260,6 +5260,75 @@ async function loginWithGoogle() {
 
 
     /* --------------------------------------------------
+       ★ 古いSupabaseセッションを終了
+    -------------------------------------------------- */
+
+    console.log(
+      "★ Googleログイン前の既存セッションを確認"
+    );
+
+
+    const sessionResult =
+      await client.auth.getSession();
+
+
+    if (sessionResult.error) {
+
+      console.warn(
+        "★ 既存セッション取得エラー",
+        sessionResult.error
+      );
+
+    }
+
+
+    const oldSession =
+      sessionResult?.data?.session;
+
+
+    if (oldSession) {
+
+      console.log(
+        "★ 古いSupabaseセッションを検出しました。ログアウトします。",
+        {
+          userId:
+            oldSession.user?.id,
+          email:
+            oldSession.user?.email
+        }
+      );
+
+
+      const signOutResult =
+        await client.auth.signOut();
+
+
+      if (signOutResult.error) {
+
+        console.error(
+          "★ 古いSupabaseセッションの終了に失敗",
+          signOutResult.error
+        );
+
+        throw signOutResult.error;
+
+      }
+
+
+      console.log(
+        "★ 古いSupabaseセッションを終了しました"
+      );
+
+    } else {
+
+      console.log(
+        "★ 古いSupabaseセッションはありません"
+      );
+
+    }
+
+
+    /* --------------------------------------------------
        OAuth戻り先
     -------------------------------------------------- */
 
@@ -5275,10 +5344,9 @@ async function loginWithGoogle() {
       招待URLから来た場合は、
       OAuth後の戻り先にも招待トークンを付ける。
 
-      これにより、
       sessionStorage / localStorage が
       何らかの理由で保持されなかった場合でも、
-      URLから復元できる。
+      URLから復元できるようにする。
     */
 
     if (inviteToken) {
