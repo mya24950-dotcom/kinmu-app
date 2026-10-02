@@ -10638,25 +10638,7 @@ function syncScheduleFixedLayers() {
         originalStyle.borderLeft;
 
 
-      if (
-  document.body.classList.contains("dark-mode")
-) {
-
-  fixedStaffHeader.style.background =
-    "#1c1c1e";
-
-  fixedStaffHeader.style.color =
-    "#f2f2f7";
-
-} else {
-
-  fixedStaffHeader.style.background =
-    originalStyle.background;
-
-  fixedStaffHeader.style.color =
-    originalStyle.color;
-
-}
+      
 
 
       fixedStaffHeader.style.font =
