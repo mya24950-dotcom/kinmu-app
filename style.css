@@ -3958,97 +3958,142 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
 }
 
 /* =========================================================
-   新規職場登録画面
-   1画面に収める
+   Shift+ 新規職場登録
+   PC・スマホとも1画面に収める
 ========================================================= */
 
 #newOrganizationForm {
   width: 100%;
   max-width: 410px;
   margin: 0 auto;
+  padding: 4px 16px 8px;
   box-sizing: border-box;
-  padding: 8px 18px 14px;
 }
 
-/* 戻るボタン */
-#cancelOrganizationButton {
-  margin-bottom: 4px !important;
+/* 戻る */
+#newOrganizationForm #cancelOrganizationButton {
+  display: block;
+  margin: 0 0 2px 0 !important;
+  padding: 2px 0 !important;
+  line-height: 1.2;
 }
 
-/* ロゴ・タイトル部分 */
-#newOrganizationForm > div:first-of-type {
-  margin-bottom: 8px !important;
+/* ---------------------------------------------------------
+   ロゴ・タイトル
+--------------------------------------------------------- */
+
+#newOrganizationForm > div[style*="text-align:center"] {
+  margin-bottom: 5px !important;
 }
 
-#newOrganizationForm > div:first-of-type img {
-  width: 80px !important;
-  height: auto;
-  margin-bottom: 2px !important;
+#newOrganizationForm > div[style*="text-align:center"] img {
+  width: 70px !important;
+  height: auto !important;
+  display: block;
+  margin: 0 auto 1px !important;
 }
 
-#newOrganizationForm h2 {
-  margin: 2px 0 3px !important;
-  font-size: 20px !important;
+#newOrganizationForm > div[style*="text-align:center"] h2 {
+  margin: 1px 0 2px !important;
+  font-size: 19px !important;
+  line-height: 1.2;
 }
 
-#newOrganizationForm p {
-  margin: 3px 0 !important;
-  line-height: 1.35;
+#newOrganizationForm > div[style*="text-align:center"] p {
+  margin: 2px 0 !important;
+  font-size: 12px;
+  line-height: 1.25;
 }
 
-/* ラベル */
+/* ---------------------------------------------------------
+   ラベル
+--------------------------------------------------------- */
+
 #newOrganizationForm label {
   display: block;
-  margin: 5px 0 2px !important;
-  font-size: 14px;
+  margin: 4px 0 2px !important;
+  font-size: 13px;
+  line-height: 1.2;
 }
 
-/* 職場名・登録者名・メール・パスワード */
-#newOrganizationForm input {
+/* ---------------------------------------------------------
+   入力欄
+--------------------------------------------------------- */
+
+#newOrganizationForm input[type="text"],
+#newOrganizationForm input[type="email"],
+#newOrganizationForm input[type="password"] {
   width: 100%;
+  height: 36px;
+  min-height: 36px;
+  padding: 6px 9px;
   box-sizing: border-box;
-  min-height: 38px;
-  height: 38px;
-  padding: 7px 10px;
-  font-size: 15px;
+  font-size: 14px;
+  border-radius: 7px;
 }
 
-/* パスワード入力 */
+/* パスワード入力枠 */
 #newOrganizationForm .password-input-wrapper {
   width: 100%;
+  position: relative;
 }
 
-/* 登録方法 */
-#newOrganizationForm > div {
-  margin-bottom: 6px;
+/* ---------------------------------------------------------
+   登録方法
+--------------------------------------------------------- */
+
+#newOrganizationForm .organization-auth-method {
+  margin: 6px 0 3px !important;
+}
+
+/* 「登録方法」 */
+#newOrganizationForm .organization-auth-method-title {
+  margin-bottom: 3px !important;
+  font-size: 13px;
 }
 
 /* Google / Apple / Azure */
-#newOrganizationForm button[aria-label*="で登録"] {
-  width: 42px;
-  height: 42px;
+#newOrganizationForm .organization-auth-buttons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 14px;
 }
 
-/* 「or」 */
-#newOrganizationForm .organization-or,
-#newOrganizationForm > div[style*="text-align:center"] {
-  margin: 5px 0 !important;
-}
+/* ---------------------------------------------------------
+   or
+--------------------------------------------------------- */
 
-/* 登録ボタン */
-#createOrganizationButton {
-  width: 100%;
-  min-height: 42px;
-  height: 42px;
-  margin-top: 9px !important;
-  font-size: 15px;
-}
-
-/* 下の説明 */
-#newOrganizationForm > p:last-child {
-  margin-top: 6px !important;
+#newOrganizationForm .organization-or {
+  margin: 3px 0 !important;
   font-size: 12px;
-  line-height: 1.35;
+  line-height: 1;
+  text-align: center;
+}
+
+/* ---------------------------------------------------------
+   登録ボタン
+--------------------------------------------------------- */
+
+#newOrganizationForm #createOrganizationButton {
+  width: 100%;
+  height: 40px;
+  min-height: 40px;
+  margin: 8px 0 3px !important;
+  padding: 5px 10px;
+  font-size: 15px;
+  line-height: 1.2;
+}
+
+/* ---------------------------------------------------------
+   下部説明
+--------------------------------------------------------- */
+
+#newOrganizationForm > p:last-child {
+  margin: 3px 0 0 !important;
+  font-size: 11px;
+  line-height: 1.25;
+  text-align: center;
 }
 
 
@@ -4060,40 +4105,68 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
 
   #newOrganizationForm {
     max-width: 100%;
-    padding: 4px 16px 10px;
+    padding: 2px 14px 6px;
   }
 
-  #newOrganizationForm > div:first-of-type img {
-    width: 68px !important;
+  #newOrganizationForm > div[style*="text-align:center"] {
+    margin-bottom: 3px !important;
   }
 
-  #newOrganizationForm h2 {
-    font-size: 18px !important;
+  #newOrganizationForm > div[style*="text-align:center"] img {
+    width: 58px !important;
+    margin-bottom: 0 !important;
+  }
+
+  #newOrganizationForm > div[style*="text-align:center"] h2 {
+    font-size: 17px !important;
+    margin: 0 0 1px !important;
+  }
+
+  #newOrganizationForm > div[style*="text-align:center"] p {
+    font-size: 11px;
+    margin: 1px 0 !important;
   }
 
   #newOrganizationForm label {
-    font-size: 13px;
-    margin-top: 4px !important;
+    margin: 3px 0 1px !important;
+    font-size: 12px;
   }
 
-  #newOrganizationForm input {
-    height: 36px;
-    min-height: 36px;
+  #newOrganizationForm input[type="text"],
+  #newOrganizationForm input[type="email"],
+  #newOrganizationForm input[type="password"] {
+    height: 34px;
+    min-height: 34px;
+    padding: 5px 8px;
     font-size: 14px;
   }
 
-  #newOrganizationForm button[aria-label*="で登録"] {
-    width: 38px;
-    height: 38px;
+  #newOrganizationForm .organization-auth-method {
+    margin: 4px 0 2px !important;
   }
 
-  #createOrganizationButton {
-    height: 40px;
-    min-height: 40px;
-    margin-top: 7px !important;
+  #newOrganizationForm .organization-auth-method-title {
+    font-size: 12px;
+  }
+
+  #newOrganizationForm .organization-auth-buttons {
+    gap: 10px;
+  }
+
+  #newOrganizationForm .organization-or {
+    margin: 2px 0 !important;
+    font-size: 11px;
+  }
+
+  #newOrganizationForm #createOrganizationButton {
+    height: 38px;
+    min-height: 38px;
+    margin-top: 6px !important;
+    font-size: 14px;
   }
 
   #newOrganizationForm > p:last-child {
-    font-size: 11px;
+    font-size: 10px;
+    margin-top: 2px !important;
   }
 }
