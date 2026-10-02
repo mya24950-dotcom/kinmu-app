@@ -12331,25 +12331,25 @@ async function saveWorkShift(
         ) {
 
           const result =
-            await supabaseClient
-              .from("work_shifts")
-              .update({
+  await supabaseClient
+    .from("work_shifts")
+    .update({
 
-                shift_name:
-                  "",
+      shift_name:
+        "",
 
-                leave_type:
-                  existingRow.leave_type
+      leave_type:
+        existingRow.leave_type
 
-              })
-              .eq(
-                "id",
-                existingRow.id
-                 .eq(
-  "organization_id",
-  currentOrganization.id
-)
-              );
+    })
+    .eq(
+      "id",
+      existingRow.id
+    )
+    .eq(
+      "organization_id",
+      currentOrganization.id
+    );
 
 
           if (
