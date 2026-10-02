@@ -1190,15 +1190,27 @@ input[type="color"] {
 }
 
 /* ---------------------------------------------------------
-   左上「職員」セル
+   勤務表 左上「職員」セル
    --------------------------------------------------------- */
 
+/* 固定ヘッダー内の「職員」 */
 body.dark-mode #scheduleFixedHeader .staff-header,
 body.dark-mode #scheduleFixedHeaderTable .staff-header,
-body.dark-mode #scheduleFixedHeader th.staff-header {
-  background: #1c1c1e !important;
-  color: #f2f2f7 !important;
-  border-color: #48484a !important;
+body.dark-mode #scheduleFixedHeader th.staff-header,
+body.dark-mode #scheduleFixedHeaderTable th:first-child,
+body.dark-mode #scheduleFixedHeaderTable td:first-child {
+  background: #2c2c2e !important;
+  color: #ffffff !important;
+  border-color: #38383a !important;
+}
+
+/* 固定ヘッダーそのものの左上セル */
+body.dark-mode #scheduleFixedHeader > table th:first-child,
+body.dark-mode #scheduleFixedHeader > table td:first-child,
+body.dark-mode #scheduleFixedHeaderTable > thead > tr > th:first-child {
+  background: #2c2c2e !important;
+  color: #ffffff !important;
+  border-color: #38383a !important;
 }
 /* =========================================================
    ダークモード
