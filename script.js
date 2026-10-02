@@ -14877,43 +14877,42 @@ function renderShiftList() {
 
 
               if (
-                workResult.error
-              ) {
+  workResult.error
+) {
 
-                throw workResult.error;
+  throw workResult.error;
 
-              }
-
-
-              const result =
-                await supabaseClient
-                  .from("shift_types")
-                  .delete()
-                  .eq(
-                    "id",
-                    shift.id
-                  );
+}
 
 
-              if (
-                result.error
-              ) {
-
-                throw result.error;
-
-              }
-
-
-              editingShiftIndex =
-                -1;
+const result =
+  await supabaseClient
+    .from("shift_types")
+    .delete()
+    .eq(
+      "id",
+      shift.id
+    );
 
 
-              await loadAllFromSupabase();
+if (
+  result.error
+) {
+
+  throw result.error;
+
+}
 
 
-              renderShiftList();
+editingShiftIndex =
+  -1;
 
-              renderSchedule();
+
+await loadAllFromSupabase();
+
+renderShiftList();
+
+renderSchedule();
 
 
             } catch (error) {
