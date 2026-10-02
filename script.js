@@ -13202,42 +13202,7 @@ async function addOrUpdateStaff() {
         newStaff.id
       );
 
-      /*
-       * organization_membersへ登録
-       */
-      const memberResult =
-        await supabaseClient
-          .from(
-            "organization_members"
-          )
-          .insert({
-            organization_id:
-              currentOrganization.id,
-
-            staff_id:
-              newStaff.id,
-
-            role:
-              "staff"
-          });
-
-      console.log(
-        "★ organization_members登録結果",
-        memberResult
-      );
-
-      if (
-        memberResult.error
-      ) {
-
-        console.error(
-          "★ organization_members登録失敗",
-          memberResult.error
-        );
-
-        throw memberResult.error;
-      }
-
+      
       console.log(
         "★ 職員追加成功"
       );
