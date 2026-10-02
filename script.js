@@ -3245,16 +3245,112 @@ async function deleteCurrentOrganization() {
 
   try {
 
-    /*
-     * 現在のログインセッション確認
-     */
+  /*
+   * 現在のSupabaseクライアント
+   *
+   * Googleログインなどと同じクライアントを使用する
+   */
 
-    const {
-      data: {
-        session
+  const client =
+    window.shiftSupabaseClient ||
+    supabaseClient;
+
+
+  if (!client) {
+
+    throw new Error(
+      "Supabaseが初期化されていません。"
+    );
+
+  }
+
+
+  /*
+   * 現在のログインセッション確認
+   */
+
+  console.log(
+    "★ 職場削除前：ログインセッション確認"
+  );
+
+
+  const {
+    data: {
+      session
+    },
+    error: sessionError
+  } =
+    await client.auth.getSession();
+
+
+  if (sessionError) {
+
+    console.error(
+      "★ セッション取得エラー",
+      sessionError
+    );
+
+    throw sessionError;
+
+  }
+
+
+  if (!session) {
+
+    console.error(
+      "★ 職場削除時にログインセッションがありません"
+    );
+
+    throw new Error(
+      "ログイン情報を取得できませんでした。"
+    );
+
+  }
+
+
+  console.log(
+    "★ 職場削除：ログインセッション取得成功",
+    {
+      userId:
+        session.user?.id,
+      email:
+        session.user?.email
+    }
+  );
+
+
+  /*
+   * Edge Functionを呼び出す
+   */
+
+  const response =
+    await fetch(
+      SUPABASE_URL +
+      "/functions/v1/delete-organization-completely",
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type":
+            "application/json",
+
+          "Authorization":
+            "Bearer " +
+            session.access_token
+        },
+
+        body: JSON.stringify({
+
+          organization_id:
+            currentOrganization.id,
+
+          confirmation_name:
+            confirmationName.trim()
+
+        })
+
       }
-    } =
-      await supabaseClient.auth.getSession();
+    );
 
 
     if (!session) {
@@ -3364,7 +3460,7 @@ async function deleteCurrentOrganization() {
 
     try {
 
-      await supabaseClient.auth.signOut();
+      await client.auth.signOut();
 
     } catch (signOutError) {
 
