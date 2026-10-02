@@ -3275,12 +3275,20 @@ async function deleteCurrentOrganization() {
 
 
   const {
-    data: {
-      session
-    },
-    error: sessionError
-  } =
-    await client.auth.getSession();
+  data: {
+    session
+  }
+} =
+  await supabaseClient.auth.getSession();
+
+
+if (!session) {
+
+  throw new Error(
+    "ログイン情報を取得できませんでした。"
+  );
+
+}
 
 
   if (sessionError) {
@@ -3323,10 +3331,7 @@ async function deleteCurrentOrganization() {
    * Edge Functionを呼び出す
    */
 
-  const response =
-    await fetch(
-      SUPABASE_URL +
-      "/functions/v1/delete-organization-completely",
+  
       {
         method: "POST",
 
@@ -3460,16 +3465,16 @@ async function deleteCurrentOrganization() {
 
     try {
 
-      await client.auth.signOut();
+  await supabaseClient.auth.signOut();
 
-    } catch (signOutError) {
+} catch (signOutError) {
 
-      console.warn(
-        "ログアウト処理",
-        signOutError
-      );
+  console.warn(
+    "ログアウト処理",
+    signOutError
+  );
 
-    }
+}
 
 
     /*
