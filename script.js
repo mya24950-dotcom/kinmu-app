@@ -5355,6 +5355,130 @@ async function loginWithGoogle() {
 
 }
 
+async function startOrganizationGoogleRegistration() {
+
+  const orgInput =
+    document.getElementById("organizationNameInput");
+
+  const staffInput =
+    document.getElementById("organizationStaffNameInput");
+
+  const organizationName =
+    orgInput?.value.trim() || "";
+
+  const staffName =
+    staffInput?.value.trim() || "";
+
+
+  /* --------------------------------
+     入力チェック
+  -------------------------------- */
+
+  if (!organizationName) {
+    alert("職場名を入力してください。");
+    orgInput?.focus();
+    return;
+  }
+
+  if (!staffName) {
+    alert("登録者名を入力してください。");
+    staffInput?.focus();
+    return;
+  }
+
+
+  /* --------------------------------
+     Google認証後に使用する情報を保存
+  -------------------------------- */
+
+  sessionStorage.setItem(
+    "pendingOrganizationName",
+    organizationName
+  );
+
+  sessionStorage.setItem(
+    "pendingStaffName",
+    staffName
+  );
+
+
+  /* --------------------------------
+     OAuth開始中フラグ
+  -------------------------------- */
+
+  sessionStorage.setItem(
+    "oauthLoginInProgress",
+    "true"
+  );
+
+
+  const client =
+    window.shiftSupabaseClient || supabaseClient;
+
+  if (!client) {
+
+    sessionStorage.removeItem(
+      "oauthLoginInProgress"
+    );
+
+    alert(
+      "認証システムの準備ができていません。"
+    );
+
+    return;
+  }
+
+
+  try {
+
+    const redirectTo =
+      `${window.location.origin}${window.location.pathname}`;
+
+
+    const {
+      error
+    } = await client.auth.signInWithOAuth({
+
+      provider: "google",
+
+      options: {
+
+        redirectTo: redirectTo,
+
+        queryParams: {
+          prompt: "select_account"
+        }
+
+      }
+
+    });
+
+
+    if (error) {
+      throw error;
+    }
+
+
+  } catch (error) {
+
+    console.error(
+      "★ Google新規職場登録エラー:",
+      error
+    );
+
+    sessionStorage.removeItem(
+      "oauthLoginInProgress"
+    );
+
+    alert(
+      "Google登録を開始できませんでした。\n\n" +
+      (error?.message || "不明なエラー")
+    );
+
+  }
+
+}
+
 function setupGoogleLogin() {
 
   const button =
