@@ -12249,6 +12249,88 @@ function hideShiftMenu() {
 
 }
 
+/* ==================================================
+   アプリで変更した勤務セルを記録
+================================================== */
+
+async function recordAppModifiedShift(
+  staffName,
+  dateKey
+) {
+
+  if (
+    !supabaseClient ||
+    !currentOrganization ||
+    !currentOrganization.id
+  ) {
+
+    throw new Error(
+      "職場情報を取得できませんでした。"
+    );
+
+  }
+
+
+  const name =
+    getStaffName(
+      staffName
+    );
+
+
+  const result =
+    await supabaseClient
+      .from("app_modified_shifts")
+      .upsert(
+        {
+          organization_id:
+            currentOrganization.id,
+
+          staff_name:
+            name,
+
+          work_date:
+            dateKey,
+
+          modified_at:
+            new Date().toISOString()
+
+        },
+        {
+          onConflict:
+            "organization_id,staff_name,work_date"
+        }
+      );
+
+
+  if (
+    result.error
+  ) {
+
+    console.error(
+      "アプリ変更記録エラー",
+      result.error
+    );
+
+    throw result.error;
+
+  }
+
+
+  console.log(
+    "★ アプリ変更記録",
+    {
+      staffName:
+        name,
+
+      dateKey:
+        dateKey,
+
+      modifiedAt:
+        new Date().toISOString()
+    }
+  );
+
+}
 
 /* ==================================================
    勤務保存
@@ -12374,6 +12456,11 @@ async function saveWorkShift(
             existingRow.leave_type
           );
 
+           await recordAppModifiedShift(
+  name,
+  dateKey
+);
+
         } else {
 
           const result =
@@ -12402,6 +12489,11 @@ async function saveWorkShift(
             ""
           );
 
+await recordAppModifiedShift(
+  name,
+  dateKey
+);
+           
         }
 
       }
@@ -12454,6 +12546,11 @@ async function saveWorkShift(
 
       }
 
+       await recordAppModifiedShift(
+  name,
+  dateKey
+);
+
     }
 
 
@@ -12493,6 +12590,11 @@ async function saveWorkShift(
         throw result.error;
 
       }
+
+       await recordAppModifiedShift(
+  name,
+  dateKey
+);
 
     }
 
