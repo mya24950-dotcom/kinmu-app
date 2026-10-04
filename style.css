@@ -62,7 +62,7 @@ body {
 @media screen and (display-mode: standalone) {
 
   .app {
-    padding-top: 20px;
+    padding-top: 100px;
     box-sizing: border-box;
   }
 
