@@ -87,25 +87,6 @@ body {
   -webkit-backdrop-filter: blur(18px);
 }
 
-/* =========================================================
-   iPhoneホーム画面アプリ（PWA）
-   上部のセーフエリア対策
-   ========================================================= */
-
-@media screen and (display-mode: standalone) {
-
-  .header {
-    padding-top: calc(
-      7px + env(safe-area-inset-top)
-    );
-
-    min-height: calc(
-      70px + env(safe-area-inset-top)
-    );
-  }
-
-}
-
 .app-header-brand {
   display: flex;
   flex-direction: column;
