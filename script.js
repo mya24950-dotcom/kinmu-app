@@ -13389,21 +13389,39 @@ async function saveWorkShift(
 
 
           await recordAppModifiedShift(
-            name,
-            dateKey
-          );
+  name,
+  dateKey
+);
 
 
-          /*
-           * 実際に勤務が変更された場合だけ通知
-           */
+/*
+ * 実際に勤務が変更された場合だけ通知
+ */
 
-          await sendShiftChangeNotification(
-            name,
-            dateKey,
-            oldShiftName,
-            ""
-          );
+console.log(
+  "★ Push通知呼び出し",
+  {
+    name:
+      name,
+
+    dateKey:
+      dateKey,
+
+    oldShiftName:
+      oldShiftName,
+
+    newShiftName:
+      shiftName
+  }
+);
+
+
+await sendShiftChangeNotification(
+  name,
+  dateKey,
+  oldShiftName,
+  shiftName
+);
 
 
         } else {
