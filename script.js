@@ -1,6 +1,6 @@
 alert(
 
-    "★ 061"
+    "★ 071"
 
   );
 
@@ -2179,6 +2179,8 @@ if (
     ================================================== */
 
     hideInitialLoading();
+
+      askPushNotificationOnFirstLogin();
 
 
     console.log(
