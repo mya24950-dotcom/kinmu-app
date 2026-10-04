@@ -56,16 +56,11 @@ body {
 
 /* =========================================================
    iPhoneホーム画面アプリ専用
-   画面上部の重なり対策
    ========================================================= */
 
-@media screen and (display-mode: standalone) {
-
-  .app {
-    padding-top: 100px;
-    box-sizing: border-box;
-  }
-
+body.pwa-mode .app {
+  padding-top: 30px !important;
+  box-sizing: border-box;
 }
 
 
