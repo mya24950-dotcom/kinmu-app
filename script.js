@@ -2352,32 +2352,21 @@ function updateScheduleNavByRole() {
 
   /*
    * 管理者
-   * → 勤務表ボタンを表示
    */
   if (
     currentOrganization &&
     currentOrganization.role === "admin"
   ) {
 
-    scheduleButton.style.display = "";
+    scheduleButton.hidden = false;
 
     return;
-
   }
-
 
   /*
    * 職員
-   * → 勤務表ボタンを非表示
    */
-  if (
-    currentOrganization &&
-    currentOrganization.role !== "admin"
-  ) {
-
-    scheduleButton.style.display = "true";
-
-  }
+  scheduleButton.hidden = true;
 
 }
 
