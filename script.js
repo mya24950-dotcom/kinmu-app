@@ -414,21 +414,57 @@ async function enablePushNotifications() {
        通知許可
     ================================================== */
 
-    const permission =
-      await Notification.requestPermission();
+    /* ==================================================
+   通知許可
+================================================== */
+
+let permission =
+  Notification.permission;
 
 
-    if (
-      permission !== "granted"
-    ) {
+/* -------------------------------------------------
+   まだ許可・拒否を決めていない場合だけ
+   通知許可を求める
+------------------------------------------------- */
 
-      alert(
-        "通知が許可されませんでした。"
-      );
+if (
+  permission === "default"
+) {
 
-      return;
+  permission =
+    await Notification.requestPermission();
 
-    }
+}
+
+
+/* -------------------------------------------------
+   許可されていない
+------------------------------------------------- */
+
+if (
+  permission !== "granted"
+) {
+
+  if (
+    permission === "denied"
+  ) {
+
+    alert(
+      "Shift+の通知が許可されていません。\n\n" +
+      "iPhoneの設定から、Shift+の通知を許可してください。"
+    );
+
+  } else {
+
+    alert(
+      "通知が許可されませんでした。"
+    );
+
+  }
+
+  return;
+
+}
 
 
     /* ==================================================
