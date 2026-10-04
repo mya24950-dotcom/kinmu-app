@@ -1,6 +1,6 @@
 alert(
 
-    "★ 102"
+    "★ 091"
 
   );
 
@@ -205,270 +205,105 @@ async function testServiceWorkerNotification() {
 
 }
 
-
 /* ==================================================
-   ログイン後のPush通知自動登録
-   ※ 通知許可済みの場合のみ実行
-   ※ アラートは表示しない
+   初回ログイン時のプッシュ通知確認
 ================================================== */
 
-async function registerPushSubscriptionAfterLogin() {
+async function askPushNotificationOnFirstLogin() {
 
   try {
 
-    console.log(
-      "★ ログイン後Push自動登録開始"
-    );
-
-
-    /* --------------------------------------------------
-       対応確認
-    -------------------------------------------------- */
+    /* -------------------------------------------------
+       通知機能に対応していない場合
+    ------------------------------------------------- */
 
     if (
-      !("Notification" in window)
-    ) {
-
-      console.log(
-        "★ Notification非対応"
-      );
-
-      return;
-
-    }
-
-
-    if (
+      !("Notification" in window) ||
       !("PushManager" in window)
     ) {
 
-      console.log(
-        "★ PushManager非対応"
-      );
-
       return;
 
     }
 
 
-    /* --------------------------------------------------
-       通知許可確認
-    -------------------------------------------------- */
+    /* -------------------------------------------------
+       すでに通知許可済みなら何もしない
+    ------------------------------------------------- */
 
     if (
-      Notification.permission !==
+      Notification.permission ===
       "granted"
     ) {
 
-      console.log(
-        "★ 通知が許可されていないためPush登録を行いません",
-        Notification.permission
+      return;
+
+    }
+
+
+    /* -------------------------------------------------
+       一度確認済みなら表示しない
+    ------------------------------------------------- */
+
+    const asked =
+      localStorage.getItem(
+        "shiftPlusPushNotificationAsked"
       );
+
+
+    if (
+      asked === "true"
+    ) {
 
       return;
 
     }
 
 
-    /* --------------------------------------------------
-       Supabase確認
-    -------------------------------------------------- */
+    /* -------------------------------------------------
+       今回確認したことを記録
+    ------------------------------------------------- */
 
-    if (!supabaseClient) {
+    localStorage.setItem(
+      "shiftPlusPushNotificationAsked",
+      "true"
+    );
 
-      console.warn(
-        "★ Supabase未初期化"
-      );
 
-      return;
+    /* -------------------------------------------------
+       少し待ってから表示
+       
+       ログイン直後にいきなり出すのではなく、
+       勤務表が表示されてから出す
+    ------------------------------------------------- */
 
-    }
+    setTimeout(
+      () => {
 
+        const result =
+          confirm(
+            "Shift+から勤務や休暇の変更通知を受け取りますか？\n\n" +
+            "「許可する」を選ぶと、勤務表の変更や休暇の登録・変更などを通知します。"
+          );
 
-    if (
-      !currentOrganization ||
-      !currentOrganization.id
-    ) {
 
-      console.warn(
-        "★ 現在の職場情報がありません"
-      );
+        if (
+          result
+        ) {
 
-      return;
+          enablePushNotifications();
 
-    }
+        }
 
-
-    /* --------------------------------------------------
-       ログインユーザー取得
-    -------------------------------------------------- */
-
-    const {
-      data: {
-        session
-      }
-    } =
-      await supabaseClient.auth.getSession();
-
-
-    if (
-      !session ||
-      !session.user
-    ) {
-
-      console.warn(
-        "★ ログインセッションがありません"
-      );
-
-      return;
-
-    }
-
-
-    /* --------------------------------------------------
-       Service Worker取得
-    -------------------------------------------------- */
-
-    const registration =
-      await registerPushServiceWorker();
-
-
-    /* --------------------------------------------------
-       既存購読確認
-    -------------------------------------------------- */
-
-    let subscription =
-      await registration.pushManager.getSubscription();
-
-
-    /* --------------------------------------------------
-       購読がなければ新規作成
-    -------------------------------------------------- */
-
-    if (!subscription) {
-
-      console.log(
-        "★ Push購読を新規作成します"
-      );
-
-
-      subscription =
-        await registration.pushManager.subscribe({
-
-          userVisibleOnly:
-            true,
-
-          applicationServerKey:
-            urlBase64ToUint8Array(
-              VAPID_PUBLIC_KEY
-            )
-
-        });
-
-    }
-
-
-    const subscriptionJSON =
-      subscription.toJSON();
-
-
-    if (
-      !subscriptionJSON.endpoint ||
-      !subscriptionJSON.keys
-    ) {
-
-      throw new Error(
-        "プッシュ通知の購読情報を取得できませんでした。"
-      );
-
-    }
-
-
-    /* --------------------------------------------------
-       同じユーザー・職場の古い購読を削除
-    -------------------------------------------------- */
-
-    const deleteResult =
-      await supabaseClient
-        .from("push_subscriptions")
-        .delete()
-        .eq(
-          "user_id",
-          session.user.id
-        )
-        .eq(
-          "organization_id",
-          currentOrganization.id
-        );
-
-
-    if (
-      deleteResult.error
-    ) {
-
-      throw deleteResult.error;
-
-    }
-
-
-    /* --------------------------------------------------
-       最新の購読情報を登録
-    -------------------------------------------------- */
-
-    const insertResult =
-      await supabaseClient
-        .from("push_subscriptions")
-        .insert({
-
-          user_id:
-            session.user.id,
-
-          organization_id:
-            currentOrganization.id,
-
-          endpoint:
-            subscriptionJSON.endpoint,
-
-          p256dh:
-            subscriptionJSON.keys.p256dh,
-
-          auth:
-            subscriptionJSON.keys.auth,
-
-          updated_at:
-            new Date().toISOString()
-
-        });
-
-
-    if (
-      insertResult.error
-    ) {
-
-      throw insertResult.error;
-
-    }
-
-
-    console.log(
-      "★ ログイン後Push自動登録完了",
-      {
-        userId:
-          session.user.id,
-
-        organizationId:
-          currentOrganization.id,
-
-        endpoint:
-          subscriptionJSON.endpoint
-      }
+      },
+      1200
     );
 
 
   } catch (error) {
 
     console.error(
-      "★ ログイン後Push自動登録エラー",
+      "★ 初回プッシュ通知確認エラー",
       error
     );
 
@@ -1480,148 +1315,114 @@ async function init() {
         "password-reset"
       ) === "true";
 
+/* ==================================================
+   パスワード再設定リンクのエラー確認
+================================================== */
 
-    /* ==================================================
-       パスワード再設定リンクのエラー確認
-    ================================================== */
+const hashParams =
+  new URLSearchParams(
+    window.location.hash.substring(1)
+  );
 
-    const hashParams =
-      new URLSearchParams(
-        window.location.hash.substring(1)
-      );
+const passwordResetError =
+  hashParams.get("error");
 
+const passwordResetErrorCode =
+  hashParams.get("error_code");
 
-    const passwordResetError =
-      hashParams.get(
-        "error"
-      );
-
-
-    const passwordResetErrorCode =
-      hashParams.get(
-        "error_code"
-      );
+const passwordResetErrorDescription =
+  hashParams.get("error_description");
 
 
-    const passwordResetErrorDescription =
-      hashParams.get(
-        "error_description"
-      );
+if (
+  isPasswordReset &&
+  passwordResetError
+) {
 
+  console.error(
+    "★ パスワード再設定リンクエラー",
+    {
+      error:
+        passwordResetError,
+
+      error_code:
+        passwordResetErrorCode,
+
+      error_description:
+        passwordResetErrorDescription
+    }
+  );
+
+  showLoginPage();
+
+  const loginMainView =
+    document.getElementById(
+      "loginMainView"
+    );
+
+  const passwordResetView =
+    document.getElementById(
+      "passwordResetView"
+    );
+
+  const passwordUpdateView =
+    document.getElementById(
+      "passwordUpdateView"
+    );
+
+  if (loginMainView) {
+    loginMainView.style.display =
+      "none";
+  }
+
+  if (passwordResetView) {
+    passwordResetView.style.display =
+      "none";
+  }
+
+  if (passwordUpdateView) {
+    passwordUpdateView.style.display =
+      "block";
+  }
+
+  if (
+    typeof setupPasswordUpdate ===
+    "function"
+  ) {
+    setupPasswordUpdate();
+  }
+
+  const message =
+    document.getElementById(
+      "passwordUpdateMessage"
+    );
+
+  if (message) {
 
     if (
-      isPasswordReset &&
-      passwordResetError
+      passwordResetErrorCode ===
+      "otp_expired"
     ) {
 
-      console.error(
-        "★ パスワード再設定リンクエラー",
-        {
-          error:
-            passwordResetError,
+      message.textContent =
+        "パスワード再設定リンクの有効期限が切れているか、すでに使用されています。もう一度再設定メールを送信してください。";
 
-          error_code:
-            passwordResetErrorCode,
+    } else {
 
-          error_description:
-            passwordResetErrorDescription
-        }
-      );
-
-
-      showLoginPage();
-
-
-      const loginMainView =
-        document.getElementById(
-          "loginMainView"
-        );
-
-
-      const passwordResetView =
-        document.getElementById(
-          "passwordResetView"
-        );
-
-
-      const passwordUpdateView =
-        document.getElementById(
-          "passwordUpdateView"
-        );
-
-
-      if (loginMainView) {
-
-        loginMainView.style.display =
-          "none";
-
-      }
-
-
-      if (passwordResetView) {
-
-        passwordResetView.style.display =
-          "none";
-
-      }
-
-
-      if (passwordUpdateView) {
-
-        passwordUpdateView.style.display =
-          "block";
-
-      }
-
-
-      if (
-        typeof setupPasswordUpdate ===
-        "function"
-      ) {
-
-        setupPasswordUpdate();
-
-      }
-
-
-      const message =
-        document.getElementById(
-          "passwordUpdateMessage"
-        );
-
-
-      if (message) {
-
-        if (
-          passwordResetErrorCode ===
-          "otp_expired"
-        ) {
-
-          message.textContent =
-            "パスワード再設定リンクの有効期限が切れているか、すでに使用されています。もう一度再設定メールを送信してください。";
-
-        } else {
-
-          message.textContent =
-            passwordResetErrorDescription ||
-            "パスワード再設定リンクを確認できませんでした。";
-
-        }
-
-      }
-
-
-      hideInitialLoading();
-
-
-      return;
+      message.textContent =
+        passwordResetErrorDescription ||
+        "パスワード再設定リンクを確認できませんでした。";
 
     }
 
+  }
 
-    /* ==================================================
-       パスワード再設定URL
-    ================================================== */
+  hideInitialLoading();
+
+  return;
+
+}
+
 
     if (isPasswordReset) {
 
@@ -1671,7 +1472,6 @@ async function init() {
               "★ Recoveryセッション取得成功",
               i + 1
             );
-
 
             break;
 
@@ -1801,7 +1601,6 @@ async function init() {
             "★ OAuthセッション取得成功",
             i + 1
           );
-
 
           break;
 
@@ -2099,209 +1898,118 @@ async function init() {
     ================================================== */
 
     const pendingOrganizationName =
-      sessionStorage.getItem(
-        "pendingOrganizationName"
-      );
-
-
-    const pendingStaffName =
-      sessionStorage.getItem(
-        "pendingStaffName"
-      );
-
-
-    if (
-      pendingOrganizationName &&
-      pendingStaffName
-    ) {
-
-      console.log(
-        "★ 保留中の新規職場登録を処理します"
-      );
-
-
-      const {
-        data,
-        error
-      } =
-        await supabaseClient.rpc(
-          "create_organization_and_admin",
-          {
-            new_org_name:
-              pendingOrganizationName,
-
-            new_staff_name:
-              pendingStaffName
-          }
-        );
-
-
-      if (error) {
-
-        console.error(
-          "★ 職場作成RPCエラー:",
-          error
-        );
-
-
-        throw error;
-
-      }
-
-
-      /*
-       * RPCが成功した時点で
-       * 保留情報を削除する。
-       */
-
-      sessionStorage.removeItem(
-        "pendingOrganizationName"
-      );
-
-
-      sessionStorage.removeItem(
-        "pendingStaffName"
-      );
-
-
-      currentOrganization =
-        await getCurrentOrganization(
-          session.user.id
-        );
-
-
-      if (!currentOrganization) {
-
-        console.error(
-          "★ 新規職場作成後も所属職場なし"
-        );
-
-
-        await supabaseClient.auth.signOut();
-
-
-        showLoginPage();
-
-
-        if (
-          typeof setupGoogleLogin ===
-          "function"
-        ) {
-
-          setupGoogleLogin();
-
-        }
-
-
-        if (
-          typeof setupAppleLogin ===
-          "function"
-        ) {
-
-          setupAppleLogin();
-
-        }
-
-
-        if (
-          typeof setupAzureLogin ===
-          "function"
-        ) {
-
-          setupAzureLogin();
-
-        }
-
-
-        if (
-          typeof setupPasskeyLogin ===
-          "function"
-        ) {
-
-          setupPasskeyLogin();
-
-        }
-
-
-        if (
-          typeof setupEmailLogin ===
-          "function"
-        ) {
-
-          setupEmailLogin();
-
-        }
-
-
-        if (
-          typeof setupPasswordReset ===
-          "function"
-        ) {
-
-          setupPasswordReset();
-
-        }
-
-
-        if (
-          typeof setupNewOrganizationButton ===
-          "function"
-        ) {
-
-          setupNewOrganizationButton();
-
-        }
-
-
-        hideInitialLoading();
-
-
-        alert(
-          "新しく作成した職場を取得できませんでした。"
-        );
-
-
-        return;
-
-      }
-
-
-      console.log(
-        "★ 新規職場作成後の現在の職場",
-        currentOrganization
-      );
-
+  sessionStorage.getItem(
+    "pendingOrganizationName"
+  );
+
+const pendingStaffName =
+  sessionStorage.getItem(
+    "pendingStaffName"
+  );
+
+
+if (
+  pendingOrganizationName &&
+  pendingStaffName
+) {
+
+  console.log(
+    "★ 保留中の新規職場登録を処理します"
+  );
+
+
+  const {
+    data,
+    error
+  } = await supabaseClient.rpc(
+    "create_organization_and_admin",
+    {
+      new_org_name:
+        pendingOrganizationName,
+
+      new_staff_name:
+        pendingStaffName
     }
+  );
 
+
+  if (error) {
+
+    console.error(
+      "★ 職場作成RPCエラー:",
+      error
+    );
+
+    throw error;
+  }
+
+
+  /*
+     RPCが成功した時点で
+     保留情報を削除する。
+
+     これにより、組織情報取得時に
+     一時的なエラーが発生しても、
+     同じ職場を二重作成しにくくする。
+  */
+
+  sessionStorage.removeItem(
+    "pendingOrganizationName"
+  );
+
+  sessionStorage.removeItem(
+    "pendingStaffName"
+  );
+
+
+  currentOrganization =
+    await getCurrentOrganization(
+      session.user.id
+    );
+
+
+   updateScheduleNavByRole();
+
+  if (!currentOrganization) {
+
+    throw new Error(
+      "職場登録後の組織情報を取得できませんでした。"
+    );
+
+  }
+
+
+  console.log(
+    "★ 新規職場登録完了:",
+    currentOrganization
+  );
+
+
+  alert(
+    "職場を登録しました。"
+  );
+
+}
 
     /* ==================================================
-       ★ 通常ログインの場合も職場を取得
-       ★ 今回のエラーの修正部分
+       職場所属取得
     ================================================== */
 
-    if (!currentOrganization) {
+    console.log(
+      "★ 職場所属を取得します"
+    );
 
-      console.log(
-        "★ 現在の職場を取得します"
+
+    currentOrganization =
+      await getCurrentOrganization(
+        session.user.id
       );
 
-
-      currentOrganization =
-        await getCurrentOrganization(
-          session.user.id
-        );
-
-    }
-
-
-    /* ==================================================
-       ★ 職場が取得できなければアプリを起動しない
-    ================================================== */
 
     if (!currentOrganization) {
 
       console.error(
-        "★ currentOrganization が取得できません"
+        "★ 所属職場なし"
       );
 
 
@@ -2385,22 +2093,13 @@ async function init() {
 
 
       alert(
-        "所属している職場が見つかりません。\n\n" +
-        "ログインしたアカウントが職場に登録されているか確認してください。"
+        "所属している職場が見つかりません。"
       );
 
 
       return;
 
     }
-
-
-    /* ==================================================
-       ★ 通知許可済みならPush購読を自動登録
-       ★ 新規職場・既存職場の両方で実行
-    ================================================== */
-
-    await registerPushSubscriptionAfterLogin();
 
 
     console.log(
@@ -2518,6 +2217,7 @@ async function init() {
     hideInitialLoading();
 
 
+
     console.log(
       "★ Shift+起動完了"
     );
@@ -2539,9 +2239,9 @@ async function init() {
 
 
     /*
-     * ここでも各関数を直接呼ばず、
-     * 存在確認してから実行する。
-     */
+      ここでも各関数を直接呼ばず、
+      存在確認してから実行する。
+    */
 
     try {
 
@@ -2716,10 +2416,6 @@ async function init() {
     }
 
 
-    /* --------------------------------------------------
-       新規職場登録ボタン
-    -------------------------------------------------- */
-
     try {
 
       if (
@@ -2845,115 +2541,6 @@ async function requestPushPermissionOnLogin() {
       "★ 通知許可取得エラー",
       error
     );
-
-  }
-
-}
-
-function showLoginPage(message = "") {
-
-  console.log(
-    "ログイン画面を表示"
-  );
-
-
-  hideInitialLoading();
-
-
-  const app =
-    document.getElementById(
-      "app"
-    );
-
-
-  if (app) {
-
-    app.style.setProperty(
-      "display",
-      "none",
-      "important"
-    );
-
-    app.style.setProperty(
-      "visibility",
-      "hidden",
-      "important"
-    );
-
-    app.style.setProperty(
-      "opacity",
-      "0",
-      "important"
-    );
-
-    app.style.setProperty(
-      "pointer-events",
-      "none",
-      "important"
-    );
-
-  }
-
-
-  const loginPage =
-    document.getElementById(
-      "loginPage"
-    );
-
-
-  if (loginPage) {
-
-    loginPage.style.setProperty(
-      "display",
-      "flex",
-      "important"
-    );
-
-    loginPage.style.setProperty(
-      "visibility",
-      "visible",
-      "important"
-    );
-
-    loginPage.style.setProperty(
-      "opacity",
-      "1",
-      "important"
-    );
-
-    loginPage.style.setProperty(
-      "pointer-events",
-      "auto",
-      "important"
-    );
-
-  }
-
-
-  const loginMessage =
-    document.getElementById(
-      "loginMessage"
-    );
-
-
-  if (loginMessage) {
-
-    loginMessage.textContent =
-      message || "";
-
-  }
-
-
-  window.scrollTo(
-    0,
-    0
-  );
-
-
-  if (loginPage) {
-
-    loginPage.scrollTop =
-      0;
 
   }
 
@@ -3331,6 +2918,2754 @@ function setupPasskeyLogin() {
 /*
  * Passkeyでログイン
  */
+async function loginWithPasskey() {
+
+  const button =
+    document.getElementById(
+      "passkeyLoginButton"
+    );
+
+  const message =
+    document.getElementById(
+      "loginMessage"
+    );
+
+
+  /*
+   * 二重クリック防止
+   */
+
+  if (button) {
+
+    button.disabled =
+      true;
+
+    button.style.opacity =
+      "0.6";
+
+    button.innerHTML =
+      '<span style="font-size:20px;">🔐</span>' +
+      '認証しています…';
+
+  }
+
+
+  if (message) {
+
+    message.textContent =
+      "Face ID・指紋などで認証してください…";
+
+  }
+
+
+  try {
+
+    console.log(
+      "★ Passkeyログイン開始"
+    );
+
+
+    /*
+     * ログアウト後の
+     * 強制ログイン画面フラグを解除
+     */
+
+    sessionStorage.removeItem(
+      "forceLoginScreen"
+    );
+
+
+    /*
+     * Supabase Passkeyログイン
+     */
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient.auth
+        .signInWithPasskey();
+
+
+    if (error) {
+
+      throw error;
+
+    }
+
+
+    /*
+     * セッション確認
+     */
+
+    if (
+      !data ||
+      !data.session
+    ) {
+
+      throw new Error(
+        "Passkeyログインに成功しましたが、ログインセッションを取得できませんでした。"
+      );
+
+    }
+
+
+    console.log(
+      "★ Passkeyログイン成功",
+      data.user?.email
+    );
+
+
+    /*
+     * ログイン成功
+     *
+     * init()をもう一度実行して、
+     * 通常のログイン処理を行う
+     */
+
+    window.location.reload();
+
+
+    } catch (error) {
+    console.error("Passkeyログインエラー", error);
+
+    const errorMessage =
+      error?.message || String(error);
+
+    const lowerMessage =
+      errorMessage.toLowerCase();
+
+    /*
+     * Face ID / 指紋認証をユーザーがキャンセルした場合は
+     * エラー表示しない
+     */
+    const isUserCancel =
+      error?.name === "NotAllowedError" ||
+      error?.name === "AbortError" ||
+      lowerMessage.includes("cancel") ||
+      lowerMessage.includes("abort") ||
+      lowerMessage.includes("not allowed by the user agent") ||
+      lowerMessage.includes("the request is not allowed");
+
+    if (!isUserCancel) {
+      alert(
+        "Face ID / 指紋ログインに失敗しました。\n\n" +
+        errorMessage
+      );
+    }
+
+    if (message) {
+      message.textContent =
+        "Face ID / 指紋でログインできます。";
+    }
+
+    if (button) {
+      button.disabled = false;
+      button.style.opacity = "1";
+      button.innerHTML =
+        '<span style="font-size:20px;">🔐</span>' +
+        'Face ID / 指紋でログイン';
+    }
+  }
+
+}
+
+function updateScheduleNavByRole() {
+
+  const scheduleButton =
+    document.getElementById(
+      "scheduleNavButton"
+    );
+
+  if (!scheduleButton) {
+    return;
+  }
+
+  /*
+   * 管理者
+   */
+  if (
+    currentOrganization &&
+    currentOrganization.role === "admin"
+  ) {
+
+    scheduleButton.hidden = false;
+
+    return;
+  }
+
+  /*
+   * 職員
+   */
+  scheduleButton.hidden = true;
+
+}
+
+ /* ==================================================
+    Passkey登録
+ ================================================== */
+
+/*
+ * 現在ログインしているユーザーに
+ * Passkeyを登録する
+ */
+async function registerCurrentUserPasskey() {
+  console.log(
+    "★ Passkey登録処理開始"
+  );
+  try {
+    /*
+     * Passkey対応確認
+     */
+    console.log(
+      "★ Passkeyチェック① PublicKeyCredential:",
+      !!window.PublicKeyCredential
+    );
+    if (
+      !window.PublicKeyCredential
+    ) {
+      console.log(
+        "この端末・ブラウザはPasskeyに対応していません"
+      );
+      return;
+    }
+    /*
+     * 現在のログイン状態を確認
+     */
+    console.log(
+      "★ Passkeyチェック② セッション取得開始"
+    );
+    const {
+      data: {
+        session
+      }
+    } =
+      await supabaseClient.auth.getSession();
+    console.log(
+      "★ Passkeyチェック② session:",
+      session
+    );
+    if (!session) {
+      console.log(
+        "ログインしていないためPasskey登録を行いません"
+      );
+      return;
+    }
+    /*
+     * 現在のユーザー確認
+     */
+    console.log(
+      "★ Passkey登録対象ユーザー:",
+      session.user?.id,
+      session.user?.email
+    );
+    /*
+     * すでにPasskeyが登録されているか確認
+     */
+    console.log(
+      "★ Passkeyチェック③ Passkey一覧取得開始"
+    );
+    const {
+      data: passkeys,
+      error: listError
+    } =
+      await supabaseClient.auth.passkey.list();
+    console.log(
+      "★ Passkeyチェック③ 結果:",
+      passkeys,
+      listError
+    );
+    if (listError) {
+      console.error(
+        "Passkey一覧取得エラー",
+        listError
+      );
+      return;
+    }
+    /*
+     * すでに登録済みなら何もしない
+     */
+    if (
+      passkeys &&
+      passkeys.length > 0
+    ) {
+      console.log(
+        "★ Passkeyはすでに登録されています"
+      );
+      return;
+    }
+    console.log(
+      "★ Passkey未登録です"
+    );
+    /*
+     * Passkey登録を確認
+     */
+    const register =
+      confirm(
+        "次回から、Face ID・指紋などで\n" +
+        "勤務表にログインできるようにしますか？\n\n" +
+        "この端末にPasskeyを登録します。"
+      );
+    console.log(
+      "★ Passkey登録確認結果:",
+      register
+    );
+    if (!register) {
+      console.log(
+        "Passkey登録はキャンセルされました"
+      );
+      return;
+    }
+    /*
+     * Passkey登録開始
+     */
+    console.log(
+      "★ Passkey登録開始"
+    );
+    const {
+      data,
+      error
+    } =
+      await supabaseClient.auth
+        .registerPasskey();
+    if (error) {
+      throw error;
+    }
+    console.log(
+      "★ Passkey登録完了",
+      data
+    );
+    alert(
+      "Face ID / 指紋ログインの登録が完了しました。\n\n" +
+      "次回からログイン画面で\n" +
+      "「Face ID / 指紋でログイン」\n" +
+      "を利用できます。"
+    );
+  } catch (error) {
+    console.error(
+      "★ Passkey登録エラー",
+      error
+    );
+    const errorMessage =
+      error?.message ||
+      String(error);
+    const lowerMessage =
+      errorMessage.toLowerCase();
+    /*
+     * ユーザーがFace ID等を
+     * キャンセルした場合は
+     * エラー画面を出さない
+     */
+    if (
+      !lowerMessage.includes(
+        "cancel"
+      ) &&
+      !lowerMessage.includes(
+        "abort"
+      )
+    ) {
+      alert(
+        "Face ID / 指紋ログインの登録に失敗しました。\n\n" +
+        errorMessage
+      );
+    }
+  }
+}
+
+async function issueStaffInvite(staffId) {
+
+  try {
+
+    /* ==================================================
+       招待発行前の確認
+    ================================================== */
+
+    
+
+
+    /* ==================================================
+       招待リンク発行
+    ================================================== */
+
+    const { data, error } =
+      await supabaseClient.rpc(
+        "issue_staff_invite",
+        {
+          target_staff_id: staffId
+        }
+      );
+
+
+    if (error) {
+
+      console.error(
+        "招待発行エラー",
+        error
+      );
+
+      alert(
+        "招待リンクの発行に失敗しました。\n\n" +
+        error.message
+      );
+
+      return;
+
+    }
+
+
+    if (
+      !data ||
+      !data.length ||
+      !data[0].token
+    ) {
+
+      alert(
+        "招待リンクを作成できませんでした。"
+      );
+
+      return;
+
+    }
+
+
+    const token =
+      data[0].token;
+
+
+    const inviteUrl =
+      window.location.origin +
+      window.location.pathname +
+      "?invite=" +
+      encodeURIComponent(token);
+
+
+    /* ==================================================
+       招待リンクをコピー
+    ================================================== */
+
+    try {
+
+      await navigator.clipboard.writeText(
+        inviteUrl
+      );
+
+
+      alert(
+        "招待リンクをコピーしました。\n\n" +
+        "このリンクを職員本人に送ってください。"
+      );
+
+
+    } catch (clipboardError) {
+
+      console.warn(
+        "クリップボードへのコピーに失敗しました",
+        clipboardError
+      );
+
+
+      /* ==================================================
+         iPhoneなどでコピーできない場合
+      ================================================== */
+
+      window.prompt(
+        "招待リンクをコピーしてください。",
+        inviteUrl
+      );
+
+    }
+
+
+    console.log(
+      "招待リンク",
+      inviteUrl
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "招待リンク発行エラー",
+      error
+    );
+
+
+    alert(
+      "招待リンクの発行に失敗しました。\n\n" +
+      (error?.message ||
+        String(error))
+    );
+
+  }
+
+}
+
+
+/* ==================================================
+   ログイン画面表示
+================================================== */
+
+function showLoginPage(message = "") {
+
+  console.log("ログイン画面を表示");
+
+hideInitialLoading();
+  /* =====================================================
+     ① アプリ本体を完全に隠す
+     ===================================================== */
+
+  const app =
+    document.getElementById("app");
+
+  if (app) {
+
+    app.style.setProperty(
+      "display",
+      "none",
+      "important"
+    );
+
+    app.style.setProperty(
+      "visibility",
+      "hidden",
+      "important"
+    );
+
+    app.style.setProperty(
+      "opacity",
+      "0",
+      "important"
+    );
+
+    app.style.setProperty(
+      "pointer-events",
+      "none",
+      "important"
+    );
+  }
+
+
+  /* =====================================================
+     ② ログイン画面を表示
+     ===================================================== */
+
+  const loginPage =
+    document.getElementById("loginPage");
+
+  if (loginPage) {
+
+    loginPage.style.setProperty(
+      "display",
+      "flex",
+      "important"
+    );
+
+    loginPage.style.setProperty(
+      "visibility",
+      "visible",
+      "important"
+    );
+
+    loginPage.style.setProperty(
+      "opacity",
+      "1",
+      "important"
+    );
+
+    loginPage.style.setProperty(
+      "pointer-events",
+      "auto",
+      "important"
+    );
+  }
+
+
+  /* =====================================================
+     ③ ログインメッセージ
+     ===================================================== */
+
+  const loginMessage =
+    document.getElementById("loginMessage");
+
+  if (loginMessage) {
+
+    loginMessage.textContent =
+      message || "";
+
+  }
+
+
+  /* =====================================================
+     ④ 画面を一番上へ
+     ===================================================== */
+
+  window.scrollTo(0, 0);
+
+  if (loginPage) {
+    loginPage.scrollTop = 0;
+  }
+}
+
+async function logout() {
+
+  console.log("★ ログアウト開始");
+
+  try {
+
+    /* =====================================================
+       ① 次回起動時にログイン画面を表示するフラグを設定
+       ===================================================== */
+
+    sessionStorage.setItem(
+      "forceLoginScreen",
+      "true"
+    );
+
+
+    /* =====================================================
+       ② Supabaseからログアウト
+       ===================================================== */
+
+    const {
+      data: { session }
+    } =
+      await supabaseClient.auth.getSession();
+
+    console.log(
+      "★ 現在のセッション：",
+      session
+    );
+
+
+    if (session) {
+
+      const { error } =
+        await supabaseClient.auth.signOut({
+          scope: "global"
+        });
+
+
+      if (error) {
+
+        console.error(
+          "★ Supabaseログアウトエラー",
+          error
+        );
+
+        /*
+         * すでにログアウト済みなら
+         * そのままログイン画面へ進む
+         */
+        if (
+          !String(error.message).includes(
+            "Auth session missing"
+          )
+        ) {
+
+          throw error;
+
+        }
+
+      } else {
+
+        console.log(
+          "★ Supabaseログアウト成功"
+        );
+
+      }
+
+    } else {
+
+      console.log(
+        "★ セッションなし → ログアウト済み"
+      );
+
+    }
+
+
+    /* =====================================================
+       ③ 現在の組織情報をクリア
+       ===================================================== */
+
+    currentOrganization = null;
+
+
+    /* =====================================================
+       ④ ページを再読み込み
+       
+       → init() が実行される
+       → forceLoginScreen === "true"
+       → ログイン画面を表示
+       ===================================================== */
+
+    console.log(
+      "★ ログアウト完了 → ログイン画面へ移動"
+    );
+
+    window.location.reload();
+
+
+  } catch (error) {
+
+    console.error(
+      "★ ログアウト処理エラー",
+      error
+    );
+
+
+    /*
+     * エラーになった場合は、
+     * ログイン画面フラグを解除
+     */
+    sessionStorage.removeItem(
+      "forceLoginScreen"
+    );
+
+
+    alert(
+      "ログアウトに失敗しました。\n\n" +
+      "エラー：" +
+      (error?.message || String(error))
+    );
+
+  }
+
+}
+
+function setupLogoutButton() {
+
+  const button =
+    document.getElementById("logoutButton");
+
+  if (!button) {
+    return;
+  }
+
+
+  button.onclick = async function() {
+
+    const confirmed =
+      confirm(
+        "ログアウトしますか？"
+      );
+
+    if (!confirmed) {
+      return;
+    }
+
+
+    try {
+
+      console.log(
+        "★ ログアウト開始"
+      );
+
+
+      /* =================================================
+         ① ログアウト後はログイン画面を表示する
+         ================================================= */
+
+      sessionStorage.setItem(
+        "forceLoginScreen",
+        "true"
+      );
+
+
+      /* =================================================
+         ② 現在の職場情報を消す
+         ================================================= */
+
+      currentOrganization = null;
+
+
+      /* =================================================
+         ③ アプリ内のローカルデータを消す
+         ================================================= */
+
+      localStorage.removeItem(
+        STORAGE_KEY
+      );
+
+
+      /* =================================================
+         ④ 新規職場登録途中の情報を消す
+         ================================================= */
+
+      sessionStorage.removeItem(
+        "pendingOrganizationName"
+      );
+
+      sessionStorage.removeItem(
+        "pendingStaffName"
+      );
+
+
+      /* =================================================
+         ⑤ Supabaseからログアウト
+         ================================================= */
+
+      const {
+        error
+      } =
+        await supabaseClient.auth.signOut({
+          scope: "global"
+        });
+
+
+      if (error) {
+
+        throw error;
+
+      }
+
+
+      console.log(
+        "★ Supabaseログアウト完了"
+      );
+
+
+      /* =================================================
+         ⑥ セッション確認
+         ================================================= */
+
+      const {
+        data: {
+          session
+        }
+      } =
+        await supabaseClient.auth.getSession();
+
+
+      if (session) {
+
+        console.warn(
+          "⚠️ セッションがまだ残っています"
+        );
+
+      } else {
+
+        console.log(
+          "★ セッション完全消去確認"
+        );
+
+      }
+
+
+      /* =================================================
+         ⑦ ページを再読み込み
+         
+         init() が実行され、
+         forceLoginScreen === "true"
+         を検出してログイン画面を表示する
+         ================================================= */
+
+      console.log(
+        "★ ログイン画面へ移動します"
+      );
+
+
+      window.location.reload();
+
+    }
+
+
+    catch (error) {
+
+      console.error(
+        "ログアウトエラー",
+        error
+      );
+
+
+      /*
+       * エラーの場合は
+       * ログイン画面フラグを解除
+       */
+
+      sessionStorage.removeItem(
+        "forceLoginScreen"
+      );
+
+
+      alert(
+        "ログアウトに失敗しました。\n\n" +
+        (
+          error?.message ||
+          String(error)
+        )
+      );
+
+    }
+
+  };
+
+}
+
+/* =========================================================
+   職場完全削除
+   ========================================================= */
+
+/* ---------------------------------------------------------
+   職場完全削除ボタンの表示設定
+   --------------------------------------------------------- */
+
+function setupOrganizationDangerZone() {
+
+  const dangerZone =
+    document.getElementById(
+      "organizationDangerZone"
+    );
+
+  const deleteButton =
+    document.getElementById(
+      "deleteOrganizationButton"
+    );
+
+  if (!dangerZone || !deleteButton) {
+    return;
+  }
+
+  /*
+   * 管理者だけ表示
+   */
+
+  const isAdmin =
+    currentOrganization &&
+    currentOrganization.role === "admin";
+
+  if (!isAdmin) {
+
+    dangerZone.style.display = "none";
+
+    return;
+  }
+
+  dangerZone.style.display = "block";
+
+  /*
+   * クリック処理
+   */
+
+  deleteButton.onclick =
+    async function() {
+
+      await deleteCurrentOrganization();
+
+    };
+
+}
+
+
+/* ---------------------------------------------------------
+   職場完全削除
+   --------------------------------------------------------- */
+async function deleteCurrentOrganization() {
+
+  if (!currentOrganization) {
+
+    alert(
+      "現在の職場情報を取得できません。"
+    );
+
+    return;
+  }
+
+
+  /*
+   * 管理者チェック
+   */
+
+  if (
+    currentOrganization.role !== "admin"
+  ) {
+
+    alert(
+      "管理者のみ職場を削除できます。"
+    );
+
+    return;
+  }
+
+
+  /*
+   * 職場名
+   */
+
+  const organizationName =
+    currentOrganization.name;
+
+
+  /*
+   * 1回目の確認
+   */
+
+  const firstConfirm =
+    confirm(
+      "【重要】\n\n" +
+      "この職場を完全に削除します。\n\n" +
+      "削除されるもの：\n" +
+      "・勤務表\n" +
+      "・職員\n" +
+      "・勤務形態\n" +
+      "・休暇設定\n" +
+      "・休業設定\n" +
+      "・職場設定\n" +
+      "・招待情報\n" +
+      "・この職場に紐づくアプリのログインアカウント\n\n" +
+      "この操作は元に戻せません。\n\n" +
+      "本当に削除しますか？"
+    );
+
+
+  if (!firstConfirm) {
+    return;
+  }
+
+
+  /*
+   * 職場名を入力してもらう
+   */
+
+  const confirmationName =
+    prompt(
+      "削除を実行するには、\n" +
+      "職場名をそのまま入力してください。\n\n" +
+      "職場名：\n" +
+      organizationName
+    );
+
+
+  /*
+   * キャンセル
+   */
+
+  if (confirmationName === null) {
+    return;
+  }
+
+
+  /*
+   * 職場名確認
+   */
+
+  if (
+    confirmationName.trim() !==
+    organizationName
+  ) {
+
+    alert(
+      "職場名が一致しません。\n\n" +
+      "職場の削除を中止しました。"
+    );
+
+    return;
+  }
+
+
+  /*
+   * 最終確認
+   */
+
+  const finalConfirm =
+    confirm(
+      "最終確認です。\n\n" +
+      "「" +
+      organizationName +
+      "」を完全に削除します。\n\n" +
+      "本当に実行しますか？"
+    );
+
+
+  if (!finalConfirm) {
+    return;
+  }
+
+
+  /*
+   * ボタンを無効化
+   */
+
+  const deleteButton =
+    document.getElementById(
+      "deleteOrganizationButton"
+    );
+
+  if (deleteButton) {
+
+    deleteButton.disabled = true;
+
+    deleteButton.textContent =
+      "削除しています…";
+
+    deleteButton.style.opacity =
+      "0.6";
+
+  }
+
+
+  cloudOperationBusy = true;
+
+
+  try {
+
+    /*
+     * 現在のSupabaseクライアント
+     *
+     * Googleログインなどと同じクライアントを使用する
+     */
+
+    const client =
+      window.shiftSupabaseClient ||
+      supabaseClient;
+
+
+    if (!client) {
+
+      throw new Error(
+        "Supabaseが初期化されていません。"
+      );
+
+    }
+
+
+    /*
+     * 現在のログインセッション確認
+     */
+
+    console.log(
+      "★ 職場削除前：ログインセッション確認"
+    );
+
+
+    const {
+      data: sessionData,
+      error: sessionError
+    } =
+      await client.auth.getSession();
+
+
+    if (sessionError) {
+
+      console.error(
+        "★ セッション取得エラー",
+        sessionError
+      );
+
+      throw sessionError;
+
+    }
+
+
+    const session =
+      sessionData?.session;
+
+
+    if (!session) {
+
+      console.error(
+        "★ 職場削除時にログインセッションがありません"
+      );
+
+      throw new Error(
+        "ログイン情報を取得できませんでした。"
+      );
+
+    }
+
+
+    console.log(
+      "★ 職場削除：ログインセッション取得成功",
+      {
+        userId:
+          session.user?.id,
+
+        email:
+          session.user?.email
+      }
+    );
+
+
+    /*
+     * Edge Functionを呼び出す
+     */
+
+    const response =
+      await fetch(
+        SUPABASE_URL +
+        "/functions/v1/delete-organization-completely",
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json",
+
+            "Authorization":
+              "Bearer " +
+              session.access_token
+          },
+
+          body: JSON.stringify({
+
+            organization_id:
+              currentOrganization.id,
+
+            confirmation_name:
+              confirmationName.trim()
+
+          })
+
+        }
+      );
+
+
+    /*
+     * レスポンス取得
+     */
+
+    const result =
+      await response.json();
+
+
+    /*
+     * エラー
+     */
+
+    if (!response.ok) {
+
+      throw new Error(
+        result?.error ||
+        "職場の削除に失敗しました。"
+      );
+
+    }
+
+
+    if (!result?.success) {
+
+      throw new Error(
+        result?.error ||
+        "職場の削除結果を確認できませんでした。"
+      );
+
+    }
+
+
+    console.log(
+      "職場完全削除完了",
+      result
+    );
+
+
+    /*
+     * ローカルデータを削除
+     */
+
+    localStorage.removeItem(
+      STORAGE_KEY
+    );
+
+
+    /*
+     * 現在の職場情報をクリア
+     */
+
+    currentOrganization = null;
+
+
+    /*
+     * Supabaseログアウト
+     *
+     * Edge Function側で現在ユーザーの
+     * Authアカウントが削除された場合も、
+     * ここでローカルセッションを消します。
+     */
+
+    try {
+
+      await client.auth.signOut();
+
+    } catch (signOutError) {
+
+      console.warn(
+        "ログアウト処理",
+        signOutError
+      );
+
+    }
+
+
+    /*
+     * 完了メッセージ
+     */
+
+    alert(
+      "「" +
+      organizationName +
+      "」を完全に削除しました。\n\n" +
+      "ログイン画面に戻ります。"
+    );
+
+
+    /*
+     * ログイン画面へ
+     */
+
+    showLoginPage(
+      "職場を削除しました。"
+    );
+
+
+    /*
+     * ログイン・新規登録ボタンを再設定
+     */
+
+    setupGoogleLogin();
+
+    setupEmailLogin();
+
+    setupAppleLogin();
+
+    setupNewOrganizationButton();
+
+
+  } catch (error) {
+
+    console.error(
+      "職場完全削除エラー",
+      error
+    );
+
+
+    alert(
+      "職場の削除に失敗しました。\n\n" +
+      (
+        error?.message ||
+        String(error)
+      )
+    );
+
+
+  } finally {
+
+    finishCloudOperation();
+
+
+    /*
+     * エラーだった場合は
+     * ボタンを元に戻す
+     */
+
+    if (deleteButton) {
+
+      deleteButton.disabled = false;
+
+      deleteButton.textContent =
+        "職場を完全に削除";
+
+      deleteButton.style.opacity =
+        "1";
+
+    }
+
+  }
+
+}
+
+/* ==================================================
+   勤務表アプリ表示
+================================================== */
+
+function showApp() {
+
+  const loginPage =
+    document.getElementById(
+      "loginPage"
+    );
+
+
+  const app =
+    document.getElementById(
+      "app"
+    );
+
+
+  /* =====================================================
+     ログイン画面を完全に非表示
+  ===================================================== */
+
+  if (loginPage) {
+
+    loginPage.style.setProperty(
+      "display",
+      "none",
+      "important"
+    );
+
+    loginPage.style.setProperty(
+      "visibility",
+      "hidden",
+      "important"
+    );
+
+    loginPage.style.setProperty(
+      "opacity",
+      "0",
+      "important"
+    );
+
+    loginPage.style.setProperty(
+      "pointer-events",
+      "none",
+      "important"
+    );
+
+  }
+
+
+  /* =====================================================
+     アプリを表示
+  ===================================================== */
+
+  if (app) {
+
+    app.style.display =
+      "";
+
+    app.style.visibility =
+      "visible";
+
+    app.style.opacity =
+      "1";
+
+    app.style.pointerEvents =
+      "auto";
+
+    setupOrganizationDangerZone();
+
+  }
+
+
+  /* =====================================================
+     管理者かどうか
+  ===================================================== */
+
+  const isAdmin =
+    currentOrganization &&
+    currentOrganization.role === "admin";
+
+
+  /* =====================================================
+     ナビゲーション
+  ===================================================== */
+
+  document
+    .querySelectorAll(
+      ".nav-button"
+    )
+    .forEach(
+      button => {
+
+        const page =
+          button.dataset.page;
+
+        if (isAdmin) {
+
+  button.style.display =
+    "";
+
+} else {
+
+  button.style.display =
+    "none";
+
+}
+
+      }
+    );
+
+const nav =
+  document.querySelector(
+    ".nav"
+  );
+
+if (nav) {
+
+  nav.style.display =
+    isAdmin
+      ? ""
+      : "none";
+
+}
+   
+
+  /* =====================================================
+     月消去・年度消去
+  ===================================================== */
+
+  const deleteMonthButton =
+    document.getElementById(
+      "deleteMonthButton"
+    );
+
+
+  const deleteFiscalYearButton =
+    document.getElementById(
+      "deleteFiscalYearButton"
+    );
+
+
+  if (deleteMonthButton) {
+
+    deleteMonthButton.style.display =
+      isAdmin
+        ? ""
+        : "none";
+
+  }
+
+
+  if (deleteFiscalYearButton) {
+
+    deleteFiscalYearButton.style.display =
+      isAdmin
+        ? ""
+        : "none";
+
+  }
+
+
+  /* =====================================================
+     職員の場合は必ず勤務表を表示
+  ===================================================== */
+
+  if (!isAdmin) {
+
+    showPage(
+      "schedule"
+    );
+
+  }
+
+}
+
+/* =========================================================
+   Appleログイン
+========================================================= */
+
+async function loginWithApple() {
+
+  const button =
+    document.getElementById("appleLoginButton");
+
+  try {
+
+    if (button) {
+      button.disabled = true;
+    }
+
+      showInitialLoading(
+      "Appleでログインしています…"
+    );
+
+    const params =
+      new URLSearchParams(window.location.search);
+
+    const inviteToken =
+      params.get("invite");
+
+    if (inviteToken) {
+
+      sessionStorage.setItem(
+        "pendingInviteToken",
+        inviteToken
+      );
+
+    }
+
+    let redirectTo =
+      "https://mya24950-dotcom.github.io/kinmu-app/";
+
+    if (inviteToken) {
+
+      redirectTo +=
+        "?invite=" +
+        encodeURIComponent(inviteToken);
+
+    }
+
+    console.log(
+      "★ Apple OAuth開始",
+      redirectTo
+    );
+
+    const {
+      error
+    } =
+      client.auth.signInWithOAuth({
+
+        provider: "apple",
+
+        options: {
+          redirectTo
+        }
+
+      });
+
+    if (error) {
+      throw error;
+    }
+
+  } catch (error) {
+
+    console.error(
+      "Appleログインエラー:",
+      error
+    );
+
+    sessionStorage.removeItem(
+      "oauthLoginInProgress"
+    );
+
+    hideInitialLoading();
+
+    if (button) {
+      button.disabled = false;
+    }
+
+    alert(
+      "Appleログインに失敗しました。\n" +
+      (error.message || error)
+    );
+
+  }
+
+}
+
+async function updatePassword() {
+
+  const passwordInput =
+    document.getElementById(
+      "newPassword"
+    );
+
+  const confirmInput =
+    document.getElementById(
+      "newPasswordConfirm"
+    );
+
+  const message =
+    document.getElementById(
+      "passwordUpdateMessage"
+    );
+
+  const button =
+    document.getElementById(
+      "updatePasswordButton"
+    );
+
+
+  const password =
+    passwordInput?.value || "";
+
+  const confirmPassword =
+    confirmInput?.value || "";
+
+
+  if (!password) {
+
+    if (message) {
+
+      message.textContent =
+        "新しいパスワードを入力してください。";
+
+    }
+
+    return;
+
+  }
+
+
+  if (password.length < 6) {
+
+    if (message) {
+
+      message.textContent =
+        "パスワードは6文字以上で設定してください。";
+
+    }
+
+    return;
+
+  }
+
+
+  if (
+    password !==
+    confirmPassword
+  ) {
+
+    if (message) {
+
+      message.textContent =
+        "パスワードが一致しません。";
+
+    }
+
+    return;
+
+  }
+
+
+  if (button) {
+
+    button.disabled =
+      true;
+
+  }
+
+
+  if (message) {
+
+    message.textContent =
+      "パスワードを変更しています…";
+
+  }
+
+
+  try {
+
+    const {
+      error
+    } =
+      await supabaseClient.auth.updateUser({
+        password:
+          password
+      });
+
+
+    if (error) {
+
+      throw error;
+
+    }
+
+
+    console.log(
+      "★ パスワード変更成功"
+    );
+
+
+    if (message) {
+
+      message.textContent =
+        "パスワードを変更しました。ログイン画面に戻ります…";
+
+    }
+
+
+    await new Promise(
+      resolve =>
+        setTimeout(
+          resolve,
+          1500
+        )
+    );
+
+
+    await supabaseClient.auth.signOut();
+
+
+    const passwordUpdateView =
+      document.getElementById(
+        "passwordUpdateView"
+      );
+
+    const loginMainView =
+      document.getElementById(
+        "loginMainView"
+      );
+
+
+    if (passwordUpdateView) {
+
+      passwordUpdateView.style.display =
+        "none";
+
+    }
+
+
+    if (loginMainView) {
+
+      loginMainView.style.display =
+        "block";
+
+    }
+
+
+    window.history.replaceState(
+      {},
+      document.title,
+      window.location.pathname
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "★ パスワード変更エラー",
+      error
+    );
+
+
+    if (message) {
+
+      message.textContent =
+        error?.message ||
+        "パスワードの変更に失敗しました。";
+
+    }
+
+  } finally {
+
+    if (button) {
+
+      button.disabled =
+        false;
+
+    }
+
+  }
+
+}
+
+/* ==================================================
+   メールログイン
+   ※通常ログイン画面では新規登録を行わない
+================================================== */
+
+async function loginWithEmail() {
+
+  const emailInput =
+    document.getElementById("loginEmail");
+
+  const passwordInput =
+    document.getElementById("loginPassword");
+
+  const message =
+    document.getElementById("loginMessage");
+
+  const email =
+    emailInput?.value.trim();
+
+  const password =
+    passwordInput?.value || "";
+
+  if (!email || !password) {
+
+    if (message) {
+      message.textContent =
+        "メールアドレスとパスワードを入力してください。";
+    }
+
+    return;
+  }
+
+
+  const button =
+    document.getElementById("emailLoginButton");
+
+
+  if (button) {
+    button.disabled = true;
+  }
+
+
+  if (message) {
+    message.textContent =
+      "ログインしています…";
+  }
+
+
+  try {
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient.auth.signInWithPassword({
+        email,
+        password
+      });
+
+
+    if (error) {
+      throw error;
+    }
+
+
+    if (!data?.session) {
+      throw new Error(
+        "ログインセッションを取得できませんでした。"
+      );
+    }
+
+
+    console.log(
+      "★ メールログイン成功"
+    );
+
+
+    /*
+     * 招待リンクから来た場合は、
+     * ログイン後に招待処理を行う
+     */
+    const inviteToken =
+      sessionStorage.getItem(
+        "pendingInviteToken"
+      ) ||
+      new URLSearchParams(
+        window.location.search
+      ).get("invite");
+
+
+    if (inviteToken) {
+
+      sessionStorage.setItem(
+        "pendingInviteToken",
+        inviteToken
+      );
+
+    }
+
+
+    /*
+     * ログイン成功後はinit()に処理を引き継ぐ
+     */
+    window.location.reload();
+
+
+  } catch (error) {
+
+    console.error(
+      "メールログインエラー",
+      error
+    );
+
+
+    if (message) {
+
+      message.textContent =
+        error?.message ||
+        "ログインに失敗しました。";
+
+    }
+
+  } finally {
+
+    if (button) {
+      button.disabled = false;
+    }
+
+  }
+
+}
+
+async function sendPasswordResetEmail() {
+
+  const emailInput =
+    document.getElementById("resetEmail");
+
+  const message =
+    document.getElementById(
+      "passwordResetMessage"
+    );
+
+  const button =
+    document.getElementById(
+      "sendPasswordResetButton"
+    );
+
+  const email =
+    emailInput?.value.trim();
+
+  if (!email) {
+
+    if (message) {
+      message.textContent =
+        "メールアドレスを入力してください。";
+    }
+
+    return;
+  }
+
+  if (button) {
+    button.disabled = true;
+  }
+
+  if (message) {
+    message.textContent =
+      "再設定メールを送信しています…";
+  }
+
+  try {
+
+    const redirectTo =
+      window.location.origin +
+      window.location.pathname +
+      "?password-reset=true";
+
+    console.log(
+      "★ 再設定メール送信開始"
+    );
+
+    console.log(
+      "★ メールアドレス:",
+      email
+    );
+
+    console.log(
+      "★ redirectTo:",
+      redirectTo
+    );
+
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient.auth.resetPasswordForEmail(
+        email,
+        {
+          redirectTo:
+            redirectTo
+        }
+      );
+
+
+    console.log(
+      "★ resetPasswordForEmail 結果:",
+      {
+        data,
+        error
+      }
+    );
+
+
+    if (error) {
+      throw error;
+    }
+
+
+    console.log(
+      "★ パスワード再設定メール送信成功"
+    );
+
+
+    if (message) {
+
+      message.textContent =
+        "再設定用のメールを送信しました。\n" +
+        "メールをご確認ください。";
+
+    }
+
+
+  } catch (error) {
+
+    console.error(
+      "★ パスワード再設定メール送信エラー",
+      error
+    );
+
+
+    if (message) {
+
+      message.textContent =
+        error?.message ||
+        "再設定メールの送信に失敗しました。";
+
+    }
+
+  } finally {
+
+    if (button) {
+      button.disabled = false;
+    }
+
+  }
+
+}
+
+/* ==================================================
+   パスワード変更ボタン設定
+================================================== */
+
+function setupPasswordUpdate() {
+
+  const button =
+    document.getElementById(
+      "updatePasswordButton"
+    );
+
+
+  if (!button) {
+
+    console.log(
+      "★ updatePasswordButton が見つかりません"
+    );
+
+    return;
+
+  }
+
+
+  /* --------------------------------------------------
+     二重登録防止
+  -------------------------------------------------- */
+
+  button.onclick =
+    updatePassword;
+
+
+  console.log(
+    "★ パスワード変更設定完了"
+  );
+
+}
+
+/* ==================================================
+   パスワード変更
+================================================== */
+
+async function updatePassword() {
+
+  const passwordInput =
+    document.getElementById(
+      "newPassword"
+    );
+
+  const confirmInput =
+    document.getElementById(
+      "newPasswordConfirm"
+    );
+
+  const message =
+    document.getElementById(
+      "passwordUpdateMessage"
+    );
+
+  const button =
+    document.getElementById(
+      "updatePasswordButton"
+    );
+
+  const password =
+    passwordInput?.value || "";
+
+  const confirmPassword =
+    confirmInput?.value || "";
+
+
+  /* --------------------------------------------------
+     入力チェック
+  -------------------------------------------------- */
+
+  if (!password) {
+
+    if (message) {
+      message.textContent =
+        "新しいパスワードを入力してください。";
+    }
+
+    return;
+
+  }
+
+
+  if (password.length < 6) {
+
+    if (message) {
+      message.textContent =
+        "パスワードは6文字以上で設定してください。";
+    }
+
+    return;
+
+  }
+
+
+  if (
+    password !==
+    confirmPassword
+  ) {
+
+    if (message) {
+      message.textContent =
+        "パスワードが一致しません。";
+    }
+
+    return;
+
+  }
+
+
+  /* --------------------------------------------------
+     ボタン停止
+  -------------------------------------------------- */
+
+  if (button) {
+    button.disabled = true;
+  }
+
+  if (message) {
+    message.textContent =
+      "パスワードを変更しています…";
+  }
+
+
+  try {
+
+    console.log(
+      "★ パスワード変更開始"
+    );
+
+
+    /* --------------------------------------------------
+       Supabaseでパスワード変更
+    -------------------------------------------------- */
+
+    const {
+      error
+    } =
+      await supabaseClient.auth.updateUser({
+        password:
+          password
+      });
+
+
+    console.log(
+      "★ updateUser 結果:",
+      error
+    );
+
+
+    if (error) {
+      throw error;
+    }
+
+
+    console.log(
+      "★ パスワード変更成功"
+    );
+
+
+    if (message) {
+
+      message.textContent =
+        "パスワードを変更しました。";
+
+    }
+
+
+    /* --------------------------------------------------
+       少し表示してからログイン画面へ
+    -------------------------------------------------- */
+
+    await new Promise(
+      resolve =>
+        setTimeout(
+          resolve,
+          1200
+        )
+    );
+
+
+    await supabaseClient.auth.signOut();
+
+
+    /* --------------------------------------------------
+       URLからパスワード再設定情報を削除
+    -------------------------------------------------- */
+
+    window.history.replaceState(
+      {},
+      document.title,
+      window.location.pathname
+    );
+
+
+    /* --------------------------------------------------
+       パスワード変更画面を非表示
+    -------------------------------------------------- */
+
+    const passwordUpdateView =
+      document.getElementById(
+        "passwordUpdateView"
+      );
+
+    const loginMainView =
+      document.getElementById(
+        "loginMainView"
+      );
+
+
+    if (passwordUpdateView) {
+
+      passwordUpdateView.style.display =
+        "none";
+
+    }
+
+
+    if (loginMainView) {
+
+      loginMainView.style.display =
+        "block";
+
+    }
+
+
+    showLoginPage();
+
+
+    console.log(
+      "★ ログイン画面へ戻りました"
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "★ パスワード変更エラー",
+      error
+    );
+
+
+    if (message) {
+
+      message.textContent =
+        error?.message ||
+        "パスワードの変更に失敗しました。";
+
+    }
+
+
+  } finally {
+
+    if (button) {
+
+      button.disabled =
+        false;
+
+    }
+
+  }
+
+}
+
+function setupPasswordUpdate() {
+
+  const button =
+    document.getElementById(
+      "updatePasswordButton"
+    );
+
+  if (!button) {
+
+    console.log(
+      "★ updatePasswordButton が見つかりません"
+    );
+
+    return;
+
+  }
+
+
+  button.addEventListener(
+    "click",
+    updatePassword
+  );
+
+
+  console.log(
+    "★ パスワード変更設定完了"
+  );
+
+}
+
+function setupPasswordReset() {
+
+  const forgotButton =
+    document.getElementById(
+      "forgotPasswordButton"
+    );
+
+  const resetView =
+    document.getElementById(
+      "passwordResetView"
+    );
+
+  const loginMainView =
+    document.getElementById(
+      "loginMainView"
+    );
+
+  const backButton =
+    document.getElementById(
+      "backToLoginFromReset"
+    );
+
+  const sendButton =
+    document.getElementById(
+      "sendPasswordResetButton"
+    );
+
+
+  if (forgotButton) {
+
+    forgotButton.addEventListener(
+      "click",
+      function() {
+
+        if (loginMainView) {
+
+          loginMainView.style.display =
+            "none";
+
+        }
+
+        if (resetView) {
+
+          resetView.style.display =
+            "block";
+
+        }
+
+        const loginEmail =
+          document.getElementById(
+            "loginEmail"
+          );
+
+        const resetEmail =
+          document.getElementById(
+            "resetEmail"
+          );
+
+        if (
+          loginEmail &&
+          resetEmail &&
+          loginEmail.value.trim()
+        ) {
+
+          resetEmail.value =
+            loginEmail.value.trim();
+
+        }
+
+      }
+    );
+
+  }
+
+
+  if (backButton) {
+
+    backButton.addEventListener(
+      "click",
+      function() {
+
+        if (resetView) {
+
+          resetView.style.display =
+            "none";
+
+        }
+
+        if (loginMainView) {
+
+          loginMainView.style.display =
+            "block";
+
+        }
+
+      }
+    );
+
+  }
+
+
+  if (sendButton) {
+
+    sendButton.addEventListener(
+      "click",
+      sendPasswordResetEmail
+    );
+
+  }
+
+
+  console.log(
+    "★ パスワード初期化設定完了"
+  );
+
+}
+
+function setupEmailLogin() {
+
+  const button =
+    document.getElementById(
+      "emailLoginButton"
+    );
+
+
+  if (!button) {
+
+    console.log(
+      "★ emailLoginButton が見つかりません"
+    );
+
+    return;
+
+  }
+
+
+  button.addEventListener(
+    "click",
+    loginWithEmail
+  );
+
+
+  console.log(
+    "★ メールログイン設定完了"
+  );
+
+}
+
+async function registerWithEmail() {
+
+  const emailInput =
+    document.getElementById(
+      "registerEmailInput"
+    );
+
+  const passwordInput =
+    document.getElementById(
+      "registerPasswordInput"
+    );
+
+  const message =
+    document.getElementById(
+      "registerMessage"
+    );
+
+  const button =
+    document.getElementById(
+      "registerEmailButton"
+    );
+
+
+  const email =
+    emailInput?.value.trim();
+
+
+  const password =
+    passwordInput?.value;
+
+
+  /*
+   * ==================================================
+   * 招待トークンを確認
+   *
+   * メールアドレスの新規登録は
+   * 招待リンクから来た場合のみ許可する
+   * ==================================================
+   */
+
+  const urlParams =
+    new URLSearchParams(
+      window.location.search
+    );
+
+
+  const inviteToken =
+    urlParams.get("invite");
+
+
+  if (!inviteToken) {
+
+    if (message) {
+
+      message.textContent =
+        "新規登録は招待リンクからのみ行えます。";
+
+    }
+
+    return;
+
+  }
+
+
+  /*
+   * ==================================================
+   * 入力チェック
+   * ==================================================
+   */
+
+  if (!email || !password) {
+
+    if (message) {
+
+      message.textContent =
+        "メールアドレスとパスワードを入力してください。";
+
+    }
+
+    return;
+
+  }
+
+
+  if (password.length < 6) {
+
+    if (message) {
+
+      message.textContent =
+        "パスワードは6文字以上で入力してください。";
+
+    }
+
+    return;
+
+  }
+
+
+  /*
+   * ==================================================
+   * 招待トークンを保存
+   *
+   * 確認メール後にログインした場合でも
+   * 招待処理を続けられるようにする
+   * ==================================================
+   */
+
+  sessionStorage.setItem(
+    "pendingInviteToken",
+    inviteToken
+  );
+
+
+  if (button) {
+
+    button.disabled =
+      true;
+
+  }
+
+
+  if (message) {
+
+    message.textContent =
+      "登録しています…";
+
+  }
+
+
+  try {
+
+    const { data, error } =
+      await supabaseClient.auth.signUp({
+        email,
+        password
+      });
+
+
+    if (error) {
+
+      throw error;
+
+    }
+
+
+    /*
+     * ==================================================
+     * 確認メールが必要な場合
+     * ==================================================
+     */
+
+    if (
+      data.user &&
+      !data.session
+    ) {
+
+      if (message) {
+
+        message.textContent =
+          "確認メールを送信しました。メールを確認してログインしてください。";
+
+      }
+
+      return;
+
+    }
+
+
+    /*
+     * ==================================================
+     * そのままログインできた場合
+     * ==================================================
+     */
+
+    if (data.session) {
+
+      sessionStorage.removeItem(
+        "forceLoginScreen"
+      );
+
+
+      console.log(
+        "メール登録成功"
+      );
+
+
+      /*
+       * init()を再実行して、
+       * 招待処理を含む通常の初期化を行う
+       */
+
+      window.location.reload();
+
+    }
+
+
+  } catch (error) {
+
+    console.error(
+      "メール登録エラー",
+      error
+    );
+
+
+    if (message) {
+
+      message.textContent =
+        error.message ||
+        "メール登録に失敗しました。";
+
+    }
+
+  } finally {
+
+    if (button) {
+
+      button.disabled =
+        false;
+
+    }
+
+  }
+
+}
 
 /* ==================================================
    招待リンクからのメール新規登録
