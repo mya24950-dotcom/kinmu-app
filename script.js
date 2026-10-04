@@ -212,6 +212,10 @@ async function enablePushNotifications() {
 
   try {
 
+    /* ==================================================
+       対応確認
+    ================================================== */
+
     if (
       !("Notification" in window)
     ) {
@@ -265,6 +269,10 @@ async function enablePushNotifications() {
     }
 
 
+    /* ==================================================
+       ログイン確認
+    ================================================== */
+
     const {
       data: {
         session
@@ -287,17 +295,17 @@ async function enablePushNotifications() {
     }
 
 
-    /*
-     * Service Worker登録
-     */
+    /* ==================================================
+       Service Worker登録
+    ================================================== */
 
     const registration =
       await registerPushServiceWorker();
 
 
-    /*
-     * 通知許可
-     */
+    /* ==================================================
+       通知許可
+    ================================================== */
 
     const permission =
       await Notification.requestPermission();
@@ -316,17 +324,17 @@ async function enablePushNotifications() {
     }
 
 
-    /*
-     * 既存購読を確認
-     */
+    /* ==================================================
+       現在の購読を取得
+    ================================================== */
 
     let subscription =
       await registration.pushManager.getSubscription();
 
 
-    /*
-     * 未購読なら新規登録
-     */
+    /* ==================================================
+       未購読なら新規購読
+    ================================================== */
 
     if (!subscription) {
 
@@ -346,9 +354,9 @@ async function enablePushNotifications() {
     }
 
 
-    /*
-     * 購読情報を取得
-     */
+    /* ==================================================
+       購読情報取得
+    ================================================== */
 
     const subscriptionJSON =
       subscription.toJSON();
@@ -366,52 +374,82 @@ async function enablePushNotifications() {
     }
 
 
-    /*
-     * Supabaseへ保存
-     */
+    /* ==================================================
+       以前の古い購読を削除
+       
+       同じユーザー・同じ職場について
+       古いendpointを残さない
+    ================================================== */
 
-    const result =
+    const deleteResult =
       await supabaseClient
         .from(
           "push_subscriptions"
         )
-        .upsert(
-          {
-
-            user_id:
-              session.user.id,
-
-            organization_id:
-              currentOrganization.id,
-
-            endpoint:
-              subscriptionJSON.endpoint,
-
-            p256dh:
-              subscriptionJSON.keys.p256dh,
-
-            auth:
-              subscriptionJSON.keys.auth,
-
-            updated_at:
-              new Date().toISOString()
-
-          },
-          {
-
-            onConflict:
-              "user_id,endpoint"
-
-          }
+        .delete()
+        .eq(
+          "user_id",
+          session.user.id
+        )
+        .eq(
+          "organization_id",
+          currentOrganization.id
         );
 
 
-    if (result.error) {
+    if (
+      deleteResult.error
+    ) {
 
-      throw result.error;
+      throw deleteResult.error;
 
     }
 
+
+    /* ==================================================
+       現在の購読だけ保存
+    ================================================== */
+
+    const insertResult =
+      await supabaseClient
+        .from(
+          "push_subscriptions"
+        )
+        .insert({
+
+          user_id:
+            session.user.id,
+
+          organization_id:
+            currentOrganization.id,
+
+          endpoint:
+            subscriptionJSON.endpoint,
+
+          p256dh:
+            subscriptionJSON.keys.p256dh,
+
+          auth:
+            subscriptionJSON.keys.auth,
+
+          updated_at:
+            new Date().toISOString()
+
+        });
+
+
+    if (
+      insertResult.error
+    ) {
+
+      throw insertResult.error;
+
+    }
+
+
+    /* ==================================================
+       完了
+    ================================================== */
 
     console.log(
       "★ プッシュ通知登録完了",
@@ -439,136 +477,6 @@ async function enablePushNotifications() {
   }
 
 }
-
-/* ==================================================
-   現在の職場
-================================================== */
-
-let currentOrganization =
-  null;
-
-
-/* ==================================================
-   ローカル保存
-================================================== */
-
-const STORAGE_KEY =
-  "workScheduleAppData";
-
-
-/* ==================================================
-   アプリデータ
-================================================== */
-
-let appData = {
-
-  staff: [],
-
-  shiftTypes: [],
-
-  leaveTypes: [],
-
-  companyHolidays: [],
-
-  shifts: {},
-
-  akeTime: {
-
-    start: "05:30",
-
-    end: "11:15"
-
-  }
-
-};
-
-
-let currentDate =
-  new Date();
-
-currentDate.setDate(1);
-
-
-let editingStaffIndex =
-  -1;
-
-let editingShiftIndex =
-  -1;
-
-let editingLeaveId =
-  null;
-
-let editingHolidayId =
-  null;
-
-
-let selectedCell =
-  null;
-
-
-let publicHolidays =
-  {};
-
-
-/* ==================================================
-   同期管理
-================================================== */
-
-let realtimeChannel =
-  null;
-
-let realtimeReloadTimer =
-  null;
-
-let autoSyncTimer =
-  null;
-
-let realtimeUpdating =
-  false;
-
-let cloudOperationBusy =
-  false;
-
-
-/*
-   保存中にRealtime通知が来た場合、
-
-   以前：
-   「保存中だからreturn」
-   → 通知を捨てる
-
-   今回：
-   「保存後に再読み込みする」
-   → 通知を取りこぼさない
-*/
-
-let realtimeReloadPending =
-  false;
-
-
-/* ==================================================
-   メニュー状態
-================================================== */
-
-let shiftMenuMode =
-  "shift";
-
-
-/* ==================================================
-   固定ヘッダー
-================================================== */
-
-let scheduleFixedHeader =
-  null;
-
-let scheduleFixedHeaderTable =
-  null;
-
-let scheduleFixedStaffColumn =
-  null;
-
-let scheduleFixedStaffTable =
-  null;
 
 
 /* ==================================================
