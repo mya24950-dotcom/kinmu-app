@@ -1,6 +1,6 @@
 alert(
 
-    "★ 004"
+    "★ 005"
 
   );
 
@@ -13412,6 +13412,12 @@ async function saveWorkShift(
           await recordAppModifiedShift(
   name,
   dateKey
+);
+
+            alert(
+  "★ Push通知処理を呼び出します\n" +
+  "変更前：" + oldShiftName + "\n" +
+  "変更後：" + shiftName
 );
 
 
