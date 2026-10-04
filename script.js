@@ -1335,6 +1335,8 @@ if (
     );
 
 
+   updateScheduleNavByRole();
+
   if (!currentOrganization) {
 
     throw new Error(
@@ -2333,6 +2335,48 @@ async function loginWithPasskey() {
         '<span style="font-size:20px;">🔐</span>' +
         'Face ID / 指紋でログイン';
     }
+  }
+
+}
+
+function updateScheduleNavByRole() {
+
+  const scheduleButton =
+    document.getElementById(
+      "scheduleNavButton"
+    );
+
+  if (!scheduleButton) {
+    return;
+  }
+
+  /*
+   * 管理者
+   * → 勤務表ボタンを表示
+   */
+  if (
+    currentOrganization &&
+    currentOrganization.role === "admin"
+  ) {
+
+    scheduleButton.style.display = "";
+
+    return;
+
+  }
+
+
+  /*
+   * 職員
+   * → 勤務表ボタンを非表示
+   */
+  if (
+    currentOrganization &&
+    currentOrganization.role !== "admin"
+  ) {
+
+    scheduleButton.style.display = "none";
+
   }
 
 }
