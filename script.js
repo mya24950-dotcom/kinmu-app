@@ -8641,6 +8641,26 @@ function bindEvents() {
     }
   );
 
+
+  /* ==================================================
+     プッシュ通知ボタン
+  ================================================== */
+
+  const pushNotificationButton =
+    document.getElementById(
+      "pushNotificationButton"
+    );
+
+
+  if (pushNotificationButton) {
+
+    pushNotificationButton.addEventListener(
+      "click",
+      enablePushNotifications
+    );
+
+  }
+
 }
 
 async function issueExcelSyncToken() {
