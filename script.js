@@ -1,6 +1,6 @@
 alert(
 
-    "★ 091"
+    "★ 100"
 
   );
 
@@ -304,6 +304,276 @@ async function askPushNotificationOnFirstLogin() {
 
     console.error(
       "★ 初回プッシュ通知確認エラー",
+      error
+    );
+
+  }
+
+}
+
+/* ==================================================
+   ログイン後のPush通知自動登録
+   ※ 通知許可済みの場合のみ実行
+   ※ アラートは表示しない
+================================================== */
+
+async function registerPushSubscriptionAfterLogin() {
+
+  try {
+
+    console.log(
+      "★ ログイン後Push自動登録開始"
+    );
+
+
+    /* --------------------------------------------------
+       対応確認
+    -------------------------------------------------- */
+
+    if (
+      !("Notification" in window)
+    ) {
+
+      console.log(
+        "★ Notification非対応"
+      );
+
+      return;
+
+    }
+
+
+    if (
+      !("PushManager" in window)
+    ) {
+
+      console.log(
+        "★ PushManager非対応"
+      );
+
+      return;
+
+    }
+
+
+    /* --------------------------------------------------
+       通知許可確認
+    -------------------------------------------------- */
+
+    if (
+      Notification.permission !==
+      "granted"
+    ) {
+
+      console.log(
+        "★ 通知が許可されていないためPush登録を行いません",
+        Notification.permission
+      );
+
+      return;
+
+    }
+
+
+    /* --------------------------------------------------
+       Supabase確認
+    -------------------------------------------------- */
+
+    if (!supabaseClient) {
+
+      console.warn(
+        "★ Supabase未初期化"
+      );
+
+      return;
+
+    }
+
+
+    if (
+      !currentOrganization ||
+      !currentOrganization.id
+    ) {
+
+      console.warn(
+        "★ 現在の職場情報がありません"
+      );
+
+      return;
+
+    }
+
+
+    /* --------------------------------------------------
+       ログインユーザー取得
+    -------------------------------------------------- */
+
+    const {
+      data: {
+        session
+      }
+    } =
+      await supabaseClient.auth.getSession();
+
+
+    if (
+      !session ||
+      !session.user
+    ) {
+
+      console.warn(
+        "★ ログインセッションがありません"
+      );
+
+      return;
+
+    }
+
+
+    /* --------------------------------------------------
+       Service Worker取得
+    -------------------------------------------------- */
+
+    const registration =
+      await registerPushServiceWorker();
+
+
+    /* --------------------------------------------------
+       既存購読確認
+    -------------------------------------------------- */
+
+    let subscription =
+      await registration.pushManager.getSubscription();
+
+
+    /* --------------------------------------------------
+       購読がなければ新規作成
+    -------------------------------------------------- */
+
+    if (!subscription) {
+
+      console.log(
+        "★ Push購読を新規作成します"
+      );
+
+
+      subscription =
+        await registration.pushManager.subscribe({
+
+          userVisibleOnly:
+            true,
+
+          applicationServerKey:
+            urlBase64ToUint8Array(
+              VAPID_PUBLIC_KEY
+            )
+
+        });
+
+    }
+
+
+    const subscriptionJSON =
+      subscription.toJSON();
+
+
+    if (
+      !subscriptionJSON.endpoint ||
+      !subscriptionJSON.keys
+    ) {
+
+      throw new Error(
+        "プッシュ通知の購読情報を取得できませんでした。"
+      );
+
+    }
+
+
+    /* --------------------------------------------------
+       同じユーザー・職場の古い購読を削除
+    -------------------------------------------------- */
+
+    const deleteResult =
+      await supabaseClient
+        .from("push_subscriptions")
+        .delete()
+        .eq(
+          "user_id",
+          session.user.id
+        )
+        .eq(
+          "organization_id",
+          currentOrganization.id
+        );
+
+
+    if (
+      deleteResult.error
+    ) {
+
+      throw deleteResult.error;
+
+    }
+
+
+    /* --------------------------------------------------
+       最新の購読情報を登録
+    -------------------------------------------------- */
+
+    const insertResult =
+      await supabaseClient
+        .from("push_subscriptions")
+        .insert({
+
+          user_id:
+            session.user.id,
+
+          organization_id:
+            currentOrganization.id,
+
+          endpoint:
+            subscriptionJSON.endpoint,
+
+          p256dh:
+            subscriptionJSON.keys.p256dh,
+
+          auth:
+            subscriptionJSON.keys.auth,
+
+          updated_at:
+            new Date().toISOString()
+
+        });
+
+
+    if (
+      insertResult.error
+    ) {
+
+      throw insertResult.error;
+
+    }
+
+
+    console.log(
+      "★ ログイン後Push自動登録完了",
+      {
+        userId:
+          session.user.id,
+
+        organizationId:
+          currentOrganization.id,
+
+        endpoint:
+          subscriptionJSON.endpoint
+      }
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "★ ログイン後Push自動登録エラー",
       error
     );
 
@@ -1963,149 +2233,118 @@ if (
 
 
   currentOrganization =
-    await getCurrentOrganization(
-      session.user.id
-    );
+  await getCurrentOrganization(
+    session.user.id
+  );
 
 
-   updateScheduleNavByRole();
+if (!currentOrganization) {
 
-  if (!currentOrganization) {
+  console.error(
+    "★ 所属職場なし"
+  );
 
-    throw new Error(
-      "職場登録後の組織情報を取得できませんでした。"
-    );
+
+  await supabaseClient.auth.signOut();
+
+
+  showLoginPage();
+
+
+  if (
+    typeof setupGoogleLogin ===
+    "function"
+  ) {
+
+    setupGoogleLogin();
 
   }
 
 
-  console.log(
-    "★ 新規職場登録完了:",
-    currentOrganization
-  );
+  if (
+    typeof setupAppleLogin ===
+    "function"
+  ) {
+
+    setupAppleLogin();
+
+  }
+
+
+  if (
+    typeof setupAzureLogin ===
+    "function"
+  ) {
+
+    setupAzureLogin();
+
+  }
+
+
+  if (
+    typeof setupPasskeyLogin ===
+    "function"
+  ) {
+
+    setupPasskeyLogin();
+
+  }
+
+
+  if (
+    typeof setupEmailLogin ===
+    "function"
+  ) {
+
+    setupEmailLogin();
+
+  }
+
+
+  if (
+    typeof setupPasswordReset ===
+    "function"
+  ) {
+
+    setupPasswordReset();
+
+  }
+
+
+  if (
+    typeof setupNewOrganizationButton ===
+    "function"
+  ) {
+
+    setupNewOrganizationButton();
+
+  }
+
+
+  hideInitialLoading();
 
 
   alert(
-    "職場を登録しました。"
+    "所属している職場が見つかりません。"
   );
+
+
+  return;
 
 }
 
-    /* ==================================================
-       職場所属取得
-    ================================================== */
 
-    console.log(
-      "★ 職場所属を取得します"
-    );
+/* ==================================================
+   ★ 通知許可済みならPush購読を自動登録
+================================================== */
 
-
-    currentOrganization =
-      await getCurrentOrganization(
-        session.user.id
-      );
+await registerPushSubscriptionAfterLogin();
 
 
-    if (!currentOrganization) {
-
-      console.error(
-        "★ 所属職場なし"
-      );
-
-
-      await supabaseClient.auth.signOut();
-
-
-      showLoginPage();
-
-
-      if (
-        typeof setupGoogleLogin ===
-        "function"
-      ) {
-
-        setupGoogleLogin();
-
-      }
-
-
-      if (
-        typeof setupAppleLogin ===
-        "function"
-      ) {
-
-        setupAppleLogin();
-
-      }
-
-
-      if (
-        typeof setupAzureLogin ===
-        "function"
-      ) {
-
-        setupAzureLogin();
-
-      }
-
-
-      if (
-        typeof setupPasskeyLogin ===
-        "function"
-      ) {
-
-        setupPasskeyLogin();
-
-      }
-
-
-      if (
-        typeof setupEmailLogin ===
-        "function"
-      ) {
-
-        setupEmailLogin();
-
-      }
-
-
-      if (
-        typeof setupPasswordReset ===
-        "function"
-      ) {
-
-        setupPasswordReset();
-
-      }
-
-
-      if (
-        typeof setupNewOrganizationButton ===
-        "function"
-      ) {
-
-        setupNewOrganizationButton();
-
-      }
-
-
-      hideInitialLoading();
-
-
-      alert(
-        "所属している職場が見つかりません。"
-      );
-
-
-      return;
-
-    }
-
-
-    console.log(
-      "★ 現在の職場",
-      currentOrganization
-    );
+console.log(
+  "★ 現在の職場",
+  currentOrganization
+);
 
 
     /* ==================================================
