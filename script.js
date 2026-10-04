@@ -13466,10 +13466,6 @@ async function saveWorkShift(
             dateKey
           );
 
-          /*
-           * 実際に勤務が変更された場合だけ通知
-           */
-
           console.log(
             "★ Push通知呼び出し",
             {
@@ -13597,11 +13593,6 @@ async function saveWorkShift(
       await recordAppModifiedShift(
         name,
         dateKey
-      );
-
-
-      alert(
-        "★ recordAppModifiedShift完了"
       );
 
       console.log(
