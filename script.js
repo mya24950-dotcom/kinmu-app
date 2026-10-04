@@ -102,13 +102,68 @@ async function testServiceWorkerNotification() {
 
   try {
 
+    console.log(
+      "★ 現在の通知権限:",
+      Notification.permission
+    );
+
+
+    /*
+     * 通知権限を確認
+     */
+
+    let permission =
+      Notification.permission;
+
+
+    if (
+      permission !== "granted"
+    ) {
+
+      permission =
+        await Notification.requestPermission();
+
+    }
+
+
+    console.log(
+      "★ 通知権限結果:",
+      permission
+    );
+
+
+    if (
+      permission !== "granted"
+    ) {
+
+      alert(
+        "通知の許可が必要です。\n\n" +
+        "iPhoneの「設定」→「通知」→「Shift+」で\n" +
+        "通知を許可してください。"
+      );
+
+      return;
+
+    }
+
+
+    /*
+     * Service Worker取得
+     */
+
     const registration =
       await navigator.serviceWorker.ready;
+
 
     console.log(
       "★ Service Worker ready",
       registration
     );
+
+
+    /*
+     * 通知表示
+     */
 
     await registration.showNotification(
       "Shift+",
@@ -118,9 +173,11 @@ async function testServiceWorkerNotification() {
       }
     );
 
+
     console.log(
-      "★ Service Worker通知表示実行"
+      "★ Service Worker通知表示成功"
     );
+
 
   } catch (error) {
 
@@ -128,6 +185,7 @@ async function testServiceWorkerNotification() {
       "★ Service Worker通知テストエラー",
       error
     );
+
 
     alert(
       "Service Worker通知テストに失敗しました。\n\n" +
