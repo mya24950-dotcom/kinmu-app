@@ -480,14 +480,82 @@ async function enablePushNotifications() {
 
 
 /* ==================================================
+   現在の職場
+================================================== */
+
+let currentOrganization =
+  null;
+
+
+/* ==================================================
+   ローカル保存
+================================================== */
+
+const STORAGE_KEY =
+  "workScheduleAppData";
+
+
+/* ==================================================
+   アプリデータ
+================================================== */
+
+let appData = {
+
+  staff: [],
+
+  shiftTypes: [],
+
+  leaveTypes: [],
+
+  companyHolidays: [],
+
+  shifts: {},
+
+  akeTime: {
+
+    start: "05:30",
+
+    end: "11:15"
+
+  }
+
+};
+
+
+let currentDate =
+  new Date();
+
+currentDate.setDate(1);
+
+
+let editingStaffIndex =
+  -1;
+
+let editingShiftIndex =
+  -1;
+
+let editingLeaveId =
+  null;
+
+let editingHolidayId =
+  null;
+
+
+let selectedCell =
+  null;
+
+
+let publicHolidays =
+  {};
+
+
+/* ==================================================
    初期読み込み画面
 ================================================== */
 
 /* =========================================================
    初期ローディング画面
-========================================================= */
-
-function showInitialLoading(
+========================================================= */function showInitialLoading(
   message = "データを取得しています…"
 ) {
 
