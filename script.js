@@ -8770,7 +8770,7 @@ function bindEvents() {
 
     pushNotificationButton.addEventListener(
       "click",
-      testServiceWorkerNotification
+      enablePushNotifications
     );
 
   }
