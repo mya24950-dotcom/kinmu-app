@@ -1,6 +1,6 @@
 alert(
 
-    "★ 005"
+    "★ 006"
 
   );
 
@@ -13062,6 +13062,12 @@ async function recordAppModifiedShift(
     throw result.error;
 
   }
+
+    alert(
+
+  "★ recordAppModifiedShift完了"
+
+);
 
 
   console.log(
