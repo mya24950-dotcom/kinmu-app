@@ -1480,114 +1480,148 @@ async function init() {
         "password-reset"
       ) === "true";
 
-/* ==================================================
-   パスワード再設定リンクのエラー確認
-================================================== */
 
-const hashParams =
-  new URLSearchParams(
-    window.location.hash.substring(1)
-  );
+    /* ==================================================
+       パスワード再設定リンクのエラー確認
+    ================================================== */
 
-const passwordResetError =
-  hashParams.get("error");
-
-const passwordResetErrorCode =
-  hashParams.get("error_code");
-
-const passwordResetErrorDescription =
-  hashParams.get("error_description");
+    const hashParams =
+      new URLSearchParams(
+        window.location.hash.substring(1)
+      );
 
 
-if (
-  isPasswordReset &&
-  passwordResetError
-) {
+    const passwordResetError =
+      hashParams.get(
+        "error"
+      );
 
-  console.error(
-    "★ パスワード再設定リンクエラー",
-    {
-      error:
-        passwordResetError,
 
-      error_code:
-        passwordResetErrorCode,
+    const passwordResetErrorCode =
+      hashParams.get(
+        "error_code"
+      );
 
-      error_description:
-        passwordResetErrorDescription
-    }
-  );
 
-  showLoginPage();
+    const passwordResetErrorDescription =
+      hashParams.get(
+        "error_description"
+      );
 
-  const loginMainView =
-    document.getElementById(
-      "loginMainView"
-    );
-
-  const passwordResetView =
-    document.getElementById(
-      "passwordResetView"
-    );
-
-  const passwordUpdateView =
-    document.getElementById(
-      "passwordUpdateView"
-    );
-
-  if (loginMainView) {
-    loginMainView.style.display =
-      "none";
-  }
-
-  if (passwordResetView) {
-    passwordResetView.style.display =
-      "none";
-  }
-
-  if (passwordUpdateView) {
-    passwordUpdateView.style.display =
-      "block";
-  }
-
-  if (
-    typeof setupPasswordUpdate ===
-    "function"
-  ) {
-    setupPasswordUpdate();
-  }
-
-  const message =
-    document.getElementById(
-      "passwordUpdateMessage"
-    );
-
-  if (message) {
 
     if (
-      passwordResetErrorCode ===
-      "otp_expired"
+      isPasswordReset &&
+      passwordResetError
     ) {
 
-      message.textContent =
-        "パスワード再設定リンクの有効期限が切れているか、すでに使用されています。もう一度再設定メールを送信してください。";
+      console.error(
+        "★ パスワード再設定リンクエラー",
+        {
+          error:
+            passwordResetError,
 
-    } else {
+          error_code:
+            passwordResetErrorCode,
 
-      message.textContent =
-        passwordResetErrorDescription ||
-        "パスワード再設定リンクを確認できませんでした。";
+          error_description:
+            passwordResetErrorDescription
+        }
+      );
+
+
+      showLoginPage();
+
+
+      const loginMainView =
+        document.getElementById(
+          "loginMainView"
+        );
+
+
+      const passwordResetView =
+        document.getElementById(
+          "passwordResetView"
+        );
+
+
+      const passwordUpdateView =
+        document.getElementById(
+          "passwordUpdateView"
+        );
+
+
+      if (loginMainView) {
+
+        loginMainView.style.display =
+          "none";
+
+      }
+
+
+      if (passwordResetView) {
+
+        passwordResetView.style.display =
+          "none";
+
+      }
+
+
+      if (passwordUpdateView) {
+
+        passwordUpdateView.style.display =
+          "block";
+
+      }
+
+
+      if (
+        typeof setupPasswordUpdate ===
+        "function"
+      ) {
+
+        setupPasswordUpdate();
+
+      }
+
+
+      const message =
+        document.getElementById(
+          "passwordUpdateMessage"
+        );
+
+
+      if (message) {
+
+        if (
+          passwordResetErrorCode ===
+          "otp_expired"
+        ) {
+
+          message.textContent =
+            "パスワード再設定リンクの有効期限が切れているか、すでに使用されています。もう一度再設定メールを送信してください。";
+
+        } else {
+
+          message.textContent =
+            passwordResetErrorDescription ||
+            "パスワード再設定リンクを確認できませんでした。";
+
+        }
+
+      }
+
+
+      hideInitialLoading();
+
+
+      return;
 
     }
 
-  }
 
-  hideInitialLoading();
-
-  return;
-
-}
-
+    /* ==================================================
+       パスワード再設定URL
+    ================================================== */
 
     if (isPasswordReset) {
 
@@ -1637,6 +1671,7 @@ if (
               "★ Recoveryセッション取得成功",
               i + 1
             );
+
 
             break;
 
@@ -1766,6 +1801,7 @@ if (
             "★ OAuthセッション取得成功",
             i + 1
           );
+
 
           break;
 
@@ -2063,185 +2099,314 @@ if (
     ================================================== */
 
     const pendingOrganizationName =
-  sessionStorage.getItem(
-    "pendingOrganizationName"
-  );
-
-const pendingStaffName =
-  sessionStorage.getItem(
-    "pendingStaffName"
-  );
+      sessionStorage.getItem(
+        "pendingOrganizationName"
+      );
 
 
-if (
-  pendingOrganizationName &&
-  pendingStaffName
-) {
-
-  console.log(
-    "★ 保留中の新規職場登録を処理します"
-  );
+    const pendingStaffName =
+      sessionStorage.getItem(
+        "pendingStaffName"
+      );
 
 
-  const {
-    data,
-    error
-  } = await supabaseClient.rpc(
-    "create_organization_and_admin",
-    {
-      new_org_name:
-        pendingOrganizationName,
+    if (
+      pendingOrganizationName &&
+      pendingStaffName
+    ) {
 
-      new_staff_name:
-        pendingStaffName
+      console.log(
+        "★ 保留中の新規職場登録を処理します"
+      );
+
+
+      const {
+        data,
+        error
+      } =
+        await supabaseClient.rpc(
+          "create_organization_and_admin",
+          {
+            new_org_name:
+              pendingOrganizationName,
+
+            new_staff_name:
+              pendingStaffName
+          }
+        );
+
+
+      if (error) {
+
+        console.error(
+          "★ 職場作成RPCエラー:",
+          error
+        );
+
+
+        throw error;
+
+      }
+
+
+      /*
+       * RPCが成功した時点で
+       * 保留情報を削除する。
+       */
+
+      sessionStorage.removeItem(
+        "pendingOrganizationName"
+      );
+
+
+      sessionStorage.removeItem(
+        "pendingStaffName"
+      );
+
+
+      currentOrganization =
+        await getCurrentOrganization(
+          session.user.id
+        );
+
+
+      if (!currentOrganization) {
+
+        console.error(
+          "★ 新規職場作成後も所属職場なし"
+        );
+
+
+        await supabaseClient.auth.signOut();
+
+
+        showLoginPage();
+
+
+        if (
+          typeof setupGoogleLogin ===
+          "function"
+        ) {
+
+          setupGoogleLogin();
+
+        }
+
+
+        if (
+          typeof setupAppleLogin ===
+          "function"
+        ) {
+
+          setupAppleLogin();
+
+        }
+
+
+        if (
+          typeof setupAzureLogin ===
+          "function"
+        ) {
+
+          setupAzureLogin();
+
+        }
+
+
+        if (
+          typeof setupPasskeyLogin ===
+          "function"
+        ) {
+
+          setupPasskeyLogin();
+
+        }
+
+
+        if (
+          typeof setupEmailLogin ===
+          "function"
+        ) {
+
+          setupEmailLogin();
+
+        }
+
+
+        if (
+          typeof setupPasswordReset ===
+          "function"
+        ) {
+
+          setupPasswordReset();
+
+        }
+
+
+        if (
+          typeof setupNewOrganizationButton ===
+          "function"
+        ) {
+
+          setupNewOrganizationButton();
+
+        }
+
+
+        hideInitialLoading();
+
+
+        alert(
+          "新しく作成した職場を取得できませんでした。"
+        );
+
+
+        return;
+
+      }
+
+
+      console.log(
+        "★ 新規職場作成後の現在の職場",
+        currentOrganization
+      );
+
     }
-  );
 
 
-  if (error) {
+    /* ==================================================
+       ★ 通常ログインの場合も職場を取得
+       ★ 今回のエラーの修正部分
+    ================================================== */
 
-    console.error(
-      "★ 職場作成RPCエラー:",
-      error
+    if (!currentOrganization) {
+
+      console.log(
+        "★ 現在の職場を取得します"
+      );
+
+
+      currentOrganization =
+        await getCurrentOrganization(
+          session.user.id
+        );
+
+    }
+
+
+    /* ==================================================
+       ★ 職場が取得できなければアプリを起動しない
+    ================================================== */
+
+    if (!currentOrganization) {
+
+      console.error(
+        "★ currentOrganization が取得できません"
+      );
+
+
+      await supabaseClient.auth.signOut();
+
+
+      showLoginPage();
+
+
+      if (
+        typeof setupGoogleLogin ===
+        "function"
+      ) {
+
+        setupGoogleLogin();
+
+      }
+
+
+      if (
+        typeof setupAppleLogin ===
+        "function"
+      ) {
+
+        setupAppleLogin();
+
+      }
+
+
+      if (
+        typeof setupAzureLogin ===
+        "function"
+      ) {
+
+        setupAzureLogin();
+
+      }
+
+
+      if (
+        typeof setupPasskeyLogin ===
+        "function"
+      ) {
+
+        setupPasskeyLogin();
+
+      }
+
+
+      if (
+        typeof setupEmailLogin ===
+        "function"
+      ) {
+
+        setupEmailLogin();
+
+      }
+
+
+      if (
+        typeof setupPasswordReset ===
+        "function"
+      ) {
+
+        setupPasswordReset();
+
+      }
+
+
+      if (
+        typeof setupNewOrganizationButton ===
+        "function"
+      ) {
+
+        setupNewOrganizationButton();
+
+      }
+
+
+      hideInitialLoading();
+
+
+      alert(
+        "所属している職場が見つかりません。\n\n" +
+        "ログインしたアカウントが職場に登録されているか確認してください。"
+      );
+
+
+      return;
+
+    }
+
+
+    /* ==================================================
+       ★ 通知許可済みならPush購読を自動登録
+       ★ 新規職場・既存職場の両方で実行
+    ================================================== */
+
+    await registerPushSubscriptionAfterLogin();
+
+
+    console.log(
+      "★ 現在の職場",
+      currentOrganization
     );
-
-    throw error;
-  }
-
-
-  /*
-     RPCが成功した時点で
-     保留情報を削除する。
-
-     これにより、組織情報取得時に
-     一時的なエラーが発生しても、
-     同じ職場を二重作成しにくくする。
-  */
-
-  sessionStorage.removeItem(
-    "pendingOrganizationName"
-  );
-
-  sessionStorage.removeItem(
-    "pendingStaffName"
-  );
-
-
-  currentOrganization =
-  await getCurrentOrganization(
-    session.user.id
-  );
-
-
-if (!currentOrganization) {
-
-  console.error(
-    "★ 所属職場なし"
-  );
-
-
-  await supabaseClient.auth.signOut();
-
-
-  showLoginPage();
-
-
-  if (
-    typeof setupGoogleLogin ===
-    "function"
-  ) {
-
-    setupGoogleLogin();
-
-  }
-
-
-  if (
-    typeof setupAppleLogin ===
-    "function"
-  ) {
-
-    setupAppleLogin();
-
-  }
-
-
-  if (
-    typeof setupAzureLogin ===
-    "function"
-  ) {
-
-    setupAzureLogin();
-
-  }
-
-
-  if (
-    typeof setupPasskeyLogin ===
-    "function"
-  ) {
-
-    setupPasskeyLogin();
-
-  }
-
-
-  if (
-    typeof setupEmailLogin ===
-    "function"
-  ) {
-
-    setupEmailLogin();
-
-  }
-
-
-  if (
-    typeof setupPasswordReset ===
-    "function"
-  ) {
-
-    setupPasswordReset();
-
-  }
-
-
-  if (
-    typeof setupNewOrganizationButton ===
-    "function"
-  ) {
-
-    setupNewOrganizationButton();
-
-  }
-
-
-  hideInitialLoading();
-
-
-  alert(
-    "所属している職場が見つかりません。"
-  );
-
-
-  return;
-
-}
-
-
-/* ==================================================
-   ★ 通知許可済みならPush購読を自動登録
-================================================== */
-
-await registerPushSubscriptionAfterLogin();
-
-
-console.log(
-  "★ 現在の職場",
-  currentOrganization
-);
-
-    }
 
 
     /* ==================================================
@@ -2353,7 +2518,6 @@ console.log(
     hideInitialLoading();
 
 
-
     console.log(
       "★ Shift+起動完了"
     );
@@ -2375,9 +2539,9 @@ console.log(
 
 
     /*
-      ここでも各関数を直接呼ばず、
-      存在確認してから実行する。
-    */
+     * ここでも各関数を直接呼ばず、
+     * 存在確認してから実行する。
+     */
 
     try {
 
@@ -2551,6 +2715,10 @@ console.log(
 
     }
 
+
+    /* --------------------------------------------------
+       新規職場登録ボタン
+    -------------------------------------------------- */
 
     try {
 
