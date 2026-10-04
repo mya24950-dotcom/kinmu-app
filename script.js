@@ -2850,6 +2850,115 @@ async function requestPushPermissionOnLogin() {
 
 }
 
+function showLoginPage(message = "") {
+
+  console.log(
+    "ログイン画面を表示"
+  );
+
+
+  hideInitialLoading();
+
+
+  const app =
+    document.getElementById(
+      "app"
+    );
+
+
+  if (app) {
+
+    app.style.setProperty(
+      "display",
+      "none",
+      "important"
+    );
+
+    app.style.setProperty(
+      "visibility",
+      "hidden",
+      "important"
+    );
+
+    app.style.setProperty(
+      "opacity",
+      "0",
+      "important"
+    );
+
+    app.style.setProperty(
+      "pointer-events",
+      "none",
+      "important"
+    );
+
+  }
+
+
+  const loginPage =
+    document.getElementById(
+      "loginPage"
+    );
+
+
+  if (loginPage) {
+
+    loginPage.style.setProperty(
+      "display",
+      "flex",
+      "important"
+    );
+
+    loginPage.style.setProperty(
+      "visibility",
+      "visible",
+      "important"
+    );
+
+    loginPage.style.setProperty(
+      "opacity",
+      "1",
+      "important"
+    );
+
+    loginPage.style.setProperty(
+      "pointer-events",
+      "auto",
+      "important"
+    );
+
+  }
+
+
+  const loginMessage =
+    document.getElementById(
+      "loginMessage"
+    );
+
+
+  if (loginMessage) {
+
+    loginMessage.textContent =
+      message || "";
+
+  }
+
+
+  window.scrollTo(
+    0,
+    0
+  );
+
+
+  if (loginPage) {
+
+    loginPage.scrollTop =
+      0;
+
+  }
+
+}
+
 /* ==================================================
    OAuth復帰後のセッション待機
 ================================================== */
