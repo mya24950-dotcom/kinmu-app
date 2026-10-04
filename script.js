@@ -69,12 +69,25 @@ async function registerPushServiceWorker() {
 
   const registration =
     await navigator.serviceWorker.register(
-      "./service-worker.js"
+      "./service-worker.js?v=20261004-2",
+      {
+        scope: "./"
+      }
     );
 
   console.log(
     "★ Service Worker登録完了",
     registration
+  );
+
+  console.log(
+    "★ Service Worker scope:",
+    registration.scope
+  );
+
+  console.log(
+    "★ Service Worker active:",
+    registration.active
   );
 
   return registration;
