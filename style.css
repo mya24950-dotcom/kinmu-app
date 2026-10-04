@@ -98,6 +98,10 @@ body {
     padding-top: calc(
       7px + env(safe-area-inset-top)
     );
+
+    min-height: calc(
+      70px + env(safe-area-inset-top)
+    );
   }
 
 }
