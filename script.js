@@ -8,6 +8,15 @@ const SUPABASE_URL =
 const SUPABASE_KEY =
   "sb_publishable_dROecn8WChOgOOipDaIX6w_3eIWK0co";
 
+
+/* ==================================================
+   プッシュ通知
+================================================== */
+
+const VAPID_PUBLIC_KEY =
+  "BMWUjdox5bV-8dSou7v5yh7YmWD1BdDQplutgj52P75DsKkJBlYCJ3e96R0ptbHKD0Qi2yP63aGhR6In6KtJAAM";
+
+
 let supabaseClient = null;
 
 /* ==================================================
