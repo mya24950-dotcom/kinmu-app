@@ -1,6 +1,6 @@
 alert(
 
-    "★ 010"
+    "★ 011"
 
   );
 
@@ -13427,15 +13427,30 @@ async function saveWorkShift(
 
 
           alert(
-            "★ recordAppModifiedShift完了"
-          );
+
+  "★ recordAppModifiedShift完了\n" +
+
+  "職員：" + name + "\n" +
+
+  "日付：" + dateKey + "\n" +
+
+  "変更前：" + oldShiftName + "\n" +
+
+  "変更後：" + shiftName
+
+);
+
+alert(
+
+  "★ Push通知処理を呼び出します\n" +
+
+  "変更前：" + oldShiftName + "\n" +
+
+  "変更後：" + shiftName
+
+);
 
 
-          alert(
-            "★ Push通知処理を呼び出します\n" +
-            "変更前：" + oldShiftName + "\n" +
-            "変更後：" + shiftName
-          );
 
 
           /*
