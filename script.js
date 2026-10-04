@@ -1,6 +1,6 @@
 alert(
 
-    "★ 013"
+    "★ 014"
 
   );
 
@@ -13152,10 +13152,6 @@ async function sendShiftChangeNotification(
 
     /*
      * 日付表示
-     *
-     * 2026-10-05
-     * ↓
-     * 10月5日
      */
 
     const date =
@@ -13212,64 +13208,135 @@ async function sendShiftChangeNotification(
 
 
     /*
-     * Edge Function呼び出し開始
+     * Edge Function URL
      */
 
+    const functionUrl =
+      SUPABASE_URL +
+      "/functions/v1/send-test-push";
+
+
     alert(
-      "★ Edge Function呼び出し開始"
+      "★ Edge Functionへ直接接続します\n\n" +
+      functionUrl
     );
 
 
     /*
-     * Edge Function呼び出し
+     * アクセストークン取得
      */
 
-    const result =
-      await supabaseClient.functions.invoke(
-        "send-test-push",
+    const {
+      data: {
+        session
+      }
+    } =
+      await supabaseClient.auth.getSession();
+
+
+    if (
+      !session ||
+      !session.access_token
+    ) {
+
+      alert(
+        "★ ログインセッションが取得できません。"
+      );
+
+      return;
+
+    }
+
+
+    alert(
+      "★ セッション取得OK\n\n" +
+      "Edge Functionへ送信します。"
+    );
+
+
+    /*
+     * Edge Functionへ直接fetch
+     */
+
+    const response =
+      await fetch(
+        functionUrl,
         {
 
-          body: {
+          method:
+            "POST",
 
-            organization_id:
-              currentOrganization.id,
+          headers: {
 
-            title:
-              title,
+            "Content-Type":
+              "application/json",
 
-            body:
-              body,
+            "Authorization":
+              "Bearer " +
+              session.access_token,
 
-            url:
-              "./"
+            "apikey":
+              SUPABASE_KEY
 
-          }
+          },
+
+          body:
+            JSON.stringify({
+
+              organization_id:
+                currentOrganization.id,
+
+              title:
+                title,
+
+              body:
+                body,
+
+              url:
+                "./"
+
+            })
 
         }
       );
 
 
     /*
-     * Edge Function呼び出し結果
+     * HTTPステータス
      */
 
     alert(
-      "★ Edge Function呼び出し完了\n\n" +
-      JSON.stringify(
-        result,
-        null,
-        2
-      )
+      "★ Edge Function HTTP応答\n\n" +
+      "status：" +
+      response.status +
+      "\n" +
+      "ok：" +
+      response.ok
+    );
+
+
+    /*
+     * レスポンス本文
+     */
+
+    const responseText =
+      await response.text();
+
+
+    alert(
+      "★ Edge Functionレスポンス\n\n" +
+      responseText
     );
 
 
     if (
-      result.error
+      !response.ok
     ) {
 
       console.error(
-        "★ 勤務変更Push通知エラー",
-        result.error
+        "★ Edge Function HTTPエラー",
+        response.status,
+        responseText
       );
 
       return;
@@ -13279,16 +13346,11 @@ async function sendShiftChangeNotification(
 
     console.log(
       "★ 勤務変更Push通知完了",
-      result.data
+      responseText
     );
 
 
   } catch (error) {
-
-    /*
-     * Push通知に失敗しても
-     * 勤務保存処理は失敗扱いにしない
-     */
 
     console.error(
       "★ 勤務変更Push通知例外",
