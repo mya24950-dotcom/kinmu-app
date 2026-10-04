@@ -59,7 +59,7 @@ body {
    ========================================================= */
 
 body.pwa-mode .app {
-  padding-top: 30px !important;
+  padding-top: 20px !important;
   box-sizing: border-box;
 }
 
