@@ -1,6 +1,6 @@
 alert(
 
-    "★ 050"
+    "★ 051"
 
   );
 
@@ -13347,6 +13347,289 @@ async function sendShiftChangeNotification(
 
 }
 
+async function sendLeaveChangeNotification(
+  staffName,
+  dateKey,
+  oldLeaveName,
+  newLeaveName
+) {
+
+  try {
+
+    if (
+      !supabaseClient ||
+      !currentOrganization ||
+      !currentOrganization.id
+    ) {
+
+      console.warn(
+        "★ Push通知：職場情報がありません。"
+      );
+
+      return;
+
+    }
+
+
+    /* ==================================================
+       実際に変更がなければ通知しない
+    ================================================== */
+
+    if (
+      oldLeaveName ===
+      newLeaveName
+    ) {
+
+      console.log(
+        "★ 休暇変更なし。通知しません。"
+      );
+
+      return;
+
+    }
+
+
+    /* ==================================================
+       日付表示
+    ================================================== */
+
+    const date =
+      new Date(
+        dateKey +
+        "T00:00:00"
+      );
+
+
+    const month =
+      date.getMonth() + 1;
+
+
+    const day =
+      date.getDate();
+
+
+    /* ==================================================
+       通知内容
+    ================================================== */
+
+    let title =
+      "Shift+";
+
+
+    let body =
+      "";
+
+
+    /* -----------------------------------------------
+       休暇登録
+    ------------------------------------------------ */
+
+    if (
+      !oldLeaveName &&
+      newLeaveName
+    ) {
+
+      body =
+        staffName +
+        "さんの" +
+        month +
+        "月" +
+        day +
+        "日に「" +
+        newLeaveName +
+        "」が登録されました。";
+
+    }
+
+
+    /* -----------------------------------------------
+       休暇削除
+    ------------------------------------------------ */
+
+    else if (
+      oldLeaveName &&
+      !newLeaveName
+    ) {
+
+      body =
+        staffName +
+        "さんの" +
+        month +
+        "月" +
+        day +
+        "日の「" +
+        oldLeaveName +
+        "」が削除されました。";
+
+    }
+
+
+    /* -----------------------------------------------
+       休暇変更
+    ------------------------------------------------ */
+
+    else {
+
+      body =
+        staffName +
+        "さんの" +
+        month +
+        "月" +
+        day +
+        "日の休暇が「" +
+        oldLeaveName +
+        "」から「" +
+        newLeaveName +
+        "」に変更されました。";
+
+    }
+
+
+    console.log(
+      "★ 休暇Push通知開始",
+      {
+
+        organizationId:
+          currentOrganization.id,
+
+        staffName:
+          staffName,
+
+        dateKey:
+          dateKey,
+
+        oldLeaveName:
+          oldLeaveName,
+
+        newLeaveName:
+          newLeaveName
+
+      }
+    );
+
+
+    /* ==================================================
+       Edge Function
+    ================================================== */
+
+    const functionUrl =
+      SUPABASE_URL +
+      "/functions/v1/send-test-push";
+
+
+    /* ==================================================
+       アクセストークン取得
+    ================================================== */
+
+    const {
+      data: {
+        session
+      }
+    } =
+      await supabaseClient.auth.getSession();
+
+
+    if (
+      !session ||
+      !session.access_token
+    ) {
+
+      console.warn(
+        "★ ログインセッションが取得できません。"
+      );
+
+      return;
+
+    }
+
+
+    /* ==================================================
+       Edge Functionへ送信
+    ================================================== */
+
+    const response =
+      await fetch(
+        functionUrl,
+        {
+
+          method:
+            "POST",
+
+          headers: {
+
+            "Content-Type":
+              "application/json",
+
+            "Authorization":
+              "Bearer " +
+              session.access_token,
+
+            "apikey":
+              SUPABASE_KEY
+
+          },
+
+          body:
+            JSON.stringify({
+
+              organization_id:
+                currentOrganization.id,
+
+              title:
+                title,
+
+              body:
+                body,
+
+              url:
+                "./"
+
+            })
+
+        }
+      );
+
+
+    /* ==================================================
+       レスポンス
+    ================================================== */
+
+    const responseText =
+      await response.text();
+
+
+    if (
+      !response.ok
+    ) {
+
+      console.error(
+        "★ 休暇Push通知 HTTPエラー",
+        response.status,
+        responseText
+      );
+
+      return;
+
+    }
+
+
+    console.log(
+      "★ 休暇Push通知完了",
+      responseText
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "★ 休暇Push通知例外",
+      error
+    );
+
+  }
+
+}
+
 async function saveWorkShift(
   staffName,
   dateKey,
@@ -13779,83 +14062,7 @@ async function saveLeave(
   try {
 
     /* ==================================================
-       一般職員
-       自分の休暇だけRPC経由で変更
-    ================================================== */
-
-    if (
-      currentOrganization &&
-      currentOrganization.role !== "admin"
-    ) {
-
-      /* -----------------------------------------------
-         休暇解除
-      ------------------------------------------------ */
-
-      if (!leaveName) {
-
-        const result =
-          await supabaseClient.rpc(
-            "clear_my_leave",
-            {
-              target_date:
-                dateKey
-            }
-          );
-
-
-        if (result.error) {
-
-          throw result.error;
-
-        }
-
-      }
-
-      /* -----------------------------------------------
-         休暇登録
-      ------------------------------------------------ */
-
-      else {
-
-        const result =
-          await supabaseClient.rpc(
-            "set_my_leave",
-            {
-              target_date:
-                dateKey,
-
-              target_leave_type:
-                leaveName
-            }
-          );
-
-
-        if (result.error) {
-
-          throw result.error;
-
-        }
-
-      }
-
-
-      /* -----------------------------------------------
-         Supabaseから最新データを取得
-      ------------------------------------------------ */
-
-      await loadAllFromSupabase();
-
-      renderSchedule();
-
-      return;
-
-    }
-
-
-    /* ==================================================
-       管理者
-       今までどおり直接work_shiftsを操作
+       変更前のデータを取得
     ================================================== */
 
     const existing =
@@ -13896,6 +14103,130 @@ async function saveLeave(
         ? existing.data[0]
         : null;
 
+
+    const oldLeaveName =
+      row &&
+      row.leave_type
+        ? row.leave_type
+        : "";
+
+
+    /* ==================================================
+       実際に変更があるか確認
+    ================================================== */
+
+    if (
+      oldLeaveName ===
+      (leaveName || "")
+    ) {
+
+      console.log(
+        "★ 休暇変更なし。通知しません。"
+      );
+
+      renderSchedule();
+
+      return;
+
+    }
+
+
+    /* ==================================================
+       一般職員
+       自分の休暇だけRPC経由で変更
+    ================================================== */
+
+    if (
+      currentOrganization &&
+      currentOrganization.role !== "admin"
+    ) {
+
+      /* -----------------------------------------------
+         休暇解除
+      ------------------------------------------------ */
+
+      if (!leaveName) {
+
+        const result =
+          await supabaseClient.rpc(
+            "clear_my_leave",
+            {
+              target_date:
+                dateKey
+            }
+          );
+
+
+        if (
+          result.error
+        ) {
+
+          throw result.error;
+
+        }
+
+      }
+
+      /* -----------------------------------------------
+         休暇登録
+      ------------------------------------------------ */
+
+      else {
+
+        const result =
+          await supabaseClient.rpc(
+            "set_my_leave",
+            {
+              target_date:
+                dateKey,
+
+              target_leave_type:
+                leaveName
+            }
+          );
+
+
+        if (
+          result.error
+        ) {
+
+          throw result.error;
+
+        }
+
+      }
+
+
+      /* -----------------------------------------------
+         Supabaseから最新データを取得
+      ------------------------------------------------ */
+
+      await loadAllFromSupabase();
+
+      renderSchedule();
+
+
+      /* -----------------------------------------------
+         休暇変更通知
+      ------------------------------------------------ */
+
+      await sendLeaveChangeNotification(
+        name,
+        dateKey,
+        oldLeaveName,
+        leaveName || ""
+      );
+
+
+      return;
+
+    }
+
+
+    /* ==================================================
+       管理者
+       直接work_shiftsを操作
+    ================================================== */
 
     /* ==================================================
        休暇解除
@@ -13945,6 +14276,25 @@ async function saveLeave(
 
 
       renderSchedule();
+
+
+      /*
+       * 実際に休暇が存在していた場合だけ通知
+       */
+
+      if (
+        oldLeaveName
+      ) {
+
+        await sendLeaveChangeNotification(
+          name,
+          dateKey,
+          oldLeaveName,
+          ""
+        );
+
+      }
+
 
       return;
 
@@ -14045,6 +14395,18 @@ async function saveLeave(
     renderSchedule();
 
 
+    /* ==================================================
+       休暇変更通知
+    ================================================== */
+
+    await sendLeaveChangeNotification(
+      name,
+      dateKey,
+      oldLeaveName,
+      leaveName
+    );
+
+
   } catch (error) {
 
     console.error(
@@ -14056,7 +14418,10 @@ async function saveLeave(
     alert(
       "休暇の保存に失敗しました。\n\n" +
       "エラー：" +
-      (error.message || error)
+      (
+        error.message ||
+        error
+      )
     );
 
   } finally {
@@ -14066,7 +14431,6 @@ async function saveLeave(
   }
 
 }
-
 
 /* ==================================================
    月間集計
