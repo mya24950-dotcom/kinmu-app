@@ -1,58 +1,55 @@
-self.addEventListener("push", function (event) {
+self.addEventListener(
+  "push",
+  function (event) {
 
-  if (!event.data) {
-    return;
-  }
+    console.log(
+      "★ PUSH受信"
+    );
 
-  let data = {};
+    let data = {};
 
-  try {
-    data = event.data.json();
-  } catch (error) {
+    try {
 
-    data = {
-      title: "Shift+",
-      body: event.data.text()
-    };
+      if (event.data) {
 
-  }
+        data =
+          event.data.json();
 
-  const title =
-    data.title ||
-    "Shift+";
+      }
 
-  const options = {
+    } catch (error) {
 
-    body:
-      data.body ||
-      "勤務表が更新されました。",
-
-    icon:
-      "./icons/icon-192.png",
-
-    badge:
-      "./icons/icon-192.png",
-
-    data: {
-
-      url:
-        data.url ||
-        "./"
+      console.error(
+        "Pushデータ解析エラー",
+        error
+      );
 
     }
 
-  };
 
-  event.waitUntil(
+    const title =
+      data.title ||
+      "Shift+";
 
-    self.registration.showNotification(
-      title,
-      options
-    )
 
-  );
+    const body =
+      data.body ||
+      "プッシュ通知のテストです。";
 
-});
+
+    event.waitUntil(
+
+      self.registration.showNotification(
+        title,
+        {
+          body: body
+        }
+      )
+
+    );
+
+  }
+);
 
 
 self.addEventListener(
@@ -61,48 +58,42 @@ self.addEventListener(
 
     event.notification.close();
 
-    const url =
-      event.notification.data &&
-      event.notification.data.url
-        ? event.notification.data.url
-        : "./";
-
     event.waitUntil(
 
       clients.matchAll({
         type: "window",
         includeUncontrolled: true
-      }).then(function (clientList) {
+      }).then(
+        function (clientList) {
 
-        for (
-          const client of clientList
-        ) {
-
-          if (
-            "focus" in client
+          for (
+            const client
+            of clientList
           ) {
 
-            client.focus();
+            if (
+              "focus" in client
+            ) {
 
-            return client.navigate(
-              url
+              return client.focus();
+
+            }
+
+          }
+
+
+          if (
+            clients.openWindow
+          ) {
+
+            return clients.openWindow(
+              "./"
             );
 
           }
 
         }
-
-        if (
-          clients.openWindow
-        ) {
-
-          return clients.openWindow(
-            url
-          );
-
-        }
-
-      })
+      )
 
     );
 
