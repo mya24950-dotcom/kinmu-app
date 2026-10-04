@@ -13909,6 +13909,15 @@ async function saveWorkShift(
 
   try {
 
+    /*
+     * ==================================================
+     * 既存データを取得
+     *
+     * UPDATE / INSERT / DELETE の判定に必要なので
+     * ここだけは最初にSupabaseへ確認する
+     * ==================================================
+     */
+
     const existing =
       await supabaseClient
         .from("work_shifts")
@@ -13949,8 +13958,27 @@ async function saveWorkShift(
 
 
     /*
-     * 変更前の勤務
+     * ==================================================
+     * 変更前の勤務を保存
+     *
+     * Supabase保存失敗時に元へ戻すため
+     * ==================================================
      */
+
+    const oldStoredShift =
+      appData.shifts[name] &&
+      appData.shifts[name][dateKey]
+        ? {
+            shiftName:
+              appData.shifts[name][dateKey]
+                .shiftName || "",
+
+            leaveType:
+              appData.shifts[name][dateKey]
+                .leaveType || ""
+          }
+        : null;
+
 
     const oldShiftName =
       existingRow
@@ -13958,141 +13986,312 @@ async function saveWorkShift(
         : "";
 
 
-    /* ==================================================
-       勤務削除
-    ================================================== */
+    const oldLeaveType =
+      existingRow
+        ? existingRow.leave_type || ""
+        : "";
+
+
+    /*
+     * ==================================================
+     * 今回保存する勤務状態を決定
+     * ==================================================
+     */
+
+    let newShiftName =
+      shiftName || "";
+
+    let newLeaveType =
+      oldLeaveType;
+
+
+    /*
+     * ==================================================
+     * 勤務削除
+     *
+     * 勤務だけ消して、休暇は残す
+     * ==================================================
+     */
 
     if (!shiftName) {
 
-      if (existingRow) {
+      newShiftName =
+        "";
 
-        /*
-          仕様：
-          「勤務削除」は勤務形態だけ削除。
-          休暇は残す。
-        */
-
-        if (
-          existingRow.leave_type
-        ) {
-
-          const result =
-            await supabaseClient
-              .from("work_shifts")
-              .update({
-
-                shift_name:
-                  "",
-
-                leave_type:
-                  existingRow.leave_type
-
-              })
-              .eq(
-                "id",
-                existingRow.id
-              );
+    }
 
 
-          if (
-            result.error
-          ) {
+    /*
+     * ==================================================
+     * ★ ここが重要
+     *
+     * Supabase保存より先に画面側を更新する
+     * ==================================================
+     */
 
-            throw result.error;
-
-          }
-
-
-          setStoredShift(
-            name,
-            dateKey,
-            "",
-            existingRow.leave_type
-          );
-
-
-          await recordAppModifiedShift(
-            name,
-            dateKey
-          );
-
-          console.log(
-            "★ Push通知呼び出し",
-            {
-              name:
-                name,
-
-              dateKey:
-                dateKey,
-
-              oldShiftName:
-                oldShiftName,
-
-              newShiftName:
-                shiftName
-            }
-          );
+    setStoredShift(
+      name,
+      dateKey,
+      newShiftName,
+      newLeaveType
+    );
 
 
-          await sendShiftChangeNotification(
-            name,
-            dateKey,
-            oldShiftName,
-            shiftName
-          );
+    /*
+     * ★ 画面を即時更新
+     */
+
+    renderSchedule();
 
 
-        } else {
+    /*
+     * ==================================================
+     * Supabase保存
+     *
+     * ここから裏側で処理
+     * ==================================================
+     */
 
-          const result =
-            await supabaseClient
-              .from("work_shifts")
-              .delete()
-              .eq(
-                "id",
-                existingRow.id
-              );
+    try {
 
+      /*
+       * -----------------------------------------------
+       * 勤務削除
+       * -----------------------------------------------
+       */
 
-          if (
-            result.error
-          ) {
+      if (!shiftName) {
 
-            throw result.error;
-
-          }
-
-
-          setStoredShift(
-            name,
-            dateKey,
-            "",
-            ""
-          );
-
-
-          await recordAppModifiedShift(
-            name,
-            dateKey
-          );
+        if (existingRow) {
 
           /*
-           * 実際に勤務が変更された場合だけ通知
+           * 休暇が残っている場合
+           * → 勤務だけ削除
            */
 
-          await sendShiftChangeNotification(
-            name,
-            dateKey,
-            oldShiftName,
-            ""
-          );
+          if (
+            existingRow.leave_type
+          ) {
+
+            const result =
+              await supabaseClient
+                .from("work_shifts")
+                .update({
+
+                  shift_name:
+                    "",
+
+                  leave_type:
+                    existingRow.leave_type
+
+                })
+                .eq(
+                  "id",
+                  existingRow.id
+                );
+
+
+            if (
+              result.error
+            ) {
+
+              throw result.error;
+
+            }
+
+          }
+
+          /*
+           * 休暇もない場合
+           * → レコード自体を削除
+           */
+
+          else {
+
+            const result =
+              await supabaseClient
+                .from("work_shifts")
+                .delete()
+                .eq(
+                  "id",
+                  existingRow.id
+                );
+
+
+            if (
+              result.error
+            ) {
+
+              throw result.error;
+
+            }
+
+          }
 
         }
 
       }
 
 
+      /*
+       * -----------------------------------------------
+       * 既存勤務の変更
+       * -----------------------------------------------
+       */
+
+      else if (existingRow) {
+
+        const result =
+          await supabaseClient
+            .from("work_shifts")
+            .update({
+
+              shift_name:
+                shiftName,
+
+              leave_type:
+                existingRow.leave_type ||
+                null
+
+            })
+            .eq(
+              "id",
+              existingRow.id
+            );
+
+
+        if (
+          result.error
+        ) {
+
+          throw result.error;
+
+        }
+
+      }
+
+
+      /*
+       * -----------------------------------------------
+       * 新規勤務
+       * -----------------------------------------------
+       */
+
+      else {
+
+        const result =
+          await supabaseClient
+            .from("work_shifts")
+            .insert({
+
+              staff_name:
+                name,
+
+              work_date:
+                dateKey,
+
+              shift_name:
+                shiftName,
+
+              leave_type:
+                null,
+
+              organization_id:
+                currentOrganization.id
+
+            });
+
+
+        if (
+          result.error
+        ) {
+
+          throw result.error;
+
+        }
+
+      }
+
+
+      /*
+       * ==================================================
+       * Supabase保存成功
+       * ==================================================
+       */
+
+      console.log(
+        "★ 勤務保存成功",
+        {
+          name:
+            name,
+
+          dateKey:
+            dateKey,
+
+          oldShiftName:
+            oldShiftName,
+
+          newShiftName:
+            newShiftName
+        }
+      );
+
+
+    } catch (saveError) {
+
+      /*
+       * ==================================================
+       * ★ Supabase保存失敗
+       *
+       * 画面を変更前の状態へ戻す
+       * ==================================================
+       */
+
+      console.error(
+        "勤務Supabase保存エラー",
+        saveError
+      );
+
+
+      if (
+        oldStoredShift
+      ) {
+
+        setStoredShift(
+          name,
+          dateKey,
+          oldStoredShift.shiftName,
+          oldStoredShift.leaveType
+        );
+
+      } else {
+
+        setStoredShift(
+          name,
+          dateKey,
+          "",
+          ""
+        );
+
+      }
+
+
+      /*
+       * 元の状態を再表示
+       */
+
       renderSchedule();
+
+
+      alert(
+        "勤務の保存に失敗しました。\n\n" +
+        "画面を元の状態に戻しました。\n\n" +
+        "エラー：" +
+        (
+          saveError.message ||
+          saveError
+        )
+      );
 
 
       return;
@@ -14100,50 +14299,40 @@ async function saveWorkShift(
     }
 
 
-    const leaveType =
-      existingRow
-        ? existingRow.leave_type ||
-          ""
-        : "";
+    /*
+     * ==================================================
+     * Supabase保存成功後の処理
+     *
+     * ここは画面表示を待たせない。
+     * ==================================================
+     */
 
-
-    /* ==================================================
-       既存勤務更新
-    ================================================== */
-
-    if (existingRow) {
-
-      const result =
-        await supabaseClient
-          .from("work_shifts")
-          .update({
-
-            shift_name:
-              shiftName,
-
-            leave_type:
-              leaveType || null
-
-          })
-          .eq(
-            "id",
-            existingRow.id
-          );
-
-
-      if (
-        result.error
-      ) {
-
-        throw result.error;
-
-      }
-
+    try {
 
       await recordAppModifiedShift(
         name,
         dateKey
       );
+
+    } catch (error) {
+
+      console.error(
+        "勤務変更履歴保存エラー",
+        error
+      );
+
+    }
+
+
+    /*
+     * ==================================================
+     * プッシュ通知
+     *
+     * 保存成功後に実行
+     * ==================================================
+     */
+
+    try {
 
       console.log(
         "★ Push通知呼び出し",
@@ -14158,7 +14347,7 @@ async function saveWorkShift(
             oldShiftName,
 
           newShiftName:
-            shiftName
+            newShiftName
         }
       );
 
@@ -14167,92 +14356,21 @@ async function saveWorkShift(
         name,
         dateKey,
         oldShiftName,
-        shiftName
+        newShiftName
+      );
+
+    } catch (error) {
+
+      /*
+       * 通知失敗は勤務保存失敗にはしない
+       */
+
+      console.error(
+        "勤務変更プッシュ通知エラー",
+        error
       );
 
     }
-
-
-    /* ==================================================
-       新規勤務
-    ================================================== */
-
-    else {
-
-      const result =
-        await supabaseClient
-          .from("work_shifts")
-          .insert({
-
-            staff_name:
-              name,
-
-            work_date:
-              dateKey,
-
-            shift_name:
-              shiftName,
-
-            leave_type:
-              null,
-
-            organization_id:
-              currentOrganization.id
-
-          });
-
-
-      if (
-        result.error
-      ) {
-
-        throw result.error;
-
-      }
-
-
-      await recordAppModifiedShift(
-        name,
-        dateKey
-      );
-
-      console.log(
-        "★ Push通知呼び出し",
-        {
-          name:
-            name,
-
-          dateKey:
-            dateKey,
-
-          oldShiftName:
-            "",
-
-          newShiftName:
-            shiftName
-        }
-      );
-
-
-      await sendShiftChangeNotification(
-        name,
-        dateKey,
-        "",
-        shiftName
-      );
-
-    }
-
-
-    setStoredShift(
-      name,
-      dateKey,
-      shiftName,
-      leaveType
-    );
-
-
-    renderSchedule();
 
 
   } catch (error) {
