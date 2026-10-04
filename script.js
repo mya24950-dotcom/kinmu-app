@@ -1,6 +1,6 @@
 alert(
 
-    "★ 014"
+    "★ 015"
 
   );
 
@@ -13063,10 +13063,6 @@ async function recordAppModifiedShift(
 
   }
 
-    alert(
-
-  "★ recordAppModifiedShift完了"
-
 );
 
 
@@ -13098,15 +13094,6 @@ async function sendShiftChangeNotification(
 ) {
 
   try {
-
-    alert(
-      "★ sendShiftChangeNotificationが呼ばれました\n" +
-      "職員：" + staffName + "\n" +
-      "日付：" + dateKey + "\n" +
-      "変更前：" + oldShiftName + "\n" +
-      "変更後：" + newShiftName
-    );
-
 
     if (
       !supabaseClient ||
@@ -13215,9 +13202,6 @@ async function sendShiftChangeNotification(
       SUPABASE_URL +
       "/functions/v1/send-test-push";
 
-
-    alert(
-      "★ Edge Functionへ直接接続します\n\n" +
       functionUrl
     );
 
@@ -13246,12 +13230,6 @@ async function sendShiftChangeNotification(
       return;
 
     }
-
-
-    alert(
-      "★ セッション取得OK\n\n" +
-      "Edge Functionへ送信します。"
-    );
 
 
     /*
@@ -13305,15 +13283,6 @@ async function sendShiftChangeNotification(
      * HTTPステータス
      */
 
-    alert(
-      "★ Edge Function HTTP応答\n\n" +
-      "status：" +
-      response.status +
-      "\n" +
-      "ok：" +
-      response.ok
-    );
-
 
     /*
      * レスポンス本文
@@ -13321,12 +13290,6 @@ async function sendShiftChangeNotification(
 
     const responseText =
       await response.text();
-
-
-    alert(
-      "★ Edge Functionレスポンス\n\n" +
-      responseText
-    );
 
 
     if (
@@ -13375,13 +13338,6 @@ async function saveWorkShift(
   dateKey,
   shiftName
 ) {
-
-  alert(
-    "★ saveWorkShiftが呼ばれました\n" +
-    "職員：" + staffName + "\n" +
-    "日付：" + dateKey + "\n" +
-    "勤務：" + shiftName
-  );
 
 
   if (!supabaseClient) {
@@ -13514,34 +13470,6 @@ async function saveWorkShift(
             dateKey
           );
 
-
-          alert(
-
-  "★ recordAppModifiedShift完了\n" +
-
-  "職員：" + name + "\n" +
-
-  "日付：" + dateKey + "\n" +
-
-  "変更前：" + oldShiftName + "\n" +
-
-  "変更後：" + shiftName
-
-);
-
-alert(
-
-  "★ Push通知処理を呼び出します\n" +
-
-  "変更前：" + oldShiftName + "\n" +
-
-  "変更後：" + shiftName
-
-);
-
-
-
-
           /*
            * 実際に勤務が変更された場合だけ通知
            */
@@ -13605,19 +13533,6 @@ alert(
             name,
             dateKey
           );
-
-
-          alert(
-            "★ recordAppModifiedShift完了"
-          );
-
-
-          alert(
-            "★ Push通知処理を呼び出します\n" +
-            "変更前：" + oldShiftName + "\n" +
-            "変更後："
-          );
-
 
           /*
            * 実際に勤務が変更された場合だけ通知
@@ -13693,18 +13608,6 @@ alert(
         "★ recordAppModifiedShift完了"
       );
 
-
-      /*
-       * 実際に勤務が変更された場合だけ通知
-       */
-
-      alert(
-        "★ Push通知処理を呼び出します\n" +
-        "変更前：" + oldShiftName + "\n" +
-        "変更後：" + shiftName
-      );
-
-
       console.log(
         "★ Push通知呼び出し",
         {
@@ -13775,25 +13678,6 @@ alert(
         name,
         dateKey
       );
-
-
-      alert(
-        "★ recordAppModifiedShift完了"
-      );
-
-
-      /*
-       * 新規勤務
-       *
-       * 勤務なし → 新しい勤務
-       */
-
-      alert(
-        "★ Push通知処理を呼び出します\n" +
-        "変更前：勤務なし\n" +
-        "変更後：" + shiftName
-      );
-
 
       console.log(
         "★ Push通知呼び出し",
