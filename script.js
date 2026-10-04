@@ -6031,9 +6031,6 @@ async function loginWithGoogle() {
    * ==================================================
    */
 
-  await requestPushPermissionOnLogin();
-
-
   const client =
     window.shiftSupabaseClient ||
     supabaseClient;
