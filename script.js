@@ -1,4 +1,4 @@
-alert("★ 新しいJS");
+alert("★ 新JS");
 
 /* ==================================================
    Supabase
@@ -3655,6 +3655,20 @@ function showApp() {
       }
     );
 
+const nav =
+  document.querySelector(
+    ".nav"
+  );
+
+if (nav) {
+
+  nav.style.display =
+    isAdmin
+      ? ""
+      : "none";
+
+}
+   
 
   /* =====================================================
      月消去・年度消去
