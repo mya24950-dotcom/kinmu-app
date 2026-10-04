@@ -8137,6 +8137,21 @@ function bindEvents() {
 
   }
 
+     const issueExcelSyncTokenButton =
+    document.getElementById(
+      "issueExcelSyncTokenButton"
+    );
+
+
+  if (issueExcelSyncTokenButton) {
+
+    issueExcelSyncTokenButton.addEventListener(
+      "click",
+      issueExcelSyncToken
+    );
+
+  }
+
 
   const calendarCancel =
     document.getElementById(
@@ -8236,6 +8251,205 @@ function bindEvents() {
   );
 
 }
+
+async function issueExcelSyncToken() {
+
+  /*
+   * ==========================================
+   * 管理者チェック
+   * ==========================================
+   */
+
+  if (!currentOrganization) {
+
+    alert(
+      "現在の職場情報を取得できません。"
+    );
+
+    return;
+
+  }
+
+
+  if (
+    currentOrganization.role !== "admin"
+  ) {
+
+    alert(
+      "Excel連携コードを発行できるのは管理者だけです。"
+    );
+
+    return;
+
+  }
+
+
+  /*
+   * ==========================================
+   * Supabase確認
+   * ==========================================
+   */
+
+  if (!supabaseClient) {
+
+    alert(
+      "Supabaseに接続されていません。"
+    );
+
+    return;
+
+  }
+
+
+  /*
+   * ==========================================
+   * 発行確認
+   * ==========================================
+   */
+
+  const confirmed =
+    confirm(
+      "Excel連携コードを発行しますか？\n\n" +
+      "新しいコードを発行すると、現在のコードは使用できなくなります。"
+    );
+
+
+  if (!confirmed) {
+
+    return;
+
+  }
+
+
+  const button =
+    document.getElementById(
+      "issueExcelSyncTokenButton"
+    );
+
+
+  if (button) {
+
+    button.disabled = true;
+
+    button.textContent =
+      "発行中...";
+
+  }
+
+
+  try {
+
+    /*
+     * ==========================================
+     * Supabase RPC
+     * ==========================================
+     */
+
+    const result =
+      await supabaseClient.rpc(
+        "create_excel_sync_token",
+        {
+          p_organization_id:
+            currentOrganization.id
+        }
+      );
+
+
+    if (result.error) {
+
+      throw result.error;
+
+    }
+
+
+    const token =
+      result.data;
+
+
+    if (!token) {
+
+      throw new Error(
+        "Excel連携コードを取得できませんでした。"
+      );
+
+    }
+
+
+    /*
+     * ==========================================
+     * 画面に表示
+     * ==========================================
+     */
+
+    const resultArea =
+      document.getElementById(
+        "excelSyncTokenResult"
+      );
+
+
+    const tokenValue =
+      document.getElementById(
+        "excelSyncTokenValue"
+      );
+
+
+    if (tokenValue) {
+
+      tokenValue.textContent =
+        token;
+
+    }
+
+
+    if (resultArea) {
+
+      resultArea.style.display =
+        "block";
+
+    }
+
+
+    alert(
+      "Excel連携コードを発行しました。\n\n" +
+      token +
+      "\n\n" +
+      "有効期限は24時間です。"
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "Excel連携コード発行エラー",
+      error
+    );
+
+
+    alert(
+      "Excel連携コードの発行に失敗しました。\n\n" +
+      (
+        error.message ||
+        "不明なエラー"
+      )
+    );
+
+
+  } finally {
+
+    if (button) {
+
+      button.disabled =
+        false;
+
+      button.textContent =
+        "Excel連携コードを発行";
+
+    }
+
+  }
+
+}
+
 
 /* =========================================================
    ログイン画面のボタンをまとめて設定
