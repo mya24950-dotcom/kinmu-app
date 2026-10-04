@@ -4562,3 +4562,8 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
   }
 
 }
+
+/* ヘッダー右側のボタンを少し上へ */
+.header-delete-buttons {
+  transform: translateY(-3px);
+}
