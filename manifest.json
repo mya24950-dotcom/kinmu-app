@@ -4,8 +4,8 @@
   "description": "職員の勤務表を管理するアプリ",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#ffffff",
+  "background_color": "#f2f2f7",
+  "theme_color": "#007aff",
   "orientation": "landscape",
   "icons": [
     {
