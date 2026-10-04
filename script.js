@@ -1,6 +1,6 @@
 alert(
 
-    "★ 新しいsaveWorkShiftが実行されました"
+    "★ 新た"
 
   );
 
@@ -13271,6 +13271,10 @@ async function saveWorkShift(
   dateKey,
   shiftName
 ) {
+
+    alert(
+  "★ 新しいsaveWorkShiftが実行されました"
+);
 
   if (!supabaseClient) {
 
