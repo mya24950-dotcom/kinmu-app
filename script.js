@@ -1,6 +1,6 @@
 alert(
 
-    "★ 012"
+    "★ 013"
 
   );
 
@@ -13097,21 +13097,16 @@ async function sendShiftChangeNotification(
   newShiftName
 ) {
 
-  alert(
-
-    "★ sendShiftChangeNotificationが呼ばれました\n" +
-
-    "職員：" + staffName + "\n" +
-
-    "日付：" + dateKey + "\n" +
-
-    "変更前：" + oldShiftName + "\n" +
-
-    "変更後：" + newShiftName
-
-  );
-
   try {
+
+    alert(
+      "★ sendShiftChangeNotificationが呼ばれました\n" +
+      "職員：" + staffName + "\n" +
+      "日付：" + dateKey + "\n" +
+      "変更前：" + oldShiftName + "\n" +
+      "変更後：" + newShiftName
+    );
+
 
     if (
       !supabaseClient ||
@@ -13217,6 +13212,15 @@ async function sendShiftChangeNotification(
 
 
     /*
+     * Edge Function呼び出し開始
+     */
+
+    alert(
+      "★ Edge Function呼び出し開始"
+    );
+
+
+    /*
      * Edge Function呼び出し
      */
 
@@ -13243,6 +13247,20 @@ async function sendShiftChangeNotification(
 
         }
       );
+
+
+    /*
+     * Edge Function呼び出し結果
+     */
+
+    alert(
+      "★ Edge Function呼び出し完了\n\n" +
+      JSON.stringify(
+        result,
+        null,
+        2
+      )
+    );
 
 
     if (
@@ -13275,6 +13293,15 @@ async function sendShiftChangeNotification(
     console.error(
       "★ 勤務変更Push通知例外",
       error
+    );
+
+
+    alert(
+      "★ 勤務変更Push通知で例外が発生しました\n\n" +
+      (
+        error.message ||
+        error
+      )
     );
 
   }
