@@ -3640,20 +3640,17 @@ function showApp() {
         const page =
           button.dataset.page;
 
-        if (
-          isAdmin ||
-          page === "schedule"
-        ) {
+        if (isAdmin) {
 
-          button.style.display =
-            "";
+  button.style.display =
+    "";
 
-        } else {
+} else {
 
-          button.style.display =
-            "none";
+  button.style.display =
+    "none";
 
-        }
+}
 
       }
     );
