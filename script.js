@@ -20,6 +20,304 @@ const VAPID_PUBLIC_KEY =
 let supabaseClient = null;
 
 /* ==================================================
+   プッシュ通知
+================================================== */
+
+function urlBase64ToUint8Array(
+  base64String
+) {
+
+  const padding =
+    "=".repeat(
+      (4 - base64String.length % 4) % 4
+    );
+
+  const base64 =
+    (
+      base64String +
+      padding
+    )
+      .replace(/-/g, "+")
+      .replace(/_/g, "/");
+
+  const rawData =
+    window.atob(base64);
+
+  return Uint8Array.from(
+    [...rawData].map(
+      char => char.charCodeAt(0)
+    )
+  );
+}
+
+
+/* ==================================================
+   Service Worker登録
+================================================== */
+
+async function registerPushServiceWorker() {
+
+  if (
+    !("serviceWorker" in navigator)
+  ) {
+
+    throw new Error(
+      "この端末はService Workerに対応していません。"
+    );
+
+  }
+
+  const registration =
+    await navigator.serviceWorker.register(
+      "./service-worker.js"
+    );
+
+  console.log(
+    "★ Service Worker登録完了",
+    registration
+  );
+
+  return registration;
+}
+
+
+/* ==================================================
+   プッシュ通知を有効にする
+================================================== */
+
+async function enablePushNotifications() {
+
+  try {
+
+    if (
+      !("Notification" in window)
+    ) {
+
+      alert(
+        "この端末ではプッシュ通知を利用できません。"
+      );
+
+      return;
+
+    }
+
+
+    if (
+      !("PushManager" in window)
+    ) {
+
+      alert(
+        "この端末ではプッシュ通知を利用できません。"
+      );
+
+      return;
+
+    }
+
+
+    if (
+      !currentOrganization ||
+      !currentOrganization.id
+    ) {
+
+      alert(
+        "現在の職場情報を取得できません。"
+      );
+
+      return;
+
+    }
+
+
+    if (
+      !supabaseClient
+    ) {
+
+      alert(
+        "Supabaseに接続されていません。"
+      );
+
+      return;
+
+    }
+
+
+    const {
+      data: {
+        session
+      }
+    } =
+      await supabaseClient.auth.getSession();
+
+
+    if (
+      !session ||
+      !session.user
+    ) {
+
+      alert(
+        "ログインしてください。"
+      );
+
+      return;
+
+    }
+
+
+    /*
+     * Service Worker登録
+     */
+
+    const registration =
+      await registerPushServiceWorker();
+
+
+    /*
+     * 通知許可
+     */
+
+    const permission =
+      await Notification.requestPermission();
+
+
+    if (
+      permission !== "granted"
+    ) {
+
+      alert(
+        "通知が許可されませんでした。"
+      );
+
+      return;
+
+    }
+
+
+    /*
+     * 既存購読を確認
+     */
+
+    let subscription =
+      await registration.pushManager.getSubscription();
+
+
+    /*
+     * 未購読なら新規登録
+     */
+
+    if (!subscription) {
+
+      subscription =
+        await registration.pushManager.subscribe({
+
+          userVisibleOnly:
+            true,
+
+          applicationServerKey:
+            urlBase64ToUint8Array(
+              VAPID_PUBLIC_KEY
+            )
+
+        });
+
+    }
+
+
+    /*
+     * 購読情報を取得
+     */
+
+    const subscriptionJSON =
+      subscription.toJSON();
+
+
+    if (
+      !subscriptionJSON.endpoint ||
+      !subscriptionJSON.keys
+    ) {
+
+      throw new Error(
+        "プッシュ通知の購読情報を取得できませんでした。"
+      );
+
+    }
+
+
+    /*
+     * Supabaseへ保存
+     */
+
+    const result =
+      await supabaseClient
+        .from(
+          "push_subscriptions"
+        )
+        .upsert(
+          {
+
+            user_id:
+              session.user.id,
+
+            organization_id:
+              currentOrganization.id,
+
+            endpoint:
+              subscriptionJSON.endpoint,
+
+            p256dh:
+              subscriptionJSON.keys.p256dh,
+
+            auth:
+              subscriptionJSON.keys.auth,
+
+            updated_at:
+              new Date().toISOString()
+
+          },
+          {
+
+            onConflict:
+              "user_id,endpoint"
+
+          }
+        );
+
+
+    if (result.error) {
+
+      throw result.error;
+
+    }
+
+
+    console.log(
+      "★ プッシュ通知登録完了",
+      subscriptionJSON
+    );
+
+
+    alert(
+      "プッシュ通知を有効にしました。"
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "プッシュ通知登録エラー",
+      error
+    );
+
+    alert(
+      "プッシュ通知の登録に失敗しました。\n\n" +
+      error.message
+    );
+
+  }
+
+}
+
+/* ==================================================
    現在の職場
 ================================================== */
 
