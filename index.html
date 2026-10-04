@@ -3774,215 +3774,23 @@
   ================================================== -->
 
   <section
-    id="shiftPage"
-    class="page"
-    style="display:none;"
-  >
+  id="shiftPage"
+  class="page"
+  style="display:none;"
+>
 
-    <div class="shift-layout">
+  <div class="shift-layout">
 
-      <div>
-
-        <div class="settings-card">
-
-          <h2 class="section-title-icon">
-
-            <svg
-              class="section-icon"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
-
-              <circle
-                cx="12"
-                cy="12"
-                r="8.5"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.8"
-              />
-
-              <line
-                x1="12"
-                y1="7"
-                x2="12"
-                y2="12"
-                stroke="currentColor"
-                stroke-width="1.8"
-                stroke-linecap="round"
-              />
-
-              <line
-                x1="12"
-                y1="12"
-                x2="16"
-                y2="14.5"
-                stroke="currentColor"
-                stroke-width="1.8"
-                stroke-linecap="round"
-              />
-
-            </svg>
-
-            <span>勤務形態</span>
-
-          </h2>
+    <div>
 
 
-          <div class="shift-form">
-
-            <input
-              id="shiftNameInput"
-              type="text"
-              placeholder="勤務形態名"
-            >
-
-
-            <div class="time-row">
-
-              <input
-                id="shiftStartInput"
-                type="time"
-              >
-
-              <span class="time-separator">
-                ～
-              </span>
-
-              <input
-                id="shiftEndInput"
-                type="time"
-              >
-
-            </div>
-
-
-            <input
-              id="shiftBreakInput"
-              type="number"
-              min="0"
-              placeholder="休憩（分）"
-            >
-
-
-            <button
-              id="addShiftButton"
-              class="add-button"
-            >
-              勤務形態を追加
-            </button>
-
-          </div>
-
-
-          <p class="info">
-            ※「明」は自動表示されるため登録できません。
-          </p>
-
-        </div>
-
-
-        <div class="settings-card">
-
-          <h2 class="section-title-icon">
-
-            <svg
-              class="section-icon"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
-
-              <path
-                d="M4 17h16"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.8"
-                stroke-linecap="round"
-              />
-
-              <path
-                d="M7 17a5 5 0 0 1 10 0"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.8"
-                stroke-linecap="round"
-              />
-
-              <line
-                x1="12"
-                y1="3"
-                x2="12"
-                y2="6"
-                stroke="currentColor"
-                stroke-width="1.8"
-                stroke-linecap="round"
-              />
-
-              <line
-                x1="4.5"
-                y1="7"
-                x2="6.7"
-                y2="8.3"
-                stroke="currentColor"
-                stroke-width="1.8"
-                stroke-linecap="round"
-              />
-
-              <line
-                x1="19.5"
-                y1="7"
-                x2="17.3"
-                y2="8.3"
-                stroke="currentColor"
-                stroke-width="1.8"
-                stroke-linecap="round"
-              />
-
-            </svg>
-
-            <span>明け時間設定</span>
-
-          </h2>
-
-
-          <p class="info ake-info">
-            「明」と表示される勤務の時間を設定します。
-          </p>
-
-
-          <div class="time-row ake-time-row">
-
-            <input
-              id="akeStartInput"
-              type="time"
-            >
-
-            <span class="time-separator">
-              ～
-            </span>
-
-            <input
-              id="akeEndInput"
-              type="time"
-            >
-
-          </div>
-
-
-          <button
-            id="saveAkeTimeButton"
-            class="add-button"
-          >
-            明け時間を保存
-          </button>
-
-        </div>
-
-      </div>
-
+      <!-- =================================================
+           Excel連携
+      ================================================== -->
 
       <div
-        class="settings-card shift-list-card"
+        class="settings-card"
+        id="excelSyncCard"
       >
 
         <h2 class="section-title-icon">
@@ -3994,10 +3802,10 @@
           >
 
             <rect
-              x="5"
-              y="3"
-              width="14"
-              height="18"
+              x="4"
+              y="5"
+              width="16"
+              height="14"
               rx="2"
               fill="none"
               stroke="currentColor"
@@ -4005,73 +3813,393 @@
             />
 
             <line
-              x1="9"
-              y1="8"
+              x1="8"
+              y1="9"
               x2="16"
-              y2="8"
+              y2="9"
               stroke="currentColor"
-              stroke-width="1.7"
+              stroke-width="1.8"
               stroke-linecap="round"
             />
 
             <line
-              x1="9"
-              y1="12"
+              x1="8"
+              y1="13"
               x2="16"
-              y2="12"
+              y2="13"
               stroke="currentColor"
-              stroke-width="1.7"
+              stroke-width="1.8"
               stroke-linecap="round"
             />
 
             <line
-              x1="9"
-              y1="16"
-              x2="16"
-              y2="16"
+              x1="8"
+              y1="17"
+              x2="13"
+              y2="17"
               stroke="currentColor"
-              stroke-width="1.7"
+              stroke-width="1.8"
               stroke-linecap="round"
-            />
-
-            <circle
-              cx="7.2"
-              cy="8"
-              r=".7"
-              fill="currentColor"
-            />
-
-            <circle
-              cx="7.2"
-              cy="12"
-              r=".7"
-              fill="currentColor"
-            />
-
-            <circle
-              cx="7.2"
-              cy="16"
-              r=".7"
-              fill="currentColor"
             />
 
           </svg>
 
-          <span>勤務リスト</span>
+          <span>Excel連携</span>
 
         </h2>
 
 
+        <p class="info">
+          Excelから勤務表を反映するための連携コードを発行します。
+        </p>
+
+
+        <button
+          id="issueExcelSyncTokenButton"
+          class="add-button"
+          type="button"
+        >
+          Excel連携コードを発行
+        </button>
+
+
         <div
-          id="shiftList"
-          class="list"
-        ></div>
+          id="excelSyncTokenResult"
+          style="display:none;"
+        >
+
+          <p class="info">
+            発行された連携コード：
+          </p>
+
+
+          <div
+            id="excelSyncTokenValue"
+            style="
+              font-size:1.3rem;
+              font-weight:700;
+              letter-spacing:.12em;
+              text-align:center;
+              padding:12px;
+              margin:10px 0;
+              border-radius:8px;
+              background:rgba(0,0,0,.05);
+              user-select:text;
+            "
+          ></div>
+
+
+          <p class="info">
+            ※このコードは24時間有効です。<br>
+            ※新しいコードを発行すると、以前のコードは使用できなくなります。
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <!-- =================================================
+           勤務形態
+      ================================================== -->
+
+      <div class="settings-card">
+
+        <h2 class="section-title-icon">
+
+          <svg
+            class="section-icon"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+
+            <circle
+              cx="12"
+              cy="12"
+              r="8.5"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            />
+
+            <line
+              x1="12"
+              y1="7"
+              x2="12"
+              y2="12"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+            />
+
+            <line
+              x1="12"
+              y1="12"
+              x2="16"
+              y2="14.5"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+            />
+
+          </svg>
+
+          <span>勤務形態</span>
+
+        </h2>
+
+
+        <div class="shift-form">
+
+          <input
+            id="shiftNameInput"
+            type="text"
+            placeholder="勤務形態名"
+          >
+
+
+          <div class="time-row">
+
+            <input
+              id="shiftStartInput"
+              type="time"
+            >
+
+            <span class="time-separator">
+              ～
+            </span>
+
+            <input
+              id="shiftEndInput"
+              type="time"
+            >
+
+          </div>
+
+
+          <input
+            id="shiftBreakInput"
+            type="number"
+            min="0"
+            placeholder="休憩（分）"
+          >
+
+
+          <button
+            id="addShiftButton"
+            class="add-button"
+          >
+            勤務形態を追加
+          </button>
+
+        </div>
+
+
+        <p class="info">
+          ※「明」は自動表示されるため登録できません。
+        </p>
+
+      </div>
+
+
+      <!-- =================================================
+           明け時間設定
+      ================================================== -->
+
+      <div class="settings-card">
+
+        <h2 class="section-title-icon">
+
+          <svg
+            class="section-icon"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+
+            <path
+              d="M4 17h16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+            />
+
+            <path
+              d="M7 17a5 5 0 0 1 10 0"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+            />
+
+            <line
+              x1="12"
+              y1="3"
+              x2="12"
+              y2="6"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+            />
+
+            <line
+              x1="4.5"
+              y1="7"
+              x2="6.7"
+              y2="8.3"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+            />
+
+            <line
+              x1="19.5"
+              y1="7"
+              x2="17.3"
+              y2="8.3"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+            />
+
+          </svg>
+
+          <span>明け時間設定</span>
+
+        </h2>
+
+
+        <p class="info ake-info">
+          「明」と表示される勤務の時間を設定します。
+        </p>
+
+
+        <div class="time-row ake-time-row">
+
+          <input
+            id="akeStartInput"
+            type="time"
+          >
+
+          <span class="time-separator">
+            ～
+          </span>
+
+          <input
+            id="akeEndInput"
+            type="time"
+          >
+
+        </div>
+
+
+        <button
+          id="saveAkeTimeButton"
+          class="add-button"
+        >
+          明け時間を保存
+        </button>
 
       </div>
 
     </div>
 
-  </section>
+
+    <!-- =================================================
+         勤務リスト
+    ================================================== -->
+
+    <div
+      class="settings-card shift-list-card"
+    >
+
+      <h2 class="section-title-icon">
+
+        <svg
+          class="section-icon"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+
+          <rect
+            x="5"
+            y="3"
+            width="14"
+            height="18"
+            rx="2"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+          />
+
+          <line
+            x1="9"
+            y1="8"
+            x2="16"
+            y2="8"
+            stroke="currentColor"
+            stroke-width="1.7"
+            stroke-linecap="round"
+          />
+
+          <line
+            x1="9"
+            y1="12"
+            x2="16"
+            y2="12"
+            stroke="currentColor"
+            stroke-width="1.7"
+            stroke-linecap="round"
+          />
+
+          <line
+            x1="9"
+            y1="16"
+            x2="16"
+            y2="16"
+            stroke="currentColor"
+            stroke-width="1.7"
+            stroke-linecap="round"
+          />
+
+          <circle
+            cx="7.2"
+            cy="8"
+            r=".7"
+            fill="currentColor"
+          />
+
+          <circle
+            cx="7.2"
+            cy="12"
+            r=".7"
+            fill="currentColor"
+          />
+
+          <circle
+            cx="7.2"
+            cy="16"
+            r=".7"
+            fill="currentColor"
+          />
+
+        </svg>
+
+        <span>勤務リスト</span>
+
+      </h2>
+
+
+      <div
+        id="shiftList"
+        class="list"
+      ></div>
+
+    </div>
+
+  </div>
+
+</section>
 
 
   <!-- ==================================================
