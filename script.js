@@ -1,6 +1,6 @@
 alert(
 
-    "★ 009"
+    "★ 010"
 
   );
 
@@ -13096,6 +13096,20 @@ async function sendShiftChangeNotification(
   oldShiftName,
   newShiftName
 ) {
+
+  alert(
+
+    "★ sendShiftChangeNotificationが呼ばれました\n" +
+
+    "職員：" + staffName + "\n" +
+
+    "日付：" + dateKey + "\n" +
+
+    "変更前：" + oldShiftName + "\n" +
+
+    "変更後：" + newShiftName
+
+  );
 
   try {
 
