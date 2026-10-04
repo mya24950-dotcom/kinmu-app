@@ -4567,3 +4567,80 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
 .header-delete-buttons {
   transform: translateY(-3px);
 }
+
+/* ==================================================
+   プッシュ通知ボタン
+================================================== */
+
+.notification-button {
+  position: relative;
+  width: 38px;
+  min-width: 38px;
+  height: 38px;
+  min-height: 38px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+
+  border: 1px solid #d1d1d6;
+  border-radius: 10px;
+
+  background: #f2f2f7;
+  color: #333333;
+
+  cursor: pointer;
+
+  -webkit-tap-highlight-color: transparent;
+}
+
+.notification-button:active {
+  transform: scale(0.97);
+}
+
+.notification-icon {
+  width: 21px;
+  height: 21px;
+  display: block;
+}
+
+
+/* 未読件数 */
+
+.notification-badge {
+  position: absolute;
+
+  top: -5px;
+  right: -5px;
+
+  min-width: 18px;
+  height: 18px;
+
+  padding: 0 4px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 999px;
+
+  background: #ff3b30;
+  color: #ffffff;
+
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+
+  box-sizing: border-box;
+}
+
+
+/* ダークモード */
+
+body.dark-mode .notification-button {
+  background: #2c2c2e;
+  border-color: #48484a;
+  color: #ffffff;
+}
