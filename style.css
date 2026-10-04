@@ -4540,3 +4540,16 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
 #shiftMenu {
   display: none;
 }
+
+/* =========================================================
+   iPhone PWA
+   上部Safe Areaをヘッダーと一体化
+========================================================= */
+
+@media (display-mode: standalone) {
+
+  .app-header {
+    padding-top: env(safe-area-inset-top);
+  }
+
+}
