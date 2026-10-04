@@ -1,4 +1,4 @@
-alert("★ 011");
+alert("★ 012");
 
 /* ==================================================
    Supabase
@@ -288,6 +288,42 @@ function showInitialLoading(
 
 }
 
+/* =========================================================
+   PWA判定
+================================================== */
+
+function detectPWAMode() {
+
+  const isStandalone =
+    window.navigator.standalone === true ||
+    window.matchMedia(
+      "(display-mode: standalone)"
+    ).matches;
+
+  if (isStandalone) {
+
+    document.body.classList.add(
+      "pwa-mode"
+    );
+
+    console.log(
+      "★ PWAモード"
+    );
+
+  } else {
+
+    document.body.classList.remove(
+      "pwa-mode"
+    );
+
+    console.log(
+      "★ 通常ブラウザモード"
+    );
+
+  }
+
+}
+
 
 /* ---------------------------------------------------------
    初期ローディングを隠す
@@ -339,8 +375,12 @@ function hideInitialLoading() {
    必ずinit()を1回だけ実行する
 */
 
+
+
 if (document.readyState === "loading") {
 
+detectPWAMode();
+   
   document.addEventListener(
     "DOMContentLoaded",
     () => {
