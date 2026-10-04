@@ -4542,14 +4542,16 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
 }
 
 /* =========================================================
-   iPhone PWA
-   上部Safe Areaをヘッダーと一体化
+   iPhone PWA 上部 Safe Area 対策
 ========================================================= */
 
 @media (display-mode: standalone) {
 
-  .app-header {
-    padding-top: env(safe-area-inset-top);
+  .header {
+
+    padding-top:
+      env(safe-area-inset-top);
+
   }
 
 }
