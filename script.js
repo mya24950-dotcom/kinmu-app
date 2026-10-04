@@ -13063,8 +13063,6 @@ async function recordAppModifiedShift(
 
   }
 
-);
-
 
   console.log(
     "★ アプリ変更記録",
@@ -13597,11 +13595,6 @@ async function saveWorkShift(
       await recordAppModifiedShift(
         name,
         dateKey
-      );
-
-
-      alert(
-        "★ recordAppModifiedShift完了"
       );
 
       console.log(
