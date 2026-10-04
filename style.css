@@ -1217,7 +1217,7 @@ body.dark-mode #scheduleTable thead th:first-child {
 
    /* 職員名の列との境界線を太くする */
 
-  border-right: 2px solid #545458 !important;
+  border-right: 2px solid #ffffff !important;
 }
 /* =========================================================
    ダークモード
