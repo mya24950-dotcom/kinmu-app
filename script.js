@@ -2216,7 +2216,6 @@ if (
 
     hideInitialLoading();
 
-      askPushNotificationOnFirstLogin();
 
 
     console.log(
@@ -2444,6 +2443,103 @@ if (
         error?.message ||
         error
       )
+    );
+
+  }
+
+}
+
+async function requestPushPermissionOnLogin() {
+
+  try {
+
+    /* --------------------------------------------------
+       通知機能非対応
+    -------------------------------------------------- */
+
+    if (
+      !("Notification" in window) ||
+      !("PushManager" in window)
+    ) {
+
+      console.log(
+        "★ この端末ではプッシュ通知を利用できません"
+      );
+
+      return;
+
+    }
+
+
+    /* --------------------------------------------------
+       すでに許可済み
+    -------------------------------------------------- */
+
+    if (
+      Notification.permission ===
+      "granted"
+    ) {
+
+      console.log(
+        "★ 通知はすでに許可されています"
+      );
+
+      return;
+
+    }
+
+
+    /* --------------------------------------------------
+       すでに拒否されている
+       
+       iPhoneの設定から変更する必要があるため、
+       ここでは再度requestPermissionしない。
+    -------------------------------------------------- */
+
+    if (
+      Notification.permission ===
+      "denied"
+    ) {
+
+      console.log(
+        "★ 通知はすでに拒否されています"
+      );
+
+      return;
+
+    }
+
+
+    /* --------------------------------------------------
+       初回
+       
+       ここがiPhone純正の
+       「通知を許可しますか？」を出す部分
+       
+       必ずログインボタンのクリックから
+       直接呼び出す。
+    -------------------------------------------------- */
+
+    console.log(
+      "★ iPhone通知許可ポップアップを表示します"
+    );
+
+
+    const permission =
+      await Notification.requestPermission();
+
+
+    console.log(
+      "★ 通知許可結果:",
+      permission
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "★ 通知許可取得エラー",
+      error
     );
 
   }
@@ -5930,12 +6026,25 @@ async function loginWithGoogle() {
 
   try {
 
-    const client =
-      window.shiftSupabaseClient ||
-      supabaseClient;
+  /*
+   * ==================================================
+   * ★ Googleログインボタンを押した直後
+   *    iPhone純正の通知許可を表示
+   *
+   *    OAuthへ移動する前なので、
+   *    ユーザー操作が維持されています。
+   * ==================================================
+   */
+
+  await requestPushPermissionOnLogin();
 
 
-    if (!client) {
+  const client =
+    window.shiftSupabaseClient ||
+    supabaseClient;
+
+
+  if (!client) {
 
       throw new Error(
         "Supabaseが初期化されていません"
