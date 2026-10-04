@@ -1,6 +1,6 @@
 {
-  "name": "勤務表",
-  "short_name": "勤務表",
+  "name": "Shift+",
+  "short_name": "Shift+",
   "description": "職員の勤務表を管理するアプリ",
   "start_url": "./",
   "display": "standalone",
