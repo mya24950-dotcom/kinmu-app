@@ -1198,25 +1198,19 @@ input[type="color"] {
     inset 0 0 0 3px #007aff !important;
 }
 
-/* ---------------------------------------------------------
+/* =========================================================
+   ダークモード
    勤務表 左上「職員」セル
-   --------------------------------------------------------- */
+   ========================================================= */
 
-/* 固定ヘッダー内の「職員」 */
-body.dark-mode #scheduleFixedHeader .staff-header,
-body.dark-mode #scheduleFixedHeaderTable .staff-header,
-body.dark-mode #scheduleFixedHeader th.staff-header,
 body.dark-mode #scheduleFixedHeaderTable th:first-child,
-body.dark-mode #scheduleFixedHeaderTable td:first-child {
-  background: #2c2c2e !important;
-  color: #ffffff !important;
-  border-color: #38383a !important;
-}
-
-/* 固定ヘッダーそのものの左上セル */
+body.dark-mode #scheduleFixedHeaderTable td:first-child,
+body.dark-mode #scheduleFixedHeader th:first-child,
+body.dark-mode #scheduleFixedHeader td:first-child,
 body.dark-mode #scheduleFixedHeader > table th:first-child,
 body.dark-mode #scheduleFixedHeader > table td:first-child,
-body.dark-mode #scheduleFixedHeaderTable > thead > tr > th:first-child {
+body.dark-mode #scheduleFixedHeaderTable > thead > tr > th:first-child,
+body.dark-mode #scheduleTable thead th:first-child {
   background: #2c2c2e !important;
   color: #ffffff !important;
   border-color: #38383a !important;
