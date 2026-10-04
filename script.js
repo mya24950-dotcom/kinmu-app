@@ -93,7 +93,50 @@ async function registerPushServiceWorker() {
   return registration;
 }
 
+/* ==================================================
+   Service Worker 通知表示テスト
+   ※プッシュ通信ではなく、Service Worker自体のテスト
+================================================== */
 
+async function testServiceWorkerNotification() {
+
+  try {
+
+    const registration =
+      await navigator.serviceWorker.ready;
+
+    console.log(
+      "★ Service Worker ready",
+      registration
+    );
+
+    await registration.showNotification(
+      "Shift+",
+      {
+        body:
+          "Service Workerの通知テストです。"
+      }
+    );
+
+    console.log(
+      "★ Service Worker通知表示実行"
+    );
+
+  } catch (error) {
+
+    console.error(
+      "★ Service Worker通知テストエラー",
+      error
+    );
+
+    alert(
+      "Service Worker通知テストに失敗しました。\n\n" +
+      error.message
+    );
+
+  }
+
+}
 /* ==================================================
    プッシュ通知を有効にする
 ================================================== */
@@ -8669,7 +8712,7 @@ function bindEvents() {
 
     pushNotificationButton.addEventListener(
       "click",
-      enablePushNotifications
+      testServiceWorkerNotification
     );
 
   }
