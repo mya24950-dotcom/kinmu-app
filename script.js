@@ -2375,7 +2375,7 @@ function updateScheduleNavByRole() {
     currentOrganization.role !== "admin"
   ) {
 
-    scheduleButton.style.display = "none";
+    scheduleButton.style.display = "true";
 
   }
 
