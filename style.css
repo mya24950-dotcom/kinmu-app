@@ -4649,7 +4649,18 @@ body.dark-mode .notification-button {
    ローディング画面 ダークモード
 ================================================== */
 
+html.dark-mode #loadingScreen,
 body.dark-mode #loadingScreen {
   background: #111111;
   color: #ffffff;
+}
+
+html.dark-mode #loadingScreen .loadingLogo,
+body.dark-mode #loadingScreen .loadingLogo {
+  color: #ffffff;
+}
+
+html.dark-mode #loadingScreen .loadingDots span,
+body.dark-mode #loadingScreen .loadingDots span {
+  background: #007aff;
 }
