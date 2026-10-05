@@ -12002,6 +12002,10 @@ function syncScheduleFixedLayers() {
 
 }
 
+let scheduleFixedHeader = null;
+let scheduleFixedStaffColumn = null;
+let scheduleFixedHeaderTable = null;
+
 /* =========================================================
    固定レイヤー位置更新
 ========================================================= */
