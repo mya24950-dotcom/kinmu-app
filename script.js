@@ -7447,6 +7447,34 @@ async function loadAllFromSupabase() {
       currentOrganization.id
     );
 
+console.log(
+  "★ Shift+ work_shifts 件数:",
+  workResult.data
+    ? workResult.data.length
+    : 0
+);
+
+console.log(
+  "★ Shift+ 保延 10月:",
+  (workResult.data || []).filter(
+    row =>
+      row.staff_name === "保延" &&
+      row.work_date >= "2026-10-01" &&
+      row.work_date <= "2026-10-31"
+  )
+);
+
+console.log(
+  "★ Shift+ organization_id:",
+  currentOrganization.id
+);
+
+if (workResult.error) {
+
+  throw workResult.error;
+
+}
+
 
   if (workResult.error) {
 
