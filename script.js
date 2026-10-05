@@ -7436,7 +7436,9 @@ async function loadAllFromSupabase() {
      勤務
   ================================================== */
 
-  const workResult =
+  console.log("★ work_shifts取得開始");
+
+const workResult =
   await supabaseClient
     .from("work_shifts")
     .select(
@@ -7447,15 +7449,29 @@ async function loadAllFromSupabase() {
       currentOrganization.id
     );
 
+console.log("★ work_shifts取得完了");
+console.log("★ workResult:", workResult);
+
+if (workResult.error) {
+
+  console.error(
+    "★ work_shifts取得エラー:",
+    workResult.error
+  );
+
+  throw workResult.error;
+
+}
+
 console.log(
-  "★ Shift+ work_shifts 件数:",
+  "★ work_shifts件数:",
   workResult.data
     ? workResult.data.length
     : 0
 );
 
 console.log(
-  "★ Shift+ 保延 10月:",
+  "★ 保延10月:",
   (workResult.data || []).filter(
     row =>
       row.staff_name === "保延" &&
