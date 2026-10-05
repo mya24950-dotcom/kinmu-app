@@ -14196,7 +14196,7 @@ console.log(
         const result =
           await supabaseClient
             .from("work_shifts")
-            .update({
+            .upsert({
 
               shift_name:
                 shiftName,
