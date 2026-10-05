@@ -962,6 +962,16 @@ function hideInitialLoading() {
 if (document.readyState === "loading") {
 
 detectPWAMode();
+
+   /* ==================================================
+   起動直後にダークモードを反映
+================================================== */
+
+if (
+  localStorage.getItem("darkMode") === "true"
+) {
+  document.body.classList.add("dark-mode");
+}
    
   document.addEventListener(
     "DOMContentLoaded",
