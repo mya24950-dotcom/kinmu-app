@@ -13963,11 +13963,11 @@ async function saveWorkShift(
      * ==================================================
      */
 
-    const existing =
+   const existing =
   await supabaseClient
     .from("work_shifts")
     .select(
-      "id,leave_type,shift_name"
+      "id,leave_type,shift_name,organization_id"
     )
     .eq(
       "staff_name",
@@ -13988,7 +13988,6 @@ async function saveWorkShift(
       }
     )
     .limit(1);
-
 
     if (
       existing.error
