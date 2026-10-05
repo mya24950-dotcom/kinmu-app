@@ -4644,3 +4644,12 @@ body.dark-mode .notification-button {
   border-color: #48484a;
   color: #ffffff;
 }
+
+/* ==================================================
+   ローディング画面 ダークモード
+================================================== */
+
+body.dark-mode #loadingScreen {
+  background: #111111;
+  color: #ffffff;
+}
