@@ -7437,11 +7437,15 @@ async function loadAllFromSupabase() {
   ================================================== */
 
   const workResult =
-    await supabaseClient
-      .from("work_shifts")
-      .select(
-        "id,staff_name,work_date,shift_name,leave_type"
-      );
+  await supabaseClient
+    .from("work_shifts")
+    .select(
+      "id,staff_name,work_date,shift_name,leave_type"
+    )
+    .eq(
+      "organization_id",
+      currentOrganization.id
+    );
 
 
   if (workResult.error) {
@@ -13912,26 +13916,30 @@ async function saveWorkShift(
      */
 
     const existing =
-      await supabaseClient
-        .from("work_shifts")
-        .select(
-          "id,leave_type,shift_name"
-        )
-        .eq(
-          "staff_name",
-          name
-        )
-        .eq(
-          "work_date",
-          dateKey
-        )
-        .order(
-          "id",
-          {
-            ascending: true
-          }
-        )
-        .limit(1);
+  await supabaseClient
+    .from("work_shifts")
+    .select(
+      "id,leave_type,shift_name"
+    )
+    .eq(
+      "staff_name",
+      name
+    )
+    .eq(
+      "work_date",
+      dateKey
+    )
+    .eq(
+      "organization_id",
+      currentOrganization.id
+    )
+    .order(
+      "id",
+      {
+        ascending: true
+      }
+    )
+    .limit(1);
 
 
     if (
