@@ -14193,34 +14193,34 @@ console.log(
 
       else if (existingRow) {
 
-        const result =
-          await supabaseClient
-            .from("work_shifts")
-            .update({
+  const result =
+    await supabaseClient.rpc(
+      "update_work_shift",
+      {
 
-              shift_name:
-                shiftName,
+        p_id:
+          existingRow.id,
 
-              leave_type:
-                existingRow.leave_type ||
-                null
+        p_shift_name:
+          shiftName,
 
-            })
-            .eq(
-              "id",
-              existingRow.id
-            );
-
-
-        if (
-          result.error
-        ) {
-
-          throw result.error;
-
-        }
+        p_leave_type:
+          existingRow.leave_type ||
+          null
 
       }
+    );
+
+
+  if (
+    result.error
+  ) {
+
+    throw result.error;
+
+  }
+
+}
 
 
       /*
