@@ -11352,8 +11352,11 @@ setTimeout(() => {
     return;
   }
 
-  scrollContainer.scrollLeft =
-    todayCell.offsetLeft;
+ scrollContainer.scrollLeft =
+  todayCell.offsetLeft -
+  scrollContainer.querySelector(
+    "tbody tr td:nth-child(2)"
+  ).offsetLeft;
 
 }, 0);
 
