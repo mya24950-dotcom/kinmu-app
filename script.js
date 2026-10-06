@@ -11311,14 +11311,64 @@ html += `
   renderLeaveLegend();
 
 
-  /* ==================================================
-     固定ヘッダー
-  ================================================== */
+ /* ==================================================
+   固定ヘッダー
+================================================== */
 
-  updateScheduleFixedLayers();
+updateScheduleFixedLayers();
+
+
+/* ==================================================
+   今日の日付を中央に表示
+================================================== */
+
+setTimeout(() => {
+
+  const today =
+    new Date();
+
+  const todayKey =
+    getDateKey(
+      today.getFullYear(),
+      today.getMonth() + 1,
+      today.getDate()
+    );
+
+  const todayCell =
+    table.querySelector(
+      `[data-date="${todayKey}"]`
+    );
+
+  if (!todayCell) {
+    return;
+  }
+
+  const scrollContainer =
+    table.closest(
+      ".schedule-container"
+    );
+
+  if (!scrollContainer) {
+    return;
+  }
+
+  const cellLeft =
+    todayCell.offsetLeft;
+
+  const cellWidth =
+    todayCell.offsetWidth;
+
+  const containerWidth =
+    scrollContainer.clientWidth;
+
+  scrollContainer.scrollLeft =
+    cellLeft -
+    (containerWidth / 2) +
+    (cellWidth / 2);
+
+}, 0);
 
 }
-
 
 /* =========================================================
    固定レイヤー作成
