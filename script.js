@@ -11319,7 +11319,7 @@ updateScheduleFixedLayers();
 
 
 /* ==================================================
-   今日の日付を中央に表示
+   今日の日付を一番左に表示
 ================================================== */
 
 setTimeout(() => {
@@ -11352,19 +11352,8 @@ setTimeout(() => {
     return;
   }
 
-  const cellLeft =
-    todayCell.offsetLeft;
-
-  const cellWidth =
-    todayCell.offsetWidth;
-
-  const containerWidth =
-    scrollContainer.clientWidth;
-
   scrollContainer.scrollLeft =
-    cellLeft -
-    (containerWidth / 2) +
-    (cellWidth / 2);
+    todayCell.offsetLeft;
 
 }, 0);
 
