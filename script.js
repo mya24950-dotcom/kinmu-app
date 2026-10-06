@@ -7642,64 +7642,8 @@ if (
 
 }
 
-  /* ==================================================
-     休暇
-  ================================================== */
-
-  const leaveResult =
-    await supabaseClient
-      .from("leave_types")
-      .select(
-        "id,name,color,created_at"
-      )
-      .order(
-        "created_at",
-        {
-          ascending: true
-        }
-      );
-
-
-  if (leaveResult.error) {
-
-  console.error(
-    "leave_types取得エラー:",
-    leaveResult.error
-  );
-
-
-
-}
-
-
-  /* ==================================================
-     休業
-  ================================================== */
-
-  const holidayResult =
-    await supabaseClient
-      .from("company_holidays")
-      .select(
-        "id,name,start_date,end_date,created_at"
-      )
-      .order(
-        "start_date",
-        {
-          ascending: true
-        }
-      );
-
-
-  if (holidayResult.error) {
-
-    console.error(
-      "company_holidays取得エラー:",
-      holidayResult.error
-    );
-
-  }
-
-
+  
+  
   /* ==================================================
      職員
   ================================================== */
