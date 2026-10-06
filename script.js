@@ -7446,43 +7446,141 @@ async function loadAllFromSupabase() {
      勤務
   ================================================== */
 
-  console.log("★ work_shifts取得開始");
+ console.log("★ work_shifts取得開始");
 
-const workResult =
-  await supabaseClient
-    .from("work_shifts")
-    .select(
-      "id,staff_name,work_date,shift_name,leave_type"
-    )
-    .eq(
-      "organization_id",
-      currentOrganization.id
-    );
 
-console.log("★ work_shifts取得完了");
-console.log("★ workResult:", workResult);
+/* ==================================================
+   勤務データを1000件ずつ取得
+   Supabaseの1回あたりの取得上限を回避
+================================================== */
 
-if (workResult.error) {
+let allWorkShifts = [];
 
-  console.error(
-    "★ work_shifts取得エラー:",
-    workResult.error
+let workFrom = 0;
+
+const workPageSize = 1000;
+
+
+while (true) {
+
+  console.log(
+    "★ work_shifts取得中:",
+    workFrom,
+    "～",
+    workFrom + workPageSize - 1
   );
 
-  throw workResult.error;
+
+  const workPageResult =
+    await supabaseClient
+      .from("work_shifts")
+      .select(
+        "id,staff_name,work_date,shift_name,leave_type"
+      )
+      .eq(
+        "organization_id",
+        currentOrganization.id
+      )
+      .range(
+        workFrom,
+        workFrom + workPageSize - 1
+      );
+
+
+  if (
+    workPageResult.error
+  ) {
+
+    console.error(
+      "★ work_shifts取得エラー:",
+      workPageResult.error
+    );
+
+    throw workPageResult.error;
+
+  }
+
+
+  const pageData =
+    workPageResult.data || [];
+
+
+  console.log(
+    "★ 今回取得:",
+    pageData.length,
+    "件"
+  );
+
+
+  allWorkShifts =
+    allWorkShifts.concat(
+      pageData
+    );
+
+
+  /*
+   * 1000件未満なら最後まで取得済み
+   */
+
+  if (
+    pageData.length <
+    workPageSize
+  ) {
+
+    break;
+
+  }
+
+
+  /*
+   * 次の1000件へ
+   */
+
+  workFrom +=
+    workPageSize;
 
 }
 
+
+console.log(
+  "★ work_shifts全件取得完了:",
+  allWorkShifts.length,
+  "件"
+);
+
+
+/* ==================================================
+   既存コードとの互換用
+   workResult.data の代わりに
+   全件取得したデータを使用する
+================================================== */
+
+const workResult = {
+
+  data:
+    allWorkShifts,
+
+  error:
+    null
+
+};
+
+
+console.log(
+  "★ workResult:",
+  workResult
+);
+
+
 console.log(
   "★ work_shifts件数:",
-  workResult.data
-    ? workResult.data.length
-    : 0
+  allWorkShifts.length
 );
+
 
 console.log(
   "★ 保延10月:",
-  (workResult.data || []).filter(
+  allWorkShifts.filter(
     row =>
       row.staff_name === "保延" &&
       row.work_date >= "2026-10-01" &&
@@ -7490,24 +7588,71 @@ console.log(
   )
 );
 
+
 console.log(
   "★ Shift+ organization_id:",
   currentOrganization.id
 );
 
-if (workResult.error) {
 
-  throw workResult.error;
+/* ==================================================
+   休暇
+================================================== */
+
+const leaveResult =
+  await supabaseClient
+    .from("leave_types")
+    .select(
+      "id,name,color,created_at"
+    )
+    .order(
+      "created_at",
+      {
+        ascending: true
+      }
+    );
+
+
+if (
+  leaveResult.error
+) {
+
+  console.error(
+    "leave_types取得エラー:",
+    leaveResult.error
+  );
 
 }
 
 
-  if (workResult.error) {
+/* ==================================================
+   休業
+================================================== */
 
-    throw workResult.error;
+const holidayResult =
+  await supabaseClient
+    .from("company_holidays")
+    .select(
+      "id,name,start_date,end_date,created_at"
+    )
+    .order(
+      "start_date",
+      {
+        ascending: true
+      }
+    );
 
-  }
 
+if (
+  holidayResult.error
+) {
+
+  console.error(
+    "company_holidays取得エラー:",
+    holidayResult.error
+  );
+
+}
 
   /* ==================================================
      休暇
