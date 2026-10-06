@@ -7577,18 +7577,6 @@ console.log(
   allWorkShifts.length
 );
 
-
-console.log(
-  "★ 保延10月:",
-  allWorkShifts.filter(
-    row =>
-      row.staff_name === "保延" &&
-      row.work_date >= "2026-10-01" &&
-      row.work_date <= "2026-10-31"
-  )
-);
-
-
 console.log(
   "★ Shift+ organization_id:",
   currentOrganization.id
