@@ -311,6 +311,15 @@ async function syncExistingPushSubscription() {
 
   try {
 
+      console.log(
+      "★ Push自動同期開始"
+    );
+
+    console.log(
+      "★ Notification.permission:",
+      Notification.permission
+    );
+
     /* --------------------------------------------------
        対応確認
     -------------------------------------------------- */
@@ -407,6 +416,21 @@ async function syncExistingPushSubscription() {
 
     const subscription =
       await registration.pushManager.getSubscription();
+
+     console.log(
+  "★ 起動時Push購読:",
+  subscription
+);
+
+     if (!subscription) {
+
+  console.log(
+    "★ 起動時にPush購読が存在しません"
+  );
+
+  return;
+
+}
 
 
     /* --------------------------------------------------
