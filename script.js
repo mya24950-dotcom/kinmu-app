@@ -303,6 +303,231 @@ async function askPushNotificationOnFirstLogin() {
 }
 
 /* ==================================================
+   既存プッシュ購読の自動同期
+   アプリ再起動時に使用
+================================================== */
+
+async function syncExistingPushSubscription() {
+
+  try {
+
+    /* --------------------------------------------------
+       対応確認
+    -------------------------------------------------- */
+
+    if (
+      !("Notification" in window) ||
+      !("PushManager" in window)
+    ) {
+
+      console.log(
+        "★ プッシュ通知非対応"
+      );
+
+      return;
+
+    }
+
+
+    /* --------------------------------------------------
+       通知がすでに許可されていなければ何もしない
+
+       ここではrequestPermission()を絶対に呼ばない
+    -------------------------------------------------- */
+
+    if (
+      Notification.permission !==
+      "granted"
+    ) {
+
+      console.log(
+        "★ 通知許可済みではないため自動同期しません"
+      );
+
+      return;
+
+    }
+
+
+    /* --------------------------------------------------
+       職場確認
+    -------------------------------------------------- */
+
+    if (
+      !currentOrganization ||
+      !currentOrganization.id
+    ) {
+
+      console.log(
+        "★ 現在の職場がないためプッシュ同期を中止"
+      );
+
+      return;
+
+    }
+
+
+    /* --------------------------------------------------
+       ログイン確認
+    -------------------------------------------------- */
+
+    const {
+      data: {
+        session
+      }
+    } =
+      await supabaseClient.auth.getSession();
+
+
+    if (
+      !session ||
+      !session.user
+    ) {
+
+      console.log(
+        "★ ログインセッションがないためプッシュ同期を中止"
+      );
+
+      return;
+
+    }
+
+
+    /* --------------------------------------------------
+       Service Worker取得
+    -------------------------------------------------- */
+
+    const registration =
+      await navigator.serviceWorker.ready;
+
+
+    /* --------------------------------------------------
+       既存Subscription取得
+    -------------------------------------------------- */
+
+    const subscription =
+      await registration.pushManager.getSubscription();
+
+
+    /* --------------------------------------------------
+       Subscriptionがなければ終了
+
+       ※ここでは新規subscribeしない
+       ※通知許可ポップアップも出さない
+    -------------------------------------------------- */
+
+    if (!subscription) {
+
+      console.log(
+        "★ 既存のプッシュ購読がありません"
+      );
+
+      return;
+
+    }
+
+
+    /* --------------------------------------------------
+       購読情報取得
+    -------------------------------------------------- */
+
+    const subscriptionJSON =
+      subscription.toJSON();
+
+
+    if (
+      !subscriptionJSON.endpoint ||
+      !subscriptionJSON.keys
+    ) {
+
+      console.log(
+        "★ プッシュ購読情報が不完全です"
+      );
+
+      return;
+
+    }
+
+
+    /* --------------------------------------------------
+       Supabaseへ登録
+    -------------------------------------------------- */
+
+    const deleteResult =
+      await supabaseClient
+        .from("push_subscriptions")
+        .delete()
+        .eq(
+          "user_id",
+          session.user.id
+        )
+        .eq(
+          "organization_id",
+          currentOrganization.id
+        );
+
+
+    if (
+      deleteResult.error
+    ) {
+
+      throw deleteResult.error;
+
+    }
+
+
+    const insertResult =
+      await supabaseClient
+        .from("push_subscriptions")
+        .insert({
+
+          user_id:
+            session.user.id,
+
+          organization_id:
+            currentOrganization.id,
+
+          endpoint:
+            subscriptionJSON.endpoint,
+
+          p256dh:
+            subscriptionJSON.keys.p256dh,
+
+          auth:
+            subscriptionJSON.keys.auth,
+
+          updated_at:
+            new Date().toISOString()
+
+        });
+
+
+    if (
+      insertResult.error
+    ) {
+
+      throw insertResult.error;
+
+    }
+
+
+    console.log(
+      "★ 既存プッシュ購読を自動同期しました"
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "★ 既存プッシュ購読の自動同期エラー:",
+      error
+    );
+
+  }
+
+}
+
+/* ==================================================
    プッシュ通知を有効にする
 ================================================== */
 
@@ -2202,6 +2427,13 @@ if (
     ================================================== */
 
     setupVisibilitySync();
+
+     /* ==================================================
+       既存プッシュ購読の自動同期
+    ================================================== */
+
+    await syncExistingPushSubscription();
+
 
 
     /* ==================================================
