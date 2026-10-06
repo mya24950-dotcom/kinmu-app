@@ -11345,7 +11345,7 @@ setTimeout(() => {
 
   const scrollContainer =
     table.closest(
-      ".schedule-container"
+      ".table-wrapper"
     );
 
   if (!scrollContainer) {
