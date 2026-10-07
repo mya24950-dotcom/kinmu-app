@@ -78,7 +78,35 @@ body.pwa-mode .app {
   box-sizing: border-box;
 }
 
+/* ==================================================
+   ダークモード：勤務表画面の背景を全面黒
+================================================== */
 
+html.dark-mode,
+body.dark-mode {
+  background: #000000 !important;
+}
+
+body.dark-mode .app {
+  background: #000000 !important;
+}
+
+/* ヘッダー・上部メニューの裏側 */
+body.dark-mode header,
+body.dark-mode .header,
+body.dark-mode .app-header,
+body.dark-mode .top-header {
+  background: #000000 !important;
+}
+
+/* 勤務表の周囲・余白 */
+body.dark-mode .table-wrapper {
+  background: #000000 !important;
+}
+
+body.dark-mode #scheduleTable {
+  background: #000000 !important;
+}
 /* =========================================================
    ヘッダー
    ========================================================= */
