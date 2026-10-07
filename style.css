@@ -4695,3 +4695,7 @@ body.dark-mode .app,
 body.dark-mode .header {
   background: #000000 !important;
 }
+
+body.dark-mode .navigation {
+  background: #000000 !important;
+}
