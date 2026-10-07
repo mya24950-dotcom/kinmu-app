@@ -56,13 +56,18 @@ body {
    iPhone セーフエリア
 ================================================== */
 
-html.dark-mode,
-body.dark-mode {
-  background: #111111 !important;
-}
+/* ==================================================
+   ダークモード：画面全体を黒にする
+================================================== */
 
-body.dark-mode .app {
-  background: #111111 !important;
+html.dark-mode,
+body.dark-mode,
+body.dark-mode .app,
+body.dark-mode #app,
+body.dark-mode #schedulePage,
+body.dark-mode .schedule-container,
+body.dark-mode .table-wrapper {
+  background: #000000 !important;
 }
 /* =========================================================
    iPhoneホーム画面アプリ専用
