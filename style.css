@@ -4688,10 +4688,10 @@ body.dark-mode #loadingScreen .loadingDots span {
 }
 
 /* =========================================================
-   ダークモード：アプリ全体の背景を完全な黒にする
-   ※他の部分は変更しない
+   ダークモード：ヘッダー部分も黒にする
 ========================================================= */
 
-body.dark-mode .app {
+body.dark-mode .app,
+body.dark-mode .header {
   background: #000000 !important;
 }
