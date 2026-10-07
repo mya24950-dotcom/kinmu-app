@@ -11317,12 +11317,11 @@ html += `
 
 updateScheduleFixedLayers();
 
-
 /* ==================================================
-   今日の日付を一番左に表示
+   当日列へ移動する処理
 ================================================== */
 
-setTimeout(() => {
+function moveScheduleToToday() {
 
   const today =
     new Date();
@@ -11352,11 +11351,28 @@ setTimeout(() => {
     return;
   }
 
- scrollContainer.scrollLeft =
-  todayCell.offsetLeft -
-  scrollContainer.querySelector(
-    "tbody tr td:nth-child(2)"
-  ).offsetLeft;
+  scrollContainer.scrollLeft =
+    todayCell.offsetLeft -
+    scrollContainer.querySelector(
+      "tbody tr td:nth-child(2)"
+    ).offsetLeft;
+}
+
+
+/* ==================================================
+   アプリを開いた直後に当日列へ移動
+================================================== */
+
+moveScheduleToToday();
+
+
+/* ==================================================
+   45秒後にも当日列へ戻す
+================================================== */
+
+setTimeout(() => {
+
+  moveScheduleToToday();
 
 }, 45000);
 
