@@ -11358,7 +11358,7 @@ setTimeout(() => {
     "tbody tr td:nth-child(2)"
   ).offsetLeft;
 
-}, 0);
+}, 45000);
 
 }
 
