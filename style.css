@@ -4696,6 +4696,10 @@ body.dark-mode .header {
   background: #000000 !important;
 }
 
-body.dark-mode .navigation {
+/* =========================================================
+   ダークモード：勤務表メニューの後ろを黒にする
+========================================================= */
+
+body.dark-mode .nav {
   background: #000000 !important;
 }
