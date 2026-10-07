@@ -1700,29 +1700,42 @@ button:disabled {
   visibility: hidden !important;
 }
 
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+}
 
-/* =========================================================
-   Shift+ ローディング画面
-   ========================================================= */
+html.dark-mode,
+body.dark-mode {
+  background: #111111 !important;
+}
+
 
 #loadingScreen {
   position: fixed;
   inset: 0;
+
+  width: 100%;
+  height: 100%;
+
   z-index: 99999;
+
   display: flex;
   align-items: center;
   justify-content: center;
+
   flex-direction: column;
+
   background: #ffffff;
   color: #333333;
 }
-  align-items: center;
-  justify-content: center;
 
-  flex-direction: column;
 
-  background: #ffffff;
-  color: #333333;
+body.dark-mode #loadingScreen {
+  background: #111111 !important;
+  color: #ffffff;
 }
 
 .loadingLogo {
@@ -1801,8 +1814,13 @@ button:disabled {
   font-size: 14px;
 }
 
+html.dark-mode,
+body.dark-mode {
+  background: #111111 !important;
+}
+
 body.dark-mode #loadingScreen {
-  background: #111111;
+  background: #111111 !important;
   color: #ffffff;
 }
 
