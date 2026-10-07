@@ -57,17 +57,49 @@ body {
 ================================================== */
 
 /* ==================================================
-   ダークモード：画面全体を黒にする
+   ダークモード：画面全体を完全な黒にする
 ================================================== */
 
 html.dark-mode,
-body.dark-mode,
-body.dark-mode .app,
-body.dark-mode #app,
-body.dark-mode #schedulePage,
-body.dark-mode .schedule-container,
+body.dark-mode {
+  background: #000000 !important;
+  background-color: #000000 !important;
+}
+
+body.dark-mode .app {
+  background: #000000 !important;
+  background-color: #000000 !important;
+}
+
+/* 上部全体 */
+body.dark-mode header,
+body.dark-mode .header,
+body.dark-mode .app-header,
+body.dark-mode .top-header,
+body.dark-mode .navbar,
+body.dark-mode .navigation {
+  background: #000000 !important;
+  background-color: #000000 !important;
+}
+
+/* 勤務表周辺 */
 body.dark-mode .table-wrapper {
   background: #000000 !important;
+  background-color: #000000 !important;
+}
+
+body.dark-mode #scheduleTable {
+  background: #000000 !important;
+  background-color: #000000 !important;
+}
+
+/* ダークモード時、主要な画面コンテナを完全な黒にする */
+body.dark-mode main,
+body.dark-mode section,
+body.dark-mode .container,
+body.dark-mode .content {
+  background: #000000 !important;
+  background-color: #000000 !important;
 }
 /* =========================================================
    iPhoneホーム画面アプリ専用
