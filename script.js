@@ -11357,22 +11357,61 @@ function moveScheduleToToday() {
       "tbody tr td:nth-child(2)"
     ).offsetLeft;
 }
-
-
 /* ==================================================
-   アプリを開いた直後に当日列へ移動
-================================================== */
-
-moveScheduleToToday();
-
-
-/* ==================================================
-   45秒後にも当日列へ戻す
+   勤務表の描画完了後に当日列へ移動
 ================================================== */
 
 setTimeout(() => {
 
-  moveScheduleToToday();
+  const today =
+    new Date();
+
+  const todayKey =
+    getDateKey(
+      today.getFullYear(),
+      today.getMonth() + 1,
+      today.getDate()
+    );
+
+  const todayCell =
+    table.querySelector(
+      `[data-date="${todayKey}"]`
+    );
+
+  if (!todayCell) {
+    console.log(
+      "★ 今日の日付セルが見つかりません:",
+      todayKey
+    );
+    return;
+  }
+
+  const scrollContainer =
+    table.closest(
+      ".table-wrapper"
+    );
+
+  if (!scrollContainer) {
+    return;
+  }
+
+  const firstDateCell =
+    table.querySelector(
+      "[data-date]"
+    );
+
+  if (!firstDateCell) {
+    return;
+  }
+
+  scrollContainer.scrollLeft =
+    todayCell.offsetLeft -
+    firstDateCell.offsetLeft;
+
+  console.log(
+    "★ 起動時に当日列へ移動:",
+    todayKey
+  );
 
 }, 45000);
 
