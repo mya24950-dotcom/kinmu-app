@@ -4722,3 +4722,35 @@ body.dark-mode #loadingScreen .loadingDots span {
   max-width: 100%;
   box-sizing: border-box;
 }
+
+/* ==================================================
+   ダークモード：上部全体を黒にする
+================================================== */
+
+body.dark-mode .app {
+  background: #000000 !important;
+}
+
+/* Shift+・職場名があるヘッダー */
+body.dark-mode .header {
+  background: #000000 !important;
+  background-color: #000000 !important;
+}
+
+/* 勤務表・職員管理・休暇設定・勤務形態・休業設定 */
+body.dark-mode .nav {
+  background: #000000 !important;
+  background-color: #000000 !important;
+}
+
+/* ナビゲーションのボタン */
+body.dark-mode .nav-button {
+  background: #000000 !important;
+  color: #f2f2f7 !important;
+}
+
+/* 選択中のボタンだけは青 */
+body.dark-mode .nav-button.active {
+  background: #007aff !important;
+  color: #ffffff !important;
+}
