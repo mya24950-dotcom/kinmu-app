@@ -345,13 +345,14 @@ body.dark-mode #scheduleTable {
 
   padding: 14px;
 
+  box-sizing: border-box;
+
   background: #ffffff;
 
   overflow: visible;
 
   touch-action: pan-y;
 }
-
 
 /* =========================================================
    勤務表内の重複ブランド
@@ -608,6 +609,8 @@ body.dark-mode #scheduleTable {
 
 .settings-card {
   width: 100%;
+
+  box-sizing: border-box;
 
   margin: 0 0 14px;
 
