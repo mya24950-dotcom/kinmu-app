@@ -101,8 +101,6 @@ body.dark-mode .content {
   background: #000000 !important;
   background-color: #000000 !important;
 }
-
-
 /* =========================================================
    iPhoneホーム画面アプリ専用
    ========================================================= */
@@ -111,7 +109,6 @@ body.pwa-mode .app {
   padding-top: 20px !important;
   box-sizing: border-box;
 }
-
 
 /* ==================================================
    ダークモード：勤務表画面の背景を全面黒
@@ -142,8 +139,6 @@ body.dark-mode .table-wrapper {
 body.dark-mode #scheduleTable {
   background: #000000 !important;
 }
-
-
 /* =========================================================
    ヘッダー
    ========================================================= */
@@ -908,7 +903,7 @@ input[type="date"] {
 
 }
 
-/* 開 */
+/* 開
 
 
 /* 開始・終了時刻 */
@@ -1278,7 +1273,6 @@ input[type="color"] {
     inset 0 0 0 3px #007aff !important;
 }
 
-
 /* =========================================================
    ダークモード
    勤務表 左上「職員」セル
@@ -1294,12 +1288,12 @@ body.dark-mode #scheduleFixedHeaderTable > thead > tr > th:first-child,
 body.dark-mode #scheduleTable thead th:first-child {
   background: #2c2c2e !important;
   color: #ffffff !important;
-  border-color: #38383a !important;
+  border-color: #38383a !important; 
+
+   /* 職員名の列との境界線を太くする */
 
   border-right: 1px solid #ffffff !important;
 }
-
-
 /* =========================================================
    ダークモード
    ========================================================= */
@@ -1312,11 +1306,11 @@ body.dark-mode {
 }
 
 body.dark-mode .app {
-  background: #000000;
+  background: #1c1c1e;
 }
 
 body.dark-mode .page {
-  background: #000000;
+  background: #1c1c1e;
 }
 
 body.dark-mode .header {
@@ -1361,18 +1355,18 @@ body.dark-mode .calendar-hint {
 }
 
 body.dark-mode .table-wrapper {
-  background: #000000;
+  background: #1c1c1e;
 
   border-color: #38383a;
 }
 
 body.dark-mode #scheduleTable {
-  background: #000000;
+  background: #1c1c1e;
 }
 
 body.dark-mode #scheduleTable th,
 body.dark-mode #scheduleTable td {
-  background: #000000;
+  background: #1c1c1e;
 
   border-color: #38383a;
 
@@ -1385,7 +1379,7 @@ body.dark-mode #scheduleTable th {
 
 body.dark-mode #scheduleTable th:first-child,
 body.dark-mode #scheduleTable td:first-child {
-  background: #000000;
+  background: #1c1c1e;
 }
 
 body.dark-mode #scheduleTable thead th:first-child {
@@ -1546,7 +1540,7 @@ body.dark-mode #scheduleFixedHeader,
 body.dark-mode #scheduleFixedHeaderTable,
 body.dark-mode #scheduleFixedStaffColumn,
 body.dark-mode #scheduleFixedStaffTable {
-  background: #000000 !important;
+  background: #1c1c1e !important;
 }
 
 
@@ -1587,7 +1581,6 @@ body.dark-mode #darkModeButton {
   color: #ffd60a;
 }
 
-
 /* =========================================================
    勤務表 固定部分のダークモード
    ========================================================= */
@@ -1597,7 +1590,7 @@ body.dark-mode #scheduleFixedHeader,
 body.dark-mode #scheduleFixedHeaderTable,
 body.dark-mode #scheduleFixedStaffColumn,
 body.dark-mode #scheduleFixedStaffTable {
-  background: #000000 !important;
+  background: #1c1c1e !important;
 }
 
 
@@ -1633,7 +1626,6 @@ body.dark-mode #scheduleTable td.staff-name-cell {
   background: #2c2c2e !important;
   color: #ffffff !important;
 }
-
 
 /* =========================================================
    危険操作
@@ -2203,7 +2195,6 @@ body.loading-active #loginPage {
   }
 }
 
-
 /* =========================================================
    ログイン画面
    ========================================================= */
@@ -2346,6 +2337,10 @@ body.loading-active #loginPage {
    ソーシャルログイン
    ========================================================= */
 
+/* =========================================================
+   ソーシャルログイン
+   ========================================================= */
+
 .social-login-buttons,
 .social-buttons {
   width: 100% !important;
@@ -2363,6 +2358,11 @@ body.loading-active #loginPage {
 
   box-sizing: border-box !important;
 }
+
+
+/* ---------------------------------------------------------
+   ソーシャルログイン各項目
+   --------------------------------------------------------- */
 
 .social-login-item {
   width: 50px !important;
@@ -2383,6 +2383,11 @@ body.loading-active #loginPage {
 
   box-sizing: border-box !important;
 }
+
+
+/* ---------------------------------------------------------
+   ソーシャルログインボタン
+   --------------------------------------------------------- */
 
 .social-login-button {
   width: 50px !important;
@@ -2417,6 +2422,11 @@ body.loading-active #loginPage {
   box-sizing: border-box !important;
 }
 
+
+/* ---------------------------------------------------------
+   Google / Apple / Azure アイコン
+   --------------------------------------------------------- */
+
 .social-login-button img,
 .social-login-button svg {
   width: 25px !important;
@@ -2427,6 +2437,11 @@ body.loading-active #loginPage {
 
   object-fit: contain;
 }
+
+
+/* ---------------------------------------------------------
+   ラベル
+   --------------------------------------------------------- */
 
 .social-login-label {
   display: block !important;
@@ -2505,6 +2520,7 @@ body.loading-active #loginPage {
     margin: 0 0 22px !important;
   }
 
+
   .social-login-item {
     width: 50px !important;
     min-width: 50px !important;
@@ -2512,6 +2528,7 @@ body.loading-active #loginPage {
 
     flex: 0 0 50px !important;
   }
+
 
   .social-login-button {
     width: 50px !important;
@@ -2523,17 +2540,20 @@ body.loading-active #loginPage {
     max-height: 50px !important;
   }
 
+
   .social-login-button img,
   .social-login-button svg {
     width: 25px !important;
     height: 25px !important;
   }
 
+
   .social-login-label {
     font-size: 11px !important;
 
     margin-top: 7px !important;
   }
+
 }
 
 
@@ -2547,6 +2567,7 @@ body.loading-active #loginPage {
   .social-buttons {
     gap: 22px !important;
   }
+
 }
 
 
@@ -2590,6 +2611,7 @@ body.dark-mode .social-login-label {
     height: 50px;
     min-height: 50px;
   }
+
 }
 
 
@@ -3026,7 +3048,6 @@ body.dark-mode #newOrganizationForm h3 {
   cursor: pointer;
 }
 
-
 /* =========================================================
    ログイン画面 ダークモード
    ========================================================= */
@@ -3354,7 +3375,7 @@ body.dark-mode #inviteRegisterView #inviteEmailButton {
   }
 
   body.dark-mode .page {
-    background: #000000;
+    background: #1c1c1e;
   }
 
   #darkModeButton {
@@ -3794,7 +3815,6 @@ textarea:focus-visible {
   }
 }
 
-
 /* =========================================================
    Passkey説明文を完全非表示
    「または」
@@ -3811,7 +3831,6 @@ textarea:focus-visible {
   display: none !important;
 }
 
-
 /* =========================================================
    Passkey関連を完全非表示
    ========================================================= */
@@ -3827,7 +3846,6 @@ textarea:focus-visible {
 #loginPage #passkeyLoginButton + p {
   display: none !important;
 }
-
 
 /* =========================================================
    はじめて職場登録をする方はこちら
@@ -3858,6 +3876,7 @@ textarea:focus-visible {
   cursor: pointer;
 
   box-shadow: none;
+  box-sizing: border-box;
 }
 
 #loginPage #newOrganizationButton.new-organization-link:hover {
@@ -3898,7 +3917,6 @@ textarea:focus-visible {
   box-sizing: border-box;
 }
 
-
 /* =========================================================
    スマートフォン用
    ========================================================= */
@@ -3911,6 +3929,9 @@ textarea:focus-visible {
     gap: 20px;
   }
 
+
+  /* 勤務時間 */
+
   .time-row,
   .ake-time-row {
     gap: 5px;
@@ -3919,12 +3940,18 @@ textarea:focus-visible {
     margin-bottom: 16px;
   }
 
+
+  /* 休業日 */
+
   .date-row {
     gap: 5px;
 
     margin-top: 10px;
     margin-bottom: 16px;
   }
+
+
+  /* スマホでは入力欄を少し高くする */
 
   .time-row input,
   .ake-time-row input,
@@ -3933,6 +3960,9 @@ textarea:focus-visible {
     box-sizing: border-box;
   }
 
+
+  /* 「～」の余白を詰める */
+
   .date-arrow {
     margin: 0;
     padding: 0;
@@ -3940,6 +3970,7 @@ textarea:focus-visible {
   }
 
 }
+
 
 
 /* =========================================================
@@ -3972,7 +4003,6 @@ textarea:focus-visible {
   opacity: 1 !important;
   visibility: visible !important;
 }
-
 
 /* =========================================================
    ログイン画面・ローディング画面のダークモード
@@ -4022,7 +4052,6 @@ body.dark-mode #loadingScreen * {
   color: #f2f2f7;
 }
 
-
 /* =========================================================
    勤務形態入力欄・ダークモード
    ========================================================= */
@@ -4039,7 +4068,6 @@ body.dark-mode #shiftPage #shiftNameInput::placeholder,
 body.dark-mode #shiftPage #shiftBreakInput::placeholder {
   color: #98989d;
 }
-
 
 /* =========================================================
    新規職場登録画面
@@ -4363,6 +4391,11 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
     box-sizing: border-box;
   }
 
+
+  /* =======================================================
+     戻る
+  ======================================================= */
+
   #newOrganizationForm #cancelOrganizationButton {
     margin: 0 0 7px 0 !important;
 
@@ -4370,6 +4403,11 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
 
     line-height: 1.2;
   }
+
+
+  /* =======================================================
+     タイトル・Shift+ロゴ
+  ======================================================= */
 
   .organization-register-header {
     margin-bottom: 10px;
@@ -4396,6 +4434,11 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
     line-height: 1.3;
   }
 
+
+  /* =======================================================
+     入力項目
+  ======================================================= */
+
   .organization-register-field {
     margin-bottom: 7px;
   }
@@ -4421,6 +4464,11 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
     border-radius: 7px;
   }
 
+
+  /* =======================================================
+     パスワード入力欄
+  ======================================================= */
+
   #newOrganizationForm .password-input-wrapper {
     width: 100%;
   }
@@ -4438,6 +4486,11 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
 
     border-radius: 7px;
   }
+
+
+  /* =======================================================
+     Google / Apple / Azure
+  ======================================================= */
 
   .organization-auth-method {
     margin: 8px 0 7px;
@@ -4478,6 +4531,11 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
 
     text-align: center;
   }
+
+
+  /* =======================================================
+     ソーシャルアイコン
+  ======================================================= */
 
   .organization-auth-icon {
     width: 42px !important;
@@ -4533,12 +4591,22 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
     flex: 0 0 23px !important;
   }
 
+
+  /* =======================================================
+     or
+  ======================================================= */
+
   .organization-or {
     margin: 7px 0;
 
     font-size: 10px;
     line-height: 1.2;
   }
+
+
+  /* =======================================================
+     登録ボタン
+  ======================================================= */
 
   #newOrganizationForm #createOrganizationButton {
     width: 100%;
@@ -4554,6 +4622,11 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
     line-height: 1.2;
   }
 
+
+  /* =======================================================
+     下部説明
+  ======================================================= */
+
   .organization-register-note {
     margin: 4px 0 0;
 
@@ -4563,12 +4636,10 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
 
 }
 
-
 /* 勤務選択メニューは初期状態では非表示 */
 #shiftMenu {
   display: none;
 }
-
 
 /* =========================================================
    iPhone PWA 上部 Safe Area 対策
@@ -4585,12 +4656,10 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
 
 }
 
-
 /* ヘッダー右側のボタンを少し上へ */
 .header-delete-buttons {
   transform: translateY(-3px);
 }
-
 
 /* ==================================================
    プッシュ通知ボタン
@@ -4598,10 +4667,10 @@ body.dark-mode #shiftPage #shiftBreakInput::placeholder {
 
 .notification-button {
   position: relative;
-  width: 40px;
-  min-width: 40px;
-  height: 36px;
-  min-height: 36px;
+  width: 38px;
+  min-width: 38px;
+  height: 38px;
+  min-height: 38px;
 
   display: flex;
   align-items: center;
@@ -4669,7 +4738,6 @@ body.dark-mode .notification-button {
   color: #ffffff;
 }
 
-
 /* ==================================================
    ローディング画面 ダークモード
 ================================================== */
@@ -4685,21 +4753,4 @@ body.dark-mode #loadingScreen .loadingLogo {
 
 body.dark-mode #loadingScreen .loadingDots span {
   background: #007aff;
-}
-
-/* =========================================================
-   ダークモード：ヘッダー部分も黒にする
-========================================================= */
-
-body.dark-mode .app,
-body.dark-mode .header {
-  background: #000000 !important;
-}
-
-/* =========================================================
-   ダークモード：勤務表メニューの後ろを黒にする
-========================================================= */
-
-body.dark-mode .nav {
-  background: #000000 !important;
 }
