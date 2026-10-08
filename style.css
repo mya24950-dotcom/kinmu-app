@@ -4689,3 +4689,30 @@ body.dark-mode #loadingScreen .loadingLogo {
 body.dark-mode #loadingScreen .loadingDots span {
   background: #007aff;
 }
+
+/* ==================================================
+   入力欄・ボタンの横はみ出し防止
+================================================== */
+
+.page,
+.settings-card,
+.settings-card input,
+.settings-card select,
+.settings-card textarea,
+.settings-card button {
+  box-sizing: border-box;
+}
+
+.settings-card input,
+.settings-card select,
+.settings-card textarea {
+  max-width: 100%;
+}
+
+.settings-card > *,
+.settings-card > div,
+.settings-card .form-group,
+.settings-card .input-group {
+  max-width: 100%;
+  box-sizing: border-box;
+}
