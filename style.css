@@ -774,6 +774,8 @@ input[type="date"] {
 
 .list-item {
   width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 
   display: flex;
   align-items: center;
@@ -783,20 +785,24 @@ input[type="date"] {
 
   padding: 12px;
 
-  margin-bottom: 8px;
+  margin: 0 0 8px 0;
 
   border: 1px solid #e5e5ea;
   border-radius: 11px;
 
   background: #ffffff;
+
+  overflow: hidden;
 }
 
 .list-item-info {
   min-width: 0;
+  max-width: 100%;
 
   flex: 1 1 auto;
-}
 
+  overflow: hidden;
+}
 .list-item-title {
   margin: 0;
 
