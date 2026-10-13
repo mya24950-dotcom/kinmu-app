@@ -7658,40 +7658,42 @@ function moveScheduleToToday() {
   requestAnimationFrame(() => {
     const table =
       document.getElementById("scheduleTable");
-    if (!table) return;
+    const scrollContainer =
+      table?.closest(".table-wrapper");
+    if (!table || !scrollContainer) return;
     const today = new Date();
     const todayKey = getDateKey(
       today.getFullYear(),
       today.getMonth() + 1,
       today.getDate()
     );
+    /* 今日の日付の勤務セルを取得 */
     const todayCell = table.querySelector(
-  `thead [data-date="${todayKey}"], tbody [data-date="${todayKey}"]`
-);
-    const scrollContainer =
-      table.closest(".table-wrapper");
-    if (!todayCell || !scrollContainer) {
+      `tbody td[data-date="${todayKey}"]`
+    );
+    if (!todayCell) {
       console.log(
-        "★ 今日の列へ移動できません:",
+        "★ 今日のセルが見つかりません:",
         todayKey
       );
       return;
     }
+    /* スクロール枠と今日のセルの位置 */
     const containerRect =
       scrollContainer.getBoundingClientRect();
     const cellRect =
       todayCell.getBoundingClientRect();
+    /* 職員列90pxを考慮して今日を表示 */
     const targetScrollLeft =
       scrollContainer.scrollLeft +
       cellRect.left -
-      containerRect.left;
+      containerRect.left -
+      90;
     scrollContainer.scrollLeft =
       Math.max(0, targetScrollLeft);
     console.log(
       "★ 今日の列へ移動:",
-      todayKey,
-      "scrollLeft:",
-      scrollContainer.scrollLeft
+      todayKey
     );
   });
 }
