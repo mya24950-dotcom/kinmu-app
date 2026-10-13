@@ -2430,6 +2430,8 @@ if (
        初回のみ今日の列へ移動
     ================================================== */
 
+moveScheduleToToday();
+     
     requestAnimationFrame(() => {
 
       const table =
