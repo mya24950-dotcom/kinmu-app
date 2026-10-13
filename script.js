@@ -2408,28 +2408,27 @@ if (
        Supabaseデータ読み込み
     ================================================== */
 
-    await loadAllFromSupabase();
+   await loadAllFromSupabase();
 
+/* 勤務表を描画 */
 
-    /* ==================================================
-       画面描画
-    ================================================== */
+renderAll();
 
-    renderAll();
+/* アプリを表示 */
 
+showApp();
 
-    /* ==================================================
-       アプリ表示
-    ================================================== */
+/* 起動時だけ当日列へ移動 */
 
-    showApp();
+requestAnimationFrame(() => {
 
+moveScheduleToToday();
 
-    /* ==================================================
-       公休日
-    ================================================== */
+});
 
-    loadPublicHolidays();
+/* 祝日データを読み込む */
+
+loadPublicHolidays();
 
 
     /* ==================================================
@@ -11317,111 +11316,66 @@ html += `
 
 updateScheduleFixedLayers();
 
-/* ==================================================
-   当日列へ移動する処理
-================================================== */
-
-function moveScheduleToToday() {
-
-  const today =
-    new Date();
-
-  const todayKey =
-    getDateKey(
-      today.getFullYear(),
-      today.getMonth() + 1,
-      today.getDate()
-    );
-
-  const todayCell =
-    table.querySelector(
-      `[data-date="${todayKey}"]`
-    );
-
-  if (!todayCell) {
-    return;
-  }
-
-  const scrollContainer =
-    table.closest(
-      ".table-wrapper"
-    );
-
-  if (!scrollContainer) {
-    return;
-  }
-
-  scrollContainer.scrollLeft =
-    todayCell.offsetLeft -
-    scrollContainer.querySelector(
-      "tbody tr td:nth-child(2)"
-    ).offsetLeft;
-}
-/* ==================================================
-   勤務表の描画完了後に当日列へ移動
-================================================== */
-
-setTimeout(() => {
-
-  const today =
-    new Date();
-
-  const todayKey =
-    getDateKey(
-      today.getFullYear(),
-      today.getMonth() + 1,
-      today.getDate()
-    );
-
-  const todayCell =
-    table.querySelector(
-      `[data-date="${todayKey}"]`
-    );
-
-  if (!todayCell) {
-    console.log(
-      "★ 今日の日付セルが見つかりません:",
-      todayKey
-    );
-    return;
-  }
-
-  const scrollContainer =
-    table.closest(
-      ".table-wrapper"
-    );
-
-  if (!scrollContainer) {
-    return;
-  }
-
-  const firstDateCell =
-    table.querySelector(
-      "[data-date]"
-    );
-
-  if (!firstDateCell) {
-    return;
-  }
-
-  scrollContainer.scrollLeft =
-    todayCell.offsetLeft -
-    firstDateCell.offsetLeft;
-
-  console.log(
-    "★ 起動時に当日列へ移動:",
-    todayKey
-  );
-
-}, 0);
-
-}
-
 /* =========================================================
    固定レイヤー作成
 ========================================================= */
 
-function createScheduleFixedLayers() {
+   function moveScheduleToToday() {
+
+const table =
+document.getElementById(
+“scheduleTable”
+);
+
+if (!table) {
+return;
+}
+
+const today = new Date();
+
+const todayKey =
+getDateKey(
+today.getFullYear(),
+today.getMonth() + 1,
+today.getDate()
+);
+
+const todayCell =
+table.querySelector(
+[data-date="${todayKey}"]
+);
+
+const scrollContainer =
+table.closest(
+“.table-wrapper”
+);
+
+const firstDateCell =
+table.querySelector(
+“tbody tr td[data-date]”
+);
+
+if (
+!todayCell ||
+!scrollContainer ||
+!firstDateCell
+) {
+return;
+}
+
+scrollContainer.scrollLeft =
+todayCell.offsetLeft -
+firstDateCell.offsetLeft;
+
+console.log(
+“★ 起動時に当日列へ移動:”,
+todayKey
+);
+
+}
+
+   
+   function createScheduleFixedLayers() {
 
   const table =
     document.getElementById(
@@ -18774,38 +18728,65 @@ async function deleteFiscalYear() {
 
 async function loadPublicHolidays() {
 
-  try {
+try {
 
-    const response =
-      await fetch(
-        "https://holidays-jp.github.io/api/v1/date.json"
-      );
+const response =
+  await fetch(
+    "https://holidays-jp.github.io/api/v1/date.json"
+  );
+if (!response.ok) {
+  throw new Error(
+    "祝日データ取得失敗"
+  );
+}
+publicHolidays =
+  await response.json();
+/*
+ * 再描画前の横スクロール位置を保存
+ */
+const table =
+  document.getElementById(
+    "scheduleTable"
+  );
+const scrollContainer =
+  table?.closest(
+    ".table-wrapper"
+  );
+const previousScrollLeft =
+  scrollContainer
+    ? scrollContainer.scrollLeft
+    : null;
+/*
+ * 祝日データを反映
+ */
+renderSchedule();
+/*
+ * 再描画後も横スクロール位置を維持
+ */
+const newTable =
+  document.getElementById(
+    "scheduleTable"
+  );
+const newScrollContainer =
+  newTable?.closest(
+    ".table-wrapper"
+  );
+if (
+  newScrollContainer &&
+  previousScrollLeft !== null
+) {
+  newScrollContainer.scrollLeft =
+    previousScrollLeft;
+}
 
+} catch (error) {
 
-    if (!response.ok) {
+console.warn(
+  "祝日データ取得失敗",
+  error
+);
 
-      throw new Error(
-        "祝日データ取得失敗"
-      );
-
-    }
-
-
-    publicHolidays =
-      await response.json();
-
-
-    renderSchedule();
-
-
-  } catch (error) {
-
-    console.warn(
-      "祝日データ取得失敗",
-      error
-    );
-
-  }
+}
 
 }
 
