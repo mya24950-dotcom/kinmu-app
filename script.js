@@ -7666,8 +7666,8 @@ function moveScheduleToToday() {
       today.getDate()
     );
     const todayCell = table.querySelector(
-      `thead [data-date="${todayKey}"]`
-    );
+  `thead [data-date="${todayKey}"], tbody [data-date="${todayKey}"]`
+);
     const scrollContainer =
       table.closest(".table-wrapper");
     if (!todayCell || !scrollContainer) {
