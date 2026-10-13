@@ -7713,6 +7713,50 @@ function saveLocalData() {
 
 }
 
+/* ==================================================
+   今日の日付の列へ移動
+================================================== */
+function moveScheduleToToday() {
+  requestAnimationFrame(() => {
+    const table =
+      document.getElementById("scheduleTable");
+    if (!table) return;
+    const today = new Date();
+    const todayKey = getDateKey(
+      today.getFullYear(),
+      today.getMonth() + 1,
+      today.getDate()
+    );
+    const todayCell = table.querySelector(
+      `thead [data-date="${todayKey}"], tbody [data-date="${todayKey}"]`
+    );
+    const scrollContainer =
+      table.closest(".table-wrapper");
+    if (!todayCell || !scrollContainer) {
+      console.log(
+        "★ 今日の列へ移動できません:",
+        todayKey
+      );
+      return;
+    }
+    const tableRect =
+      table.getBoundingClientRect();
+    const cellRect =
+      todayCell.getBoundingClientRect();
+    const targetScrollLeft =
+      scrollContainer.scrollLeft +
+      cellRect.left -
+      tableRect.left -
+      90;
+    scrollContainer.scrollLeft =
+      Math.max(0, targetScrollLeft);
+    console.log(
+      "★ 今日の列へ移動:",
+      todayKey
+    );
+  });
+}
+
 
 /* ==================================================
    Supabaseから全データ取得
