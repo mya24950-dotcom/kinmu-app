@@ -8967,8 +8967,7 @@ function setupVisibilitySync() {
     "visibilitychange",
     async () => {
       if (
-        document.visibilityState !==
-        "visible"
+        document.visibilityState !== "visible"
       ) {
         return;
       }
@@ -8976,8 +8975,12 @@ function setupVisibilitySync() {
         async () => {
           await reloadFromSupabase();
           setupRealtime();
-          /* アプリ復帰時に今日の列へ移動 */
-          moveScheduleToToday();
+          /* 再描画後に今日の列へ移動 */
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              moveScheduleToToday();
+            });
+          });
         },
         300
       );
