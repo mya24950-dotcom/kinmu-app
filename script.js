@@ -9027,36 +9027,26 @@ function startAutoSync() {
 ================================================== */
 
 function setupVisibilitySync() {
-
   document.addEventListener(
     "visibilitychange",
     async () => {
-
       if (
         document.visibilityState !==
         "visible"
       ) {
-
         return;
-
       }
-
-
       setTimeout(
         async () => {
-
           await reloadFromSupabase();
-
-
           setupRealtime();
-
+          /* アプリ復帰時に今日の列へ移動 */
+          moveScheduleToToday();
         },
         300
       );
-
     }
   );
-
 }
 
 
