@@ -7666,7 +7666,7 @@ function moveScheduleToToday() {
       today.getDate()
     );
     const todayCell = table.querySelector(
-      `thead [data-date="${todayKey}"], tbody [data-date="${todayKey}"]`
+      `thead [data-date="${todayKey}"]`
     );
     const scrollContainer =
       table.closest(".table-wrapper");
@@ -7677,20 +7677,21 @@ function moveScheduleToToday() {
       );
       return;
     }
-    const tableRect =
-      table.getBoundingClientRect();
+    const containerRect =
+      scrollContainer.getBoundingClientRect();
     const cellRect =
       todayCell.getBoundingClientRect();
     const targetScrollLeft =
       scrollContainer.scrollLeft +
       cellRect.left -
-      tableRect.left -
-      90;
+      containerRect.left;
     scrollContainer.scrollLeft =
       Math.max(0, targetScrollLeft);
     console.log(
       "★ 今日の列へ移動:",
-      todayKey
+      todayKey,
+      "scrollLeft:",
+      scrollContainer.scrollLeft
     );
   });
 }
