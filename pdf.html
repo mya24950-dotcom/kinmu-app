@@ -4,7 +4,6 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-
   <title>勤務表</title>
 
   <style>
@@ -57,359 +56,323 @@
 
 <body>
 
-  <div id="pdfViewport">
-    <div id="pdfContainer"></div>
-    <div id="message">勤務表を読み込んでいます...</div>
-  </div>
+<div id="pdfViewport">
+  <div id="pdfContainer"></div>
+  <div id="message">勤務表を読み込んでいます...</div>
+</div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 
-  <script>
-    pdfjsLib.GlobalWorkerOptions.workerSrc =
-      "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 
-    const viewportElement =
-      document.getElementById("pdfViewport");
+const viewportElement = document.getElementById("pdfViewport");
+const container = document.getElementById("pdfContainer");
+const message = document.getElementById("message");
 
-    const container =
-      document.getElementById("pdfContainer");
+let pdfDocument = null;
 
-    const message =
-      document.getElementById("message");
+let baseScale = 1;
+let zoom = 1;
 
-    let pdfDocument = null;
+let posX = 0;
+let posY = 0;
 
-    let baseScale = 1;
-    let zoom = 1;
+let pageTasks = [];
+let pointers = new Map();
 
-    let posX = 0;
-    let posY = 0;
+let startDistance = 0;
+let startZoom = 1;
+let startX = 0;
+let startY = 0;
 
-    let pageTasks = [];
+let pinchCenterX = 0;
+let pinchCenterY = 0;
 
-    let pointers = new Map();
+let renderTimer = null;
+let renderId = 0;
+let isPinching = false;
 
-    let startDistance = 0;
-    let startZoom = 1;
-    let startX = 0;
-    let startY = 0;
+const MAX_ZOOM = 5;
+const MIN_ZOOM = 1;
 
-    let renderTimer = null;
-    let renderId = 0;
+// PDF読み込み
+async function showPdf() {
 
-    const MAX_ZOOM = 5;
-    const MIN_ZOOM = 1;
+  const params = new URLSearchParams(location.search);
+  const month = Number(params.get("month"));
 
-    // PDF読み込み
-    async function showPdf() {
+  if (!Number.isInteger(month) || month < 1 || month > 12) {
+    message.textContent = "月の指定が正しくありません。";
+    return;
+  }
 
-      const params = new URLSearchParams(location.search);
-      const month = Number(params.get("month"));
+  const fileName = `勤務表${month}月.pdf`;
+  const pdfUrl = "./" + encodeURIComponent(fileName) + "?v=" + Date.now();
 
-      if (!Number.isInteger(month) || month < 1 || month > 12) {
-        message.textContent = "月の指定が正しくありません。";
-        return;
-      }
+  try {
+    pdfDocument = await pdfjsLib.getDocument(pdfUrl).promise;
+    message.style.display = "none";
+    await fitToScreen();
+  } catch (error) {
+    console.error(error);
+    message.textContent = "PDFを表示できませんでした。";
+  }
+}
 
-      const fileName = `勤務表${month}月.pdf`;
+// 画面に合わせる
+async function fitToScreen() {
 
-      const pdfUrl =
-        "./" + encodeURIComponent(fileName) +
-        "?v=" + Date.now();
+  if (!pdfDocument) return;
 
-      try {
+  const page = await pdfDocument.getPage(1);
+  const original = page.getViewport({ scale: 1 });
 
-        pdfDocument =
-          await pdfjsLib.getDocument(pdfUrl).promise;
+  const screenWidth = viewportElement.clientWidth;
+  const screenHeight = viewportElement.clientHeight;
 
-        message.style.display = "none";
+  baseScale = Math.min(
+    screenWidth / original.width,
+    screenHeight / original.height
+  );
 
-        await fitToScreen();
+  zoom = 1;
 
-      } catch (error) {
+  const pageWidth = original.width * baseScale;
+  const pageHeight = original.height * baseScale;
 
-        console.error(error);
+  posX = (screenWidth - pageWidth) / 2;
+  posY = (screenHeight - pageHeight) / 2;
 
-        message.textContent =
-          "PDFを表示できませんでした。ファイル名や保存場所を確認してください。";
+  await renderPages();
+}
 
-      }
-    }
+// 高解像度PDF描画
+async function renderPages() {
 
-    // 最初に画面全体へ収める
-    async function fitToScreen() {
+  if (!pdfDocument) return;
 
-      if (!pdfDocument) return;
+  const thisRenderId = ++renderId;
 
-      const page = await pdfDocument.getPage(1);
+  pageTasks.forEach(task => {
+    try {
+      task.cancel();
+    } catch (e) {}
+  });
 
-      const original = page.getViewport({ scale: 1 });
+  pageTasks = [];
+  container.innerHTML = "";
 
-      const screenWidth = viewportElement.clientWidth;
-      const screenHeight = viewportElement.clientHeight;
+  const scale = baseScale * zoom;
 
-      const widthScale = screenWidth / original.width;
-      const heightScale = screenHeight / original.height;
+  const pixelRatio = Math.min(
+    window.devicePixelRatio || 1,
+    3
+  );
 
-      baseScale = Math.min(widthScale, heightScale);
+  let top = 0;
+  let maxWidth = 0;
 
-      zoom = 1;
+  for (let pageNumber = 1; pageNumber <= pdfDocument.numPages; pageNumber++) {
 
-      const pageWidth = original.width * baseScale;
-      const pageHeight = original.height * baseScale;
+    if (thisRenderId !== renderId) return;
 
-      posX = (screenWidth - pageWidth) / 2;
-      posY = (screenHeight - pageHeight) / 2;
+    const page = await pdfDocument.getPage(pageNumber);
+    const pdfViewport = page.getViewport({ scale });
 
-      await renderPages();
-    }
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext("2d", { alpha: false });
 
-    // PDFを高解像度で再描画
-    async function renderPages() {
+    canvas.className = "pdf-page";
 
-      if (!pdfDocument) return;
+    canvas.width = Math.ceil(pdfViewport.width * pixelRatio);
+    canvas.height = Math.ceil(pdfViewport.height * pixelRatio);
 
-      const thisRenderId = ++renderId;
+    canvas.style.width = pdfViewport.width + "px";
+    canvas.style.height = pdfViewport.height + "px";
+    canvas.style.marginBottom = "8px";
 
-      // 前の描画をキャンセル
-      pageTasks.forEach(task => {
-        try {
-          task.cancel();
-        } catch (e) {}
-      });
+    container.appendChild(canvas);
 
-      pageTasks = [];
-
-      container.innerHTML = "";
-
-      const scale = baseScale * zoom;
-
-      // 高解像度描画
-      const pixelRatio = Math.min(
-        window.devicePixelRatio || 1,
-        3
-      );
-
-      let top = 0;
-      let maxWidth = 0;
-
-      for (
-        let pageNumber = 1;
-        pageNumber <= pdfDocument.numPages;
-        pageNumber++
-      ) {
-
-        if (thisRenderId !== renderId) return;
-
-        const page = await pdfDocument.getPage(pageNumber);
-
-        const pdfViewport =
-          page.getViewport({ scale });
-
-        const canvas = document.createElement("canvas");
-
-        const context = canvas.getContext("2d", {
-          alpha: false
-        });
-
-        canvas.className = "pdf-page";
-
-        canvas.width =
-          Math.ceil(pdfViewport.width * pixelRatio);
-
-        canvas.height =
-          Math.ceil(pdfViewport.height * pixelRatio);
-
-        canvas.style.width =
-          pdfViewport.width + "px";
-
-        canvas.style.height =
-          pdfViewport.height + "px";
-
-        canvas.style.marginBottom = "8px";
-
-        container.appendChild(canvas);
-
-        const task = page.render({
-          canvasContext: context,
-          viewport: pdfViewport,
-          transform: [
-            pixelRatio, 0,
-            0, pixelRatio,
-            0, 0
-          ]
-        });
-
-        pageTasks.push(task);
-
-        try {
-          await task.promise;
-        } catch (error) {
-          if (error.name === "RenderingCancelledException") {
-            return;
-          }
-          throw error;
-        }
-
-        maxWidth = Math.max(maxWidth, pdfViewport.width);
-        top += pdfViewport.height + 8;
-      }
-
-      if (thisRenderId !== renderId) return;
-
-      container.style.width = maxWidth + "px";
-      container.style.height = top + "px";
-
-      updatePosition();
-    }
-
-    // 表示位置を更新
-    function updatePosition() {
-
-      container.style.transform =
-        `translate(${posX}px, ${posY}px)`;
-    }
-
-    // 2点間の距離
-    function getDistance(a, b) {
-
-      const dx = a.x - b.x;
-      const dy = a.y - b.y;
-
-      return Math.sqrt(dx * dx + dy * dy);
-    }
-
-    // 再描画を少しまとめる
-    function scheduleRender() {
-
-      clearTimeout(renderTimer);
-
-      renderTimer = setTimeout(() => {
-        renderPages();
-      }, 100);
-    }
-
-    // タッチ開始
-    viewportElement.addEventListener(
-      "pointerdown",
-      event => {
-
-        viewportElement.setPointerCapture(event.pointerId);
-
-        pointers.set(event.pointerId, {
-          x: event.clientX,
-          y: event.clientY
-        });
-
-        if (pointers.size === 2) {
-
-          const points = [...pointers.values()];
-
-          startDistance =
-            getDistance(points[0], points[1]);
-
-          startZoom = zoom;
-
-          startX = posX;
-          startY = posY;
-        }
-      }
-    );
-
-    // 指を動かしたとき
-    viewportElement.addEventListener(
-      "pointermove",
-      event => {
-
-        if (!pointers.has(event.pointerId)) return;
-
-        const previous = pointers.get(event.pointerId);
-
-        pointers.set(event.pointerId, {
-          x: event.clientX,
-          y: event.clientY
-        });
-
-        if (pointers.size === 2) {
-
-          const points = [...pointers.values()];
-
-          const distance =
-            getDistance(points[0], points[1]);
-
-          const centerX =
-            (points[0].x + points[1].x) / 2;
-
-          const centerY =
-            (points[0].y + points[1].y) / 2;
-
-          const ratio = distance / startDistance;
-
-          const newZoom = Math.max(
-            MIN_ZOOM,
-            Math.min(MAX_ZOOM, startZoom * ratio)
-          );
-
-          const actualRatio = newZoom / zoom;
-
-          // 指の中央を基準に拡大・縮小
-          posX =
-            centerX - (centerX - posX) * actualRatio;
-
-          posY =
-            centerY - (centerY - posY) * actualRatio;
-
-          zoom = newZoom;
-
-          scheduleRender();
-
-        } else if (pointers.size === 1 && zoom > 1) {
-
-          // 拡大中は1本指で移動
-          posX += event.clientX - previous.x;
-          posY += event.clientY - previous.y;
-
-          updatePosition();
-        }
-      }
-    );
-
-    // 指を離したとき
-    function pointerEnd(event) {
-
-      pointers.delete(event.pointerId);
-
-      if (pointers.size === 1) {
-
-        const remaining = [...pointers.values()][0];
-
-        startX = remaining.x;
-        startY = remaining.y;
-      }
-    }
-
-    viewportElement.addEventListener(
-      "pointerup",
-      pointerEnd
-    );
-
-    viewportElement.addEventListener(
-      "pointercancel",
-      pointerEnd
-    );
-
-    // 画面回転・サイズ変更時
-    window.addEventListener("resize", () => {
-
-      if (pdfDocument) {
-        fitToScreen();
-      }
+    const task = page.render({
+      canvasContext: context,
+      viewport: pdfViewport,
+      transform: [
+        pixelRatio, 0,
+        0, pixelRatio,
+        0, 0
+      ]
     });
 
-    // PDF表示開始
-    showPdf();
+    pageTasks.push(task);
 
-  </script>
+    try {
+      await task.promise;
+    } catch (error) {
+      if (error.name === "RenderingCancelledException") return;
+      throw error;
+    }
 
+    maxWidth = Math.max(maxWidth, pdfViewport.width);
+    top += pdfViewport.height + 8;
+  }
+
+  if (thisRenderId !== renderId) return;
+
+  container.style.width = maxWidth + "px";
+  container.style.height = top + "px";
+
+  updatePosition();
+}
+
+// 表示位置更新
+function updatePosition() {
+  container.style.transform =
+    `translate3d(${posX}px, ${posY}px, 0) scale(1)`;
+}
+
+// 操作中の仮拡大
+function previewZoom(value, centerX, centerY) {
+
+  const newZoom = Math.max(
+    MIN_ZOOM,
+    Math.min(MAX_ZOOM, value)
+  );
+
+  const ratio = newZoom / zoom;
+
+  posX = centerX - (centerX - posX) * ratio;
+  posY = centerY - (centerY - posY) * ratio;
+
+  zoom = newZoom;
+
+  updatePosition();
+}
+
+// ピンチ開始
+viewportElement.addEventListener("pointerdown", event => {
+
+  viewportElement.setPointerCapture(event.pointerId);
+
+  pointers.set(event.pointerId, {
+    x: event.clientX,
+    y: event.clientY
+  });
+
+  if (pointers.size === 2) {
+
+    const points = [...pointers.values()];
+
+    startDistance = getDistance(points[0], points[1]);
+    startZoom = zoom;
+
+    pinchCenterX = (points[0].x + points[1].x) / 2;
+    pinchCenterY = (points[0].y + points[1].y) / 2;
+
+    startX = posX;
+    startY = posY;
+
+    isPinching = true;
+  }
+});
+
+// ピンチ操作
+viewportElement.addEventListener("pointermove", event => {
+
+  if (!pointers.has(event.pointerId)) return;
+
+  const previous = pointers.get(event.pointerId);
+
+  pointers.set(event.pointerId, {
+    x: event.clientX,
+    y: event.clientY
+  });
+
+  if (pointers.size === 2) {
+
+    const points = [...pointers.values()];
+
+    const distance = getDistance(points[0], points[1]);
+
+    const centerX = (points[0].x + points[1].x) / 2;
+    const centerY = (points[0].y + points[1].y) / 2;
+
+    const ratio = distance / startDistance;
+
+    const newZoom = Math.max(
+      MIN_ZOOM,
+      Math.min(MAX_ZOOM, startZoom * ratio)
+    );
+
+    const scaleRatio = newZoom / startZoom;
+
+    posX = centerX - (centerX - startX) * scaleRatio;
+    posY = centerY - (centerY - startY) * scaleRatio;
+
+    zoom = newZoom;
+
+    // Canvasを再描画せず滑らかに拡大
+    const previewScale = zoom / startZoom;
+
+    container.style.transformOrigin = "0 0";
+
+    container.style.transform =
+      `translate3d(${posX}px, ${posY}px, 0) scale(${previewScale})`;
+
+  } else if (pointers.size === 1 && zoom > 1 && !isPinching) {
+
+    posX += event.clientX - previous.x;
+    posY += event.clientY - previous.y;
+
+    updatePosition();
+  }
+});
+
+// 2点間の距離
+function getDistance(a, b) {
+  const dx = a.x - b.x;
+  const dy = a.y - b.y;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
+// 指を離したとき
+function pointerEnd(event) {
+
+  pointers.delete(event.pointerId);
+
+  if (isPinching && pointers.size < 2) {
+
+    isPinching = false;
+
+    // 操作終了後に高解像度で描き直す
+    clearTimeout(renderTimer);
+
+    renderTimer = setTimeout(() => {
+      renderPages();
+    }, 180);
+  }
+
+  if (pointers.size === 1) {
+    const point = [...pointers.values()][0];
+    startX = point.x;
+    startY = point.y;
+  }
+}
+
+viewportElement.addEventListener("pointerup", pointerEnd);
+viewportElement.addEventListener("pointercancel", pointerEnd);
+
+// 画面回転時
+window.addEventListener("resize", () => {
+  if (pdfDocument) {
+    fitToScreen();
+  }
+});
+
+// 開始
+showPdf();
+
+</script>
 </body>
 </html>
