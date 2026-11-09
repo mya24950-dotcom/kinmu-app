@@ -1,1 +1,43 @@
 
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>勤務表PDF</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <iframe id="pdfViewer"></iframe>
+
+  <script>
+    const params = new URLSearchParams(location.search);
+    const month = Number(params.get("month"));
+
+    if (month >= 1 && month <= 12) {
+      const fileName = `勤務表${month}月.pdf`;
+      document.getElementById("pdfViewer").src =
+        "./" + encodeURIComponent(fileName);
+    } else {
+      document.body.textContent = "月の指定が正しくありません。";
+    }
+  </script>
+</body>
+</html>
+
