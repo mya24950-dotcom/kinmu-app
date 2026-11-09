@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <title>勤務表PDF</title>
+  <title>勤務表</title>
 
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
@@ -19,17 +19,17 @@
     html, body {
       margin: 0;
       padding: 0;
+      width: 100%;
       min-height: 100%;
       background: #e5e5e5;
     }
 
     body {
-      padding: 20px;
+      padding: 10px;
     }
 
     #pdfContainer {
       width: 100%;
-      max-width: 794px;
       margin: 0 auto;
     }
 
@@ -37,9 +37,8 @@
       display: block;
       width: 100%;
       height: auto;
-      margin: 0 auto 20px;
+      margin: 0 auto 10px;
       background: white;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.2);
     }
 
     #message {
@@ -48,19 +47,37 @@
       color: #555;
     }
 
-    @media (max-width: 600px) {
+    /* スマホ横向き */
+    @media screen and (orientation: landscape) and (max-height: 600px) {
       body {
         padding: 0;
         background: white;
       }
 
       #pdfContainer {
-        max-width: 100%;
+        width: 100%;
+        max-width: none;
+      }
+
+      .pdf-page {
+        margin: 0 auto;
+        box-shadow: none;
+      }
+    }
+
+    /* スマホ縦向き */
+    @media screen and (max-width: 600px) and (orientation: portrait) {
+      body {
+        padding: 0;
+        background: white;
+      }
+
+      #pdfContainer {
+        width: 100%;
       }
 
       .pdf-page {
         margin-bottom: 8px;
-        box-shadow: none;
       }
     }
   </style>
@@ -72,22 +89,24 @@
     <div id="message">勤務表を読み込んでいます...</div>
   </div>
 
-  <!-- PDF.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 
   <script>
     pdfjsLib.GlobalWorkerOptions.workerSrc =
       "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 
+    let currentPdf = null;
+    let rendering = false;
+
     async function showPdf() {
       const params = new URLSearchParams(location.search);
       const month = Number(params.get("month"));
 
       const container = document.getElementById("pdfContainer");
-      const message = document.getElementById("message");
 
       if (!Number.isInteger(month) || month < 1 || month > 12) {
-        message.textContent = "月の指定が正しくありません。";
+        container.innerHTML =
+          '<div id="message">月の指定が正しくありません。</div>';
         return;
       }
 
@@ -98,25 +117,41 @@
         "?v=" + Date.now();
 
       try {
-        const pdf = await pdfjsLib.getDocument(pdfUrl).promise;
+        currentPdf = await pdfjsLib.getDocument(pdfUrl).promise;
+        await renderPages();
+      } catch (error) {
+        console.error(error);
+        container.innerHTML =
+          '<div id="message">PDFを表示できませんでした。ファイル名や保存場所を確認してください。</div>';
+      }
+    }
 
-        container.innerHTML = "";
+    async function renderPages() {
+      if (!currentPdf || rendering) return;
 
-        const maxWidth = Math.min(
-          container.clientWidth || window.innerWidth,
-          794
-        );
+      rendering = true;
 
-        for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
-          const page = await pdf.getPage(pageNumber);
+      const container = document.getElementById("pdfContainer");
+      container.innerHTML = "";
+
+      try {
+        for (
+          let pageNumber = 1;
+          pageNumber <= currentPdf.numPages;
+          pageNumber++
+        ) {
+          const page = await currentPdf.getPage(pageNumber);
 
           const originalViewport = page.getViewport({ scale: 1 });
 
-          const scale = maxWidth / originalViewport.width;
+          // 画面幅いっぱいに表示
+          const availableWidth = container.clientWidth || window.innerWidth;
+
+          const scale = availableWidth / originalViewport.width;
 
           const viewport = page.getViewport({ scale });
 
-          // 高解像度で描画（最大4倍）
+          // 高解像度描画
           const pixelRatio = Math.min(
             Math.max(window.devicePixelRatio || 1, 3),
             4
@@ -127,25 +162,30 @@
 
           canvas.className = "pdf-page";
 
-          canvas.width = Math.floor(viewport.width * pixelRatio);
-          canvas.height = Math.floor(viewport.height * pixelRatio);
+          canvas.width = Math.ceil(viewport.width * pixelRatio);
+          canvas.height = Math.ceil(viewport.height * pixelRatio);
 
-          canvas.style.width = viewport.width + "px";
-          canvas.style.height = viewport.height + "px";
+          canvas.style.width = "100%";
+          canvas.style.height = "auto";
 
           container.appendChild(canvas);
 
           await page.render({
             canvasContext: context,
             viewport: viewport,
-            transform: [pixelRatio, 0, 0, pixelRatio, 0, 0]
+            transform: [
+              pixelRatio, 0,
+              0, pixelRatio,
+              0, 0
+            ]
           }).promise;
         }
-
       } catch (error) {
         console.error(error);
         container.innerHTML =
-          '<div id="message">PDFを表示できませんでした。ファイル名や保存場所を確認してください。</div>';
+          '<div id="message">勤務表の描画に失敗しました。</div>';
+      } finally {
+        rendering = false;
       }
     }
 
