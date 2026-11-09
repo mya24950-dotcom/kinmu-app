@@ -4,7 +4,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+
   <title>勤務表PDF</title>
+
+  <!-- キャッシュ対策 -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
 
   <style>
     * {
@@ -33,7 +39,7 @@
       min-height: 500px;
       border: none;
       background: white;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
     }
 
     @media (max-width: 600px) {
@@ -53,20 +59,39 @@
 </head>
 
 <body>
+
   <iframe id="pdfViewer"></iframe>
 
   <script>
+    // URLから月を取得
     const params = new URLSearchParams(location.search);
     const month = Number(params.get("month"));
 
-    if (Number.isInteger(month) && month >= 1 && month <= 12) {
+    if (
+      Number.isInteger(month) &&
+      month >= 1 &&
+      month <= 12
+    ) {
+      // PDFファイル名
       const fileName = `勤務表${month}月.pdf`;
 
-      document.getElementById("pdfViewer").src =
-        "./" + encodeURIComponent(fileName) + "#view=Fit";
+      // キャッシュ回避用の更新番号
+      const cacheBuster = Date.now();
+
+      // PDFを表示
+      const pdfUrl =
+        "./" +
+        encodeURIComponent(fileName) +
+        "?v=" + cacheBuster +
+        "#view=Fit";
+
+      document.getElementById("pdfViewer").src = pdfUrl;
+
     } else {
-      document.body.textContent = "月の指定が正しくありません。";
+      document.body.innerHTML =
+        "<p>月の指定が正しくありません。</p>";
     }
   </script>
+
 </body>
 </html>
